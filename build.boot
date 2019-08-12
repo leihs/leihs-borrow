@@ -2,23 +2,31 @@
 
 (set-env!
   :source-paths #{"src/all" "shared-clj/src"}
-  :resource-paths #{"resources"}
+  :resource-paths #{"resources/all"}
   :project 'leihs-borrow
   :version "0.1.0-SNAPSHOT"
-  :dependencies (extend-shared-deps '[[clj-pid "0.1.2"]
+  :dependencies (extend-shared-deps '[[org.clojure/clojure "1.10.1"]
+                                      [clj-pid "0.1.2"]
                                       [spootnik/signal "0.2.1"]]))
 
 (task-options!
   target {:dir #{"target"}}
   aot {:all true}
-  repl {:init-ns 'user}
+  repl {:init-ns 'app}
   sift {:include #{#"leihs-borrow.jar"}}
   jar {:file "leihs-borrow.jar", :main 'leihs.borrow.main})
+
+(deftask prod
+  "Production profile to be used in combination with other tasks."
+  []
+  (with-pass-thru _
+    (set-env! :resource-paths #(conj % "resources/prod"))))
 
 (deftask uberjar
   "Build an uberjar of the application."
   []
-  (comp (aot)
+  (comp (prod)
+        (aot)
         (uber)
         (jar)
         (sift)
@@ -38,9 +46,10 @@
 (deftask dev
   "Development profile to be used in combination with other tasks."
   []
-  (set-env! :source-paths #(conj % "src/dev"))
-  (require 'reset '[clojure.tools.namespace.repl :as ctnr])
-  identity)
+  (with-pass-thru _
+    (set-env! :source-paths #(conj % "src/dev")
+              :resource-paths #(conj % "resources/prod"))
+    (require 'app '[clojure.tools.namespace.repl :as ctnr])))
 
 (ns-unmap *ns* 'repl)
 (deftask repl
@@ -58,10 +67,9 @@
     (apply (resolve 'ctnr/set-refresh-dirs)
            (get-env :directories))
     (with-bindings {#'*ns* *ns*}
-      ((resolve 'reset/reset)))))
+      ((resolve 'app/reset)))))
 
-(deftask
-  focus
+(deftask auto-reset
   "Watch for changed files, reload namespaces and reset application state."
   []
   (comp (dev)
