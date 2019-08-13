@@ -14,7 +14,7 @@
       (sql/from :users)
       sql-order-users))
 
-(defn get-users
+(defn get-multiple
   [context args _]
   (jdbc/query
     (-> context

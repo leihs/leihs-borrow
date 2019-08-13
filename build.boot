@@ -52,7 +52,7 @@
   []
   (with-pass-thru _
     (set-env! :source-paths #(conj % "src/dev")
-              :resource-paths #(conj % "resources/prod"))
+              :resource-paths #(conj % "resources/dev"))
     (require 'app '[clojure.tools.namespace.repl :as ctnr])))
 
 (ns-unmap *ns* 'repl)

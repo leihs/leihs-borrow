@@ -1,12 +1,23 @@
-{:objects
-   {:User {:fields {:email {:type String},
-                    :firstname {:type String},
-                    :id {:type (non-null ID)},
-                    :lastname {:type String},
-                    :login {:type String}}}},
- :queries
-   {:users {:args {:limit {:type Int},
-                   :offset {:type Int},
-                   :search_term {:type String}},
-            :resolve :users,
-            :type (list :User)}}}
+{:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}}
+ :objects {:Contract {:fields {:id {:type (non-null :UUID)}
+                               :compact_id {:type (non-null :UUID)}
+                               :state {:type (non-null String)}
+                               :inventory_pool {:type (non-null :InventoryPool)
+                                                :resolve :inventory-pool}
+                               :purpose {:type (non-null String)}
+                               :note {:type String}}},
+           :InventoryPool {:fields {:id {:type (non-null :UUID)}
+                                    :name {:type (non-null String)}
+                                    :email {:type (non-null String)}}}
+           :User {:fields {:email {:type String},
+                           :firstname {:type String},
+                           :id {:type (non-null :UUID)},
+                           :lastname {:type String},
+                           :login {:type String}
+                           :contracts {:type (list :Contract)
+                                       :resolve :contracts}}}},
+ :queries {:users {:args {:limit {:type Int},
+                          :offset {:type Int},
+                          :search_term {:type String}},
+                   :resolve :users,
+                   :type (list :User)}}}

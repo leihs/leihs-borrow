@@ -48,6 +48,7 @@
 
 (defn -main
   [& args]
+  (require 'pg-types.all)
   (let [{:keys [options summary]} (cli/parse (rest args))]
     (letfn [(print-main-usage-summary
               []

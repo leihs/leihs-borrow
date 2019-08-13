@@ -1,11 +1,10 @@
 (ns leihs.borrow.graphql.queries
-  (:require [leihs.borrow.resources.user :as user]
-            [leihs.borrow.resources.users :as users]))
+  (:require [leihs.borrow.resources.inventory-pools :as inventory-pools]
+            [leihs.borrow.resources.users :as users]
+            [leihs.borrow.resources.contracts :as contracts]))
 
 (def resolvers
-  {;:current-user current-user/get-current-user,
-   ;:model model/get-model,
-   ;:models models/get-models,
-   ;:settings settings/get-settings,
-   :user user/get-user,
-   :users users/get-users})
+  {:users users/get-multiple,
+   :contracts contracts/get-multiple,
+   :inventory-pool inventory-pools/get-one
+   })

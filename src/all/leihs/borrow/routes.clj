@@ -107,7 +107,7 @@
 
 (defn init
   []
-  (I> wrap-handler-with-logging
+  (-> ;wrap-handler-with-logging
       dispatch-to-handler
       anti-csrf/wrap
       locale/wrap
