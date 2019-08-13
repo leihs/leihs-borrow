@@ -17,4 +17,4 @@
   []
   (stop)
   (if-let [ex (ctnr/refresh :after 'app-setup/run)]
-    (repl/pst ex)))
+    (repl/pst ex 24)))

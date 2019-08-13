@@ -1,0 +1,12 @@
+{:objects
+   {:User {:fields {:email {:type String},
+                    :firstname {:type String},
+                    :id {:type (non-null ID)},
+                    :lastname {:type String},
+                    :login {:type String}}}},
+ :queries
+   {:users {:args {:limit {:type Int},
+                   :offset {:type Int},
+                   :search_term {:type String}},
+            :resolve :users,
+            :type (list :User)}}}

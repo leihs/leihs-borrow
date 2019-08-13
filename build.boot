@@ -5,9 +5,13 @@
   :resource-paths #{"resources/all"}
   :project 'leihs-borrow
   :version "0.1.0-SNAPSHOT"
-  :dependencies (extend-shared-deps '[[org.clojure/clojure "1.10.1"]
+  :dependencies (extend-shared-deps '[
                                       [clj-pid "0.1.2"]
-                                      [spootnik/signal "0.2.1"]]))
+                                      [com.walmartlabs/lacinia "0.33.0"]
+                                      [org.clojure/clojure "1.10.1"]
+                                      [spootnik/signal "0.2.1"]
+                                      [threatgrid/ring-graphql-ui "0.1.1"]
+                                      ]))
 
 (task-options!
   target {:dir #{"target"}}
@@ -64,12 +68,11 @@
   ; use `resolve` because of dynamic `require` (not top-level):
   ; https://github.com/boot-clj/boot/wiki/Boot-Troubleshooting#why-isnt-require-working-in-my-pod
   (with-pass-thru _
-    (apply (resolve 'ctnr/set-refresh-dirs)
-           (get-env :directories))
+    (apply (resolve 'ctnr/set-refresh-dirs) (get-env :directories))
     (with-bindings {#'*ns* *ns*}
       ((resolve 'app/reset)))))
 
-(deftask auto-reset
+(deftask focus
   "Watch for changed files, reload namespaces and reset application state."
   []
   (comp (dev)
