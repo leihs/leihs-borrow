@@ -6,8 +6,7 @@
     [cheshire.core :refer [parse-string]]
     [clojure.string :refer [starts-with? replace]]
     [clojure.tools.logging :as log]
-    ; [leihs.borrow.authorization :refer [wrap-authenticate wrap-authorize]]
-    ; [leihs.borrow.env :as env]
+    [leihs.borrow.authenticate :refer [wrap-ensure-authenticated-entity]]
     [leihs.borrow.graphql :as graphql]
     [leihs.borrow.html :as html]
     [leihs.borrow.paths :refer [path paths]]
@@ -108,12 +107,12 @@
 
 (defn init
   []
-  (-> ;wrap-handler-with-logging
+  (I> wrap-handler-with-logging
       dispatch-to-handler
       anti-csrf/wrap
       locale/wrap
       ; wrap-authorize
-      ; wrap-authenticate
+      wrap-ensure-authenticated-entity
       session/wrap-authenticate
       wrap-cookies
       settings/wrap
