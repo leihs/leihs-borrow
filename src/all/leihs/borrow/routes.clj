@@ -84,9 +84,9 @@
            (match-pair-with-fallback path)
          handler-fn (handler-resolver handler-key)]
      (handler (assoc request
-                :route-params route-params
-                :handler-key handler-key
-                :handler handler-fn)))))
+                     :route-params route-params
+                     :handler-key handler-key
+                     :handler handler-fn)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -109,7 +109,7 @@
   []
   (I> wrap-handler-with-logging
       dispatch-to-handler
-      anti-csrf/wrap
+      ; anti-csrf/wrap
       locale/wrap
       ; wrap-authorize
       wrap-ensure-authenticated-entity

@@ -1,0 +1,10 @@
+{:source-paths ["src/all"]
+ :dependencies []
+ :dev-http {8080 "target/"}
+ :builds {:app {:output-dir "target/"
+                :asset-path "."
+                :target :browser
+                :modules {:main {:init-fn leihs.borrow.html/main!}}
+                :devtools {:after-load leihs.borrow.html/reload!
+                           :http-root "target"
+                           :http-port 8080}}}}

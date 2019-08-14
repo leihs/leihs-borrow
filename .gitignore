@@ -2,5 +2,6 @@
 .nrepl-history
 .nrepl-port
 .rebel_readline_history
+.shadow-cljs
 target
 log
