@@ -49,6 +49,10 @@
 (defn -main
   [& args]
   (require 'pg-types.all)
+  ; ---------------------------------------------------
+  ; provide implementation fo render-page-base function
+  (require 'leihs.borrow.ssr)
+  ; ---------------------------------------------------
   (let [{:keys [options summary]} (cli/parse (rest args))]
     (letfn [(print-main-usage-summary
               []

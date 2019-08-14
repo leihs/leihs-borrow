@@ -38,6 +38,7 @@
 (def handler-resolve-table
   (merge core-routes/resolve-table
          {:graphql graphql/handler,
+          :home html/html-handler
           :not-found html/not-found-handler,
           :status (status/routes "/borrow/status")}))
 
