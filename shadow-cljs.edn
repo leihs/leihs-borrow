@@ -1,8 +1,9 @@
 {:source-paths ["src/all" "src/dev"]
  :dependencies [[reagent "0.8.1"]]
- :builds {:playground {:output-dir "resources/all/public/borrow/js/playground"
-                       :asset-path "js/playground"
+ :builds {:playground {:output-dir "resources/all/public/borrow/js"
+                       :asset-path "js"
                        :target :browser
-                       :modules {;:reagent-example {:init-fn playground.reagent-example/run}
-                                 :shadow-example {:init-fn playground.shadow-example/main!}}
-                       :devtools {:after-load playground.shadow-example/reload!}}}}
+                       :modules {:playground {:entries [playground.shadow-example
+                                                        playground.reagent-example]}}
+                       ; :devtools {:after-load playground.shadow-example/reload!}
+                       }}}

@@ -1,6 +1,7 @@
 (ns playground.reagent-example
   (:require [leihs.core.http-cache-buster2 :refer [cache-busted-path]]
-            [hiccup.page :refer [html5 include-js include-css]]))
+            [hiccup.page :refer [html5 include-js include-css]]
+            [hiccup.element :refer [javascript-tag]]))
 
 (defn head []
   [:head
@@ -14,7 +15,8 @@
    :body (html5
            (head)
            [:body#app
-            (include-js "/borrow/js/playground/reagent-example.js")])})
+            (include-js "/borrow/js/playground.js")
+            (javascript-tag "playground.reagent_example.run();")])})
 
 ;#### debug ###################################################################
 ;(logging-config/set-logger! :level :debug)
