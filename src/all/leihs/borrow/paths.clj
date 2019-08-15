@@ -11,7 +11,13 @@
       "/borrow"
       (leaf "/shutdown" :shutdown)
       (leaf "/graphql" :graphql)
-      (leaf "/status" :status))
+      (leaf "/status" :status)
+      
+      ;;; DEV
+      (leaf "/reagent-example" :reagent-example)
+      ;;;
+      
+      )
     (leaf true :not-found)))
 
 (reset! leihs.core.paths/paths* paths)

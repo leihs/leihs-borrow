@@ -32,13 +32,21 @@
     [ring.util.response :refer [redirect status]]
     [clojure.tools.logging :as logging]
     [logbug.debug :as debug :refer [I>]]
-    [logbug.ring :refer [wrap-handler-with-logging]]))
+    [logbug.ring :refer [wrap-handler-with-logging]]
+    
+    ;;; DEV
+    playground.reagent-example
+    ;;;
+    ))
 
 (def handler-resolve-table
   (merge core-routes/resolve-table
          {:graphql graphql/handler,
           :home html/html-handler
           :not-found html/not-found-handler,
+          ;;; DEV
+          :reagent-example playground.reagent-example/handler
+          ;;;
           :status (status/routes "/borrow/status")}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -107,7 +115,7 @@
 
 (defn init
   []
-  (I> wrap-handler-with-logging
+  (-> ;wrap-handler-with-logging
       dispatch-to-handler
       ; anti-csrf/wrap
       locale/wrap
@@ -120,19 +128,24 @@
       (wrap-json-body {:keywords? true})
       wrap-empty
       datasource/wrap-tx
-      (wrap-graphiql {:path "/borrow/graphiql", :endpoint "/borrow/graphql"})
+      (wrap-graphiql {:path "/borrow/graphiql",
+                      :endpoint "/borrow/graphql"})
       core-routing/wrap-canonicalize-params-maps
       wrap-params
       wrap-multipart-params
       wrap-content-type
       (wrap-resource "public"
-                     {:allow-symlinks? true,
-                      :cache-bust-paths [],
-                      :never-expire-paths [],
-                      :cache-enabled? true})
+                     {:allow-symlinks? true
+                      :cache-bust-paths ["/borrow/css/site.css"
+                                         "/borrow/css/site.min.css"
+                                         "/borrow/js/app.js"]
+                      :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
+                                           #".+_[0-9a-f]{40}\..+"]
+                      :enabled? true})
       wrap-resolve-handler
       wrap-accept
-      ring-exception/wrap))
+      ring-exception/wrap
+      wrap-handler-with-logging))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
