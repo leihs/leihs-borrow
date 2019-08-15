@@ -9,7 +9,7 @@
                        #(reset! timer (js/Date.)) 1000))
 
 (defn greeting [message]
-  [:h1 message])
+  [:h2 message])
 
 (defn clock []
   (let [time-str (-> @timer .toTimeString (clojure.string/split " ") first)]
@@ -26,6 +26,7 @@
 
 (defn simple-example []
   [:div
+   [:h1 "Reagent example"]
    [greeting "Hello world, it is now"]
    [clock]
    [color-input]])

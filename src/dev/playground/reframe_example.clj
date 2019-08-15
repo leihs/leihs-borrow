@@ -1,4 +1,4 @@
-(ns playground.shadow-example
+(ns playground.reframe-example
   (:require [leihs.core.http-cache-buster2 :refer [cache-busted-path]]
             [hiccup.page :refer [html5 include-js include-css]]
             [hiccup.element :refer [javascript-tag]]))
@@ -7,16 +7,16 @@
   [:head
    [:meta {:charset "utf-8"}]
    [:meta {:name "viewport"
-           :content "width=device-width, initial-scale=1, shrink-to-fit=no"}]])
+           :content "width=device-width, initial-scale=1, shrink-to-fit=no"}]
+   (include-css "/borrow/css/playground/reframe-example.css")])
 
 (defn handler [request]
   {:headers {"Content-Type" "text/html"}
    :body (html5
            (head)
            [:body#app
-            [:h1 "Shadow-cljs example"]
             (include-js "/borrow/js/playground.js")
-            (javascript-tag "playground.shadow_example.run();")])})
+            (javascript-tag "playground.reframe_example.run();")])})
 
 ;#### debug ###################################################################
 ;(logging-config/set-logger! :level :debug)
