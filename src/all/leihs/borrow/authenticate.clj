@@ -6,6 +6,7 @@
   [:home
    ;;; DEV
    :reagent-example
+   :shadow-example
    ;;; DEV
    :sign-in])
 

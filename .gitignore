@@ -5,6 +5,6 @@
 .shadow-cljs
 log
 resources/all/public/borrow/js/app.js
-resources/all/public/borrow/js/cljs-runtime/
+resources/all/public/borrow/js/**/cljs-runtime/
 resources/all/public/borrow/js/manifest.edn
 target

@@ -36,6 +36,7 @@
     
     ;;; DEV
     playground.reagent-example
+    playground.shadow-example
     ;;;
     ))
 
@@ -46,6 +47,7 @@
           :not-found html/not-found-handler,
           ;;; DEV
           :reagent-example playground.reagent-example/handler
+          :shadow-example playground.shadow-example/handler
           ;;;
           :status (status/routes "/borrow/status")}))
 
