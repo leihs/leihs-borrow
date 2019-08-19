@@ -7,6 +7,7 @@
    ;;; DEV
    :reagent-example
    :reframe-example
+   :regraph-example
    :shadow-example
    ;;; DEV
    :sign-in])

@@ -5,13 +5,11 @@
   :resource-paths #{"resources/all"}
   :project 'leihs-borrow
   :version "0.1.0-SNAPSHOT"
-  :dependencies (extend-shared-deps '[
-                                      [clj-pid "0.1.2"]
-                                      [com.walmartlabs/lacinia "0.33.0"]
-                                      [org.clojure/clojure "1.10.1"]
-                                      [spootnik/signal "0.2.1"]
-                                      [threatgrid/ring-graphql-ui "0.1.1"]
-                                      ]))
+  :dependencies
+  (extend-shared-deps
+    '[[io.dropwizard.metrics/metrics-core "3.1.2"] ; lacinia does not work with the version from shared-deps
+      [com.walmartlabs/lacinia-pedestal "0.12.0"]
+      [threatgrid/ring-graphql-ui "0.1.1"]]))
 
 (task-options!
   target {:dir #{"target"}}

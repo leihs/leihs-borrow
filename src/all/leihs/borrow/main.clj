@@ -12,6 +12,7 @@
             [leihs.borrow.cli :as cli]
             [leihs.borrow.routes :as routes]
             [logbug.catcher :as catcher]
+            playground.lacinia-pedestal
             [signal.handler]
             ))
 
@@ -44,6 +45,7 @@
                              (:health-check-registry status)))
                   (let [app-handler (routes/init)]
                     (http-server/start (:http-base-url options) app-handler))
+                  (playground.lacinia-pedestal/start)
                   nil))
 
 (defn -main

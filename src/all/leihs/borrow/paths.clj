@@ -16,6 +16,7 @@
       ;;; DEV
       (leaf "/reagent-example" :reagent-example)
       (leaf "/reframe-example" :reframe-example)
+      (leaf "/regraph-example" :regraph-example)
       (leaf "/shadow-example" :shadow-example)
       ;;;
       

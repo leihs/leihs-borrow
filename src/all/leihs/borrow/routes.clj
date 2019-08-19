@@ -37,6 +37,7 @@
     ;;; DEV
     playground.reagent-example
     playground.reframe-example
+    playground.regraph-example
     playground.shadow-example
     ;;;
     ))
@@ -49,6 +50,7 @@
           ;;; DEV
           :reagent-example playground.reagent-example/handler
           :reframe-example playground.reframe-example/handler
+          :regraph-example playground.regraph-example/handler
           :shadow-example playground.shadow-example/handler
           ;;;
           :status (status/routes "/borrow/status")}))
@@ -124,7 +126,7 @@
       ; anti-csrf/wrap
       locale/wrap
       ; wrap-authorize
-      wrap-ensure-authenticated-entity
+      ; wrap-ensure-authenticated-entity
       session/wrap-authenticate
       wrap-cookies
       settings/wrap
