@@ -13,7 +13,8 @@
   {:headers {"Content-Type" "text/html"}
    :body (html5
            (head)
-           [:body#app
+           [:body
+            [:div#app]
             (include-js "/borrow/js/playground.js")
             (javascript-tag "playground.regraph_example.run();")])})
 

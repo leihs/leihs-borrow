@@ -12,7 +12,8 @@
                 :resolve (constantly "world")}}}))
 
 (def service
-  (lacinia/service-map hello-schema {:graphiql true}))
+  (lacinia/service-map hello-schema {:graphiql true,
+                                     :subscriptions true}))
 
 ;; This is an adapted service map, that can be started and stopped
 ;; From the REPL you can call server/start and server/stop on this service
