@@ -5,9 +5,9 @@
  :builds {:playground {:output-dir "resources/all/public/borrow/js"
                        :asset-path "js"
                        :target :browser
-                       :modules {:playground {:entries [playground.shadow-example
-                                                        playground.reagent-example 
-                                                        playground.reframe-example
+                       :modules {:playground {:entries [;playground.shadow-example
+                                                        ;playground.reagent-example 
+                                                        ;playground.reframe-example
                                                         playground.regraph-example]}}
                        :devtools {:after-load playground.regraph-example/run}
                        }}}

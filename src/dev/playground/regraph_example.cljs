@@ -11,8 +11,8 @@
 
 (re-frame/reg-event-db
   ::on-thing
-  (fn [_ [_ {:keys [data errors] :as payload}]]
-    {::result data}))
+  (fn [_ [_ payload]]
+    {::result payload}))
 
 ;; perform a query, with the response sent to the callback event provided
 (defn dispatch-query []
@@ -24,17 +24,20 @@
 (re-frame/reg-sub
   ::result
   (fn [db _]
-    (-> db ::result :data)))
+    (-> db
+        ::result
+        clj->js
+        js/JSON.stringify)))
 
 (defn ui
   []
   [:div
    [:h1 "Re-graph example"]
-   [:button {:on-click dispatch-query} "query"]
    [:div @(re-frame/subscribe [::result])]])
 
 (defn ^:export run
   []
+  (dispatch-query)
   (reagent/render [ui] (js/document.getElementById "app")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SUBSCRIPTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
