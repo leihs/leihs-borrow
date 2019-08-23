@@ -15,9 +15,19 @@
                            :lastname {:type String},
                            :login {:type String}
                            :contracts {:type (list :Contract)
-                                       :resolve :contracts}}}},
+                                       :resolve :contracts}}}
+           :Calendar {:fields {:list {:type (list :DayData)}}}
+           :DayData {:fields {:d {:type (non-null String)}
+                              :visits_count {:type (non-null Int)}
+                              :quantity {:type (non-null Int)}}}},
  :queries {:users {:args {:limit {:type Int},
                           :offset {:type Int},
                           :search_term {:type String}},
                    :resolve :users,
-                   :type (list :User)}}}
+                   :type (list :User)}
+           :calendar {:args {:model_id {:type (non-null String)}
+                             :inventory_pool_id {:type (non-null String)}
+                             :start_date {:type (non-null String)}
+                             :end_date {:type (non-null String)}}
+                      :resolve :calendar
+                      :type :Calendar}}}

@@ -2,8 +2,9 @@
   (:require [io.pedestal.http :as http]
             [io.pedestal.interceptor :as interceptor]
             [leihs.borrow.graphql :as borrow-graphql]
-            [com.walmartlabs.lacinia.pedestal :as lacinia]
+            [com.walmartlabs.lacinia.pedestal :as lacinia-pedestal]
             [com.walmartlabs.lacinia.schema :as schema]
+            [io.pedestal.http.ring-middlewares :as ring-middlewares]
             [leihs.core.ds :as ds]
             [clojure.tools.logging :as log]))
 
@@ -17,14 +18,15 @@
               :subscriptions true})
 
 (def interceptors
-  (let [defaults (lacinia/default-interceptors schema options)]
+  (let [defaults (lacinia-pedestal/default-interceptors schema options)]
     (-> defaults
+        (lacinia-pedestal/inject ring-middlewares/cookies :before ::lacinia-pedestal/inject-app-context)
         ; Though not intuitive, it must be inserted BEFORE. See source code
         ; of inject-app-context-interceptor.
-        (lacinia/inject add-tx :before ::lacinia/inject-app-context))))
+        (lacinia-pedestal/inject add-tx :before ::lacinia-pedestal/inject-app-context))))
 
 (def service
-  (lacinia/service-map schema
+  (lacinia-pedestal/service-map schema
                        (merge options {:interceptors interceptors})))
 
 (def runnable-service (atom nil))
