@@ -17,7 +17,7 @@
 ;; perform a query, with the response sent to the callback event provided
 (defn dispatch-query []
   (re-frame/dispatch [::re-graph/query
-                      "{ hello }"          ;; your graphql query
+                      "{ users(search_term: \"Kmit\", limit: 1) { firstname lastname }}"         ;; your graphql query
                       {}                   ;; arguments map
                       [::on-thing]]))      ;; callback event when response is recieved
 
