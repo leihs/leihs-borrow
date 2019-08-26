@@ -1,4 +1,5 @@
-(ns leihs.borrow.graphql.streamers)
+(ns leihs.borrow.graphql.streamers
+  (:require [leihs.borrow.resources.calendar :as calendar]))
 
 (def streamers
-  {:stream-calendar identity})
+  {:stream-calendar calendar/stream})

@@ -1,6 +1,10 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}}
 
  :subscriptions {:calendar {:type :Calendar
+                            :args {:model_id {:type (non-null String)}
+                                   :inventory_pool_id {:type (non-null String)}
+                                   :start_date {:type (non-null String)}
+                                   :end_date {:type (non-null String)}}
                             :stream :stream-calendar}}
 
  :objects {:Contract {:fields {:id {:type (non-null :UUID)}

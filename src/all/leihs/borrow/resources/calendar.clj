@@ -19,7 +19,8 @@
     (-> "http://localhost:3000/borrow/booking_calendar_availability"
         (client/get {:accept :json
                      :content-type :json
-                     :cookies {"leihs-user-session" leihs-user-session-cookie}
+                     :cookies {"leihs-user-session" (or leihs-user-session-cookie
+                                                        {:value "7f109a0b-ebb3-44be-addc-f42595d12077"})}
                      :query-params (select-keys args [:model_id
                                                       :inventory_pool_id
                                                       :start_date
@@ -29,19 +30,29 @@
         walk/keywordize-keys)))
 
 (defn stream [context args source-stream]
+  (log/debug "STREAM")
   (let [model-id (:model_id args)
         tx (-> context :request :tx)
-        channel (async/chan)]
-    (async/go
-      (loop [updated-at (reservations/updated-at tx model-id)]
-        (Thread/sleep 1000)
-        (let [new-updated-at (reservations/updated-at tx model-id)]
-          (if (clj-time/after? new-updated-at updated-at)
-            (do (async/>! channel (get context args nil))
-                (source-stream (async/<! channel))
-                (recur new-updated-at))
-            (recur updated-at)))))
-    #(async/close! channel)))
+        ; channel (async/chan)
+        t (Thread. #(while true
+                      (log/debug "thread")
+                      (source-stream (log/spy (get context args nil)))
+                      (Thread/sleep 1000)))]
+    (.start t)
+    #(.interrupt t)
+    ; (async/go
+    ;   (loop [updated-at (reservations/updated-at tx model-id)]
+    ;     (log/debug updated-at)
+    ;     (Thread/sleep 1000)
+    ;     (let [new-updated-at (reservations/updated-at tx model-id)]
+    ;       (if (clj-time/after? new-updated-at updated-at)
+    ;         (do (async/>! channel (get context args nil))
+    ;             (source-stream (async/<! channel))
+    ;             (recur new-updated-at))
+    ;         (do (source-stream (async/<! channel))
+    ;             (recur updated-at))))))
+    ; #(async/close! channel)
+    ))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

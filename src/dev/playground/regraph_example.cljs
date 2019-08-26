@@ -21,6 +21,26 @@
                       {}                   ;; arguments map
                       [::on-thing]]))      ;; callback event when response is recieved
 
+(defn dispatch-subscription []
+  (re-frame/dispatch [::re-graph/subscribe
+                      :calendar  ;; this id should uniquely identify this subscription
+                      "{
+                        calendar(
+                          model_id: \"c9c1f4d4-0814-52fb-a804-bf78c0f554ad\", 
+                          inventory_pool_id: \"8bd16d45-056d-5590-bc7f-12849f034351\", 
+                          start_date: \"2019-08-26\", 
+                          end_date: \"2019-09-08\") {
+                          list {
+                            d
+                            quantity
+                            visits_count
+                          }
+                        }
+                      }"
+                      {} ;; arguments map
+                      [::on-thing]])       ;; callback event when messages are recieved
+  )
+
 (re-frame/reg-sub
   ::result
   (fn [db _]
@@ -37,7 +57,8 @@
 
 (defn ^:export run
   []
-  (dispatch-query)
+  ; (dispatch-query)
+  (dispatch-subscription)
   (reagent/render [ui] (js/document.getElementById "app")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SUBSCRIPTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
