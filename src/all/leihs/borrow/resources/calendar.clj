@@ -3,13 +3,15 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as clj-str]
             [leihs.core.sql :as sql]
+            [clj-time.core :as clj-time]
             [clojure.tools.logging :as log]
+            [clojure.core.async :as async]
+            [leihs.borrow.resources.reservations :as reservations]
             [cheshire.core :as json]
             [clj-http.client :as client]
             [clojure.walk :as walk]))
 
-(defn get
-  [context args _]
+(defn get [context args _]
   (let [leihs-user-session-cookie (some-> context
                                           :request
                                           :cookies
@@ -25,6 +27,21 @@
         :body
         json/parse-string
         walk/keywordize-keys)))
+
+(defn stream [context args source-stream]
+  (let [model-id (:model_id args)
+        tx (-> context :request :tx)
+        channel (async/chan)]
+    (async/go
+      (loop [updated-at (reservations/updated-at tx model-id)]
+        (Thread/sleep 1000)
+        (let [new-updated-at (reservations/updated-at tx model-id)]
+          (if (clj-time/after? new-updated-at updated-at)
+            (do (async/>! channel (get context args nil))
+                (source-stream (async/<! channel))
+                (recur new-updated-at))
+            (recur updated-at)))))
+    #(async/close! channel)))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

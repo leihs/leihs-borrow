@@ -150,8 +150,7 @@
                       :enabled? true})
       wrap-resolve-handler
       wrap-accept
-      ring-exception/wrap
-      wrap-handler-with-logging))
+      ring-exception/wrap))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

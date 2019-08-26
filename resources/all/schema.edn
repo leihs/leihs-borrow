@@ -1,4 +1,8 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}}
+
+ :subscriptions {:calendar {:type :Calendar
+                            :stream :stream-calendar}}
+
  :objects {:Contract {:fields {:id {:type (non-null :UUID)}
                                :compact_id {:type (non-null :UUID)}
                                :state {:type (non-null String)}
@@ -20,6 +24,7 @@
            :DayData {:fields {:d {:type (non-null String)}
                               :visits_count {:type (non-null Int)}
                               :quantity {:type (non-null Int)}}}},
+
  :queries {:users {:args {:limit {:type Int},
                           :offset {:type Int},
                           :search_term {:type String}},

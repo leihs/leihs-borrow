@@ -1,6 +1,7 @@
 (ns leihs.borrow.resources.users
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as clj-str]
+            [clojure.tools.logging :as log]
             [leihs.core.sql :as sql]))
 
 (defn sql-order-users

@@ -1,4 +1,4 @@
-(ns leihs.borrow.graphql.resolver
+(ns leihs.borrow.graphql.resolvers
   (:require [clojure.tools.logging :as log]
             [leihs.borrow.graphql.mutations :as mutations]
             [leihs.borrow.graphql.queries :as queries]

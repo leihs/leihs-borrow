@@ -2,6 +2,7 @@
   (:require [io.pedestal.http :as http]
             [io.pedestal.interceptor :as interceptor]
             [leihs.borrow.graphql :as borrow-graphql]
+            [com.walmartlabs.lacinia.pedestal.subscriptions :as subscriptions]
             [com.walmartlabs.lacinia.pedestal :as lacinia-pedestal]
             [com.walmartlabs.lacinia.schema :as schema]
             [io.pedestal.http.ring-middlewares :as ring-middlewares]
@@ -25,9 +26,19 @@
         ; of inject-app-context-interceptor.
         (lacinia-pedestal/inject add-tx :before ::lacinia-pedestal/inject-app-context))))
 
+(def subscription-interceptors
+  (let [defaults (subscriptions/default-subscription-interceptors schema options)]
+    (-> defaults
+        (lacinia-pedestal/inject ring-middlewares/cookies :before ::subscriptions/inject-app-context)
+        (lacinia-pedestal/inject add-tx :before ::subscriptions/inject-app-context)
+        ; https://github.com/walmartlabs/lacinia-pedestal/issues/89
+        (lacinia-pedestal/inject {:enter #(assoc-in % [:request :lacinia-app-context :request] (:request %))}
+                                 :after ::subscriptions/inject-app-context))))
+
 (def service
   (lacinia-pedestal/service-map schema
-                       (merge options {:interceptors interceptors})))
+                                (merge options {:interceptors interceptors
+                                                :subscription-interceptors subscription-interceptors})))
 
 (def runnable-service (atom nil))
 
@@ -43,7 +54,10 @@
     (reset! runnable-service nil)))
 
 (comment
-  (-> @runnable-service
-      :io.pedestal.http/routes
-      #_first
-      #_(nth 2)))
+  (->> @runnable-service
+       :io.pedestal.http/routes
+       ; (into [])
+       ; (map first)
+       ; first
+       ; (nth 2)
+       ))
