@@ -12,16 +12,16 @@
             [clj-http.client :as client]
             [clojure.walk :as walk]))
 
-(defn get [context args _]
-  (let [leihs-user-session-cookie (some-> context
-                                          :request
-                                          :cookies
-                                          (clojure.core/get "leihs-user-session"))]
+(defn get [context args value]
+  (let [leihs-user-session-cookie-value
+          (or (get-in context [:request :cookies "leihs-user-session" :value]) ; http
+              (get-in context [:connection-params :cookies :leihs-user-session]) ; websocket
+              )]
+    (if-not leihs-user-session-cookie-value (throw (ex-info "Not authenticated!" {})))
     (-> "http://localhost:3000/borrow/booking_calendar_availability"
         (client/get {:accept :json
                      :content-type :json
-                     :cookies {"leihs-user-session" (or leihs-user-session-cookie
-                                                        {:value "87a6e85e-61d2-4808-8e88-b9da6ea3d21c"})}
+                     :cookies {"leihs-user-session" {:value leihs-user-session-cookie-value}}
                      :query-params (select-keys args [:model_id
                                                       :inventory_pool_id
                                                       :start_date

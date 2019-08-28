@@ -1,5 +1,6 @@
 {:source-paths ["src/all" "src/dev"]
  :dependencies [[reagent "0.8.1"]
+                [reagent-utils "0.3.3"]
                 [re-frame "0.10.8"]
                 [re-graph "0.1.10"]]
  :builds {:playground {:output-dir "resources/all/public/borrow/js"

@@ -1,13 +1,19 @@
 (ns playground.regraph-example
   (:require [cljs-http.client :as http]
             [reagent.core :as reagent]
+            [reagent.cookies :as cookies]
             [re-graph.core :as re-graph]
             [re-frame.core :as re-frame]))
 
 ;; initialise re-graph, possibly including configuration options (see below)
 (re-frame/dispatch
   [::re-graph/init {:ws-url "ws://localhost:8888/graphql-ws"
-                    :http-url "http://localhost:8888/graphql"}])
+                    :http-url "http://localhost:8888/graphql"
+                    :http-parameters
+                      {:with-credentials? false
+                       :headers {"Cookie" (str "leihs-user-session=" (cookies/get-raw :leihs-user-session))}}
+                    :connection-init-payload
+                      {:cookies {:leihs-user-session (cookies/get-raw :leihs-user-session)}}}])
 
 (re-frame/reg-event-db
   ::on-thing
