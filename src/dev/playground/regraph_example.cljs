@@ -21,7 +21,7 @@
                       {}                   ;; arguments map
                       [::on-thing]]))      ;; callback event when response is recieved
 
-(defn dispatch-subscription []
+(defn dispatch-subscribe []
   (re-frame/dispatch [::re-graph/subscribe
                       :calendar  ;; this id should uniquely identify this subscription
                       "{
@@ -41,6 +41,9 @@
                       [::on-thing]])       ;; callback event when messages are recieved
   )
 
+(defn dispatch-unsubscribe []
+  (re-frame/dispatch [::re-graph/unsubscribe :calendar]))
+
 (re-frame/reg-sub
   ::result
   (fn [db _]
@@ -53,22 +56,13 @@
   []
   [:div
    [:h1 "Re-graph example"]
+   [:span
+    [:button {:on-click dispatch-subscribe} "subscribe"]
+    [:button {:on-click dispatch-unsubscribe} "unsubscribe"]]
+   [:br]
+   [:br]
    [:div @(re-frame/subscribe [::result])]])
 
 (defn ^:export run
   []
-  ; (dispatch-query)
-  (dispatch-subscription)
   (reagent/render [ui] (js/document.getElementById "app")))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SUBSCRIPTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; start a subscription, with responses sent to the callback event provided
-; (re-frame/dispatch [::re-graph/subscribe
-;                     :my-subscription-id  ;; this id should uniquely identify this subscription
-;                     "{ hello }"          ;; your graphql query
-;                     ; {:some "variable"} ;; arguments map
-;                     [::on-thing]])       ;; callback event when messages are recieved
-
-;; stop the subscription
-; (re-frame/dispatch [::re-graph/unsubscribe :my-subscription-id])

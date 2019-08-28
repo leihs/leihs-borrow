@@ -1,11 +1,12 @@
 (ns playground.lacinia-pedestal
+  (:refer-clojure :exclude [subs])
   (:require [io.pedestal.http :as http]
             [io.pedestal.interceptor :as interceptor]
             [leihs.borrow.graphql :as borrow-graphql]
-            [com.walmartlabs.lacinia.pedestal.subscriptions :as subscriptions]
-            [com.walmartlabs.lacinia.pedestal :as lacinia-pedestal]
+            [com.walmartlabs.lacinia.pedestal.subscriptions :as subs]
+            [com.walmartlabs.lacinia.pedestal :as lac-ped]
             [com.walmartlabs.lacinia.schema :as schema]
-            [io.pedestal.http.ring-middlewares :as ring-middlewares]
+            [io.pedestal.http.ring-middlewares :as ring-middle]
             [leihs.core.ds :as ds]
             [clojure.tools.logging :as log]))
 
@@ -19,24 +20,24 @@
               :subscriptions true})
 
 (def interceptors
-  (let [defaults (lacinia-pedestal/default-interceptors schema options)]
+  (let [defaults (lac-ped/default-interceptors schema options)]
     (-> defaults
-        (lacinia-pedestal/inject ring-middlewares/cookies :before ::lacinia-pedestal/inject-app-context)
+        (lac-ped/inject ring-middle/cookies :before ::lac-ped/inject-app-context)
         ; Though not intuitive, it must be inserted BEFORE. See source code
         ; of inject-app-context-interceptor.
-        (lacinia-pedestal/inject add-tx :before ::lacinia-pedestal/inject-app-context))))
+        (lac-ped/inject add-tx :before ::lac-ped/inject-app-context))))
 
 (def subscription-interceptors
-  (let [defaults (subscriptions/default-subscription-interceptors schema options)]
+  (let [defaults (subs/default-subscription-interceptors schema options)]
     (-> defaults
-        (lacinia-pedestal/inject ring-middlewares/cookies :before ::subscriptions/inject-app-context)
-        (lacinia-pedestal/inject add-tx :before ::subscriptions/inject-app-context)
+        (lac-ped/inject ring-middle/cookies :before ::subs/inject-app-context)
+        (lac-ped/inject add-tx :before ::subs/inject-app-context)
         ; https://github.com/walmartlabs/lacinia-pedestal/issues/89
-        (lacinia-pedestal/inject {:enter #(assoc-in % [:request :lacinia-app-context :request] (:request %))}
-                                 :after ::subscriptions/inject-app-context))))
+        (lac-ped/inject {:enter #(assoc-in % [:request :lacinia-app-context :request] (:request %))}
+                                 :after ::subs/inject-app-context))))
 
 (def service
-  (lacinia-pedestal/service-map schema
+  (lac-ped/service-map schema
                                 (merge options {:interceptors interceptors
                                                 :subscription-interceptors subscription-interceptors})))
 

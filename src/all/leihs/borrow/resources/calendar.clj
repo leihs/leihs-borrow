@@ -4,6 +4,7 @@
             [clojure.string :as clj-str]
             [leihs.core.sql :as sql]
             [clj-time.core :as clj-time]
+            [clj-time.local :as clj-time-local]
             [clojure.tools.logging :as log]
             [clojure.core.async :as async]
             [leihs.borrow.resources.reservations :as reservations]
@@ -20,7 +21,7 @@
         (client/get {:accept :json
                      :content-type :json
                      :cookies {"leihs-user-session" (or leihs-user-session-cookie
-                                                        {:value "7f109a0b-ebb3-44be-addc-f42595d12077"})}
+                                                        {:value "87a6e85e-61d2-4808-8e88-b9da6ea3d21c"})}
                      :query-params (select-keys args [:model_id
                                                       :inventory_pool_id
                                                       :start_date
@@ -29,30 +30,26 @@
         json/parse-string
         walk/keywordize-keys)))
 
+(def max-stream-duration (clj-time/minutes 5))
+
 (defn stream [context args source-stream]
-  (log/debug "STREAM")
   (let [model-id (:model_id args)
         tx (-> context :request :tx)
-        ; channel (async/chan)
-        t (Thread. #(while true
-                      (log/debug "thread")
-                      (source-stream (log/spy (get context args nil)))
-                      (Thread/sleep 1000)))]
-    (.start t)
-    #(.interrupt t)
-    ; (async/go
-    ;   (loop [updated-at (reservations/updated-at tx model-id)]
-    ;     (log/debug updated-at)
-    ;     (Thread/sleep 1000)
-    ;     (let [new-updated-at (reservations/updated-at tx model-id)]
-    ;       (if (clj-time/after? new-updated-at updated-at)
-    ;         (do (async/>! channel (get context args nil))
-    ;             (source-stream (async/<! channel))
-    ;             (recur new-updated-at))
-    ;         (do (source-stream (async/<! channel))
-    ;             (recur updated-at))))))
-    ; #(async/close! channel)
-    ))
+        running (atom true)
+        get-calendar #(get context args nil)
+        get-updated-at #(reservations/updated-at tx model-id)
+        time-out (clj-time/plus (clj-time-local/local-now) max-stream-duration)]
+    (source-stream (get-calendar))
+    (let [f (future
+              (loop [updated-at (get-updated-at)]
+                (when (clj-time/before? (clj-time-local/local-now) time-out) 
+                  (Thread/sleep 1000)
+                  (let [new-updated-at (get-updated-at)]
+                    (if (clj-time/after? new-updated-at updated-at)
+                      (do (source-stream (get-calendar))
+                          (recur new-updated-at))
+                      (recur updated-at))))))]
+      #(future-cancel f))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
