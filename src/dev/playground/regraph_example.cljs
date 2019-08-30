@@ -5,70 +5,70 @@
             [re-graph.core :as re-graph]
             [re-frame.core :as re-frame]))
 
-;; initialise re-graph, possibly including configuration options (see below)
-(re-frame/dispatch
-  [::re-graph/init {:ws-url "ws://localhost:8888/graphql-ws"
-                    :http-url "http://localhost:8888/graphql"
-                    :http-parameters
-                      {:with-credentials? false
-                       :headers {"Cookie" (str "leihs-user-session=" (cookies/get-raw :leihs-user-session))}}
-                    :connection-init-payload
-                      {:cookies {:leihs-user-session (cookies/get-raw :leihs-user-session)}}}])
+(defn ^:export run []
 
-(re-frame/reg-event-db
-  ::on-thing
-  (fn [_ [_ payload]]
-    {::result payload}))
+  (def query "Calendar(
+                $model_id: String!,
+                $inventory_pool_id: String!,
+                $start_date: String!,
+                $end_date: String!
+              ) {
+                calendar(
+                  model_id: $model_id, 
+                  inventory_pool_id: $inventory_pool_id,
+                  start_date: $start_date,
+                  end_date: $end_date
+                ) {
+                  list {
+                    d
+                    quantity
+                    visits_count
+                  }
+                }
+              }")
 
-;; perform a query, with the response sent to the callback event provided
-(defn dispatch-query []
-  (re-frame/dispatch [::re-graph/query
-                      "{ users(search_term: \"Kmit\", limit: 1) { firstname lastname }}"         ;; your graphql query
-                      {}                   ;; arguments map
-                      [::on-thing]]))      ;; callback event when response is recieved
+  (re-frame/dispatch
+    [::re-graph/init
+     {:ws-url "ws://localhost:8888/graphql-ws"
+      :http-url "http://localhost:8888/graphql"
+      :connection-init-payload
+      {:cookies {:leihs-user-session (cookies/get-raw :leihs-user-session)}}}])
 
-(defn dispatch-subscribe []
-  (re-frame/dispatch [::re-graph/subscribe
-                      :calendar  ;; this id should uniquely identify this subscription
-                      "{
-                        calendar(
-                          model_id: \"c9c1f4d4-0814-52fb-a804-bf78c0f554ad\", 
-                          inventory_pool_id: \"8bd16d45-056d-5590-bc7f-12849f034351\", 
-                          start_date: \"2019-08-26\", 
-                          end_date: \"2019-09-08\") {
-                          list {
-                            d
-                            quantity
-                            visits_count
-                          }
-                        }
-                      }"
-                      {} ;; arguments map
-                      [::on-thing]])       ;; callback event when messages are recieved
-  )
+  (re-frame/reg-event-db
+    ::on-message
+    (fn [_ [_ payload]]
+      {::result payload}))
 
-(defn dispatch-unsubscribe []
-  (re-frame/dispatch [::re-graph/unsubscribe :calendar]))
+  (re-frame/reg-sub
+    ::query-result
+    (fn [db _]
+      (let [res  (-> db ::result clj->js)]
+        (if res
+          (js/JSON.stringify res)
+          "Please subscribe!"))))
 
-(re-frame/reg-sub
-  ::result
-  (fn [db _]
-    (-> db
-        ::result
-        clj->js
-        js/JSON.stringify)))
+  (defn dispatch-subscribe []
+    (re-frame/dispatch [::re-graph/subscribe
+                        :calendar 
+                        query
+                        {:model_id "c9c1f4d4-0814-52fb-a804-bf78c0f554ad",
+                         :inventory_pool_id "8bd16d45-056d-5590-bc7f-12849f034351",
+                         :start_date "2019-09-02",
+                         :end_date "2019-09-03"}
+                        [::on-message]]))
 
-(defn ui
-  []
-  [:div
-   [:h1 "Re-graph example"]
-   [:span
-    [:button {:on-click dispatch-subscribe} "subscribe"]
-    [:button {:on-click dispatch-unsubscribe} "unsubscribe"]]
-   [:br]
-   [:br]
-   [:div @(re-frame/subscribe [::result])]])
+  (defn dispatch-unsubscribe []
+    (re-frame/dispatch [::re-graph/unsubscribe :calendar]))
 
-(defn ^:export run
-  []
+  (defn ui
+    []
+    [:div
+     [:h1 "Re-graph example"]
+     [:span
+      [:button {:on-click dispatch-subscribe} "subscribe"]
+      [:button {:on-click dispatch-unsubscribe} "unsubscribe"]]
+     [:br]
+     [:br]
+     [:div @(re-frame/subscribe [::query-result])]])
+
   (reagent/render [ui] (js/document.getElementById "app")))
