@@ -38,11 +38,13 @@
 (deftask run
   "Run the application with given opts."
   []
-  (require 'leihs.borrow.main)
-  (->> *args*
-       (cons "run")
-       (apply (resolve 'leihs.borrow.main/-main)))
-  (wait))
+  (comp 
+    (with-pass-thru _
+      (require 'leihs.borrow.main)
+      (->> *args*
+           (cons "run")
+           (apply (resolve 'leihs.borrow.main/-main))) )
+    (wait)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; DEV ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
