@@ -47,7 +47,6 @@
                   (let [app-handler (routes/init)]
                     (http-server/start (:http-base-url options) app-handler))
                   (playground.lacinia-pedestal/start)
-                  (playground.pedestal/start)
                   nil))
 
 (defn -main
