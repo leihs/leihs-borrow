@@ -13,6 +13,7 @@
             [leihs.borrow.routes :as routes]
             [logbug.catcher :as catcher]
             playground.lacinia-pedestal
+            playground.pedestal
             [signal.handler]
             ))
 
@@ -46,6 +47,7 @@
                   (let [app-handler (routes/init)]
                     (http-server/start (:http-base-url options) app-handler))
                   (playground.lacinia-pedestal/start)
+                  (playground.pedestal/start)
                   nil))
 
 (defn -main
