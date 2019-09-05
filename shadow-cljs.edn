@@ -10,5 +10,4 @@
                                                         ;playground.reagent-example 
                                                         ;playground.reframe-example
                                                         playground.regraph-example]}}
-                       :devtools {:after-load playground.regraph-example/run}
-                       }}}
+                       :devtools {:after-load playground.regraph-example/update}}}}
