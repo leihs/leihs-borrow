@@ -54,8 +54,8 @@
                         query
                         {:model_id "c9c1f4d4-0814-52fb-a804-bf78c0f554ad",
                          :inventory_pool_id "8bd16d45-056d-5590-bc7f-12849f034351",
-                         :start_date "2019-09-02",
-                         :end_date "2019-09-02"}
+                         :start_date "2019-09-06",
+                         :end_date "2019-09-06"}
                         [::on-message]]))
 
   (defn dispatch-unsubscribe []
