@@ -37,8 +37,8 @@
   (re-frame/reg-event-db
     ::on-message
     [(when ^boolean goog.DEBUG re-frame/debug)]
-    (fn [_ [_ payload]]
-      {::result payload}))
+    (fn [db [_ payload]]
+      (assoc db ::result payload)))
 
   (re-frame/reg-sub
     ::query-result
