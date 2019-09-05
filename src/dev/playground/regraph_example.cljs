@@ -48,28 +48,99 @@
           (js/JSON.stringify res)
           "Please subscribe!"))))
 
-  (defn dispatch-subscribe []
+  (re-frame/reg-sub ::query-model-id
+                    (fn [db _] (::model-id db)))
+
+  (re-frame/reg-sub ::query-inventory-pool-id
+                    (fn [db _] (::inventory-pool-id db)))
+
+  (re-frame/reg-sub ::query-start-date
+                    (fn [db _] (::start-date db)))
+
+  (re-frame/reg-sub ::query-end-date
+                    (fn [db _] (::end-date db)))
+
+  (re-frame/reg-event-db ::update-model-id
+                         (fn [db [_ model-id]]
+                           (assoc db ::model-id model-id)))
+
+  (re-frame/reg-event-db ::update-inventory-pool-id
+                         (fn [db [_ inventory-pool-id]]
+                           (assoc db ::inventory-pool-id inventory-pool-id)))
+
+  (re-frame/reg-event-db ::update-start-date
+                         (fn [db [_ start-date]]
+                           (assoc db ::start-date start-date)))
+
+  (re-frame/reg-event-db ::update-end-date
+                         (fn [db [_ end-date]]
+                           (assoc db ::end-date end-date)))
+
+  (defn update-model-id [model-id]
+    (re-frame/dispatch [::update-model-id model-id]))
+
+  (defn update-inventory-pool-id [ip-id]
+    (re-frame/dispatch [::update-inventory-pool-id ip-id]))
+
+  (defn update-start-date [start-date]
+    (re-frame/dispatch [::update-start-date start-date]))
+
+  (defn update-end-date [end-date]
+    (re-frame/dispatch [::update-end-date end-date]))
+
+  (update-model-id "c9c1f4d4-0814-52fb-a804-bf78c0f554ad")
+  (update-inventory-pool-id "8bd16d45-056d-5590-bc7f-12849f034351")
+  (update-start-date "2019-09-06")
+  (update-end-date "2019-09-06")
+
+  (defn dispatch-subscribe [model-id inventory-pool-id start-date end-date]
     (re-frame/dispatch [::re-graph/subscribe
                         :calendar 
                         query
-                        {:model_id "c9c1f4d4-0814-52fb-a804-bf78c0f554ad",
-                         :inventory_pool_id "8bd16d45-056d-5590-bc7f-12849f034351",
-                         :start_date "2019-09-06",
-                         :end_date "2019-09-06"}
+                        {:model_id model-id
+                         :inventory_pool_id inventory-pool-id
+                         :start_date start-date,
+                         :end_date end-date}
                         [::on-message]]))
 
   (defn dispatch-unsubscribe []
     (re-frame/dispatch [::re-graph/unsubscribe :calendar]))
 
-  (defn ui
-    []
-    [:div
-     [:h1 "Re-graph example"]
-     [:span
-      [:button {:on-click dispatch-subscribe} "subscribe"]
-      [:button {:on-click dispatch-unsubscribe} "unsubscribe"]]
-     [:br]
-     [:br]
-     [:div @(re-frame/subscribe [::query-result])]])
+  (defn ui []
+    (let [model-id (re-frame/subscribe [::query-model-id])
+          inventory-pool-id (re-frame/subscribe [::query-inventory-pool-id])
+          start-date (re-frame/subscribe [::query-start-date])
+          end-date (re-frame/subscribe [::query-end-date])]
+      (letfn [(target-value [ev] (-> ev .-target .-value))]
+        [:div
+         [:h1 "Re-graph example"]
+         [:label {:style {:margin-right "10px"}} "Model ID"]
+         [:input {:default-value @model-id,
+                  :style {:width "250px"}}]
+         [:br]
+         [:label {:style {:margin-right "10px"}} "Inventory pool ID"]
+         [:input {:default-value @inventory-pool-id, :style {:width "250px"}}]
+         [:br]
+         [:label {:style {:margin-right "10px"}} "Start date"]
+         [:input {:on-change #(-> % target-value update-start-date)
+                  :default-value @start-date,
+                  :style {:width "250px"}}]
+         [:br]
+         [:label {:style {:margin-right "10px"}} "End date"]
+         [:input {:on-change #(-> % target-value update-end-date)
+                  :default-value @end-date,
+                  :style {:width "250px"}}]
+         [:br]
+         [:br]
+         [:span
+          [:button {:on-click #(dispatch-subscribe @model-id
+                                 @inventory-pool-id
+                                 @start-date
+                                 @end-date)}
+           "subscribe"]
+          [:button {:on-click dispatch-unsubscribe} "unsubscribe"]]
+         [:br]
+         [:br]
+         [:div @(re-frame/subscribe [::query-result])]])))
 
   (reagent/render [ui] (js/document.getElementById "app")))
