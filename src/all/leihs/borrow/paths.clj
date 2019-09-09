@@ -21,6 +21,7 @@
       (leaf "/regraph-example" :regraph-example)
       (leaf "/shadow-example" :shadow-example)
       (leaf "/regraph-ring" :regraph-ring)
+      (leaf "/regraph-ring-full" :regraph-ring-full)
       ;;;
 
       )

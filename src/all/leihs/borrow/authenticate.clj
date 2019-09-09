@@ -10,6 +10,7 @@
    :regraph-example
    :shadow-example
    :regraph-ring
+   :regraph-ring-full
    :graphql-ws
    :graphql-ws-2
    ;;; DEV

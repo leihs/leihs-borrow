@@ -30,6 +30,7 @@
    })
 
 (defn not-found-handler [request]
+  (log/info request)
   {:status 404
    :headers {"Content-Type" "text/html"}
    :body (html5

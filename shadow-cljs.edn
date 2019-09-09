@@ -10,6 +10,7 @@
                                                         ;playground.reagent-example 
                                                         ;playground.reframe-example
                                                         ;playground.regraph-example
-                                                        playground.regraph-ring]}}
-                       :devtools {:after-load playground.regraph-ring/update}
+                                                        ; playground.regraph-ring
+                                                        playground.regraph-ring-full]}}
+                       :devtools {:after-load playground.regraph-ring-full/update}
                        }}}
