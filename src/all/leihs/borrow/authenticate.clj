@@ -11,6 +11,7 @@
    :shadow-example
    :regraph-ring
    :graphql-ws
+   :graphql-ws-2
    ;;; DEV
    :sign-in])
 

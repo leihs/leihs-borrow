@@ -8,6 +8,7 @@
     ""
     leihs.core.paths/core-paths
     (leaf "/graphql-ws" :graphql-ws)
+    (leaf "/graphql-ws-2" :graphql-ws-2)
     (branch
       "/borrow"
       (leaf "/shutdown" :shutdown)

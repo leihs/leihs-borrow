@@ -51,6 +51,7 @@
           :not-found html/not-found-handler,
           ;;; DEV
           :graphql-ws try-lacinia.core/graphql-ws-handler
+          :graphql-ws-2 try-lacinia.core/graphql-ws-handler
           :reagent-example playground.reagent-example/handler
           :reframe-example playground.reframe-example/handler
           :regraph-example playground.regraph-example/handler
