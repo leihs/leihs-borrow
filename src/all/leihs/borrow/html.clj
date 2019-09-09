@@ -3,6 +3,7 @@
             [leihs.core.json :refer [to-json]]
             [leihs.core.ssr :as ssr]
             [leihs.core.url.core :as url]
+            [clojure.tools.logging :as log]
             [hiccup.page :refer [html5 include-js]]
             [ring.util.response :refer [resource-response content-type status]]))
 
@@ -39,18 +40,19 @@
              [:h1.text-danger "Error 404 - Not Found"]]])})
 
 (defn html-handler [request]
+  (log/debug "HTML")
   {:headers {"Content-Type" "text/html"}
    :body (html5
-           (head)
-           [:body (body-attributes request)
+           #_(head)
+           [:body #_(body-attributes request)
             [:div
-             (ssr/render-navbar request {:borrow false})
+             #_(ssr/render-navbar request {:borrow false})
              [:br]
              [:div#app.container-fluid
               [:div.alert.alert-warning
                [:h1 "Leihs New Borrow"]
                [:p "This application requires Javascript."]]]]
-            (hiccup.page/include-js (cache-buster/cache-busted-path
+            #_(hiccup.page/include-js (cache-buster/cache-busted-path
                                       "/borrow/leihs-shared-bundle.js"))
             #_(hiccup.page/include-js
                 (cache-buster/cache-busted-path "/borrow/js/app.js"))])})

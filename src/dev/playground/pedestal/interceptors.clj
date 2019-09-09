@@ -2,6 +2,7 @@
   (:require [io.pedestal.interceptor.helpers :as interceptor]
             [io.pedestal.http :as http]
             [io.pedestal.log :as log]
+            clojure.tools.logging
             [leihs.borrow.html :as html]))
 
 (def not-found

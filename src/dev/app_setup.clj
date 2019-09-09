@@ -1,6 +1,7 @@
 (ns app-setup
   (:require [leihs.borrow.main :as main]
-            [leihs.core.http-server :as http-server]
+            ; [leihs.core.http-server :as http-server]
+            [playground.http-server :as http-server]
             playground.lacinia-pedestal))
 
 (defn stop []

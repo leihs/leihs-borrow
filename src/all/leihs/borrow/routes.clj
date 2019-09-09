@@ -39,6 +39,8 @@
     playground.reframe-example
     playground.regraph-example
     playground.shadow-example
+    playground.regraph-ring
+    try-lacinia.core
     ;;;
     ))
 
@@ -48,10 +50,12 @@
           :home html/html-handler
           :not-found html/not-found-handler,
           ;;; DEV
+          :graphql-ws try-lacinia.core/graphql-ws-handler
           :reagent-example playground.reagent-example/handler
           :reframe-example playground.reframe-example/handler
           :regraph-example playground.regraph-example/handler
           :shadow-example playground.shadow-example/handler
+          :regraph-ring playground.regraph-ring/handler
           ;;;
           :status (status/routes "/borrow/status")}))
 

@@ -7,6 +7,7 @@
   (branch
     ""
     leihs.core.paths/core-paths
+    (leaf "/graphql-ws" :graphql-ws)
     (branch
       "/borrow"
       (leaf "/shutdown" :shutdown)
@@ -18,8 +19,9 @@
       (leaf "/reframe-example" :reframe-example)
       (leaf "/regraph-example" :regraph-example)
       (leaf "/shadow-example" :shadow-example)
+      (leaf "/regraph-ring" :regraph-ring)
       ;;;
-      
+
       )
     (leaf true :not-found)))
 

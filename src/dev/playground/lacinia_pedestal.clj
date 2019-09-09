@@ -18,6 +18,7 @@
 (def schema (borrow-graphql/load-schema))
 
 (def options {:graphiql true,
+              :ide-path "/graphiql"
               :subscriptions true})
 
 (def routes (set/union (lac-ped/graphql-routes schema options)
@@ -27,7 +28,7 @@
   {:name ::add-tx-to-request
    :enter #(assoc-in % [:request :tx] (ds/get-ds))})
 
-(def interceptors
+(def graphql-interceptors
   (let [defaults (lac-ped/default-interceptors schema options)]
     (-> defaults
         (lac-ped/inject ring-middle/cookies
@@ -51,7 +52,7 @@
                      [:request :lacinia-app-context :connection-params]
                      (:connection-params %))})
 
-(def subscription-interceptors
+(def graphql-subscription-interceptors
   (let [defaults (lac-ped-subs/default-subscription-interceptors schema options)]
     (-> defaults
         (lac-ped/inject ring-middle/cookies
@@ -68,19 +69,29 @@
                         :after
                         ::lac-ped-subs/inject-app-context))))
 
-(def service
+(defn modify-main-interceptors [service-map]
+  (let [defaults (-> service-map
+                     http/default-interceptors
+                     ::http/interceptors)
+        interceptors (->> defaults
+                          (cons add-tx-to-request))]
+    (assoc service-map ::http/interceptors interceptors)))
+
+(def service-map
   (as-> options <>
     (merge <> {:routes routes
-               :interceptors interceptors
-               :subscription-interceptors subscription-interceptors})
+               :interceptors graphql-interceptors
+               :subscription-interceptors graphql-subscription-interceptors})
     (lac-ped/service-map schema <>)
-    (assoc <> ::http/not-found-interceptor play-ped-int/not-found)))
+    (assoc <> ::http/not-found-interceptor play-ped-int/not-found)
+    (assoc <> ::http/request-logger nil)
+    (modify-main-interceptors <>)))
 
 (def runnable-service (atom nil))
 
 (defn start []
   (log/info "starting lacinia-pedestal service on port 8888")
-  (reset! runnable-service (http/create-server service))
+  (reset! runnable-service (http/create-server service-map))
   (http/start @runnable-service))
 
 (defn stop []
@@ -90,10 +101,7 @@
     (reset! runnable-service nil)))
 
 (comment
-  (->> @runnable-service
-       :io.pedestal.http/routes
-       ; (into [])
-       ; (map first)
-       ; first
-       ; (nth 2)
-       ))
+  (-> (Thread/currentThread)
+      .getContextClassLoader
+      (.getResource "public/leihs-ssr.js"))
+  (->> @runnable-service ::http/request-logger))

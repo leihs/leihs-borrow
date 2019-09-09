@@ -9,6 +9,8 @@
    :reframe-example
    :regraph-example
    :shadow-example
+   :regraph-ring
+   :graphql-ws
    ;;; DEV
    :sign-in])
 

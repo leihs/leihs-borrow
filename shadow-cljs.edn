@@ -9,5 +9,7 @@
                        :modules {:playground {:entries [;playground.shadow-example
                                                         ;playground.reagent-example 
                                                         ;playground.reframe-example
-                                                        playground.regraph-example]}}
-                       :devtools {:after-load playground.regraph-example/update}}}}
+                                                        ;playground.regraph-example
+                                                        playground.regraph-ring]}}
+                       :devtools {:after-load playground.regraph-ring/update}
+                       }}}

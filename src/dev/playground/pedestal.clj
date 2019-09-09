@@ -1,9 +1,11 @@
 (ns playground.pedestal
   (:require [io.pedestal.http :as http]
             [leihs.core.status :as status]
+            [leihs.borrow.html :as html]
             [clojure.tools.logging :as log]))
 
-(def routes #{["/borrow/status" :get `status/status-handler]})
+(def routes #{["/borrow/status" :get `status/status-handler]
+              ["/" :get `html/html-handler]})
 
 (def service-map {::http/port 9999,
                   ::http/routes routes,
