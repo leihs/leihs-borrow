@@ -2,9 +2,10 @@
   (:require [io.pedestal.http :as http]
             [leihs.core.status :as status]
             [leihs.borrow.html :as html]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [leihs.borrow.paths :refer [path]]))
 
-(def routes #{["/borrow/status" :get `status/status-handler]
+(def routes #{[(path :status) :get `status/status-handler]
               ["/" :get `html/html-handler]})
 
 (def service-map {::http/port 9999,

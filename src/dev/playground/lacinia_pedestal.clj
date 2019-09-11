@@ -69,12 +69,17 @@
                         :after
                         ::lac-ped-subs/inject-app-context))))
 
+(def spy-context
+  {:name ::log-context
+   :enter #(do (log/debug %) %)})
+
 (defn modify-main-interceptors [service-map]
   (let [defaults (-> service-map
                      http/default-interceptors
                      ::http/interceptors)
-        interceptors (->> defaults
-                          (cons add-tx-to-request))]
+        interceptors (as-> defaults <>
+                          (cons add-tx-to-request <>)
+                          (conj <> spy-context))]
     (assoc service-map ::http/interceptors interceptors)))
 
 (def service-map
