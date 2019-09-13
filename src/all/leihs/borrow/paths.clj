@@ -9,6 +9,7 @@
     leihs.core.paths/core-paths
     (leaf "/graphql-ws" :graphql-ws)
     (leaf "/graphql-ws-2" :graphql-ws-2)
+    (leaf "/sse" :sse)
     (branch
       "/borrow"
       (leaf "/shutdown" :shutdown)
@@ -22,6 +23,7 @@
       (leaf "/shadow-example" :shadow-example)
       (leaf "/regraph-ring" :regraph-ring)
       (leaf "/regraph-ring-full" :regraph-ring-full)
+      (leaf "/sse-example" :sse-example)
       ;;;
 
       )

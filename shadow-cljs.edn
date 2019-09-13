@@ -6,11 +6,12 @@
  :builds {:playground {:output-dir "resources/all/public/borrow/js"
                        :asset-path "js"
                        :target :browser
-                       :modules {:playground {:entries [;playground.shadow-example
-                                                        ;playground.reagent-example 
-                                                        ;playground.reframe-example
-                                                        ;playground.regraph-example
+                       :modules {:playground {:entries [; playground.shadow-example
+                                                        ; playground.reagent-example 
+                                                        ; playground.reframe-example
+                                                        playground.regraph-example
                                                         ; playground.regraph-ring
-                                                        playground.regraph-ring-full]}}
-                       :devtools {:after-load playground.regraph-ring-full/update}
+                                                        ; playground.regraph-ring-full
+                                                        ]}}
+                       :devtools {:after-load playground.regraph-example/update}
                        }}}

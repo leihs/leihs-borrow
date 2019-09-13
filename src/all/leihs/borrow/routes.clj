@@ -42,6 +42,7 @@
     playground.regraph-ring
     playground.regraph-ring-full
     playground.ring-ws
+    playground.sse-example
     try-lacinia.core
     ;;;
     ))
@@ -60,6 +61,8 @@
           :shadow-example playground.shadow-example/handler
           :regraph-ring playground.regraph-ring/handler
           :regraph-ring-full playground.regraph-ring-full/handler
+          :sse-example playground.sse-example/handler
+          :sse playground.sse-example/sse-handler
           ;;;
           :status (status/routes "/borrow/status")}))
 

@@ -13,6 +13,7 @@
    :regraph-ring-full
    :graphql-ws
    :graphql-ws-2
+   :sse
    ;;; DEV
    :sign-in])
 
