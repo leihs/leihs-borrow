@@ -2,7 +2,8 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as clj-str]
             [clojure.tools.logging :as log]
-            [leihs.core.sql :as sql]))
+            [leihs.core.sql :as sql]
+            [leihs.core.user.queries :refer [merge-search-term-where-clause]]))
 
 (defn sql-order-users
   [sqlmap]
@@ -22,29 +23,15 @@
         :request
         :tx)
     (let [search-term (:search_term args)
-          term-parts (and search-term
-                          (map (fn [part] (str "%" part "%"))
-                            (clj-str/split search-term #"\s+")))
           offset (:offset args)
           limit (:limit args)]
       (-> (cond-> users-base-query 
-            term-parts
-            (sql/merge-where
-              (into [:and]
-                    (map
-                      (fn [term-percent]
-                        ["~~*"
-                         (->> (sql/call :concat
-                                        :users.firstname
-                                        (sql/call :cast " " :varchar)
-                                        :users.lastname)
-                              (sql/call :unaccent))
-                         (sql/call :unaccent term-percent)])
-                      term-parts)))
+            search-term
+              (merge-search-term-where-clause search-term)
             offset
-            (sql/offset offset)
+              (sql/offset offset)
             limit
-            (sql/limit limit))
+              (sql/limit limit))
           sql/format))))
 
 ;#### debug ###################################################################
