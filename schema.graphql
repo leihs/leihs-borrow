@@ -1,0 +1,54 @@
+# source: http://localhost:3250/borrow/graphql
+# timestamp: Thu Sep 19 2019 14:26:12 GMT+0200 (Central European Summer Time)
+
+schema {
+  query: QueryRoot
+  subscription: SubscriptionRoot
+}
+
+type Calendar {
+  list: [DayData]
+}
+
+type Contract {
+  compact_id: UUID!
+  id: UUID!
+  inventory_pool: InventoryPool!
+  note: String
+  purpose: String!
+  state: String!
+}
+
+type DayData {
+  d: String!
+  quantity: Int!
+  visits_count: Int!
+}
+
+type InventoryPool {
+  email: String!
+  id: UUID!
+  name: String!
+}
+
+"""Root of all queries."""
+type QueryRoot {
+  calendar(end_date: String!, inventory_pool_id: String!, model_id: String!, start_date: String!): Calendar
+  users(limit: Int, offset: Int, search_term: String): [User]
+}
+
+"""Root of all subscriptions."""
+type SubscriptionRoot {
+  calendar(end_date: String!, inventory_pool_id: String!, model_id: String!, start_date: String!): Calendar
+}
+
+type User {
+  contracts: [Contract]
+  email: String
+  firstname: String
+  id: UUID!
+  lastname: String
+  login: String
+}
+
+scalar UUID
