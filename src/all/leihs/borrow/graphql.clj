@@ -9,7 +9,6 @@
             [com.walmartlabs.lacinia.util :as graphql-util]
             [leihs.borrow.graphql.scalars :as scalars]
             [leihs.borrow.graphql.resolvers :as resolvers]
-            [leihs.borrow.graphql.streamers :as streamers]
             [leihs.core.graphql.helpers :as helpers]
             [leihs.core.ring-exception :refer [get-cause]]))
 
@@ -20,7 +19,6 @@
       edn/read-string
       (graphql-util/attach-resolvers resolvers/resolvers)
       (graphql-util/attach-scalar-transformers scalars/scalars)
-      (graphql-util/attach-streamers streamers/streamers)
       graphql-schema/compile))
 
 (def schema (load-schema))

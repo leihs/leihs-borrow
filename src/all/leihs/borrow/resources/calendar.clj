@@ -30,31 +30,6 @@
         json/parse-string
         walk/keywordize-keys)))
 
-(def max-stream-duration (clj-time/minutes 5))
-
-(defn stream [context args source-stream]
-  (let [model-id (:model_id args)
-        tx (-> context :request :tx)
-        running (atom true)
-        get-calendar #(get context args nil)
-        get-updated-at #(reservations/updated-at tx model-id)
-        get-count #(reservations/count tx model-id)
-        time-out (clj-time/plus (clj-time-local/local-now) max-stream-duration)]
-    (source-stream (get-calendar))
-    (let [f (future
-              (loop [updated-at (get-updated-at)
-                     count (get-count)]
-                (when (clj-time/before? (clj-time-local/local-now) time-out) 
-                  (Thread/sleep 1000)
-                  (let [new-updated-at (get-updated-at)
-                        new-count (get-count)]
-                    (if (or (clj-time/after? new-updated-at updated-at)
-                            (not (= new-count count)))
-                      (do (source-stream (get-calendar))
-                          (recur new-updated-at new-count))
-                      (recur updated-at count))))))]
-      #(future-cancel f))))
-
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
 ; (logging-config/set-logger! :level :info)

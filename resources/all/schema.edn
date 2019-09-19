@@ -1,42 +1,35 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}}
 
- :subscriptions {:calendar {:type :Calendar
-                            :args {:model_id {:type (non-null String)}
-                                   :inventory_pool_id {:type (non-null String)}
-                                   :start_date {:type (non-null String)}
-                                   :end_date {:type (non-null String)}}
-                            :stream :stream-calendar}}
-
- :objects {:Contract {:fields {:id {:type (non-null :UUID)}
-                               :compact_id {:type (non-null :UUID)}
+ :objects {:contract {:fields {:id {:type (non-null :UUID)}
+                               :compactId {:type (non-null :UUID)}
                                :state {:type (non-null String)}
-                               :inventory_pool {:type (non-null :InventoryPool)
+                               :inventoryPool {:type (non-null :inventoryPool)
                                                 :resolve :inventory-pool}
                                :purpose {:type (non-null String)}
                                :note {:type String}}},
-           :InventoryPool {:fields {:id {:type (non-null :UUID)}
+           :inventoryPool {:fields {:id {:type (non-null :UUID)}
                                     :name {:type (non-null String)}
                                     :email {:type (non-null String)}}}
-           :User {:fields {:email {:type String},
+           :user {:fields {:email {:type String},
                            :firstname {:type String},
                            :id {:type (non-null :UUID)},
                            :lastname {:type String},
                            :login {:type String}
-                           :contracts {:type (list :Contract)
+                           :contracts {:type (list :contract)
                                        :resolve :contracts}}}
-           :Calendar {:fields {:list {:type (list :DayData)}}}
-           :DayData {:fields {:d {:type (non-null String)}
-                              :visits_count {:type (non-null Int)}
+           :calendar {:fields {:list {:type (list :dayData)}}}
+           :dayData {:fields {:d {:type (non-null String)}
+                              :visitsCount {:type (non-null Int)}
                               :quantity {:type (non-null Int)}}}},
 
  :queries {:users {:args {:limit {:type Int},
                           :offset {:type Int},
-                          :search_term {:type String}},
+                          :searchTerm {:type String}},
                    :resolve :users,
-                   :type (list :User)}
-           :calendar {:args {:model_id {:type (non-null String)}
-                             :inventory_pool_id {:type (non-null String)}
-                             :start_date {:type (non-null String)}
-                             :end_date {:type (non-null String)}}
+                   :type (list :user)}
+           :calendar {:args {:modelId {:type (non-null String)}
+                             :inventoryPoolId {:type (non-null String)}
+                             :startDate {:type (non-null String)}
+                             :endDate {:type (non-null String)}}
                       :resolve :calendar
-                      :type :Calendar}}}
+                      :type :calendar}}}
