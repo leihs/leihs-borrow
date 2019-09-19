@@ -10,25 +10,30 @@
             [leihs.borrow.resources.reservations :as reservations]
             [cheshire.core :as json]
             [clj-http.client :as client]
+            [camel-snake-kebab.core :as csk]
+            [wharf.core :refer [transform-keys]]
             [clojure.walk :as walk]))
 
 (defn get [context args value]
   (let [leihs-user-session-cookie-value
-          (or (get-in context [:request :cookies "leihs-user-session" :value]) ; http
-              (get-in context [:connection-params :cookies :leihs-user-session]) ; websocket
-              )]
+          (get-in context [:request :cookies "leihs-user-session" :value])]
     (if-not leihs-user-session-cookie-value (throw (ex-info "Not authenticated!" {})))
-    (-> "http://localhost:3000/borrow/booking_calendar_availability"
-        (client/get {:accept :json
-                     :content-type :json
-                     :cookies {"leihs-user-session" {:value leihs-user-session-cookie-value}}
-                     :query-params (select-keys args [:model_id
-                                                      :inventory_pool_id
-                                                      :start_date
-                                                      :end_date])})
-        :body
-        json/parse-string
-        walk/keywordize-keys)))
+    (let [http-availability
+            (client/get
+              "http://localhost:3000/borrow/booking_calendar_availability"
+              {:accept :json
+               :content-type :json
+               :cookies {"leihs-user-session" {:value leihs-user-session-cookie-value}}
+               :query-params (->> [:modelId
+                                   :inventoryPoolId
+                                   :startDate
+                                   :endDate]
+                                  (select-keys args)
+                                  (transform-keys csk/->snake_case))})]
+      (->> http-availability
+           :body
+           json/parse-string
+           walk/keywordize-keys))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

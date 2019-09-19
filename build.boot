@@ -9,6 +9,7 @@
   (extend-shared-deps
     '[[io.dropwizard.metrics/metrics-core "3.1.2"] ; lacinia does not work with the version from shared-deps
       [clj-http "3.10.0"]
+      [wharf "0.2.0-SNAPSHOT"] 
       [com.walmartlabs/lacinia "0.35.0"]
       [threatgrid/ring-graphql-ui "0.1.1"]]))
 
