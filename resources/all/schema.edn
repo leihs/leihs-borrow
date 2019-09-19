@@ -1,35 +1,37 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}}
 
- :objects {:contract {:fields {:id {:type (non-null :UUID)}
-                               :compactId {:type (non-null :UUID)}
+ :objects {:Contract {:fields {:id {:type (non-null :UUID)}
+                               :compactId {:type (non-null :UUID)
+                                           :description "A short, human-readable string to identify contracts instead of the much longer UUID. The format is optimized to be communicated verbally."}
                                :state {:type (non-null String)}
-                               :inventoryPool {:type (non-null :inventoryPool)
-                                                :resolve :inventory-pool}
+                               :inventoryPool {:type (non-null :InventoryPool)
+                                               :resolve :inventory-pool}
                                :purpose {:type (non-null String)}
-                               :note {:type String}}},
-           :inventoryPool {:fields {:id {:type (non-null :UUID)}
+                               :note {:type String}}}
+           :InventoryPool {:fields {:id {:type (non-null :UUID)}
                                     :name {:type (non-null String)}
                                     :email {:type (non-null String)}}}
-           :user {:fields {:email {:type String},
-                           :firstname {:type String},
-                           :id {:type (non-null :UUID)},
-                           :lastname {:type String},
+           :User {:description "A `User` represents a human agent that can log into and use the system."
+                  :fields {:email {:type String}
+                           :firstname {:type String}
+                           :id {:type (non-null :UUID)}
+                           :lastname {:type String}
                            :login {:type String}
-                           :contracts {:type (list :contract)
+                           :contracts {:type (list :Contract)
                                        :resolve :contracts}}}
-           :calendar {:fields {:list {:type (list :dayData)}}}
-           :dayData {:fields {:d {:type (non-null String)}
+           :Calendar {:fields {:list {:type (list :DayData)}}}
+           :DayData {:fields {:d {:type (non-null String)}
                               :visitsCount {:type (non-null Int)}
-                              :quantity {:type (non-null Int)}}}},
+                              :quantity {:type (non-null Int)}}}}
 
- :queries {:users {:args {:limit {:type Int},
-                          :offset {:type Int},
-                          :searchTerm {:type String}},
-                   :resolve :users,
-                   :type (list :user)}
-           :calendar {:args {:modelId {:type (non-null String)}
-                             :inventoryPoolId {:type (non-null String)}
+ :queries {:users {:args {:limit {:type Int}
+                          :offset {:type Int}
+                          :searchTerm {:type String}}
+                   :resolve :users
+                   :type (list :User)}
+           :calendar {:args {:modelId {:type (non-null :UUID)}
+                             :inventoryPoolId {:type (non-null :UUID)}
                              :startDate {:type (non-null String)}
                              :endDate {:type (non-null String)}}
                       :resolve :calendar
-                      :type :calendar}}}
+                      :type :Calendar}}}

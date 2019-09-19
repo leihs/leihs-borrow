@@ -1,9 +1,8 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Thu Sep 19 2019 14:26:12 GMT+0200 (Central European Summer Time)
+# timestamp: Thu Sep 19 2019 15:58:36 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
-  subscription: SubscriptionRoot
 }
 
 type Calendar {
@@ -11,9 +10,13 @@ type Calendar {
 }
 
 type Contract {
-  compact_id: UUID!
+  """
+  A short, human-readable string to identify contracts instead of the much
+  longer UUID. The format is optimized to be communicated verbally.
+  """
+  compactId: UUID!
   id: UUID!
-  inventory_pool: InventoryPool!
+  inventoryPool: InventoryPool!
   note: String
   purpose: String!
   state: String!
@@ -22,7 +25,7 @@ type Contract {
 type DayData {
   d: String!
   quantity: Int!
-  visits_count: Int!
+  visitsCount: Int!
 }
 
 type InventoryPool {
@@ -33,15 +36,13 @@ type InventoryPool {
 
 """Root of all queries."""
 type QueryRoot {
-  calendar(end_date: String!, inventory_pool_id: String!, model_id: String!, start_date: String!): Calendar
-  users(limit: Int, offset: Int, search_term: String): [User]
+  calendar(endDate: String!, inventoryPoolId: UUID!, modelId: UUID!, startDate: String!): Calendar
+  users(limit: Int, offset: Int, searchTerm: String): [User]
 }
 
-"""Root of all subscriptions."""
-type SubscriptionRoot {
-  calendar(end_date: String!, inventory_pool_id: String!, model_id: String!, start_date: String!): Calendar
-}
-
+"""
+A `User` represents a human agent that can log into and use the system.
+"""
 type User {
   contracts: [Contract]
   email: String
