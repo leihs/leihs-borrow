@@ -43,7 +43,7 @@
                     (ds/init (:database-url options)
                              (:health-check-registry status)))
                   (let [app-handler (routes/init)]
-                    (http-server/start (:http-base-url options) app-handler)
+                    (http-server/start (:http-base-url options) app-handler))
                   nil))
 
 (defn -main
