@@ -1,0 +1,3 @@
+#!/bin/sh
+
+npm run -s graphql -- get-schema 

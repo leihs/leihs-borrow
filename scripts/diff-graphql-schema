@@ -1,0 +1,11 @@
+#!/bin/sh
+
+RES=1
+
+mv schema.graphql schema_orig.graphql
+./scripts/dump-graphql-schema
+
+npm run graphql-schema-diff -- schema_orig.graphql schema.graphql && RES=0 || RES=1
+
+mv schema_orig.graphql schema.graphql 
+exit $RES

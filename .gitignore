@@ -7,3 +7,4 @@ log
 resources/all/public/borrow/js
 scratch*
 target
+node_modules
