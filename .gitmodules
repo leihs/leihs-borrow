@@ -4,6 +4,3 @@
 [submodule "leihs-ui"]
 	path = leihs-ui
 	url = git@github.com:leihs/leihs-ui.git
-[submodule "lacinia-ring"]
-	path = lacinia-ring
-	url = https://github.com/nimaai/lacinia-ring.git
