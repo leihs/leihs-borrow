@@ -33,18 +33,6 @@
     [clojure.tools.logging :as logging]
     [logbug.debug :as debug :refer [I>]]
     [logbug.ring :refer [wrap-handler-with-logging]]
-    
-    ;;; DEV
-    playground.reagent-example
-    playground.reframe-example
-    playground.regraph-example
-    playground.shadow-example
-    playground.regraph-ring
-    playground.regraph-ring-full
-    playground.ring-ws
-    playground.sse-example
-    try-lacinia.core
-    ;;;
     ))
 
 (def handler-resolve-table
@@ -52,18 +40,6 @@
          {:graphql graphql/handler,
           :home html/html-handler
           :not-found html/not-found-handler,
-          ;;; DEV
-          :graphql-ws try-lacinia.core/graphql-ws-handler
-          :graphql-ws-2 playground.ring-ws/graphql-ws-handler
-          :reagent-example playground.reagent-example/handler
-          :reframe-example playground.reframe-example/handler
-          :regraph-example playground.regraph-example/handler
-          :shadow-example playground.shadow-example/handler
-          :regraph-ring playground.regraph-ring/handler
-          :regraph-ring-full playground.regraph-ring-full/handler
-          :sse-example playground.sse-example/handler
-          :sse playground.sse-example/sse-handler
-          ;;;
           :status (status/routes "/borrow/status")}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -3,15 +3,11 @@
                 [reagent-utils "0.3.3"]
                 [re-frame "0.10.8"]
                 [re-graph "0.1.10"]]
- :builds {:playground {:output-dir "resources/all/public/borrow/js"
+ :builds {:app {:output-dir "resources/all/public/borrow/js"
                        :asset-path "js"
                        :target :browser
-                       :modules {:playground {:entries [; playground.shadow-example
-                                                        ; playground.reagent-example 
-                                                        ; playground.reframe-example
-                                                        playground.regraph-example
-                                                        ; playground.regraph-ring
-                                                        ; playground.regraph-ring-full
-                                                        ]}}
-                       :devtools {:after-load playground.regraph-example/update}
+                       :modules {:app {:entries [
+                                                 ; your-namespace-of-choice 
+                                                 ]}}
+                       ;:devtools {:after-load your-name-space-of-choice/func}
                        }}}
