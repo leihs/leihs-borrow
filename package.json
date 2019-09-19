@@ -1,8 +1,10 @@
 {
   "dependencies": {
-    "graphql-cli": "git://github.com/eins78/graphql-cli#567533bb766bbfee16c4a5d379d7ad338cf0e46b"
+    "graphql-cli": "git://github.com/eins78/graphql-cli#567533bb766bbfee16c4a5d379d7ad338cf0e46b",
+    "graphql-schema-diff": "^0.6.3"
   },
   "scripts": {
-    "graphql": "graphql"
+    "graphql": "graphql",
+    "graphql-schema-diff": "graphql-schema-diff"
   }
 }
