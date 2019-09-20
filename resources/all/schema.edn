@@ -30,7 +30,7 @@
                             :description {:type String}}}
            :Category {:fields {:id {:type (non-null :UUID)}
                                :name {:type (non-null String)
-                                      :description "A name is either a label for the child-parent connection or the name of the category itself."}
+                                      :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
                                           :resolve :categories}
                                :models {:type (list :Model)
@@ -49,6 +49,7 @@
                       :type :Calendar}
            :categories {:args {:limit {:type Int}
                                :offset {:type Int}
-                               :id {:type (list :UUID)}}
+                               :id {:type (list :UUID)}
+                               :rootOnly {:type Boolean}}
                         :resolve :categories
                         :type (list :Category)}}}

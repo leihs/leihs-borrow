@@ -19,9 +19,7 @@
                         :model_links.model_group_id
                         (:id value)])
       sql/format
-      log/spy
-      (->> (jdbc/query (-> context :request :tx)))
-      log/spy))
+      (->> (jdbc/query (-> context :request :tx)))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

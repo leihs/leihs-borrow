@@ -3,28 +3,19 @@
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]))
 
-; (defn get-main-multiple
-;   [context args value]
-;   (-> (sql/select :*)
-;       (sql/from :model_groups)
-;       (sql/merge-where [:= :type "Category"])
-;       (sql/merge-where
-;         [:not
-;          [:exists
-;           (-> (sql/select true)
-;               (sql/from :model_group_links)
-;               (sql/merge-where [:=
-;                                 :model_groups.id
-;                                 :model_group_links.child_id]))]])
-;       (cond-> (:limit args) (sql/limit (:limit args)))
-;       (cond-> (:offset args) (sql/offset (:offset args)))
-;       sql/format
-;       (->> (jdbc/query (-> context :request :tx)))))
-
-(defn base-sqlmap [{:keys [limit offset id]}]
+(defn base-sqlmap [{:keys [limit offset id] root-only :rootOnly}]
   (-> (sql/select :model_groups.id :name)
       (sql/from :model_groups)
       (sql/merge-where [:= :model_groups.type "Category"])
+      (cond-> root-only
+        (sql/merge-where
+          [:not
+           [:exists
+            (-> (sql/select true)
+                (sql/from :model_group_links)
+                (sql/merge-where [:=
+                                  :model_groups.id
+                                  :model_group_links.child_id]))]]))
       (cond-> limit (sql/limit limit))
       (cond-> offset (sql/offset offset))
       (cond-> (seq id)
