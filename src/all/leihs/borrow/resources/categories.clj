@@ -3,6 +3,28 @@
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]))
 
+(defn descendent-ids [tx parent-id]
+  (assert (uuid? parent-id))
+  (let [query
+        (str "WITH RECURSIVE category_tree(parent_id, child_id, path) AS
+                (SELECT parent_id, child_id, ARRAY[parent_id]
+                 FROM model_group_links
+                 WHERE parent_id = '" parent-id "'"
+                "UNION ALL
+                 SELECT mgl.parent_id,
+                        mgl.child_id,
+                        path || mgl.parent_id
+                 FROM category_tree
+                 INNER JOIN model_group_links mgl
+                   ON mgl.parent_id = category_tree.child_id
+                 WHERE NOT mgl.parent_id = any(path))
+              SELECT DISTINCT(category_tree.child_id) AS id
+              FROM category_tree")]
+    (->> [query] (jdbc/query tx) (map :id))))
+
+(comment (descendent-ids (leihs.core.ds/get-ds)
+                         "b279bb7f-314c-55d1-a407-0de794c2c25e"))
+
 (defn base-sqlmap [{:keys [limit offset id] root-only :rootOnly}]
   (-> (sql/select :model_groups.id :name)
       (sql/from :model_groups)
