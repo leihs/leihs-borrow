@@ -6,7 +6,11 @@
 
 (defn get-multiple
   [context _ value]
-  (let [tx (-> context :request :tx)]
+  (let [tx (-> context :request :tx)
+        parent-category-id (:id value)
+        category-ids (as-> parent-category-id <>
+                       (categories/descendent-ids tx <>)
+                       (conj <> parent-category-id))]
     (-> (sql/select :models.*
                     [(sql/call :concat_ws
                                " "
@@ -14,15 +18,16 @@
                                :models.version)
                      :name])
         (sql/from :models)
-      (sql/merge-join :model_links
-                      [:=
-                       :models.id
-                       :model_links.model_id])
-      (sql/merge-where [:in
-                        :model_links.model_group_id
-                        (categories/descendent-ids tx (:id value))])
-      sql/format
-      (->> (jdbc/query tx)))))
+        (sql/merge-join :model_links
+                        [:=
+                         :models.id
+                         :model_links.model_id])
+        (cond-> (seq category-ids)
+          (sql/merge-where [:in
+                            :model_links.model_group_id
+                            category-ids]))
+        sql/format
+        (->> (jdbc/query tx)))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

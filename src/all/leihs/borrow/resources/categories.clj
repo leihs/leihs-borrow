@@ -7,7 +7,7 @@
   (assert (uuid? parent-id))
   (let [query
         (str "WITH RECURSIVE category_tree(parent_id, child_id, path) AS
-                (SELECT parent_id, child_id, ARRAY[parent_id]
+                (SELECT parent_id, child_id, ARRAY[]::uuid[]
                  FROM model_group_links
                  WHERE parent_id = '" parent-id "'"
                 "UNION ALL

@@ -34,6 +34,7 @@
                                :children {:type (list :Category)
                                           :resolve :categories}
                                :models {:type (list :Model)
+                                        :description "Includes all from self and the descendent sub-categories."
                                         :resolve :models}}}}
 
  :queries {:users {:args {:limit {:type Int}
