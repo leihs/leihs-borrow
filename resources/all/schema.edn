@@ -22,7 +22,15 @@
            :Calendar {:fields {:list {:type (list :DayData)}}}
            :DayData {:fields {:d {:type (non-null String)}
                               :visitsCount {:type (non-null Int)}
-                              :quantity {:type (non-null Int)}}}}
+                              :quantity {:type (non-null Int)}}}
+           :Category {:fields {:id {:type :UUID}
+                               :name {:type (non-null String)}
+                               :subCategories {:type (list :Category)
+                                               :resolve :sub-categories}}}
+           :MainCategory {:fields {:id {:type :UUID}
+                                   :name {:type String}
+                                   :subCategories {:type (list :Category)
+                                                   :resolve :sub-categories}}}}
 
  :queries {:users {:args {:limit {:type Int}
                           :offset {:type Int}
@@ -34,4 +42,6 @@
                              :startDate {:type (non-null String)}
                              :endDate {:type (non-null String)}}
                       :resolve :calendar
-                      :type :Calendar}}}
+                      :type :Calendar}
+           :mainCategories {:resolve :main-categories
+                            :type (list :MainCategory)}}}
