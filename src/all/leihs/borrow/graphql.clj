@@ -21,8 +21,7 @@
       (graphql-util/attach-scalar-transformers scalars/scalars)
       graphql-schema/compile))
 
-; TODO: 
-; (def schema (load-schema))
+(def schema (load-schema))
 
 (defn exec-query
   [query-string request]
@@ -30,7 +29,7 @@
              "with variables" (-> request
                                   :body
                                   :variables))
-  (lacinia/execute (load-schema)
+  (lacinia/execute schema
                    query-string
                    (-> request
                        :body
@@ -61,7 +60,7 @@
 (defn handler
   [{{query :query} :body, :as request}]
   (let [mutation? (->> query
-                       (parse-query-with-exception-handling (load-schema))
+                       (parse-query-with-exception-handling schema)
                        graphql-parser/operations
                        :type
                        (= :mutation))]
