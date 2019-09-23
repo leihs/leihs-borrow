@@ -34,7 +34,8 @@
                    (-> request
                        :body
                        :variables)
-                   {:request request}))
+                   {:request request
+                    ::lacinia/enable-timing? true}))
 
 (defn pure-handler
   [{{query :query} :body, :as request}]
