@@ -27,7 +27,16 @@
                             :name {:type (non-null String)
                                    :description "A name consists of product name and its version."}
                             :manufacturer {:type String}
-                            :description {:type String}}}
+                            :description {:type String}
+                            ; :images {:type (list :Image)
+                            ;          :resolve :images}
+                            ; :attachments {:type (list :Attachment)
+                            ;               :resolve :attachments}
+                            ; :properties {:type (list :Property)
+                            ;              :resolve :properties}
+                            ; :compatibles {:type (list :Model)
+                            ;               :resolve :compatibles}
+                            }}
            :Category {:fields {:id {:type (non-null :UUID)}
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
