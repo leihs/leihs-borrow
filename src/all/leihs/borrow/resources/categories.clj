@@ -41,7 +41,7 @@
       (sql/merge-where [:= :items.is_borrowable true])
       (sql/merge-where [:= :items.parent_id nil])))
 
-(defn extend-based-on-args [sqlmap {:keys [limit offset id],
+(defn extend-based-on-args [sqlmap {:keys [limit offset ids],
                                     root-only :rootOnly,
                                     user-id :userId}]
   (-> sqlmap
@@ -57,8 +57,8 @@
       (cond-> user-id (extend-with-reservable-models-for-user user-id))
       (cond-> limit (sql/limit limit))
       (cond-> offset (sql/offset offset))
-      (cond-> (seq id)
-        (sql/merge-where [:in :model_groups.id id]))))
+      (cond-> (seq ids)
+        (sql/merge-where [:in :model_groups.id ids]))))
 
 (defn get-multiple
   [context args value]

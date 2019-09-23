@@ -41,7 +41,8 @@
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
-                                          :resolve :categories}
+                                          :resolve :categories
+                                          :args {:userId {:type :UUID}}}
                                :models {:type (list :Model)
                                         :description "Includes all from self and the descendent sub-categories."
                                         :resolve :models}}}}
@@ -59,7 +60,7 @@
                       :type :Calendar}
            :categories {:args {:limit {:type Int}
                                :offset {:type Int}
-                               :id {:type (list :UUID)}
+                               :ids {:type (list :UUID)}
                                :rootOnly {:type Boolean}
                                :userId {:type :UUID}}
                         :resolve :categories
