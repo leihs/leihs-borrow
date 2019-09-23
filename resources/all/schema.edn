@@ -60,6 +60,7 @@
            :categories {:args {:limit {:type Int}
                                :offset {:type Int}
                                :id {:type (list :UUID)}
-                               :rootOnly {:type Boolean}}
+                               :rootOnly {:type Boolean}
+                               :userId {:type :UUID}}
                         :resolve :categories
                         :type (list :Category)}}}
