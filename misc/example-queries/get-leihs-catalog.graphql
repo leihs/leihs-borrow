@@ -1,0 +1,11 @@
+query getLeihsCatalog($userId: UUID) {
+  categories(userId: $userId, rootOnly: true, ids: ["78920f6d-57c1-5231-b0c4-f58dcddc64cf"]) {
+    name
+    children(userId: $userId) {
+      name
+      children(userId: $userId) {
+        name
+      }
+    }
+  }
+}
