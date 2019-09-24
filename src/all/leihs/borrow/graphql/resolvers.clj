@@ -4,13 +4,15 @@
             [leihs.borrow.graphql.queries :as queries]
             [leihs.core.graphql.helpers :refer [transform-values
                                                 wrap-resolver-with-error
-                                                wrap-resolver-with-camelCase]]))
+                                                wrap-resolver-with-camelCase
+                                                wrap-resolver-with-overall-timing]]))
 
 (def resolvers
   (-> queries/resolvers
       (merge mutations/resolvers)
       (transform-values (comp wrap-resolver-with-error
-                              wrap-resolver-with-camelCase))))
+                              wrap-resolver-with-camelCase
+                              wrap-resolver-with-overall-timing))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
