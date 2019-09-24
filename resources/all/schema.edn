@@ -45,7 +45,8 @@
                                           :args {:userId {:type :UUID}}}
                                :models {:type (list :Model)
                                         :description "Includes all from self and the descendent sub-categories."
-                                        :resolve :models}}}}
+                                        :resolve :models
+                                        :args {:userId {:type :UUID}}}}}}
 
  :queries {:users {:args {:limit {:type Int}
                           :offset {:type Int}
