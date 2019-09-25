@@ -1,0 +1,49 @@
+scripts:
+
+  run-borrow-service:
+    start_when:
+      uberjar has been built:
+        script_key: build-borrow-uberjar
+      database has been created:
+        script_key: create-database
+    body: |
+      set -euxo 
+      cd $LEIHS_BORROW_DIR
+      mkdir tmp
+      java -jar target/leihs-borrow.jar run
+
+  borrow-service-is-running:
+    body: |
+      set -euxo 
+      until curl --silent --fail -I \
+        -H 'Accept: application/json' -H "Authorization: secret $CIDER_CI_TRIAL_ID" \
+        ${LEIHS_BORROW_HTTP_BASE_URL}/borrow/status;
+        do sleep 1;
+      done
+    start_when:
+      run server is executing:
+        script_key: run-borrow-service
+        states: [executing]
+
+  test:
+    start_when:
+      borrow service is running:
+        script_key: borrow-service-is-running
+
+  shutdown-borrow-service:
+    body: |
+      set -euxo 
+      cd $LEIHS_BORROW_DIR
+      export PID=$(cat tmp/service.pid)
+      kill $PID 
+      tail --pid=$PID -f /dev/null
+    start_when:
+      test is terminal:
+        script_key: test
+        states: [aborted, defective, passed, failed, skipped]
+
+  delete-database:
+    start_when:
+       shutdown-borrow-service is in terminal state:
+        script_key: shutdown-borrow-service
+        states: [aborted, defective, passed, failed, skipped]

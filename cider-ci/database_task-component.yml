@@ -1,0 +1,18 @@
+traits:
+  PostgreSQL: true
+
+scripts:
+
+  create-database:
+    body: |
+      #!/usr/bin/env bash
+      set -eux
+      cd $LEIHS_BORROW_DIR
+      createdb "$DATABASE_NAME"
+      psql -d "$DATABASE_NAME" -f database/db/structure.sql
+
+  delete-database:
+    body: |
+      #!/usr/bin/env bash
+      set -eux
+      dropdb "$DATABASE_NAME"

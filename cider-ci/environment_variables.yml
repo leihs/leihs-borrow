@@ -1,0 +1,9 @@
+environment_variables:
+  DATABASE_NAME: leihs_{{CIDER_CI_TRIAL_ID}}
+  LEIHS_DATABASE_URL: "jdbc:postgresql://localhost/{{DATABASE_NAME}}?max-pool-size=5"
+  LEIHS_BORROW_HTTP_BASE_URL: http://localhost:{{LEIHS_BORROW_HTTP_PORT}}
+  LEIHS_SECRET: '{{CIDER_CI_TRIAL_ID}}'
+  RUBY: '{{RUBY_ENGINE}}-{{RUBY_VERSION}}'
+  RUBY_ENGINE: ruby
+  RUBY_VERSION: 2.6.0
+  RAILS_ENV: production
