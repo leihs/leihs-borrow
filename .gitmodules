@@ -3,7 +3,7 @@
 	url = https://github.com/leihs/leihs-clj-shared.git
 [submodule "leihs-ui"]
 	path = leihs-ui
-	url = git@github.com:leihs/leihs-ui.git
+	url = https://github.com/leihs/leihs-ui.git
 [submodule "database"]
 	path = database
 	url = https://github.com/leihs/leihs_database.git
