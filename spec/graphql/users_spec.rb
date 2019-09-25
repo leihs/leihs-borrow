@@ -2,32 +2,29 @@ require 'spec_helper'
 require_relative 'graphql_helper'
 
 describe 'users' do
-  context 'filter' do
-    it 'requesters only' do
-      user1 = FactoryBot.create(:user)
-      user2 = FactoryBot.create(:user)
-      FactoryBot.create(:requester_organization,
-                        user_id: user2.id)
+  it 'works' do
+    user1 = FactoryBot.create(:user)
+    user2 = FactoryBot.create(:user)
 
-      admin = FactoryBot.create(:user)
-      FactoryBot.create(:admin, user_id: admin.id)
-
-      q = <<-GRAPHQL
+    q = <<-GRAPHQL
         query {
-          users(isRequester: true) {
+          users {
             id
           }
         }
-      GRAPHQL
+    GRAPHQL
 
-      result = query(q, admin.id)
-      expect(result).to eq({
-        'data' => {
-          'users' => [
-            { 'id' => user2.id }
-          ]
-        }
-      })
-    end
+    result = query(q)
+
+    expect(result).to include({
+      'data' => {
+        'users' => [
+          { 'id' => user1.id },
+          { 'id' => user2.id }
+        ]
+      }
+    })
+
+    expect(result).not_to include(:errors)
   end
 end
