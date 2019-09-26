@@ -7,7 +7,6 @@
             [leihs.core.core :refer [keyword str]]
             [leihs.core.ds :as ds]
             [leihs.core.http-server :as http-server]
-            [leihs.core.pidfile :as pidfile]
             [leihs.core.shutdown :as shutdown]
             [leihs.core.status :as status]
             [leihs.borrow.cli :as cli]
@@ -39,13 +38,12 @@
   (catcher/snatch {:return-fn (fn [e] (System/exit -1))}
     (log/info "Invoking run with options: " options)
     ; (settings/init options)
-    ; (shutdown/init options)
+    (shutdown/init options)
     (let [status (status/init)]
       (ds/init (:database-url options)
                (:health-check-registry status)))
     (let [app-handler (routes/init)]
       (http-server/start (:http-base-url options) app-handler))
-    (pidfile/handle "./tmp/service.pid")
     nil))
 
 (defn -main
