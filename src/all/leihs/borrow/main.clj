@@ -37,16 +37,16 @@
 (defn- run
   [options]
   (catcher/snatch {:return-fn (fn [e] (System/exit -1))}
-                  (log/info "Invoking run with options: " options)
-                  ; (settings/init options)
-                  ; (shutdown/init options)
-                  (let [status (status/init)]
-                    (ds/init (:database-url options)
-                             (:health-check-registry status)))
-                  (let [app-handler (routes/init)]
-                    (http-server/start (:http-base-url options) app-handler))
-                  (pidfile/handle)
-                  nil))
+    (log/info "Invoking run with options: " options)
+    ; (settings/init options)
+    ; (shutdown/init options)
+    (let [status (status/init)]
+      (ds/init (:database-url options)
+               (:health-check-registry status)))
+    (let [app-handler (routes/init)]
+      (http-server/start (:http-base-url options) app-handler))
+    (pidfile/handle "./tmp/pidfile")
+    nil))
 
 (defn -main
   [& args]
