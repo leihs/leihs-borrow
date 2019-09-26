@@ -6,5 +6,5 @@ function build_uberjar() {
   echo "INFO: building the ${UBERJAR_NAME} uberjar now"
   cd $LEIHS_BORROW_DIR
   export LEIN_SNAPSHOTS_IN_RELEASE=yes
-  boot uberjar
+  $PROJECT_DIR/bin/boot uberjar
 }
