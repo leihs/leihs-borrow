@@ -45,7 +45,7 @@
                (:health-check-registry status)))
     (let [app-handler (routes/init)]
       (http-server/start (:http-base-url options) app-handler))
-    (pidfile/handle "./tmp/pidfile")
+    (pidfile/handle "./tmp/service.pid")
     nil))
 
 (defn -main
