@@ -14,6 +14,7 @@ class Category < Sequel::Model(:model_groups)
   many_to_many(:direct_models,
                class: :Model,
                left_key: :model_group_id,
+               right_key: :model_id,
                join_table: :model_links)
 end
 
@@ -28,7 +29,7 @@ FactoryBot.define do
     transient do
       parents { [] }
       children { [] }
-      models { [] }
+      direct_models { [] }
     end
 
     after(:create) do |category, trans|
@@ -40,8 +41,8 @@ FactoryBot.define do
         category.add_child(child)
       end
 
-      trans.models.each do |model|
-        category.add_model(model)
+      trans.direct_models.each do |model|
+        category.add_direct_model(model)
       end
     end
   end
