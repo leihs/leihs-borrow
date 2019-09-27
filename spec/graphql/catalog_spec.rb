@@ -46,6 +46,12 @@ describe 'catalog' do
 
     factorize!(data)
 
+    # ####################################################################
+    # Create a recursive tree structure:
+    # Category.find(id: '33df18c8-6d86-44a1-a0d8-d76847d8b043')
+    #   .add_child Category.find(id: '9a1dc177-a2b2-4a16-8fbf-6552b5313f38')
+    # ####################################################################
+
     q = <<-GRAPHQL
       query Catalog($idAsc: [ModelOrderInput]) {
         categories(rootOnly: true) {
@@ -86,7 +92,7 @@ describe 'catalog' do
     }
 
     result = query(q, nil, vars)
-
+    
     expect(result['data']).to eq({
       'categories' => [
         { 'id' => '9a1dc177-a2b2-4a16-8fbf-6552b5313f38',
