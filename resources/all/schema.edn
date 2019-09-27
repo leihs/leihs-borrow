@@ -1,5 +1,8 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}}
 
+ :enums {:ModelOrderAttributeEnum {:values [:ID]}
+         :OrderDirectionEnum {:values [:ASC :DESC]}}
+
  :objects {:Contract {:fields {:id {:type (non-null :UUID)}
                                :compactId {:type (non-null :UUID)
                                            :description "A short, human-readable string to identify contracts instead of the much longer UUID. The format is optimized to be communicated verbally."}
@@ -44,9 +47,14 @@
                                           :resolve :categories
                                           :args {:userId {:type :UUID}}}
                                :models {:type (list :Model)
-                                        :description "Includes all from self and the descendent sub-categories."
+                                        :description "Includes only direct ones or all from self and the descendent sub-categories."
                                         :resolve :models
-                                        :args {:userId {:type :UUID}}}}}}
+                                        :args {:userId {:type :UUID}
+                                               :directOnly {:type Boolean}
+                                               :order {:type (list :ModelOrderInput)}}}}}}
+
+ :input-objects {:ModelOrderInput {:fields {:attribute {:type (non-null :ModelOrderAttributeEnum)}
+                                           :direction {:type (non-null :OrderDirectionEnum)}}}}
 
  :queries {:users {:args {:limit {:type Int}
                           :offset {:type Int}

@@ -1,12 +1,13 @@
 (ns leihs.borrow.resources.models
   (:require [clojure.tools.logging :as log]
+            [clojure.string :refer [lower-case]]
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.categories.descendents :as descendents]))
 
 (def base-sqlmap
-  (-> (sql/select :models.*
+  (-> (sql/select :models.id
                   [(sql/call :concat_ws
                              " "
                              :models.product
@@ -42,13 +43,22 @@
       (sql/merge-where [:= :items.is_borrowable true])
       (sql/merge-where [:= :items.parent_id nil])))
 
+(defn treat-order-arg [order]
+  (map #(-> %
+            (update :attribute
+                    (comp keyword lower-case name))
+            vals)
+       order))
+
 (defn get-multiple
-  [context {user-id :userId} value]
+  [context {:keys [order], user-id :userId, direct-only :directOnly} value]
   (let [tx (-> context :request :tx)
-        parent-category-id (:id value)
-        category-ids (as-> parent-category-id <>
-                       (descendents/descendent-ids tx <>)
-                       (conj <> parent-category-id))]
+        value-id (:id value)
+        category-ids (if direct-only
+                       [value-id]
+                       (as-> value-id <>
+                         (descendents/descendent-ids tx <>)
+                         (conj <> value-id)))]
     (-> base-sqlmap
         (cond-> user-id (merge-reservable-conditions user-id))
         (cond-> (seq category-ids)
@@ -59,7 +69,11 @@
               (sql/merge-where [:in
                                 :model_links.model_group_id
                                 category-ids])))
+        (cond-> (seq order)
+          (-> (sql/order-by (treat-order-arg order))
+              (sql/merge-order-by [:name :asc])))
         sql/format
+        log/spy
         (->> (jdbc/query tx)))))
 
 ;#### debug ###################################################################
