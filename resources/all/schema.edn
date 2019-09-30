@@ -55,7 +55,7 @@
                                                :orderBy {:type (list :ModelsOrderInput)}}}}}}
 
  :input-objects {:ModelsOrderInput {:fields {:attribute {:type (non-null :ModelsOrderAttributeEnum)}
-                                           :direction {:type (non-null :OrderDirectionEnum)}}}
+                                             :direction {:type (non-null :OrderDirectionEnum)}}}
                  :UsersOrderInput {:fields {:attribute {:type (non-null :UsersOrderAttributeEnum)}
                                            :direction {:type (non-null :OrderDirectionEnum)}}}}
 
@@ -65,6 +65,14 @@
                           :orderBy {:type (list :UsersOrderInput)}}
                    :resolve :users
                    :type (list :User)}
+           :models {:args {:limit {:type Int}
+                           :offset {:type Int}
+                           :searchTerm {:type String}
+                           :orderBy {:type (list :ModelsOrderInput)}
+                           :userId {:type :UUID}
+                           :categoryIds {:type (list :UUID)}}
+                    :resolve :models
+                    :type (list :Model)}
            :calendar {:args {:modelId {:type (non-null :UUID)}
                              :inventoryPoolId {:type (non-null :UUID)}
                              :startDate {:type (non-null String)}

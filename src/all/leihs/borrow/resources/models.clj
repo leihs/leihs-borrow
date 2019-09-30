@@ -43,33 +43,57 @@
       (sql/merge-where [:= :items.is_borrowable true])
       (sql/merge-where [:= :items.parent_id nil])))
 
+(defn merge-search-conditions [sqlmap search-term]
+  (sql/merge-where sqlmap ["~~*"
+                           (sql/call :concat_ws
+                                     " "
+                                     :models.product
+                                     :models.version
+                                     :models.manufacturer)
+                           (str "%" search-term "%")]))
+
+(defn merge-category-ids-conditions [sqlmap category-ids]
+  (-> sqlmap
+      (sql/merge-join :model_links
+                      [:=
+                       :models.id
+                       :model_links.model_id])
+      (sql/merge-where [:in
+                        :model_links.model_group_id
+                        category-ids])))
+
+(defn get-category-ids [tx value direct-only]
+  (if-let [value-id (:id value)]
+    (if direct-only
+      [value-id]
+      (as-> value-id <>
+        (descendents/descendent-ids tx <>)
+        (conj <> value-id)))))
+
 (defn get-multiple [context
-                    {order-by :orderBy,
+                    {:keys [limit offset],
+                     order-by :orderBy,
                      user-id :userId,
-                     direct-only :directOnly}
+                     direct-only :directOnly
+                     search-term :searchTerm}
                     value]
   (let [tx (-> context :request :tx)
-        value-id (:id value)
-        category-ids (if direct-only
-                       [value-id]
-                       (as-> value-id <>
-                         (descendents/descendent-ids tx <>)
-                         (conj <> value-id)))]
+        category-ids (get-category-ids tx value direct-only)]
     (-> base-sqlmap
-        (cond-> user-id (merge-reservable-conditions user-id))
+        (cond-> user-id
+          (merge-reservable-conditions user-id))
         (cond-> (seq category-ids)
-          (-> (sql/merge-join :model_links
-                              [:=
-                               :models.id
-                               :model_links.model_id])
-              (sql/merge-where [:in
-                                :model_links.model_group_id
-                                category-ids])))
+          (merge-category-ids-conditions category-ids))
+        (cond-> search-term
+          (merge-search-conditions search-term))
         (cond-> (seq order-by)
           (-> (sql/order-by (helpers/treat-order-arg order-by))
               (sql/merge-order-by [:name :asc])))
+        (cond-> limit
+          (sql/limit limit))
+        (cond-> offset
+          (sql/offset offset))
         sql/format
-        log/spy
         (->> (jdbc/query tx)))))
 
 ;#### debug ###################################################################

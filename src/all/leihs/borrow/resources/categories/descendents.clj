@@ -4,11 +4,12 @@
             [leihs.core.sql :as sql]))
 
 (defn descendent-ids [tx parent-id]
+  (assert (uuid? parent-id))
   (let [query
         (str "WITH RECURSIVE category_tree(parent_id, child_id, path) AS
                 (SELECT parent_id, child_id, ARRAY[parent_id]
                  FROM model_group_links
-                 WHERE parent_id = '" parent-id "'"
+                 WHERE parent_id = '" parent-id "' "
                 "UNION ALL
                  SELECT mgl.parent_id,
                         mgl.child_id,
