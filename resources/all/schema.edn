@@ -1,6 +1,7 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}}
 
- :enums {:ModelOrderAttributeEnum {:values [:ID]}
+ :enums {:ModelsOrderAttributeEnum {:values [:ID]},
+         :UsersOrderAttributeEnum {:values [:ID]},
          :OrderDirectionEnum {:values [:ASC :DESC]}}
 
  :objects {:Contract {:fields {:id {:type (non-null :UUID)}
@@ -49,16 +50,19 @@
                                :models {:type (list :Model)
                                         :description "Includes only direct ones or all from self and the descendent sub-categories."
                                         :resolve :models
-                                        :args {:userId {:type :UUID}
+                                        :args {:userId {:type (non-null :UUID)}
                                                :directOnly {:type Boolean}
-                                               :order {:type (list :ModelOrderInput)}}}}}}
+                                               :orderBy {:type (list :ModelsOrderInput)}}}}}}
 
- :input-objects {:ModelOrderInput {:fields {:attribute {:type (non-null :ModelOrderAttributeEnum)}
+ :input-objects {:ModelsOrderInput {:fields {:attribute {:type (non-null :ModelsOrderAttributeEnum)}
+                                           :direction {:type (non-null :OrderDirectionEnum)}}}
+                 :UsersOrderInput {:fields {:attribute {:type (non-null :UsersOrderAttributeEnum)}
                                            :direction {:type (non-null :OrderDirectionEnum)}}}}
 
  :queries {:users {:args {:limit {:type Int}
                           :offset {:type Int}
-                          :searchTerm {:type String}}
+                          :searchTerm {:type String}
+                          :orderBy {:type (list :UsersOrderInput)}}
                    :resolve :users
                    :type (list :User)}
            :calendar {:args {:modelId {:type (non-null :UUID)}
@@ -71,6 +75,6 @@
                                :offset {:type Int}
                                :ids {:type (list :UUID)}
                                :rootOnly {:type Boolean}
-                               :userId {:type :UUID}}
+                               :userId {:type (non-null :UUID)}}
                         :resolve :categories
                         :type (list :Category)}}}

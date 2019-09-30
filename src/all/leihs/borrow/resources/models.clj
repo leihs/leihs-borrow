@@ -1,9 +1,9 @@
 (ns leihs.borrow.resources.models
   (:require [clojure.tools.logging :as log]
-            [clojure.string :refer [lower-case]]
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]
             [leihs.borrow.resources.entitlements :as entitlements]
+            [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.categories.descendents :as descendents]))
 
 (def base-sqlmap
@@ -43,15 +43,11 @@
       (sql/merge-where [:= :items.is_borrowable true])
       (sql/merge-where [:= :items.parent_id nil])))
 
-(defn treat-order-arg [order]
-  (map #(-> %
-            (update :attribute
-                    (comp keyword lower-case name))
-            vals)
-       order))
-
-(defn get-multiple
-  [context {:keys [order], user-id :userId, direct-only :directOnly} value]
+(defn get-multiple [context
+                    {order-by :orderBy,
+                     user-id :userId,
+                     direct-only :directOnly}
+                    value]
   (let [tx (-> context :request :tx)
         value-id (:id value)
         category-ids (if direct-only
@@ -69,8 +65,8 @@
               (sql/merge-where [:in
                                 :model_links.model_group_id
                                 category-ids])))
-        (cond-> (seq order)
-          (-> (sql/order-by (treat-order-arg order))
+        (cond-> (seq order-by)
+          (-> (sql/order-by (helpers/treat-order-arg order-by))
               (sql/merge-order-by [:name :asc])))
         sql/format
         log/spy

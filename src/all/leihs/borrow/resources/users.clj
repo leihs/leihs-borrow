@@ -2,6 +2,7 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as clj-str]
             [clojure.tools.logging :as log]
+            [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.sql :as sql]
             [leihs.core.user.queries :refer [merge-search-term-where-clause]]))
 
@@ -16,23 +17,23 @@
       (sql/from :users)
       sql-order-users))
 
-(defn get-multiple
-  [context args _]
+(defn get-multiple [context
+                    {:keys [offset limit],
+                     order-by :orderBy,
+                     search-term :searchTerm}
+                    _]
   (jdbc/query
-    (-> context
-        :request
-        :tx)
-    (let [search-term (:search_term args)
-          offset (:offset args)
-          limit (:limit args)]
-      (-> (cond-> users-base-query 
-            search-term
-              (merge-search-term-where-clause search-term)
-            offset
-              (sql/offset offset)
-            limit
-              (sql/limit limit))
-          sql/format))))
+    (-> context :request :tx)
+    (-> (cond-> users-base-query 
+          search-term
+            (merge-search-term-where-clause search-term)
+          (seq order-by)
+            (-> (sql/order-by (helpers/treat-order-arg order-by)))
+          offset
+            (sql/offset offset)
+          limit
+            (sql/limit limit))
+        sql/format)))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

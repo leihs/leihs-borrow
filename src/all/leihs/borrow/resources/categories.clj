@@ -51,7 +51,6 @@
                               :model_group_links.parent_id
                               (:id value)])))
       sql/format
-      log/spy
       (->> (jdbc/query (-> context :request :tx)))))
 
 ;#### debug ###################################################################

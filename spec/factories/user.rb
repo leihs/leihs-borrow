@@ -1,4 +1,5 @@
 class User < Sequel::Model
+  one_to_many(:access_rights)
 end
 
 FactoryBot.define do
@@ -12,7 +13,11 @@ FactoryBot.define do
     updated_at { Date.today }
     ############################
 
-    after(:create) do |user|
+    transient do
+      access_rights { [] }
+    end
+
+    after(:create) do |user, trans|
       pw_hash = database[<<-SQL]
         SELECT crypt(
           #{database.literal('password')},
@@ -26,6 +31,10 @@ FactoryBot.define do
         authentication_system_id: 'password',
         data: pw_hash
       )
+
+      trans.access_rights.each do |access_right|
+        user.add_access_right(access_right)
+      end
     end
   end
 end
