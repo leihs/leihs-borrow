@@ -112,8 +112,7 @@
       dispatch-to-handler
       ; anti-csrf/wrap
       locale/wrap
-      ; wrap-authorize
-      ; wrap-ensure-authenticated-entity
+      wrap-ensure-authenticated-entity
       session/wrap-authenticate
       wrap-cookies
       settings/wrap

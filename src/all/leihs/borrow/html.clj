@@ -43,7 +43,7 @@
   {:headers {"Content-Type" "text/html"}
    :body (html5
            (head)
-           [:body #_(body-attributes request)
+           [:body (body-attributes request)
             [:div
              (ssr/render-navbar request {:borrow false})
              [:br]
