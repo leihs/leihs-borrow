@@ -45,7 +45,7 @@
            (head)
            [:body (body-attributes request)
             [:div
-             (ssr/render-navbar request {:borrow false})
+             ; (ssr/render-navbar request {:borrow false})
              [:br]
              [:div#app.container-fluid
               [:div.alert.alert-warning
