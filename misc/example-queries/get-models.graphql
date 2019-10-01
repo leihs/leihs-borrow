@@ -1,0 +1,25 @@
+query Query {
+  models(
+    limit: 20, 
+    searchTerm: "beamer", 
+    userId: "c0777d74-668b-5e01-abb5-f8277baa0ea8", 
+    startDate: "2019-10-01",
+    endDate: "2019-10-02",
+    inventoryPoolIds: [
+      "8bd16d45-056d-5590-bc7f-12849f034351",
+      "a02b8163-9a16-5066-b48e-9eb74cf8b791"
+    ]
+  ) {
+    name
+    availability {
+      inventoryPoolId
+      availability {
+        list {
+          d
+          quantity
+          visitsCount
+        }
+      }
+    }
+  }
+}

@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]
+            [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.categories.descendents :as descendents]))
@@ -70,13 +71,36 @@
         (descendents/descendent-ids tx <>)
         (conj <> value-id)))))
 
+(defn merge-availability [models context args]
+  (map (fn [model]
+         (assoc model
+                :availability
+                (map (fn [pool-id]
+                       {:inventory-pool-id pool-id
+                        :availability
+                          (availability/get
+                            context
+                            (assoc args
+                                   :inventoryPoolId pool-id
+                                   :modelId (:id model))
+                            nil)})
+                     (:inventoryPoolIds args))))
+       models))
+
 (defn get-multiple [context
                     {:keys [limit offset],
-                     order-by :orderBy,
-                     user-id :userId,
                      direct-only :directOnly
-                     search-term :searchTerm}
+                     end-date :endDate
+                     inventory-pool-ids :inventoryPoolIds
+                     order-by :orderBy
+                     search-term :searchTerm
+                     start-date :startDate
+                     user-id :userId
+                     :as args}
                     value]
+  {:pre [(let [availability-args [start-date end-date inventory-pool-ids]]
+           (or (every? identity availability-args)
+               (every? (comp not identity) availability-args)))]}
   (let [tx (-> context :request :tx)
         category-ids (get-category-ids tx value direct-only)]
     (-> base-sqlmap
@@ -94,7 +118,8 @@
         (cond-> offset
           (sql/offset offset))
         sql/format
-        (->> (jdbc/query tx)))))
+        (->> (jdbc/query tx))
+        (merge-availability context args))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
