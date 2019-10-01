@@ -3,7 +3,7 @@
             [leihs.core.graphql.helpers :as helpers]))
 
 (def skip-authorization-handler-keys
-  #{:home :sign-in})
+  #{:home :sign-in :graphql})
 
 (defn- skip?
   [handler-key]
