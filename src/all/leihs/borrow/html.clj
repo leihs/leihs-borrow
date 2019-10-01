@@ -42,16 +42,16 @@
 (defn html-handler [request]
   {:headers {"Content-Type" "text/html"}
    :body (html5
-           #_(head)
+           (head)
            [:body #_(body-attributes request)
             [:div
-             #_(ssr/render-navbar request {:borrow false})
+             (ssr/render-navbar request {:borrow false})
              [:br]
              [:div#app.container-fluid
               [:div.alert.alert-warning
                [:h1 "Leihs New Borrow"]
                [:p "This application requires Javascript."]]]]
-            #_(hiccup.page/include-js (cache-buster/cache-busted-path
+            (hiccup.page/include-js (cache-buster/cache-busted-path
                                       "/borrow/leihs-shared-bundle.js"))
             #_(hiccup.page/include-js
                 (cache-buster/cache-busted-path "/borrow/js/app.js"))])})

@@ -12,7 +12,7 @@
         (hiccup.page/include-css (cache-buster/cache-busted-path
                                    "/borrow/css/theme/bootstrap-leihs.css"))
         (hiccup.page/include-css
-          "/borrow/css/fontawesome-free-5.0.13/css/fontawesome-all.css"))
+          "/borrow/css/fontawesome-free-5.0.13/web-fonts-with-css/css/fontawesome-all.css"))
       [:body {:class "bg-paper"}
        [:noscript "This application requires Javascript."]
        inner-html
