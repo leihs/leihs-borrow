@@ -82,6 +82,8 @@
                            :userId {:type :UUID}}
                     :resolve :models
                     :type (list :Model)}
+           :inventoryPools {:resolve :inventory-pools
+                            :type (list :InventoryPool)}
            :availability {:args {:modelId {:type (non-null :UUID)}
                                  :inventoryPoolId {:type (non-null :UUID)}
                                  :startDate {:type (non-null String)}

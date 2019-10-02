@@ -3,10 +3,18 @@
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]))
 
+(def base-sqlmap (-> (sql/select :*)
+                     (sql/from :inventory_pools)
+                     (sql/merge-where [:= :is_active true])))
+
+(defn get-multiple [context _ _]
+  (-> base-sqlmap
+      sql/format
+      (->> (jdbc/query (-> context :request :tx)))))
+
 (defn get-one
   ([tx id]
-   (-> (sql/select :*)
-       (sql/from :inventory_pools)
+   (-> base-sqlmap
        (sql/merge-where [:= :id id])
        sql/format
        (->> (jdbc/query tx))

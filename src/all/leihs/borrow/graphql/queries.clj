@@ -10,6 +10,7 @@
   {:users users/get-multiple,
    :contracts contracts/get-multiple,
    :inventory-pool inventory-pools/get-one
+   :inventory-pools inventory-pools/get-multiple
    :availability availability/get
    :categories categories/get-multiple
    :models models/get-multiple
