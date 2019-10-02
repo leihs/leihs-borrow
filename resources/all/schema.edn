@@ -42,7 +42,7 @@
                             ; :compatibles {:type (list :Model)
                             ;               :resolve :compatibles}
                             }}
-           :ModelInventoryPoolAvailability {:fields {:inventoryPoolId {:type (non-null :UUID)}
+           :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                                      :dates {:type (list :DayData)}}}
            :Category {:fields {:id {:type (non-null :UUID)}
                                :name {:type (non-null String)

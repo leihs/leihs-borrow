@@ -4,13 +4,16 @@
             [leihs.core.sql :as sql]))
 
 (defn get-one
-  [context _ value]
-  (-> (sql/select :*)
-      (sql/from :inventory_pools)
-      (sql/merge-where [:= :id (:inventory_pool_id value)])
-      sql/format
-      (->> (jdbc/query (-> context :request :tx)))
-      first))
+  ([tx id]
+   (-> (sql/select :*)
+       (sql/from :inventory_pools)
+       (sql/merge-where [:= :id id])
+       sql/format
+       (->> (jdbc/query tx))
+       first))
+  ([context _ value]
+   (get-one (-> context :request :tx)
+            (:inventory_pool_id value))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

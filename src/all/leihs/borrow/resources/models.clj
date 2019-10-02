@@ -6,6 +6,7 @@
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
+            [leihs.borrow.resources.inventory-pools :as inventory-pools]
             [leihs.borrow.resources.categories.descendents :as descendents]))
 
 (def base-sqlmap
@@ -81,7 +82,9 @@
          (assoc model
                 :availability
                 (map (fn [pool-id]
-                       {:inventory-pool-id pool-id
+                       {:inventory-pool
+                          (inventory-pools/get-one (-> context :request :tx)
+                                                   pool-id)
                         :dates
                           (availability/get
                             context
