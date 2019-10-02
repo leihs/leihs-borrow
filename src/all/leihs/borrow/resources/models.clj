@@ -121,7 +121,9 @@
           (sql/offset offset))
         sql/format
         (->> (jdbc/query tx))
-        (merge-availability context args))))
+        (cond->
+          (some some? [start-date end-date inventory-pool-ids])
+          (merge-availability context args)))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
