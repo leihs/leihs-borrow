@@ -92,6 +92,6 @@
                                :offset {:type Int}
                                :ids {:type (list :UUID)}
                                :rootOnly {:type Boolean}
-                               :userId {:type (non-null :UUID)}}
+                               :userId {:type :UUID}}
                         :resolve :categories
                         :type (list :Category)}}}
