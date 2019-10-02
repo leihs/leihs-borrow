@@ -14,4 +14,5 @@
    :availability availability/get
    :categories categories/get-multiple
    :models models/get-multiple
+   :current-user users/get-current
    })

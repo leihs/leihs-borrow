@@ -23,6 +23,7 @@
                            :login {:type String}
                            :contracts {:type (list :Contract)
                                        :resolve :contracts}}}
+           :CurrentUser {:fields {:user {:type :User}}}
            :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null String)}
                               :visitsCount {:type (non-null Int)}
@@ -71,6 +72,8 @@
                           :orderBy {:type (list :UsersOrderInput)}}
                    :resolve :users
                    :type (list :User)}
+           :currentUser {:type (non-null :CurrentUser)
+                         :resolve :current-user}
            :models {:args {:categoryIds {:type (list :UUID)}
                            :inventoryPoolIds {:type (list :UUID)}
                            :limit {:type Int}

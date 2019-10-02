@@ -12,7 +12,7 @@
     sqlmap
     (sql/call :concat :users.firstname :users.lastname :users.login :users.id)))
 
-(def users-base-query
+(def base-sqlmap
   (-> (sql/select :users.*)
       (sql/from :users)
       sql-order-users))
@@ -24,7 +24,7 @@
                     _]
   (jdbc/query
     (-> context :request :tx)
-    (-> (cond-> users-base-query 
+    (-> (cond-> base-sqlmap 
           search-term
             (merge-search-term-where-clause search-term)
           (seq order-by)
@@ -34,6 +34,19 @@
           limit
             (sql/limit limit))
         sql/format)))
+
+(defn get-one [tx id]
+  (-> base-sqlmap
+      (sql/merge-where [:= :id id])
+      sql/format
+      (->> (jdbc/query tx))
+      first))
+
+(defn get-current
+  [{request :request} _ _]
+  (let [tx (:tx request)
+        user-id (-> request :authenticated-entity :user_id)]
+    {:user (get-one tx user-id)}))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
