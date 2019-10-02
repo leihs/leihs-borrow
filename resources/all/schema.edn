@@ -23,8 +23,8 @@
                            :login {:type String}
                            :contracts {:type (list :Contract)
                                        :resolve :contracts}}}
-           :Availability {:fields {:list {:type (list :DayData)}}}
-           :DayData {:fields {:d {:type (non-null String)}
+           :Availability {:fields {:dates {:type (list :DayData)}}}
+           :DayData {:fields {:date {:type (non-null String)}
                               :visitsCount {:type (non-null Int)}
                               :quantity {:type (non-null Int)}}}
            :Model {:fields {:id {:type (non-null :UUID)}
@@ -43,7 +43,7 @@
                             ;               :resolve :compatibles}
                             }}
            :ModelInventoryPoolAvailability {:fields {:inventoryPoolId {:type (non-null :UUID)}
-                                                     :availability {:type (non-null :Availability)}}}
+                                                     :dates {:type (list :DayData)}}}
            :Category {:fields {:id {:type (non-null :UUID)}
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}

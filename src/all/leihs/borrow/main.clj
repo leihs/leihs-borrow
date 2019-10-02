@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [str keyword])
   (:require [clj-pid.core :as pid]
             [clojure.pprint :refer [pprint]]
+            [clojure.spec.alpha :as spec]
             [clojure.tools.logging :as log]
             [leihs.core.core :refer [keyword str]]
             [leihs.core.ds :as ds]
@@ -53,6 +54,8 @@
   ; provide implementation fo render-page-base function
   (require 'leihs.borrow.ssr)
   ; ---------------------------------------------------
+  (spec/check-asserts true)
+
   (let [{:keys [options summary]} (cli/parse (rest args))]
     (letfn [(print-main-usage-summary
               []

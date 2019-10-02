@@ -1,5 +1,6 @@
 (ns leihs.borrow.resources.models
-  (:require [clojure.tools.logging :as log]
+  (:require [clojure.spec.alpha :as spec]
+            [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]
             [leihs.borrow.resources.availability :as availability]
@@ -72,12 +73,16 @@
         (conj <> value-id)))))
 
 (defn merge-availability [models context args]
+  (spec/assert (spec/keys :req-un [::availability/startDate
+                                   ::availability/endDate
+                                   ::availability/inventoryPoolIds])
+               args)
   (map (fn [model]
          (assoc model
                 :availability
                 (map (fn [pool-id]
                        {:inventory-pool-id pool-id
-                        :availability
+                        :dates
                           (availability/get
                             context
                             (assoc args
@@ -98,9 +103,6 @@
                      user-id :userId
                      :as args}
                     value]
-  {:pre [(let [availability-args [start-date end-date inventory-pool-ids]]
-           (or (every? identity availability-args)
-               (every? (comp not identity) availability-args)))]}
   (let [tx (-> context :request :tx)
         category-ids (get-category-ids tx value direct-only)]
     (-> base-sqlmap

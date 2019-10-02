@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get])
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as clj-str]
+            [clojure.spec.alpha :as spec]
             [leihs.core.sql :as sql]
             [clj-time.core :as clj-time]
             [clj-time.local :as clj-time-local]
@@ -13,6 +14,10 @@
             [camel-snake-kebab.core :as csk]
             [wharf.core :refer [transform-keys]]
             [clojure.walk :as walk]))
+
+(spec/def ::startDate string?)
+(spec/def ::endDate string?)
+(spec/def ::inventoryPoolIds (spec/coll-of uuid? :min-count 1))
 
 (def FETCH-URL "http://localhost:3000/borrow/booking_calendar_availability")
 
@@ -40,7 +45,8 @@
        :body
        json/parse-string
        walk/keywordize-keys
-       log/spy))
+       :list
+       (map #(clojure.set/rename-keys % {:d :date}))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
