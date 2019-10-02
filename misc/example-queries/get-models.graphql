@@ -1,6 +1,6 @@
 query Query {
   models(
-    limit: 20, 
+    limit: 1, 
     searchTerm: "beamer", 
     userId: "c0777d74-668b-5e01-abb5-f8277baa0ea8", 
     startDate: "2019-10-01",
@@ -12,13 +12,13 @@ query Query {
   ) {
     name
     availability {
-      inventoryPoolId
-      availability {
-        list {
-          d
-          quantity
-          visitsCount
-        }
+      inventoryPool {
+        name
+      }
+      dates {
+        date
+        quantity
+        visitsCount
       }
     }
   }
