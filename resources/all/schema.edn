@@ -1,8 +1,9 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}}
 
- :enums {:ModelsOrderAttributeEnum {:values [:ID]},
-         :UsersOrderAttributeEnum {:values [:ID]},
-         :OrderDirectionEnum {:values [:ASC :DESC]}}
+ :enums {:ModelsOrderByAttributeEnum {:values [:ID]},
+         :UsersOrderByAttributeEnum {:values [:ID]},
+         :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME]},
+         :OrderByDirectionEnum {:values [:ASC :DESC]}}
 
  :objects {:Contract {:fields {:id {:type (non-null :UUID)}
                                :compactId {:type (non-null :UUID)
@@ -23,7 +24,10 @@
                            :login {:type String}
                            :contracts {:type (list :Contract)
                                        :resolve :contracts}}}
-           :CurrentUser {:fields {:user {:type :User}}}
+           :CurrentUser {:fields {:user {:type :User}
+                                  :inventoryPools {:args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
+                                                   :type (list :InventoryPool)
+                                                   :resolve :inventory-pools}}}
            :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null String)}
                               :visitsCount {:type (non-null Int)}
@@ -57,19 +61,21 @@
                                         :args {:directOnly {:type Boolean}
                                                :limit {:type Int}
                                                :offset {:type Int}
-                                               :orderBy {:type (list :ModelsOrderInput)}
+                                               :orderBy {:type (list :ModelsOrderByInput)}
                                                :searchTerm {:type String}
                                                :userId {:type (non-null :UUID)}}}}}}
 
- :input-objects {:ModelsOrderInput {:fields {:attribute {:type (non-null :ModelsOrderAttributeEnum)}
-                                             :direction {:type (non-null :OrderDirectionEnum)}}}
-                 :UsersOrderInput {:fields {:attribute {:type (non-null :UsersOrderAttributeEnum)}
-                                           :direction {:type (non-null :OrderDirectionEnum)}}}}
+ :input-objects {:ModelsOrderByInput {:fields {:attribute {:type (non-null :ModelsOrderByAttributeEnum)}
+                                               :direction {:type (non-null :OrderByDirectionEnum)}}}
+                 :InventoryPoolsOrderByInput {:fields {:attribute {:type (non-null :InventoryPoolsOrderByAttributeEnum)}
+                                                       :direction {:type (non-null :OrderByDirectionEnum)}}}
+                 :UsersOrderByInput {:fields {:attribute {:type (non-null :UsersOrderByAttributeEnum)}
+                                              :direction {:type (non-null :OrderByDirectionEnum)}}}}
 
  :queries {:users {:args {:limit {:type Int}
                           :offset {:type Int}
                           :searchTerm {:type String}
-                          :orderBy {:type (list :UsersOrderInput)}}
+                          :orderBy {:type (list :UsersOrderByInput)}}
                    :resolve :users
                    :type (list :User)}
            :currentUser {:type (non-null :CurrentUser)
@@ -78,7 +84,7 @@
                            :inventoryPoolIds {:type (list :UUID)}
                            :limit {:type Int}
                            :offset {:type Int}
-                           :orderBy {:type (list :ModelsOrderInput)}
+                           :orderBy {:type (list :ModelsOrderByInput)}
                            :searchTerm {:type String}
                            :startDate {:type String}
                            :endDate {:type String} 

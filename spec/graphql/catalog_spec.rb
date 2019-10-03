@@ -100,7 +100,7 @@ describe 'catalog' do
     factorize!(data)
 
     q = <<-GRAPHQL
-      query Catalog($idAsc: [ModelsOrderInput]!, $userId: UUID!) {
+      query Catalog($idAsc: [ModelsOrderByInput]!, $userId: UUID!) {
         categories(rootOnly: true, userId: $userId) {
           id
           ...directModelsField

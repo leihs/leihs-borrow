@@ -1,0 +1,11 @@
+query Query {
+  currentUser {
+    user {
+      firstname
+      lastname
+    }
+    inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
+      name
+    }
+  }
+}

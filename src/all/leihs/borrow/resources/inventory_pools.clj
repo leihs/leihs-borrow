@@ -1,16 +1,30 @@
 (ns leihs.borrow.resources.inventory-pools
   (:require [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
+            [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.sql :as sql]))
 
 (def base-sqlmap (-> (sql/select :*)
+                     (sql/modifiers :distinct)
                      (sql/from :inventory_pools)
                      (sql/merge-where [:= :is_active true])))
 
-(defn get-multiple [context _ _]
-  (-> base-sqlmap
-      sql/format
-      (->> (jdbc/query (-> context :request :tx)))))
+(defn get-multiple [context {order-by :orderBy} value]
+  (let [user-id (-> value :user :id)]
+    (-> base-sqlmap
+        (cond-> user-id
+          (-> (sql/merge-join :access_rights
+                              [:=
+                               :access_rights.inventory_pool_id
+                               :inventory_pools.id])
+              (sql/merge-where [:= :access_rights.user_id user-id])
+              (sql/merge-where [:= :access_rights.deleted_at nil])))
+        (cond-> (seq order-by)
+          (-> (sql/order-by (helpers/treat-order-arg order-by))
+              (sql/merge-order-by [:name :asc])))
+        sql/format
+        log/spy
+        (->> (jdbc/query (-> context :request :tx))))))
 
 (defn get-one
   ([tx id]
