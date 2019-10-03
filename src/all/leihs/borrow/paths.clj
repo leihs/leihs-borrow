@@ -11,7 +11,11 @@
       "/borrow"
       (leaf "/shutdown" :shutdown)
       (leaf "/graphql" :graphql)
-      (leaf "/status" :status))
+      (leaf "/status" :status)
+      ; NOTE: don't rename the handler-key for image as it may break the
+      ; workaround for the problem with hanging requests
+      (branch "/images/" (param :image-id)
+              (leaf "" :image)))
     (leaf true :not-found)))
 
 (reset! leihs.core.paths/paths* paths)

@@ -9,6 +9,7 @@
     [leihs.borrow.authenticate :refer [wrap-ensure-authenticated-entity]]
     [leihs.borrow.graphql :as graphql]
     [leihs.borrow.html :as html]
+    [leihs.borrow.resources.images :as images]
     [leihs.borrow.paths :refer [path paths]]
     [leihs.core.anti-csrf.back :as anti-csrf]
     [leihs.core.auth.session :as session]
@@ -38,7 +39,8 @@
 (def handler-resolve-table
   (merge core-routes/resolve-table
          {:graphql graphql/handler,
-          :home html/html-handler
+          :home html/html-handler,
+          :image images/handler-one,
           :not-found html/not-found-handler,
           :status (status/routes "/borrow/status")}))
 
