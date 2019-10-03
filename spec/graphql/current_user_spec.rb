@@ -5,7 +5,7 @@ describe 'currentUser' do
   it 'works' do
     data = [
       { factory: :inventory_pool,
-        id: '07bcbc06-89ae-44c6-bf7a-ceb5cd8a853a',
+        id: 'de1ab6c2-5c85-45fb-aebf-527b6096411c',
         name: 'Pool A (customer)'
       },
       { factory: :inventory_pool,
@@ -13,7 +13,7 @@ describe 'currentUser' do
         name: 'Pool B (customer)'
       },
       { factory: :inventory_pool,
-        id: 'de1ab6c2-5c85-45fb-aebf-527b6096411c',
+        id: '07bcbc06-89ae-44c6-bf7a-ceb5cd8a853a',
         name: 'Pool C (lending manager)'
       },
       { factory: :inventory_pool,
@@ -58,28 +58,29 @@ describe 'currentUser' do
         currentUser {
           user {
             id
-            firstname
-            lastname
           }
           inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
-            id
             name
           }
         }
       }
     GRAPHQL
 
-    # result = query(q)
+    result = query(q, '0567f6b0-540c-4619-9251-9ea099a5d50d')
 
-    # expect(result).to include({
-    #   'data' => {
-    #     'users' => [
-    #       { 'id' => user1.id },
-    #       { 'id' => user2.id }
-    #     ]
-    #   }
-    # })
+    expect(result['data']).to eq({
+      'currentUser' => {
+        'user' => {
+          'id' => '0567f6b0-540c-4619-9251-9ea099a5d50d'
+        },
+        'inventoryPools' => [
+          { 'name' => 'Pool A (customer)' },
+          { 'name' => 'Pool B (customer)' },
+          { 'name' => 'Pool C (lending manager)' }
+        ]
+      }
+    })
 
-    # expect(result).not_to include(:errors)
+    expect(result).not_to include(:errors)
   end
 end
