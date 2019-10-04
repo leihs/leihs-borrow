@@ -2,6 +2,8 @@
   (:require [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]
+            [leihs.borrow.paths :refer [path]]
+            [leihs.borrow.resources.images :as images]
             [leihs.borrow.resources.models :as models]))
 
 (def base-sqlmap
@@ -34,24 +36,35 @@
       (cond-> (seq ids)
         (sql/merge-where [:in :model_groups.id ids]))))
 
+(defn merge-image-url [tx categories]
+  (map
+    #(assoc %
+            :image-url
+            (if-let [image-id
+                     (->> % :id (images/get-for-category tx) :id)]
+              (path :image {:image-id image-id})))
+    categories))
+
 (defn get-multiple
   [context args value]
-  (-> base-sqlmap
-      (extend-based-on-args args)
-      (cond-> value
-        (-> (sql/select :model_groups.id
-                        [(sql/call :coalesce
-                                   :model_group_links.label
-                                   :model_groups.name) :name])
-            (sql/merge-join :model_group_links
-                            [:=
-                             :model_groups.id
-                             :model_group_links.child_id])
-            (sql/merge-where [:=
-                              :model_group_links.parent_id
-                              (:id value)])))
-      sql/format
-      (->> (jdbc/query (-> context :request :tx)))))
+  (let [tx (-> context :request :tx)]
+    (-> base-sqlmap
+        (extend-based-on-args args)
+        (cond-> value
+          (-> (sql/select :model_groups.id
+                          [(sql/call :coalesce
+                                     :model_group_links.label
+                                     :model_groups.name) :name])
+              (sql/merge-join :model_group_links
+                              [:=
+                               :model_groups.id
+                               :model_group_links.child_id])
+              (sql/merge-where [:=
+                                :model_group_links.parent_id
+                                (:id value)])))
+        sql/format
+        (->> (jdbc/query tx))
+        (->> (merge-image-url tx)))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

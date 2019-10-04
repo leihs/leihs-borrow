@@ -8,29 +8,29 @@
   (-> (sql/select :images.*)
       (sql/from :images)))
 
-(defn image-query
-  [id]
+(defn get-one [tx id]
   (-> image-base-query
-      (sql/where [:= :images.id id])))
+      (sql/where [:= :images.id id])
+      sql/format
+      (->> (jdbc/query tx))
+      first))
 
-(defn image-query-for-category
-  [id]
+(defn get-for-category [tx id]
   (-> image-base-query
       (sql/merge-where [:= :images.target_type "ModelGroup"])
-      (sql/merge-where [:= :images.target_id id])))
+      (sql/merge-where [:= :images.target_id id])
+      sql/format
+      (->> (jdbc/query tx))
+      first))
 
 (defn handler-one
   [{tx :tx, {image-id :image-id} :route-params}]
-  (if-let [i (->> image-id
-                  image-query
-                  sql/format
-                  (jdbc/query tx)
-                  first)]
-    (->> i
+  (if-let [image (get-one tx image-id)]
+    (->> image
          :content
          (.decode (Base64/getMimeDecoder))
          (hash-map :body)
-         (merge {:headers {"Content-Type" (:content_type i),
+         (merge {:headers {"Content-Type" (:content_type image),
                            "Content-Transfer-Encoding" "binary"}}))
     {:status 404}))
 
