@@ -82,11 +82,6 @@ jobs:
       Status of this job is **used by github's "branch protection"**!
 
     depends_on: &GOOD_TO_MERGE_DEPENDENCIES
-      feature-specs was successful:
-        type: job
-        job_key: feature-specs
-        states: [passed]
-
       backend-specs was successful:
         type: job
         job_key: backend-specs
