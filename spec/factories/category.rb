@@ -16,6 +16,8 @@ class Category < Sequel::Model(:model_groups)
                left_key: :model_group_id,
                right_key: :model_id,
                join_table: :model_links)
+
+  one_to_many(:images, key: :target_id)
 end
 
 FactoryBot.define do
@@ -30,6 +32,7 @@ FactoryBot.define do
       parents { [] }
       children { [] }
       direct_models { [] }
+      images { [] }
     end
 
     after(:create) do |category, trans|
@@ -43,6 +46,10 @@ FactoryBot.define do
 
       trans.direct_models.each do |model|
         category.add_direct_model(model)
+      end
+
+      trans.images.each do |image|
+        category.add_image(image)
       end
     end
   end
