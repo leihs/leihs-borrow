@@ -3,6 +3,7 @@ class Model < Sequel::Model
                right_key: :model_group_id,
                join_table: :model_links)
   one_to_many(:items)
+  one_to_many(:images, key: :target_id)
 end
 
 FactoryBot.define do
@@ -12,6 +13,7 @@ FactoryBot.define do
     transient do
       categories { [] }
       items { [] }
+      images { [] }
     end
 
     created_at { DateTime.now }
@@ -24,6 +26,10 @@ FactoryBot.define do
 
       trans.items.each do |item|
         model.add_item(item)
+      end
+
+      trans.images.each do |image|
+        model.add_image(image)
       end
     end
   end

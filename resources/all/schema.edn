@@ -38,8 +38,8 @@
                             :manufacturer {:type String}
                             :description {:type String}
                             :availability {:type (list :ModelInventoryPoolAvailability)}
-                            ; :images {:type (list :Image)
-                            ;          :resolve :images}
+                            :images {:type (list :Image)
+                                     :resolve :images}
                             ; :attachments {:type (list :Attachment)
                             ;               :resolve :attachments}
                             ; :properties {:type (list :Property)
