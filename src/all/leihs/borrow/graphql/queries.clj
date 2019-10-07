@@ -4,6 +4,7 @@
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.contracts :as contracts]
             [leihs.borrow.resources.categories :as categories]
+            [leihs.borrow.resources.images :as images]
             [leihs.borrow.resources.models :as models]))
 
 (def resolvers
@@ -15,4 +16,6 @@
    :categories categories/get-multiple
    :models models/get-multiple
    :current-user users/get-current
+   :images images/get-multiple
+   :thumbnails images/get-multiple-thumbnails
    })

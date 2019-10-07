@@ -36,15 +36,6 @@
       (cond-> (seq ids)
         (sql/merge-where [:in :model_groups.id ids]))))
 
-(defn merge-image-url [tx categories]
-  (map
-    #(assoc %
-            :image-url
-            (if-let [image-id
-                     (->> % :id (images/get-for-category tx) :id)]
-              (path :image {:image-id image-id})))
-    categories))
-
 (defn get-multiple
   [context args value]
   (let [tx (-> context :request :tx)]
@@ -63,8 +54,7 @@
                                 :model_group_links.parent_id
                                 (:id value)])))
         sql/format
-        (->> (jdbc/query tx))
-        (->> (merge-image-url tx)))))
+        (->> (jdbc/query tx)))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

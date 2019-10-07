@@ -49,8 +49,19 @@
                             }}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                                      :dates {:type (list :DayData)}}}
+           :Image {:fields {:id {:type (non-null :UUID)}
+                            :imageUrl {:type (non-null String)}
+                            :content_type {:type (non-null String)}
+                            :filename {:type (non-null String)}
+                            :size {:type (non-null Int)}
+                            :thumbnails {:type (list :Thumbnail)
+                                         :resolve :thumbnails}}}
+           :Thumbnail {:fields {:id {:type (non-null :UUID)}
+                                :imageUrl {:type (non-null String)}
+                                :content_type {:type (non-null String)}
+                                :filename {:type (non-null String)}
+                                :size {:type (non-null Int)}}}
            :Category {:fields {:id {:type (non-null :UUID)}
-                               :imageUrl {:type String}
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
@@ -64,7 +75,9 @@
                                                :offset {:type Int}
                                                :orderBy {:type (list :ModelsOrderByInput)}
                                                :searchTerm {:type String}
-                                               :userId {:type (non-null :UUID)}}}}}}
+                                               :userId {:type (non-null :UUID)}}}
+                               :images {:type (list :Image)
+                                        :resolve :images}}}}
 
  :input-objects {:ModelsOrderByInput {:fields {:attribute {:type (non-null :ModelsOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}

@@ -99,9 +99,14 @@ describe 'categories' do
       query Catalog($idAsc: [ModelsOrderByInput]!, $userId: UUID!) {
         categories(rootOnly: true, userId: $userId) {
           id
-          imageUrl
           ...directModelsField
           ...modelsField
+          images {
+            imageUrl
+            thumbnails {
+              imageUrl
+            }
+          }
           children(userId: $userId) {
             id
             ...directModelsField
@@ -143,7 +148,13 @@ describe 'categories' do
     expect(result['data']).to eq({
       'categories' => [
         { 'id' => '9a1dc177-a2b2-4a16-8fbf-6552b5313f38',
-          'imageUrl' => '/borrow/images/081c8aa7-b514-4935-a9ea-bd698f378d9a',
+          'images' => [
+            { 'imageUrl' => '/borrow/images/081c8aa7-b514-4935-a9ea-bd698f378d9a',
+              'thumbnails' => [
+                'imageUrl' => '/borrow/images/82085a7b-b428-4c4b-b977-efbc2045ff46'
+              ]
+            }
+          ],
           'directModels' => [
             { 'id' => '48e7de51-a1d3-4651-9afa-c5a185594e50' }
           ],
