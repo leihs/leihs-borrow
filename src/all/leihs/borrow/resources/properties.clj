@@ -1,0 +1,22 @@
+(ns leihs.borrow.resources.properties
+  (:require [clojure.spec.alpha :as spec]
+            [clojure.tools.logging :as log]
+            [clojure.java.jdbc :as jdbc]
+            [leihs.core.sql :as sql]))
+
+(def base-sqlmap
+  (-> (sql/select :properties.*)
+      (sql/from :properties)))
+
+(defn get-multiple [{{:keys [tx]} :request} _ value]
+  (-> base-sqlmap
+      (sql/merge-where [:= :properties.model_id (:id value)])
+      sql/format
+      (->> (jdbc/query tx))))
+
+;#### debug ###################################################################
+; (logging-config/set-logger! :level :debug)
+; (logging-config/set-logger! :level :info)
+; (debug/debug-ns 'cider-ci.utils.shutdown)
+; (debug/debug-ns *ns*)
+; (debug/undebug-ns *ns*)

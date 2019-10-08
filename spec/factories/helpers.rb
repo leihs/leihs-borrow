@@ -4,6 +4,37 @@
 # of the traversal. It is thus important how one nests the
 # associated entities. Some has to be created before the other,
 # in order to establish the association (foreign keys dependencies).
+
+def factorise!(arg, strategy = :create)
+  associations = arg.delete(:associations)
+  factory = arg.delete(:factory)
+  raise 'No :factory key given!' unless factory
+  trait = arg.delete(:trait)
+
+  object = FactoryBot.send(strategy, factory, trait, arg)
+
+  associations.try(:each_pair) do |key, value|
+    factorised_value = case value
+                       when Array
+                         value.map do |v|
+                           factorise!(v, :build)
+                         end
+                       when Hash
+                         factorise!(value, :build)
+                       else
+                         raise 'wtf'
+                       end
+
+    Array
+      .wrap(factorised_value)
+      .each do |fv|
+        object.send("add_#{key.to_s.singularize}", fv)
+      end
+  end
+
+  object
+end
+
 def factorize!(arg)
   case arg
   when Array
@@ -14,9 +45,9 @@ def factorize!(arg)
     raise 'No :factory key given!' unless factory
     attrs = arg.map { |k, v| [k, factorize!(v)] }.to_h
     if trait
-      FactoryBot.create(factory, trait, attrs)
+      FactoryBot.build(factory, trait, attrs)
     else
-      FactoryBot.create(factory, attrs)
+      FactoryBot.build(factory, attrs)
     end
   else
     arg

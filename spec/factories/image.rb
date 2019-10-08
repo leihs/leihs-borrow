@@ -1,5 +1,6 @@
 class Image < Sequel::Model
   many_to_one(:category, key: :target_id)
+  many_to_one(:leihs_model, key: :target_id)
   one_to_many(:thumbnails, class: self, key: :parent_id)
 end
 
@@ -10,7 +11,7 @@ FactoryBot.define do
       thumbnails { [] }
     end
 
-    trait :for_model do
+    trait :for_leihs_model do
       target_type { 'Model' }
     end
 

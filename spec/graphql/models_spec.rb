@@ -3,19 +3,27 @@ require_relative 'graphql_helper'
 
 describe 'models' do
   it 'works' do
-    data = [
-      { factory: :model,
-        id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3' },
-      { factory: :image,
-        trait: :for_model,
-        id: '7484b5d2-376a-4b15-8db0-54cc6bab02ea',
-        target_id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3' },
-      { factory: :attachment,
-        id: '919fbdd1-111c-49b7-aeb0-2d5d8825ed00',
-        model_id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3' }
-    ]
+    data = 
+      { factory: :leihs_model,
+        id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3',
+        associations: {
+          properties: [
+            { factory: :property,
+              id: '2df736a4-825c-4f36-b48a-75875b3a3c26' }
+          ],
+          images: [
+            { factory: :image,
+              trait: :for_leihs_model,
+              id: '7484b5d2-376a-4b15-8db0-54cc6bab02ea' }
+          ],
+          attachments: [
+            { factory: :attachment,
+              id: '919fbdd1-111c-49b7-aeb0-2d5d8825ed00' }
+          ]
+        }
+      }
 
-    factorize!(data)
+    factorise!(data)
 
     q = <<-GRAPHQL
       {

@@ -7,6 +7,7 @@
     [leihs.borrow.resources.images :as images]
     [leihs.borrow.resources.inventory-pools :as inventory-pools]
     [leihs.borrow.resources.models :as models]
+    [leihs.borrow.resources.properties :as properties]
     [leihs.borrow.resources.users :as users]
     ))
 
@@ -20,5 +21,6 @@
    :inventory-pool inventory-pools/get-one
    :inventory-pools inventory-pools/get-multiple
    :models models/get-multiple
+   :properties properties/get-multiple
    :thumbnails images/get-multiple-thumbnails
    :users users/get-multiple})

@@ -1,14 +1,15 @@
-class Model < Sequel::Model
+class LeihsModel < Sequel::Model(:models)
   many_to_many(:categories,
                right_key: :model_group_id,
                join_table: :model_links)
   one_to_many(:items)
   one_to_many(:images, key: :target_id)
-  one_to_many(:attachments)
+  one_to_many(:attachments, key: :model_id)
+  one_to_many(:properties, key: :model_id)
 end
 
 FactoryBot.define do
-  factory :model do
+  factory :leihs_model do
     product { Faker::Commerce.product_name }
 
     transient do
@@ -16,6 +17,7 @@ FactoryBot.define do
       items { [] }
       images { [] }
       attachments { [] }
+      properties { [] }
     end
 
     created_at { DateTime.now }
@@ -36,6 +38,10 @@ FactoryBot.define do
 
       trans.attachments.each do |attachment|
         model.add_attachment(attachment)
+      end
+
+      trans.properties.each do |property|
+        model.add_property(property)
       end
     end
   end

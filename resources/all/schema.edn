@@ -42,11 +42,13 @@
                                      :resolve :images}
                             :attachments {:type (list :Attachment)
                                           :resolve :attachments}
-                            ; :properties {:type (list :Property)
-                            ;              :resolve :properties}
+                            :properties {:type (list :Property)
+                                         :resolve :properties}
                             ; :compatibles {:type (list :Model)
                             ;               :resolve :compatibles}
                             }}
+           :Property {:fields {:key {:type (non-null String)}
+                               :value {:type (non-null String)}}}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                                      :dates {:type (list :DayData)}}}
            :Attachment {:fields {:id {:type (non-null :UUID)}

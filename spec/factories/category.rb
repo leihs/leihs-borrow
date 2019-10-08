@@ -12,7 +12,7 @@ class Category < Sequel::Model(:model_groups)
                join_table: :model_group_links)
 
   many_to_many(:direct_models,
-               class: :Model,
+               class: :LeihsModel,
                left_key: :model_group_id,
                right_key: :model_id,
                join_table: :model_links)

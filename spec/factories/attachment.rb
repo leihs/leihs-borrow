@@ -1,5 +1,5 @@
 class Attachment < Sequel::Model
-  many_to_one(:leihs_model, class: :Model, key: :model_id)
+  many_to_one(:leihs_model, key: :model_id)
   many_to_one(:item)
 end
 
