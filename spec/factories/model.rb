@@ -4,6 +4,7 @@ class Model < Sequel::Model
                join_table: :model_links)
   one_to_many(:items)
   one_to_many(:images, key: :target_id)
+  one_to_many(:attachments)
 end
 
 FactoryBot.define do
@@ -14,6 +15,7 @@ FactoryBot.define do
       categories { [] }
       items { [] }
       images { [] }
+      attachments { [] }
     end
 
     created_at { DateTime.now }
@@ -30,6 +32,10 @@ FactoryBot.define do
 
       trans.images.each do |image|
         model.add_image(image)
+      end
+
+      trans.attachments.each do |attachment|
+        model.add_attachment(attachment)
       end
     end
   end

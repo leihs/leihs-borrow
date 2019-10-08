@@ -1,3 +1,9 @@
+# This method takes a nested hash of factory data or an array
+# of these as argument. It maps over and walks down the data
+# structure and creates the factories respectively in the order
+# of the traversal. It is thus important how one nests the
+# associated entities. Some has to be created before the other,
+# in order to establish the association (foreign keys dependencies).
 def factorize!(arg)
   case arg
   when Array

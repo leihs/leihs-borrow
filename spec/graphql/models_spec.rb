@@ -5,14 +5,14 @@ describe 'models' do
   it 'works' do
     data = [
       { factory: :model,
-        id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3',
-        images: [
-          { factory: :image,
-            trait: :for_model,
-            id: '041c45ce-fbd7-4b99-8f72-3d48a4db96a2',
-          }
-        ]
-      }
+        id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3' },
+      { factory: :image,
+        trait: :for_model,
+        id: '7484b5d2-376a-4b15-8db0-54cc6bab02ea',
+        target_id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3' },
+      { factory: :attachment,
+        id: '919fbdd1-111c-49b7-aeb0-2d5d8825ed00',
+        model_id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3' }
     ]
 
     factorize!(data)
@@ -24,6 +24,9 @@ describe 'models' do
           images {
             imageUrl
           }
+          attachments {
+            url
+          }
         }
       }
     GRAPHQL
@@ -34,7 +37,10 @@ describe 'models' do
       'models' => [
         { 'id' => '2bc1deb5-9428-4178-afd0-c06bb8d31ff3',
           'images' => [
-            { 'imageUrl' => '/borrow/images/041c45ce-fbd7-4b99-8f72-3d48a4db96a2' }
+            { 'imageUrl' => '/borrow/images/7484b5d2-376a-4b15-8db0-54cc6bab02ea' }
+          ],
+          'attachments' => [
+            { 'url' => '/borrow/attachments/919fbdd1-111c-49b7-aeb0-2d5d8825ed00' }
           ]
         }
       ]
