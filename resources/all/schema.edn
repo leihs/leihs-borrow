@@ -40,8 +40,8 @@
                             :availability {:type (list :ModelInventoryPoolAvailability)}
                             :images {:type (list :Image)
                                      :resolve :images}
-                            ; :attachments {:type (list :Attachment)
-                            ;               :resolve :attachments}
+                            :attachments {:type (list :Attachment)
+                                          :resolve :attachments}
                             ; :properties {:type (list :Property)
                             ;              :resolve :properties}
                             ; :compatibles {:type (list :Model)
@@ -49,6 +49,11 @@
                             }}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                                      :dates {:type (list :DayData)}}}
+           :Attachment {:fields {:id {:type (non-null :UUID)}
+                                 :url {:type (non-null String)}
+                                 :content_type {:type (non-null String)}
+                                 :filename {:type (non-null String)}
+                                 :size {:type (non-null Int)}}}
            :Image {:fields {:id {:type (non-null :UUID)}
                             :imageUrl {:type (non-null String)}
                             :content_type {:type (non-null String)}
