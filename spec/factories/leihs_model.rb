@@ -16,7 +16,6 @@ FactoryBot.define do
       categories { [] }
       items { [] }
       images { [] }
-      attachments { [] }
       properties { [] }
     end
 
@@ -34,10 +33,6 @@ FactoryBot.define do
 
       trans.images.each do |image|
         model.add_image(image)
-      end
-
-      trans.attachments.each do |attachment|
-        model.add_attachment(attachment)
       end
 
       trans.properties.each do |property|
