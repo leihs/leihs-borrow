@@ -51,7 +51,7 @@ describe 'currentUser' do
       }
     ]
 
-    factorize!(data)
+    factorise!(data)
 
     q = <<-GRAPHQL
       query Query {
