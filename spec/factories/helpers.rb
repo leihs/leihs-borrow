@@ -45,9 +45,9 @@ def factorize!(arg)
     raise 'No :factory key given!' unless factory
     attrs = arg.map { |k, v| [k, factorize!(v)] }.to_h
     if trait
-      FactoryBot.build(factory, trait, attrs)
+      FactoryBot.create(factory, trait, attrs)
     else
-      FactoryBot.build(factory, attrs)
+      FactoryBot.create(factory, attrs)
     end
   else
     arg

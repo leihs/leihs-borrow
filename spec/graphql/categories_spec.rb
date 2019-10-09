@@ -28,8 +28,8 @@ describe 'categories' do
           }
         ],
         direct_models: [
-          { factory: :model },
-          { factory: :model,
+          { factory: :leihs_model },
+          { factory: :leihs_model,
             id: '48e7de51-a1d3-4651-9afa-c5a185594e50',
             items: [
               { factory: :item,
@@ -42,8 +42,8 @@ describe 'categories' do
           { factory: :category,
             id: '33df18c8-6d86-44a1-a0d8-d76847d8b043',
             direct_models: [
-              { factory: :model },
-              { factory: :model,
+              { factory: :leihs_model },
+              { factory: :leihs_model,
                 id: 'f39b95d2-fcef-4b66-96ec-b86de1d7238b',
                 items: [
                   { factory: :item,
@@ -56,8 +56,8 @@ describe 'categories' do
               { factory: :category,
                 id: 'ef364d34-9ed5-4b51-bdff-17885e48c8bc',
                 direct_models: [
-                  { factory: :model },
-                  { factory: :model,
+                  { factory: :leihs_model },
+                  { factory: :leihs_model,
                     id: '0d082f18-e42b-4097-a73f-a1e970d86246',
                     items: [
                       { factory: :item,
@@ -71,7 +71,7 @@ describe 'categories' do
           },
           { factory: :category,
             direct_models: [
-              { factory: :model,
+              { factory: :leihs_model,
                 items: [
                   { factory: :item,
                     is_borrowable: true }
@@ -83,7 +83,7 @@ describe 'categories' do
       },
       { factory: :category,
         direct_models: [
-          { factory: :model,
+          { factory: :leihs_model,
             items: [
               { factory: :item,
                 is_borrowable: true }
