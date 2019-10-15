@@ -99,6 +99,22 @@
                      (:inventoryPoolIds args))))
        models))
 
+(defn from-compatibles [sqlmap value]
+  (-> sqlmap
+      (sql/from :models_compatibles)
+      (sql/join :models [:=
+                         :models.id
+                         :models_compatibles.compatible_id])
+      (sql/merge-where [:=
+                        :models_compatibles.model_id
+                        (:id value)])))
+
+(defn merge-categories-conditions [sqlmap tx value direct-only]
+  (let [category-ids (get-category-ids tx value direct-only)]
+    (cond-> sqlmap
+      (seq category-ids)
+      (merge-category-ids-conditions category-ids))))
+
 (defn get-multiple [context
                     {:keys [limit offset],
                      direct-only :directOnly
@@ -110,23 +126,12 @@
                      user-id :userId
                      :as args}
                     value]
-  (log/debug (:com.walmartlabs.lacinia/container-type-name context))
-  (let [tx (-> context :request :tx)
-        category-ids (get-category-ids tx value direct-only)]
+  (let [tx (-> context :request :tx)]
     (-> base-sqlmap
         (cond-> (= (::lacinia/container-type-name context) :Model)
-          (-> (sql/from :models_compatibles)
-              (sql/join :models [:=
-                                 :models.id
-                                 :models_compatibles.compatible_id])
-              (sql/merge-where [:=
-                                :models_compatibles.model_id
-                                (:id value)])))
+          (from-compatibles value))
         (cond-> (= (::lacinia/container-type-name context) :Category)
-          #(let [category-ids (get-category-ids tx value direct-only)]
-             (cond-> %
-               category-ids
-               (merge-category-ids-conditions category-ids))))
+          (merge-categories-conditions tx value direct-only))
         (cond-> user-id
           (merge-reservable-conditions user-id))
         (cond-> search-term
