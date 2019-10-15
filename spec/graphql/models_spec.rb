@@ -38,6 +38,9 @@ describe 'models' do
           attachments {
             url
           }
+          properties {
+            id
+          }
         }
       }
     GRAPHQL
@@ -52,6 +55,9 @@ describe 'models' do
           ],
           'attachments' => [
             { 'url' => '/borrow/attachments/919fbdd1-111c-49b7-aeb0-2d5d8825ed00' }
+          ],
+          'properties' => [
+            { 'id' => '2df736a4-825c-4f36-b48a-75875b3a3c26' }
           ]
         }
       ]
