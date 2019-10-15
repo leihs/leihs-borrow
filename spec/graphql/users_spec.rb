@@ -16,7 +16,7 @@ describe 'users' do
       }
     GRAPHQL
 
-    result = query(q)
+    result = query(q, user1.id)
 
     expect(result).to include({
       'data' => {

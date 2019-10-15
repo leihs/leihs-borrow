@@ -5,7 +5,7 @@ require 'rack'
 class GraphqlQuery
   attr_reader :response
 
-  def initialize(query, user_id = nil, variables = nil)
+  def initialize(query, user_id, variables)
     @query = query
     @variables = variables
     @user_id = user_id

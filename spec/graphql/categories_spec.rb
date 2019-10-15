@@ -96,8 +96,8 @@ describe 'categories' do
     )
 
     q = <<-GRAPHQL
-      query Catalog($idAsc: [ModelsOrderByInput]!, $userId: UUID!) {
-        categories(rootOnly: true, userId: $userId) {
+      query Catalog($idAsc: [ModelsOrderByInput]!) {
+        categories(rootOnly: true) {
           id
           ...directModelsField
           ...modelsField
@@ -107,15 +107,15 @@ describe 'categories' do
               imageUrl
             }
           }
-          children(userId: $userId) {
+          children {
             id
             ...directModelsField
             ...modelsField
-            children(userId: $userId) {
+            children {
               id
               ...directModelsField
               ...modelsField
-              children(userId: $userId) {
+              children {
                 id
                 ...directModelsField
                 ...modelsField
@@ -126,24 +126,23 @@ describe 'categories' do
       }
 
       fragment directModelsField on Category {
-        directModels: models(directOnly: true, orderBy: $idAsc, userId: $userId) {
+        directModels: models(directOnly: true, orderBy: $idAsc) {
           id
         }
       }
 
       fragment modelsField on Category {
-        models(userId: $userId) {
+        models {
           id
         }
       }
     GRAPHQL
 
     vars = {
-      idAsc: [{attribute: 'ID', direction: 'ASC'}],
-      userId: '3867c467-6dfc-4fb2-83ed-993aa774d762' 
+      idAsc: [{attribute: 'ID', direction: 'ASC'}]
     }
 
-    result = query(q, nil, vars)
+    result = query(q, user.id, vars)
     
     expect(result['data']).to eq({
       'categories' => [

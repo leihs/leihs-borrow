@@ -3,9 +3,36 @@ require_relative 'graphql_helper'
 
 describe 'models' do
   it 'works' do
+    user = FactoryBot.create(:user,
+                             id: '4dc6adb4-ed7c-46cb-8573-8e585f70f4de')
+    inventory_pool = FactoryBot.create(:inventory_pool,
+                                       id: '232547a5-5f43-450c-896a-b692275a04ea')
+    FactoryBot.create(:access_right,
+                      inventory_pool: inventory_pool,
+                      user: user)
+
+    recommend = FactoryBot.create(
+      :leihs_model,
+      id: '210a4116-162f-4947-bcb0-2d7d1a5c7b1c',
+      items: [
+        FactoryBot.create(
+          :item,
+          responsible: inventory_pool,
+          is_borrowable: true
+        )
+      ]
+    )
+
     model = FactoryBot.create(
       :leihs_model,
       id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3',
+      items: [
+        FactoryBot.create(
+          :item,
+          responsible: inventory_pool,
+          is_borrowable: true
+        )
+      ],
       properties: [
         FactoryBot.create(
           :property,
@@ -19,12 +46,7 @@ describe 'models' do
           id: '7484b5d2-376a-4b15-8db0-54cc6bab02ea'
         )
       ],
-      recommends: [
-        FactoryBot.create(
-          :leihs_model,
-          id: '210a4116-162f-4947-bcb0-2d7d1a5c7b1c'
-        )
-      ]
+      recommends: [recommend]
     )
 
     model.add_attachment(
@@ -54,7 +76,7 @@ describe 'models' do
       }
     GRAPHQL
 
-    result = query(q)
+    result = query(q, user.id)
     
     expect(result['data']).to eq({
       'models' => [

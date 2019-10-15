@@ -115,7 +115,8 @@
       (seq category-ids)
       (merge-category-ids-conditions category-ids))))
 
-(defn get-multiple [context
+(defn get-multiple [{{:keys [tx authenticated-entity]} :request
+                     :as context}
                     {:keys [limit offset],
                      direct-only :directOnly
                      end-date :endDate
@@ -126,28 +127,28 @@
                      user-id :userId
                      :as args}
                     value]
-  (let [tx (-> context :request :tx)]
-    (-> base-sqlmap
-        (cond-> (= (::lacinia/container-type-name context) :Model)
-          (from-compatibles value))
-        (cond-> (= (::lacinia/container-type-name context) :Category)
-          (merge-categories-conditions tx value direct-only))
-        (cond-> user-id
-          (merge-reservable-conditions user-id))
-        (cond-> search-term
-          (merge-search-conditions search-term))
-        (cond-> (seq order-by)
-          (-> (sql/order-by (helpers/treat-order-arg order-by))
-              (sql/merge-order-by [:name :asc])))
-        (cond-> limit
-          (sql/limit limit))
-        (cond-> offset
-          (sql/offset offset))
-        sql/format
-        (->> (jdbc/query tx))
-        (cond->
-          (some some? [start-date end-date inventory-pool-ids])
-          (merge-availability context args)))))
+  (log/debug authenticated-entity)
+  (-> base-sqlmap
+      (cond-> (= (::lacinia/container-type-name context) :Model)
+        (from-compatibles value))
+      (cond-> (= (::lacinia/container-type-name context) :Category)
+        (merge-categories-conditions tx value direct-only))
+      (merge-reservable-conditions (:id authenticated-entity))
+      (cond-> search-term
+        (merge-search-conditions search-term))
+      (cond-> (seq order-by)
+        (-> (sql/order-by (helpers/treat-order-arg order-by))
+            (sql/merge-order-by [:name :asc])))
+      (cond-> limit
+        (sql/limit limit))
+      (cond-> offset
+        (sql/offset offset))
+      sql/format
+      log/spy
+      (->> (jdbc/query tx))
+      (cond->
+        (some some? [start-date end-date inventory-pool-ids])
+        (merge-availability context args))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

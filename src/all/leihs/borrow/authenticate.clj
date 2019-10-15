@@ -5,7 +5,6 @@
 (def skip-authorization-handler-keys
   #{:home
     :sign-in
-    :graphql
     :status
     :image
     :attachment})

@@ -13,8 +13,7 @@
       (sql/merge-where [:= :model_groups.type "Category"])))
 
 (defn extend-based-on-args [sqlmap {:keys [limit offset ids],
-                                    root-only :rootOnly,
-                                    user-id :userId}]
+                                    root-only :rootOnly}]
   (-> sqlmap
       (cond-> root-only
         (sql/merge-where
@@ -25,36 +24,34 @@
                 (sql/merge-where [:=
                                   :model_groups.id
                                   :model_group_links.child_id]))]]))
-      (cond-> user-id
-        (-> (sql/merge-join :model_links
-                            [:= :model_groups.id :model_links.model_group_id])
-            (sql/merge-join :models
-                            [:= :model_links.model_id :models.id])
-            (models/merge-reservable-conditions user-id)))
       (cond-> limit (sql/limit limit))
       (cond-> offset (sql/offset offset))
       (cond-> (seq ids)
         (sql/merge-where [:in :model_groups.id ids]))))
 
 (defn get-multiple
-  [context args value]
-  (let [tx (-> context :request :tx)]
-    (-> base-sqlmap
-        (extend-based-on-args args)
-        (cond-> value
-          (-> (sql/select :model_groups.id
-                          [(sql/call :coalesce
-                                     :model_group_links.label
-                                     :model_groups.name) :name])
-              (sql/merge-join :model_group_links
-                              [:=
-                               :model_groups.id
-                               :model_group_links.child_id])
-              (sql/merge-where [:=
-                                :model_group_links.parent_id
-                                (:id value)])))
-        sql/format
-        (->> (jdbc/query tx)))))
+  [{{:keys [tx authenticated-entity]} :request} args value]
+  (-> base-sqlmap
+      (sql/merge-join :model_links
+                      [:= :model_groups.id :model_links.model_group_id])
+      (sql/merge-join :models
+                      [:= :model_links.model_id :models.id])
+      (models/merge-reservable-conditions (:id authenticated-entity))
+      (extend-based-on-args args)
+      (cond-> value
+        (-> (sql/select :model_groups.id
+                        [(sql/call :coalesce
+                                   :model_group_links.label
+                                   :model_groups.name) :name])
+            (sql/merge-join :model_group_links
+                            [:=
+                             :model_groups.id
+                             :model_group_links.child_id])
+            (sql/merge-where [:=
+                              :model_group_links.parent_id
+                              (:id value)])))
+      sql/format
+      (->> (jdbc/query tx))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

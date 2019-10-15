@@ -73,8 +73,7 @@
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
-                                          :resolve :categories
-                                          :args {:userId {:type :UUID}}}
+                                          :resolve :categories}
                                :models {:type (list :Model)
                                         :description "Includes only direct ones or all from self and the descendent sub-categories."
                                         :resolve :models
@@ -82,8 +81,7 @@
                                                :limit {:type Int}
                                                :offset {:type Int}
                                                :orderBy {:type (list :ModelsOrderByInput)}
-                                               :searchTerm {:type String}
-                                               :userId {:type (non-null :UUID)}}}
+                                               :searchTerm {:type String}}}
                                :images {:type (list :Image)
                                         :resolve :images}}}}
 
@@ -109,8 +107,7 @@
                            :orderBy {:type (list :ModelsOrderByInput)}
                            :searchTerm {:type String}
                            :startDate {:type String}
-                           :endDate {:type String} 
-                           :userId {:type :UUID}}
+                           :endDate {:type String}}
                     :resolve :models
                     :type (list :Model)}
            :inventoryPools {:resolve :inventory-pools
@@ -124,7 +121,6 @@
            :categories {:args {:limit {:type Int}
                                :offset {:type Int}
                                :ids {:type (list :UUID)}
-                               :rootOnly {:type Boolean}
-                               :userId {:type :UUID}}
+                               :rootOnly {:type Boolean}}
                         :resolve :categories
                         :type (list :Category)}}}
