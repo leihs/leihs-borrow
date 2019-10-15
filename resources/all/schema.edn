@@ -44,8 +44,8 @@
                                           :resolve :attachments}
                             :properties {:type (list :Property)
                                          :resolve :properties}
-                            ; :compatibles {:type (list :Model)
-                            ;               :resolve :compatibles}
+                            :recommends {:type (list :Model)
+                                         :resolve :models}
                             }}
            :Property {:fields {:id {:type (non-null :UUID)}
                                :key {:type (non-null String)}

@@ -18,6 +18,12 @@ describe 'models' do
           :for_leihs_model,
           id: '7484b5d2-376a-4b15-8db0-54cc6bab02ea'
         )
+      ],
+      recommends: [
+        FactoryBot.create(
+          :leihs_model,
+          id: '210a4116-162f-4947-bcb0-2d7d1a5c7b1c'
+        )
       ]
     )
 
@@ -30,7 +36,7 @@ describe 'models' do
 
     q = <<-GRAPHQL
       {
-        models {
+        models(orderBy: [{attribute: ID, direction: ASC}]) {
           id
           images {
             imageUrl
@@ -41,6 +47,9 @@ describe 'models' do
           properties {
             id
           }
+          recommends {
+            id
+          }
         }
       }
     GRAPHQL
@@ -49,6 +58,14 @@ describe 'models' do
     
     expect(result['data']).to eq({
       'models' => [
+        # recommend
+        { 'id' => '210a4116-162f-4947-bcb0-2d7d1a5c7b1c',
+          'images' => [],
+          'attachments' => [],
+          'properties' => [],
+          'recommends' => []
+        },
+        # model of interest
         { 'id' => '2bc1deb5-9428-4178-afd0-c06bb8d31ff3',
           'images' => [
             { 'imageUrl' => '/borrow/images/7484b5d2-376a-4b15-8db0-54cc6bab02ea' }
@@ -58,6 +75,9 @@ describe 'models' do
           ],
           'properties' => [
             { 'id' => '2df736a4-825c-4f36-b48a-75875b3a3c26' }
+          ],
+          'recommends' => [
+            { 'id' => '210a4116-162f-4947-bcb0-2d7d1a5c7b1c' }
           ]
         }
       ]

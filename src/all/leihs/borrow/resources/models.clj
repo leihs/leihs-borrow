@@ -1,8 +1,12 @@
 (ns leihs.borrow.resources.models
+  (:refer-clojure :exclude [-> ->>])
   (:require [clojure.spec.alpha :as spec]
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
+            [com.walmartlabs.lacinia :as lacinia]
+            [com.walmartlabs.lacinia.executor :as executor]
             [leihs.core.sql :as sql]
+            [leihs.core.utils :refer [-> ->>]]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
@@ -106,13 +110,25 @@
                      user-id :userId
                      :as args}
                     value]
+  (log/debug (:com.walmartlabs.lacinia/container-type-name context))
   (let [tx (-> context :request :tx)
         category-ids (get-category-ids tx value direct-only)]
     (-> base-sqlmap
+        (cond-> (= (::lacinia/container-type-name context) :Model)
+          (-> (sql/from :models_compatibles)
+              (sql/join :models [:=
+                                 :models.id
+                                 :models_compatibles.compatible_id])
+              (sql/merge-where [:=
+                                :models_compatibles.model_id
+                                (:id value)])))
+        (cond-> (= (::lacinia/container-type-name context) :Category)
+          #(let [category-ids (get-category-ids tx value direct-only)]
+             (cond-> %
+               category-ids
+               (merge-category-ids-conditions category-ids))))
         (cond-> user-id
           (merge-reservable-conditions user-id))
-        (cond-> (seq category-ids)
-          (merge-category-ids-conditions category-ids))
         (cond-> search-term
           (merge-search-conditions search-term))
         (cond-> (seq order-by)

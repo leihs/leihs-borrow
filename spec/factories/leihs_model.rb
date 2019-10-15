@@ -6,6 +6,11 @@ class LeihsModel < Sequel::Model(:models)
   one_to_many(:images, key: :target_id)
   one_to_many(:attachments, key: :model_id)
   one_to_many(:properties, key: :model_id)
+  many_to_many(:recommends,
+               class: :LeihsModel,
+               left_key: :model_id,
+               right_key: :compatible_id,
+               join_table: :models_compatibles)
 end
 
 FactoryBot.define do
@@ -17,6 +22,7 @@ FactoryBot.define do
       items { [] }
       images { [] }
       properties { [] }
+      recommends { [] }
     end
 
     created_at { DateTime.now }
@@ -37,6 +43,10 @@ FactoryBot.define do
 
       trans.properties.each do |property|
         model.add_property(property)
+      end
+
+      trans.recommends.each do |recommend|
+        model.add_recommend(recommend)
       end
     end
   end
