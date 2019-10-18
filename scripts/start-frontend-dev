@@ -1,0 +1,7 @@
+#!/bin/sh
+
+. ./scripts/_dev-env.sh
+
+npm i
+git submodule update --init --force
+npm run -s shadow-cljs -- watch app

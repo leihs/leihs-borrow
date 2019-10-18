@@ -1,0 +1,6 @@
+#!/bin/sh
+
+. ./scripts/_dev-env.sh
+
+git submodule update --init --force
+boot focus
