@@ -6,6 +6,7 @@
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.executor :as executor]
             [leihs.core.sql :as sql]
+            [leihs.borrow.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
@@ -114,7 +115,7 @@
       (seq category-ids)
       (merge-category-ids-conditions category-ids))))
 
-(defn multiple-sqlmap [{{:keys [tx authenticated-entity]} :request
+(defn get-multiple-sqlmap [{{:keys [tx authenticated-entity]} :request
                         :as context}
                        {:keys [limit offset],
                         direct-only :directOnly
@@ -145,91 +146,30 @@
                      start-date :startDate
                      :as args}
                     value]
-  (-> (multiple-sqlmap context args value)
+  (-> (get-multiple-sqlmap context args value)
       sql/format
       (->> (jdbc/query tx))
       (cond->
         (some some? [start-date end-date inventory-pool-ids])
         (merge-availability context args))))
 
-(defn row-cursor [column]
-  (as-> column <>
-    (sql/call :cast <> :text)
-    (sql/call :replace <> "-" "")
-    (sql/call :decode <> "hex")
-    (sql/call :encode <> "base64")))
+(defn post-process [models
+                    context
+                    {start-date :startDate
+                     end-date :endDate
+                     inventory-pool-ids :inventoryPoolIds
+                     :as args}
+                    value]
+  (cond-> models
+    (some some? [start-date end-date inventory-pool-ids])
+    (merge-availability context args)))
 
-(defn cursored-sqlmap [context
-                       {:keys [after]
-                        limit :first
-                        start-date :startDate
-                        end-date :endDate
-                        inventory-pool-ids :inventoryPoolIds
-                        :as args}
-                       value]
-  (-> [[:primary_result
-        (multiple-sqlmap context args value)]
-       [:cursored_result
-        (-> (sql/select
-              :primary_result.*
-              [(row-cursor :primary_result.id) :row_cursor]
-              [(sql/raw "row_number(*) over ()") :row_number])
-            (sql/from :primary_result))]]
-      (cond-> after
-        (conj [:cursor_row
-               (-> (sql/select :*)
-                   (sql/from :cursored_result)
-                   (sql/where [:= :row_cursor after]))]))
-      (->> (apply sql/with))
-      (sql/select :cursored_result.*)
-      (sql/from :cursored_result)
-      (cond-> after
-        (-> (sql/merge-from :cursor_row)
-            (sql/merge-where [:>
-                              :cursored_result.row_number
-                              :cursor_row.row_number])))
-      (cond-> limit (sql/limit limit))))
-
-(defn cursored-result [context
-                       {start-date :startDate
-                        end-date :endDate
-                        inventory-pool-ids :inventoryPoolIds
-                        :as args}
-                       value]
-  (-> (cursored-sqlmap context args value)
-      sql/format
-      (->> (jdbc/query (-> context :request :tx)))
-      (cond->
-        (some some? [start-date end-date inventory-pool-ids])
-        (merge-availability context args))))
-
-(defn get-connection [context {:keys [after first] :as args} value]
-  (let [tx (-> context :request :tx)
-        models (cursored-result context args value)]
-    (-> models
-        (->> (map #(hash-map :node %
-                             :cursor (:row_cursor %))))
-        (->> (hash-map :edges))
-        (assoc :total-count (-> args
-                                (dissoc :orderBy) 
-                                (as-> <> (multiple-sqlmap context <> value))
-                                (sql/select [(sql/call :count :*) :row_count])
-                                sql/modifiers ; take out DISTINCT
-                                sql/format
-                                (->> (jdbc/query tx))
-                                clojure.core/first
-                                :row_count))
-        (assoc :page-info (let [last-cursor (-> models last :row_cursor)]
-                            {:end-cursor last-cursor 
-                             :has-next-page (if (or (not first) (not last-cursor))
-                                              false
-                                              (as-> args <>
-                                                (assoc <> :after last-cursor :first 1)
-                                                (cursored-sqlmap context <> value)
-                                                (sql/format <>)
-                                                (jdbc/query tx <>)
-                                                (empty? <>)
-                                                (not <>)))})))))
+(defn get-connection [context args value]
+  (connections/wrap get-multiple-sqlmap
+                    context
+                    args
+                    value
+                    post-process)) 
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
