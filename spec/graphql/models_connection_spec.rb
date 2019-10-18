@@ -14,10 +14,6 @@ class Hash
 end
 
 describe 'models connection' do
-  after :each do
-    # expect(@result).not_to include(:errors)
-  end
-
   before :each do
     @user = FactoryBot.create(
       :user,
@@ -37,11 +33,11 @@ describe 'models connection' do
     )
     @model_2 = FactoryBot.create(
       :leihs_model,
-      id: '2adfe883-3546-4b5c-9ed6-b18f01f77723'
+      id: '1adfe883-3546-4b5c-9ed6-b18f01f77723'
     )
     @model_3 = FactoryBot.create(
       :leihs_model,
-      id: '89c1bdf9-7764-4e1e-bf9e-902f908be8d5'
+      id: '29c1bdf9-7764-4e1e-bf9e-902f908be8d5'
     )
 
     LeihsModel.all.map do |model|
@@ -71,6 +67,7 @@ describe 'models connection' do
     GRAPHQL
 
     @result = query(q, @user.id).deep_symbolize_keys
+    expect(@result).not_to include(:errors)
 
     expect(@result[:data]).to eq({
       :modelsConnection => {
@@ -117,6 +114,7 @@ describe 'models connection' do
     GRAPHQL
 
     @result = query(q, @user.id).deep_symbolize_keys
+    expect(@result).not_to include(:errors)
     ec = @result.delete_in!(:data, :modelsConnection, :pageInfo, :endCursor)
 
     expect(@result[:data]).to eq({
@@ -156,6 +154,7 @@ describe 'models connection' do
     GRAPHQL
 
     @result = query(q, @user.id).deep_symbolize_keys
+    expect(@result).not_to include(:errors)
     ec = @result.delete_in!(:data, :modelsConnection, :pageInfo, :endCursor)
 
     expect(@result[:data]).to eq({
@@ -196,6 +195,7 @@ describe 'models connection' do
     GRAPHQL
 
     @result = query(q, @user.id).deep_symbolize_keys
+    expect(@result).not_to include(:errors)
     ec = @result.delete_in!(:data, :modelsConnection, :pageInfo, :endCursor)
 
     expect(@result[:data]).to eq({
@@ -236,6 +236,7 @@ describe 'models connection' do
     GRAPHQL
 
     @result = query(q, @user.id).deep_symbolize_keys
+    expect(@result).not_to include(:errors)
 
     expect(@result[:data]).to eq({
       :modelsConnection => {
@@ -267,6 +268,7 @@ describe 'models connection' do
     GRAPHQL
 
     @result = query(q, @user.id).deep_symbolize_keys
+    expect(@result).not_to include(:errors)
 
     expect(@result[:data]).to eq({
       :modelsConnection => {
@@ -307,6 +309,7 @@ describe 'models connection' do
     GRAPHQL
 
     @result = query(q, @user.id).deep_symbolize_keys
+    expect(@result).not_to include(:errors)
 
     expect(@result[:data]).to eq({
       :modelsConnection => {
@@ -326,5 +329,293 @@ describe 'models connection' do
         }
       }
     })
+  end
+
+  context 'nodes modifications' do
+    it 'delete a row before the cursor' do
+      q = <<-GRAPHQL
+        {
+          modelsConnection(
+            first: 2,
+            orderBy: [{attribute: ID, direction: ASC}]
+          ) {
+            totalCount
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      GRAPHQL
+
+      @result = query(q, @user.id).deep_symbolize_keys
+      ec = @result.delete_in!(:data, :modelsConnection, :pageInfo, :endCursor)
+
+      @model_1.items.each { |i| i.delete }
+      @model_1.delete
+
+      q = <<-GRAPHQL
+        {
+          modelsConnection(
+            after: "#{ec}",
+            orderBy: [{attribute: ID, direction: ASC}]
+          ) {
+            totalCount
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              hasNextPage
+            }
+          }
+        }
+      GRAPHQL
+
+      @result = query(q, @user.id).deep_symbolize_keys
+
+      expect(@result[:data]).to eq({
+        :modelsConnection => {
+          :totalCount => 2,
+          :edges => [
+            { :node => {
+                :id => @model_3.id
+              }
+            },
+          ],
+          :pageInfo => {
+            :hasNextPage => false
+          }
+        }
+      })
+    end
+
+    it 'delete a row after the cursor' do
+      q = <<-GRAPHQL
+        {
+          modelsConnection(
+            first: 1,
+            orderBy: [{attribute: ID, direction: ASC}]
+          ) {
+            totalCount
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      GRAPHQL
+
+      @result = query(q, @user.id).deep_symbolize_keys
+      ec = @result.delete_in!(:data, :modelsConnection, :pageInfo, :endCursor)
+
+      @model_2.items.each { |i| i.delete }
+      @model_2.delete
+
+      q = <<-GRAPHQL
+        {
+          modelsConnection(
+            after: "#{ec}",
+            orderBy: [{attribute: ID, direction: ASC}]
+          ) {
+            totalCount
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              hasNextPage
+            }
+          }
+        }
+      GRAPHQL
+
+      @result = query(q, @user.id).deep_symbolize_keys
+
+      expect(@result[:data]).to eq({
+        :modelsConnection => {
+          :totalCount => 2,
+          :edges => [
+            { :node => {
+                :id => @model_3.id
+              }
+            }
+          ],
+          :pageInfo => {
+            :hasNextPage => false
+          }
+        }
+      })
+    end
+
+    it 'delete the cursor' do
+      # TODO
+    end
+
+    it 'insert a row before the cursor' do
+      q = <<-GRAPHQL
+        {
+          modelsConnection(
+            first: 1,
+            orderBy: [{attribute: ID, direction: ASC}]
+          ) {
+            totalCount
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      GRAPHQL
+
+      @result = query(q, @user.id).deep_symbolize_keys
+      ec = @result.delete_in!(:data, :modelsConnection, :pageInfo, :endCursor)
+
+      @model_0 = FactoryBot.create(
+        :leihs_model,
+        id: '0a5a8688-fc09-4d36-b4f1-a6b25942a14d'
+      )
+
+      FactoryBot.create(:item,
+                        leihs_model: @model_0,
+                        responsible: @inventory_pool,
+                        is_borrowable: true)
+
+      q = <<-GRAPHQL
+        {
+          modelsConnection(
+            after: "#{ec}",
+            orderBy: [{attribute: ID, direction: ASC}]
+          ) {
+            totalCount
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              hasNextPage
+            }
+          }
+        }
+      GRAPHQL
+
+      @result = query(q, @user.id).deep_symbolize_keys
+
+      expect(@result[:data]).to eq({
+        :modelsConnection => {
+          :totalCount => 4,
+          :edges => [
+            { :node => {
+                :id => @model_2.id
+              }
+            },
+            { :node => {
+                :id => @model_3.id
+              }
+            }
+          ],
+          :pageInfo => {
+            :hasNextPage => false
+          }
+        }
+      })
+    end
+
+    it 'insert a row after the cursor' do
+      q = <<-GRAPHQL
+        {
+          modelsConnection(
+            first: 1,
+            orderBy: [{attribute: ID, direction: ASC}]
+          ) {
+            totalCount
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      GRAPHQL
+
+      @result = query(q, @user.id).deep_symbolize_keys
+      ec = @result.delete_in!(:data, :modelsConnection, :pageInfo, :endCursor)
+
+      @model_4 = FactoryBot.create(
+        :leihs_model,
+        id: '30679ee8-4af7-4e02-82a6-8bc260686558'
+      )
+
+      FactoryBot.create(:item,
+                        leihs_model: @model_4,
+                        responsible: @inventory_pool,
+                        is_borrowable: true)
+
+      q = <<-GRAPHQL
+        {
+          modelsConnection(
+            after: "#{ec}",
+            orderBy: [{attribute: ID, direction: ASC}]
+          ) {
+            totalCount
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              hasNextPage
+            }
+          }
+        }
+      GRAPHQL
+
+      @result = query(q, @user.id).deep_symbolize_keys
+
+      expect(@result[:data]).to eq({
+        :modelsConnection => {
+          :totalCount => 4,
+          :edges => [
+            { :node => {
+                :id => @model_2.id
+              }
+            },
+            { :node => {
+                :id => @model_3.id
+              }
+            },
+            { :node => {
+                :id => @model_4.id
+              }
+            }
+          ],
+          :pageInfo => {
+            :hasNextPage => false
+          }
+        }
+      })
+    end
   end
 end
