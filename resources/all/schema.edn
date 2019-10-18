@@ -45,8 +45,15 @@
                             :properties {:type (list :Property)
                                          :resolve :properties}
                             :recommends {:type (list :Model)
-                                         :resolve :models}
-                            }}
+                                         :resolve :models}}}
+           :ModelsConnection {:fields {:totalCount {:type (non-null Int)}
+                                       :edges {:type (list :ModelEdge)}
+                                       :pageInfo {:type (non-null :PageInfo)}
+                                       }}
+           :ModelEdge {:fields {:node {:type (non-null :Model)}
+                                :cursor {:type (non-null String)}}}
+           :PageInfo {:fields {:endCursor {:type String}
+                               :hasNextPage {:type (non-null Boolean)}}}
            :Property {:fields {:id {:type (non-null :UUID)}
                                :key {:type (non-null String)}
                                :value {:type (non-null String)}}}
@@ -110,6 +117,16 @@
                            :endDate {:type String}}
                     :resolve :models
                     :type (list :Model)}
+           :modelsConnection {:args {:categoryIds {:type (list :UUID)}
+                                     :inventoryPoolIds {:type (list :UUID)}
+                                     :orderBy {:type (list :ModelsOrderByInput)}
+                                     :searchTerm {:type String}
+                                     :startDate {:type String}
+                                     :endDate {:type String}
+                                     :first {:type Int}
+                                     :after {:type String}}
+                              :type :ModelsConnection
+                              :resolve :models-connection}
            :inventoryPools {:resolve :inventory-pools
                             :type (list :InventoryPool)}
            :availability {:args {:modelId {:type (non-null :UUID)}

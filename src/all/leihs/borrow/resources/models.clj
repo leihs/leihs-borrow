@@ -1,12 +1,11 @@
 (ns leihs.borrow.resources.models
-  (:refer-clojure :exclude [-> ->>])
+  (:refer-clojure :exclude [first])
   (:require [clojure.spec.alpha :as spec]
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.executor :as executor]
             [leihs.core.sql :as sql]
-            [leihs.core.utils :refer [-> ->>]]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
@@ -115,19 +114,14 @@
       (seq category-ids)
       (merge-category-ids-conditions category-ids))))
 
-(defn get-multiple [{{:keys [tx authenticated-entity]} :request
-                     :as context}
-                    {:keys [limit offset],
-                     direct-only :directOnly
-                     end-date :endDate
-                     inventory-pool-ids :inventoryPoolIds
-                     order-by :orderBy
-                     search-term :searchTerm
-                     start-date :startDate
-                     user-id :userId
-                     :as args}
-                    value]
-  (log/debug authenticated-entity)
+(defn multiple-sqlmap [{{:keys [tx authenticated-entity]} :request
+                        :as context}
+                       {:keys [limit offset],
+                        direct-only :directOnly
+                        order-by :orderBy
+                        search-term :searchTerm
+                        :as args}
+                       value]
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
         (from-compatibles value))
@@ -142,13 +136,100 @@
       (cond-> limit
         (sql/limit limit))
       (cond-> offset
-        (sql/offset offset))
+        (sql/offset offset))))
+
+(defn get-multiple [{{:keys [tx authenticated-entity]} :request
+                     :as context}
+                    {end-date :endDate
+                     inventory-pool-ids :inventoryPoolIds
+                     start-date :startDate
+                     :as args}
+                    value]
+  (-> (multiple-sqlmap context args value)
       sql/format
-      log/spy
       (->> (jdbc/query tx))
       (cond->
         (some some? [start-date end-date inventory-pool-ids])
         (merge-availability context args))))
+
+(defn row-cursor [column]
+  (as-> column <>
+    (sql/call :cast <> :text)
+    (sql/call :replace <> "-" "")
+    (sql/call :decode <> "hex")
+    (sql/call :encode <> "base64")))
+
+(defn cursored-sqlmap [context
+                       {:keys [after]
+                        limit :first
+                        start-date :startDate
+                        end-date :endDate
+                        inventory-pool-ids :inventoryPoolIds
+                        :as args}
+                       value]
+  (-> [[:primary_result
+        (multiple-sqlmap context args value)]
+       [:cursored_result
+        (-> (sql/select
+              :primary_result.*
+              [(row-cursor :primary_result.id) :row_cursor]
+              [(sql/raw "row_number(*) over ()") :row_number])
+            (sql/from :primary_result))]]
+      (cond-> after
+        (conj [:cursor_row
+               (-> (sql/select :*)
+                   (sql/from :cursored_result)
+                   (sql/where [:= :row_cursor after]))]))
+      (->> (apply sql/with))
+      (sql/select :cursored_result.*)
+      (sql/from :cursored_result)
+      (cond-> after
+        (-> (sql/merge-from :cursor_row)
+            (sql/merge-where [:>
+                              :cursored_result.row_number
+                              :cursor_row.row_number])))
+      (cond-> limit (sql/limit limit))))
+
+(defn cursored-result [context
+                       {start-date :startDate
+                        end-date :endDate
+                        inventory-pool-ids :inventoryPoolIds
+                        :as args}
+                       value]
+  (-> (cursored-sqlmap context args value)
+      sql/format
+      (->> (jdbc/query (-> context :request :tx)))
+      (cond->
+        (some some? [start-date end-date inventory-pool-ids])
+        (merge-availability context args))))
+
+(defn get-connection [context {:keys [after first] :as args} value]
+  (let [tx (-> context :request :tx)
+        models (cursored-result context args value)]
+    (-> models
+        (->> (map #(hash-map :node %
+                             :cursor (:row_cursor %))))
+        (->> (hash-map :edges))
+        (assoc :total-count (-> args
+                                (dissoc :orderBy) 
+                                (as-> <> (multiple-sqlmap context <> value))
+                                (sql/select [(sql/call :count :*) :row_count])
+                                sql/modifiers ; take out DISTINCT
+                                sql/format
+                                (->> (jdbc/query tx))
+                                clojure.core/first
+                                :row_count))
+        (assoc :page-info (let [last-cursor (-> models last :row_cursor)]
+                            {:end-cursor last-cursor 
+                             :has-next-page (if (or (not first) (not last-cursor))
+                                              false
+                                              (as-> args <>
+                                                (assoc <> :after last-cursor :first 1)
+                                                (cursored-sqlmap context <> value)
+                                                (sql/format <>)
+                                                (jdbc/query tx <>)
+                                                (empty? <>)
+                                                (not <>)))})))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

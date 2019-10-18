@@ -21,6 +21,7 @@
    :inventory-pool inventory-pools/get-one
    :inventory-pools inventory-pools/get-multiple
    :models models/get-multiple
+   :models-connection models/get-connection
    :properties properties/get-multiple
    :thumbnails images/get-multiple-thumbnails
    :users users/get-multiple})
