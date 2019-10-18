@@ -14,7 +14,7 @@
             [leihs.borrow.resources.categories.descendents :as descendents]))
 
 (def base-sqlmap
-  (-> (sql/select :models.id
+  (-> (sql/select :models.*
                   [(sql/call :concat_ws
                              " "
                              :models.product
