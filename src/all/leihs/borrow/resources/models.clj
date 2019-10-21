@@ -78,9 +78,9 @@
         (conj <> value-id)))))
 
 (defn merge-availability [models context args]
-  (spec/assert (spec/keys :req-un [::availability/startDate
-                                   ::availability/endDate
-                                   ::availability/inventoryPoolIds])
+  (spec/assert (spec/keys :req-un [::availability/start-date
+                                   ::availability/end-date
+                                   ::availability/inventory-pool-ids])
                args)
   (map (fn [model]
          (assoc model
@@ -93,10 +93,10 @@
                           (availability/get
                             context
                             (assoc args
-                                   :inventoryPoolId pool-id
-                                   :modelId (:id model))
+                                   :inventory-pool-id pool-id
+                                   :model-id (:id model))
                             nil)})
-                     (:inventoryPoolIds args))))
+                     (:inventory-pool-ids args))))
        models))
 
 (defn from-compatibles [sqlmap value]
@@ -115,14 +115,9 @@
       (seq category-ids)
       (merge-category-ids-conditions category-ids))))
 
-(defn get-multiple-sqlmap [{{:keys [tx authenticated-entity]} :request
-                        :as context}
-                       {:keys [limit offset],
-                        direct-only :directOnly
-                        order-by :orderBy
-                        search-term :searchTerm
-                        :as args}
-                       value]
+(defn get-multiple-sqlmap [{{:keys [tx authenticated-entity]} :request :as context}
+                           {:keys [limit offset direct-only order-by search-term]}
+                           value]
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
         (from-compatibles value))
@@ -139,12 +134,8 @@
       (cond-> offset
         (sql/offset offset))))
 
-(defn get-multiple [{{:keys [tx authenticated-entity]} :request
-                     :as context}
-                    {end-date :endDate
-                     inventory-pool-ids :inventoryPoolIds
-                     start-date :startDate
-                     :as args}
+(defn get-multiple [{{:keys [tx authenticated-entity]} :request :as context}
+                    {:keys [start-date end-date inventory-pool-ids] :as args}
                     value]
   (-> (get-multiple-sqlmap context args value)
       sql/format
@@ -155,10 +146,7 @@
 
 (defn post-process [models
                     context
-                    {start-date :startDate
-                     end-date :endDate
-                     inventory-pool-ids :inventoryPoolIds
-                     :as args}
+                    {:keys [start-date end-date inventory-pool-ids] :as args}
                     value]
   (cond-> models
     (some some? [start-date end-date inventory-pool-ids])

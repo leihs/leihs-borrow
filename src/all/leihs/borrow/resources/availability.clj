@@ -15,9 +15,9 @@
             [wharf.core :refer [transform-keys]]
             [clojure.walk :as walk]))
 
-(spec/def ::startDate string?)
-(spec/def ::endDate string?)
-(spec/def ::inventoryPoolIds (spec/coll-of uuid? :min-count 1))
+(spec/def ::start-date string?)
+(spec/def ::end-date string?)
+(spec/def ::inventory-pool-ids (spec/coll-of uuid? :min-count 1))
 
 (def FETCH-URL "http://localhost:3000/borrow/booking_calendar_availability")
 
@@ -27,10 +27,10 @@
     {:accept :json
      :content-type :json
      :cookies {"leihs-user-session" {:value leihs-user-session-cookie-value}}
-     :query-params (->> [:modelId
-                         :inventoryPoolId
-                         :startDate
-                         :endDate]
+     :query-params (->> [:model-id
+                         :inventory-pool-id
+                         :start-date
+                         :end-date]
                         (select-keys args)
                         (transform-keys csk/->snake_case))}))
 

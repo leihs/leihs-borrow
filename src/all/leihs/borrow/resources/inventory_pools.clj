@@ -10,7 +10,7 @@
       (sql/from :inventory_pools)
       (sql/merge-where [:= :inventory_pools.is_active true])))
 
-(defn get-multiple [context {order-by :orderBy} value]
+(defn get-multiple [context {:keys [order-by]} value]
   (let [user-id (-> value :user :id)]
     (-> base-sqlmap
         (cond-> user-id

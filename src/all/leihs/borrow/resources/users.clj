@@ -17,11 +17,7 @@
       (sql/from :users)
       sql-order-users))
 
-(defn get-multiple [context
-                    {:keys [offset limit],
-                     order-by :orderBy,
-                     search-term :searchTerm}
-                    _]
+(defn get-multiple [context {:keys [offset limit order-by search-term]} _]
   (jdbc/query
     (-> context :request :tx)
     (-> (cond-> base-sqlmap 

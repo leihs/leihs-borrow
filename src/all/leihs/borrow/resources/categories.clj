@@ -12,8 +12,7 @@
       (sql/from :model_groups)
       (sql/merge-where [:= :model_groups.type "Category"])))
 
-(defn extend-based-on-args [sqlmap {:keys [limit offset ids],
-                                    root-only :rootOnly}]
+(defn extend-based-on-args [sqlmap {:keys [limit offset ids root-only]}]
   (-> sqlmap
       (cond-> root-only
         (sql/merge-where
