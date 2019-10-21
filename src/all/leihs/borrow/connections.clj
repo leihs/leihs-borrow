@@ -11,7 +11,7 @@
     (sql/call :decode <> "hex")
     (sql/call :encode <> "base64")))
 
-(defn cursored-sqlmap [sqlmap after limit]
+(defn with-cursored-result [sqlmap after]
   (-> [[:primary_result sqlmap]
        [:cursored_result
         (-> (sql/select
@@ -24,7 +24,20 @@
                (-> (sql/select :*)
                    (sql/from :cursored_result)
                    (sql/where [:= :row_cursor after]))]))
-      (->> (apply sql/with))
+      (->> (apply sql/with))))
+
+(defn after-cursor-row-exists? [tx sqlmap after]
+  (-> sqlmap
+      (with-cursored-result after)
+      (sql/select :*)
+      (sql/from :cursor_row)
+      sql/format
+      (->> (jdbc/query tx))
+      empty?
+      not))
+
+(defn cursored-sqlmap [sqlmap after limit]
+  (-> (with-cursored-result sqlmap after)
       (sql/select :cursored_result.*)
       (sql/from :cursored_result)
       (cond-> after
@@ -39,37 +52,38 @@
             {:keys [after first] :as args}
             value
             post-process]
-  (let [sqlmap (sqlmap-fn context args value)
-        models (-> sqlmap
-                   (cursored-sqlmap after first)
-                   sql/format
-                   (->> (jdbc/query tx))
-                   (post-process context args value))]
-    (-> models
-        (->> (map #(hash-map :node % :cursor (:row_cursor %))))
-        (->> (hash-map :edges))
-        (assoc :total-count (-> sqlmap
-                                (sql/select [(sql/call :count :*) :row_count])
-                                (dissoc :modifiers :order-by) 
-                                sql/format
-                                (->> (jdbc/query tx))
-                                clojure.core/first
-                                :row_count))
-        (assoc :page-info (let [last-cursor (-> models last :row_cursor)]
-                            {:end-cursor last-cursor 
-                             :has-next-page (if (or (not first) (not last-cursor))
-                                              false
-                                              (-> sqlmap
-                                                  (cursored-sqlmap last-cursor 1)
-                                                  sql/format
-                                                  (->> (jdbc/query tx))
-                                                  empty?
-                                                  not))})))))
+  (let [sqlmap (sqlmap-fn context args value)]
+    (if (and after (not (after-cursor-row-exists? tx sqlmap after)))
+      (throw (ex-info "After cursor row does not exist!" {}))
+      (let [models (-> sqlmap
+                       (cursored-sqlmap after first)
+                       sql/format
+                       (->> (jdbc/query tx))
+                       (post-process context args value))]
+        (-> models
+            (->> (map #(hash-map :node % :cursor (:row_cursor %))))
+            (->> (hash-map :edges))
+            (assoc :total-count (-> sqlmap
+                                    (sql/select [(sql/call :count :*) :row_count])
+                                    (dissoc :modifiers :order-by) 
+                                    sql/format
+                                    (->> (jdbc/query tx))
+                                    clojure.core/first
+                                    :row_count))
+            (assoc :page-info (let [last-cursor (-> models last :row_cursor)]
+                                {:end-cursor last-cursor 
+                                 :has-next-page (if (or (not first) (not last-cursor))
+                                                  false
+                                                  (-> sqlmap
+                                                      (cursored-sqlmap last-cursor 1)
+                                                      sql/format
+                                                      (->> (jdbc/query tx))
+                                                      empty?
+                                                      not))})))))))
 (comment
   (-> (sql/select :*)
       (sql/modifiers :distinct)
       (sql/from :foo)
       (sql/order-by :bar)
       (dissoc :order-by :modifiers)
-      sql/format
-      ))
+      sql/format))
