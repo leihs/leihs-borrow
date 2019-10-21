@@ -47,6 +47,36 @@
                               :cursor_row.row_number])))
       (cond-> limit (sql/limit limit))))
 
+(defn assoc-total-count [result-map tx sqlmap]
+  (assoc result-map
+         :total-count
+         (-> sqlmap
+             (sql/select [(sql/call :count :*) :row_count])
+             (dissoc :modifiers :order-by) 
+             sql/format
+             (->> (jdbc/query tx))
+             clojure.core/first
+             :row_count)))
+
+(defn assoc-page-info [result-map tx sqlmap first end-cursor]
+  (assoc result-map
+         :page-info
+         {:end-cursor end-cursor 
+          :has-next-page (if (or (not first) (not end-cursor))
+                           false
+                           (-> sqlmap
+                               (cursored-sqlmap end-cursor 1)
+                               sql/format
+                               (->> (jdbc/query tx))
+                               empty?
+                               not))}))
+
+(defn wrap-in-nodes-and-edges [rows]
+  (->> rows
+       (map #(hash-map :node %
+                       :cursor (:row_cursor %)))
+       (hash-map :edges)))
+
 (defn wrap [sqlmap-fn
             {{:keys [tx]} :request :as context}
             {:keys [after first] :as args}
@@ -55,31 +85,18 @@
   (let [sqlmap (sqlmap-fn context args value)]
     (if (and after (not (after-cursor-row-exists? tx sqlmap after)))
       (throw (ex-info "After cursor row does not exist!" {}))
-      (let [models (-> sqlmap
-                       (cursored-sqlmap after first)
-                       sql/format
-                       (->> (jdbc/query tx))
-                       (post-process context args value))]
-        (-> models
-            (->> (map #(hash-map :node % :cursor (:row_cursor %))))
-            (->> (hash-map :edges))
-            (assoc :total-count (-> sqlmap
-                                    (sql/select [(sql/call :count :*) :row_count])
-                                    (dissoc :modifiers :order-by) 
-                                    sql/format
-                                    (->> (jdbc/query tx))
-                                    clojure.core/first
-                                    :row_count))
-            (assoc :page-info (let [last-cursor (-> models last :row_cursor)]
-                                {:end-cursor last-cursor 
-                                 :has-next-page (if (or (not first) (not last-cursor))
-                                                  false
-                                                  (-> sqlmap
-                                                      (cursored-sqlmap last-cursor 1)
-                                                      sql/format
-                                                      (->> (jdbc/query tx))
-                                                      empty?
-                                                      not))})))))))
+      (let [rows (-> sqlmap
+                     (cursored-sqlmap after first)
+                     sql/format
+                     (->> (jdbc/query tx))
+                     (post-process context args value))]
+        (-> rows
+            wrap-in-nodes-and-edges
+            (assoc-total-count tx sqlmap)
+            (assoc-page-info tx
+                             sqlmap
+                             first
+                             (-> rows last :row_cursor)))))))
 (comment
   (-> (sql/select :*)
       (sql/modifiers :distinct)

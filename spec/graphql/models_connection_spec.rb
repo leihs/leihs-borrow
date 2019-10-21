@@ -461,7 +461,56 @@ describe 'models connection' do
     end
 
     it 'delete the cursor' do
-      # TODO
+      q = <<-GRAPHQL
+        {
+          modelsConnection(
+            first: 1,
+            orderBy: [{attribute: ID, direction: ASC}]
+          ) {
+            totalCount
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      GRAPHQL
+
+      @result = query(q, @user.id).deep_symbolize_keys
+      ec = @result.delete_in!(:data, :modelsConnection, :pageInfo, :endCursor)
+
+      @model_1.items.each { |i| i.delete }
+      @model_1.delete
+
+      q = <<-GRAPHQL
+        {
+          modelsConnection(
+            after: "#{ec}",
+            orderBy: [{attribute: ID, direction: ASC}]
+          ) {
+            totalCount
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              hasNextPage
+            }
+          }
+        }
+      GRAPHQL
+
+      @result = query(q, @user.id).deep_symbolize_keys
+
+      expect(@result.dig(:data, :modelsConnection)).to be_nil
+      expect(@result[:errors].first[:message])
+        .to eq "After cursor row does not exist!"
     end
 
     it 'insert a row before the cursor' do
