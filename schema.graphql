@@ -1,12 +1,36 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Thu Sep 19 2019 15:58:36 GMT+0200 (Central European Summer Time)
+# timestamp: Tue Oct 22 2019 20:16:35 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
 }
 
-type Calendar {
-  list: [DayData]
+type Attachment {
+  content_type: String!
+  filename: String!
+  id: UUID!
+  size: Int!
+  url: String!
+}
+
+type Availability {
+  dates: [DayData]
+}
+
+type Category {
+  children: [Category]
+  id: UUID!
+  images: [Image]
+
+  """
+  Includes only direct ones or all from self and the descendent sub-categories.
+  """
+  models(directOnly: Boolean, limit: Int, offset: Int, orderBy: [ModelsOrderByInput], searchTerm: String): [Model]
+
+  """
+  A name is either a label for the child-parent connection (if such exists) or the name of the category itself.
+  """
+  name: String!
 }
 
 type Contract {
@@ -22,10 +46,24 @@ type Contract {
   state: String!
 }
 
+type CurrentUser {
+  inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
+  user: User
+}
+
 type DayData {
-  d: String!
+  date: String!
   quantity: Int!
   visitsCount: Int!
+}
+
+type Image {
+  content_type: String!
+  filename: String!
+  id: UUID!
+  imageUrl: String!
+  size: Int!
+  thumbnails: [Thumbnail]
 }
 
 type InventoryPool {
@@ -34,10 +72,88 @@ type InventoryPool {
   name: String!
 }
 
+enum InventoryPoolsOrderByAttributeEnum {
+  ID
+  NAME
+}
+
+input InventoryPoolsOrderByInput {
+  attribute: InventoryPoolsOrderByAttributeEnum!
+  direction: OrderByDirectionEnum!
+}
+
+type Model {
+  attachments: [Attachment]
+  availability: [ModelInventoryPoolAvailability]
+  description: String
+  id: UUID!
+  images: [Image]
+  manufacturer: String
+
+  """A name consists of product name and its version."""
+  name: String!
+  properties: [Property]
+  recommends: [Model]
+}
+
+type ModelEdge {
+  cursor: String!
+  node: Model!
+}
+
+type ModelInventoryPoolAvailability {
+  dates: [DayData]
+  inventoryPool: InventoryPool!
+}
+
+type ModelsConnection {
+  edges: [ModelEdge]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+enum ModelsOrderByAttributeEnum {
+  ID
+}
+
+input ModelsOrderByInput {
+  attribute: ModelsOrderByAttributeEnum!
+  direction: OrderByDirectionEnum!
+}
+
+enum OrderByDirectionEnum {
+  ASC
+  DESC
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+}
+
+type Property {
+  id: UUID!
+  key: String!
+  value: String!
+}
+
 """Root of all queries."""
 type QueryRoot {
-  calendar(endDate: String!, inventoryPoolId: UUID!, modelId: UUID!, startDate: String!): Calendar
-  users(limit: Int, offset: Int, searchTerm: String): [User]
+  availability(endDate: String!, inventoryPoolId: UUID!, modelId: UUID!, startDate: String!): Availability
+  categories(ids: [UUID], limit: Int, offset: Int, rootOnly: Boolean): [Category]
+  currentUser: CurrentUser!
+  inventoryPools: [InventoryPool]
+  models(categoryIds: [UUID], endDate: String, inventoryPoolIds: [UUID], limit: Int, offset: Int, orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): [Model]
+  modelsConnection(after: String, categoryIds: [UUID], endDate: String, first: Int, inventoryPoolIds: [UUID], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): ModelsConnection
+  users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
+}
+
+type Thumbnail {
+  content_type: String!
+  filename: String!
+  id: UUID!
+  imageUrl: String!
+  size: Int!
 }
 
 """
@@ -50,6 +166,15 @@ type User {
   id: UUID!
   lastname: String
   login: String
+}
+
+enum UsersOrderByAttributeEnum {
+  ID
+}
+
+input UsersOrderByInput {
+  attribute: UsersOrderByAttributeEnum!
+  direction: OrderByDirectionEnum!
 }
 
 scalar UUID
