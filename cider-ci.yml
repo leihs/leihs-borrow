@@ -169,3 +169,53 @@ jobs:
               export PATH=~/.rubies/$RUBY/bin:$PATH
               mkdir -p log
               bundle exec rspec --backtrace $CIDER_CI_TASK_FILE
+
+  check-graphql-schema:
+
+    name: Check GraphQL schema was dumped
+
+    depends_on:
+      uberjar was built:
+        type: job
+        job_key: build-borrow-uberjar
+        states: [passed]
+    run_when:
+      any branch has been updated:
+        type: branch
+        include_match: ^.*$
+      uberjar was built:
+        type: job
+        job_key: build-borrow-uberjar
+        states: [passed]
+    context:
+      task_defaults:
+        include:
+          - cider-ci/environment_variables.yml
+          - cider-ci/database_task-component.yml
+          - cider-ci/uberjar_task-component.yml
+          - cider-ci/service_task-component.yml
+        environment_variables:
+          LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
+        traits:
+          JDK 8: true
+          Leiningen 2: true
+        ports:
+          LEIHS_BORROW_HTTP_PORT:
+            min: 3300
+            max: 3399
+        git_options:
+          submodules:
+            include_match: ^.*$
+        scripts:
+          test:
+            start_when:
+              borrow service is running:
+                script_key: borrow-service-is-running
+                states: [passed]
+      tasks:
+        test:
+          scripts:
+            test:
+              body: |
+                sed -i '' -e "s/localhost:3250/localhost:${LEIHS_BORROW_HTTP_PORT}/" .graphqlconfig.yaml
+                ./scripts/diff-graphql-schema
