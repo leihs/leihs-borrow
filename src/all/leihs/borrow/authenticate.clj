@@ -4,20 +4,25 @@
 
 (def skip-authorization-handler-keys
   #{:home
+    :graphql ; authenticates by its own
     :sign-in
     :status
     :image
     :attachment})
 
-(defn- skip?
-  [handler-key]
+(defn- skip? [handler-key]
   (some #(= handler-key %) skip-authorization-handler-keys))
 
-(defn wrap-ensure-authenticated-entity
-  [handler]
+(defn wrap-base [handler]
   (fn [request]
-    (if (or (skip? (:handler-key request)) (:authenticated-entity request))
+    (if (:authenticated-entity request)
       (handler request)
       {:status 401,
        :body (helpers/error-as-graphql-object "NOT_AUTHENTICATED"
                                               "Not authenticated!")})))
+
+(defn wrap [handler]
+  (fn [request]
+    (if (skip? (:handler-key request))
+      (handler request)
+      ((wrap-base handler) request))))

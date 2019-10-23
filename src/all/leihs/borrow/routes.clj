@@ -6,7 +6,7 @@
     [cheshire.core :refer [parse-string]]
     [clojure.string :refer [starts-with? replace]]
     [clojure.tools.logging :as log]
-    [leihs.borrow.authenticate :refer [wrap-ensure-authenticated-entity]]
+    [leihs.borrow.authenticate :as authenticate]
     [leihs.borrow.graphql :as graphql]
     [leihs.borrow.html :as html]
     [leihs.borrow.resources.images :as images]
@@ -116,7 +116,7 @@
       dispatch-to-handler
       ; anti-csrf/wrap
       locale/wrap
-      wrap-ensure-authenticated-entity
+      authenticate/wrap
       session/wrap-authenticate
       wrap-cookies
       settings/wrap
