@@ -12,4 +12,4 @@
                 ; :main leihs.borrow.client.app/main
                 :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
                 :devtools {:preloads [day8.re-frame-10x.preload]}
-                :modules {:app {:entries [leihs.borrow.client.dummy]}}}}}
+                :modules {:app {:entries [leihs.borrow.client.app]}}}}}
