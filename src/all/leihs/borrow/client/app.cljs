@@ -65,6 +65,11 @@
  (fn [] [(rf/subscribe [:cart])])
  (fn [[cart]] (get-in cart [:items] {})))
 
+(rf/reg-sub 
+ :cart/items-index
+ (fn [] [(rf/subscribe [:cart/items])])
+ (fn [[items]] (get-in items [:index] {})))
+
 (rf/reg-sub
  :cart/items-list
  (fn [] [(rf/subscribe [:cart/items]) (rf/subscribe [:products/index])])
@@ -78,10 +83,10 @@
 
 (rf/reg-sub
  :cart/counts
- (fn [] [(rf/subscribe [:cart/items])])
- (fn [[items]] 
-   {:products (count (:order items))
-    :items (reduce + (vals (:index items)))}))
+ (fn [] [(rf/subscribe [:cart/items-index])])
+ (fn [[index]] 
+   {:products (count index)
+    :items (reduce + (vals index))}))
 
 ;-; VIEWS
 (defn search-panel []
