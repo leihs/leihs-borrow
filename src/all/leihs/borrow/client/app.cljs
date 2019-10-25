@@ -13,7 +13,7 @@
                                         2 {:id 2 :name "Stativ"}}
                                 :order [2 0 1]})
             (assoc , :cart {:items {:index {} :order []}})
-            (assoc , :meta {:app {:debug true}}))}))
+            (assoc , :meta {:app {:debug false}}))}))
 
 ;-; EVENTS
 (rf/reg-event-db :set-debug (fn [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
@@ -78,8 +78,10 @@
 
 (rf/reg-sub
  :cart/counts
- (fn [db] ; FAKE 
-   {:products 0 :items 0}))
+ (fn [] [(rf/subscribe [:cart/items])])
+ (fn [[items]] 
+   {:products (count (:order items))
+    :items (reduce + (vals (:index items)))}))
 
 ;-; VIEWS
 (defn search-panel []
@@ -107,10 +109,10 @@
          "+"]]))]])
 
 (defn shopping-cart []
-  (let [counts @(rf/subscribe [:cart/counts])]
-    (fn []
+  (fn []
+    (let [counts @(rf/subscribe [:cart/counts])]
       [:<>
-       [:h2 (str "SHOPPING CART (" (:items counts) "/" (:products counts) ")")]
+       [:h2 (str "SHOPPING CART (" (:products counts) "/" (:items counts) ")")]
        [:ul
         (doall
          (for [line @(rf/subscribe [:cart/items-list])]
@@ -120,8 +122,11 @@
               [:b (:quantity line)] " "
               [:button
                {:type :button :on-click #(rf/dispatch [:cart/decrease-item-quantity pid])}
-               "-"]])))]
-       
+               "-"]
+              [:button
+               {:type :button :on-click #(rf/dispatch [:cart/add-item pid])}
+               "+"]])))]
+
        (if @(rf/subscribe [:is-debug?]) [:p (pr-str @(rf/subscribe [:cart]))])])))
 
 (defn main-view []
