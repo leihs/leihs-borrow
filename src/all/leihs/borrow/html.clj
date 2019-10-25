@@ -9,22 +9,23 @@
 
 (defn include-site-css []
   (hiccup.page/include-css
-    (cache-buster/cache-busted-path "/borrow/css/site.css")))
+   (cache-buster/cache-busted-path "/borrow/css/site.css")))
 
 (defn include-font-css []
   (hiccup.page/include-css
-    "/borrow/css/fontawesome-free-5.0.13/web-fonts-with-css/css/fontawesome-all.css"))
+   "/borrow/css/fontawesome-free-5.0.13/web-fonts-with-css/css/fontawesome-all.css"))
 
 (defn head []
   [:head
    [:meta {:charset "utf-8"}]
    [:meta {:name "viewport"
            :content "width=device-width, initial-scale=1, shrink-to-fit=no"}]
-   (include-site-css)
-   (include-font-css)])
+   #_(include-site-css)
+   #_(include-font-css)])
 
 (defn body-attributes [request]
-  {:data-user (some-> (:authenticated-entity request) to-json url/encode)
+  {:style "margin:0;padding:0;zoom:1.25"
+   ; :data-user (some-> (:authenticated-entity request) to-json url/encode)
    ; :data-leihsborrowversion (url/encode (to-json release-info/leihs-borrow-version))
    ; :data-leihsversion (url/encode (to-json release-info/leihs-version))
    })
@@ -33,28 +34,30 @@
   {:status 404
    :headers {"Content-Type" "text/html"}
    :body (html5
-           (head)
-           [:body
-            (body-attributes request)
-            [:div.container-fluid
-             [:h1.text-danger "Error 404 - Not Found"]]])})
+          (head)
+          [:body
+           (body-attributes request)
+           [:div.container-fluid
+            [:h1.text-danger "Error 404 - Not Found"]]])})
 
 (defn html-handler [request]
   {:headers {"Content-Type" "text/html"}
    :body (html5
-           (head)
-           [:body (body-attributes request)
-            [:div
-             ; (ssr/render-navbar request {:borrow false})
-             [:br]
-             [:div#app.container-fluid
-              [:div.alert.alert-warning
-               [:h1 "Leihs New Borrow"]
-               [:p "This application requires Javascript."]]]]
-            (hiccup.page/include-js (cache-buster/cache-busted-path
-                                      "/borrow/leihs-shared-bundle.js"))
-            #_(hiccup.page/include-js
-                (cache-buster/cache-busted-path "/borrow/js/app.js"))])})
+          (head)
+          [:body (body-attributes request)
+           [:div#app.container-fluid
+            [:noscript 
+             [:div.alert.alert-warning
+              {:style "height: 100vh; text-align: center;"}
+              [:h1 "Leihs New Borrow"]
+              [:p "This application requires Javascript."]]]
+            [:pre {:style "line-height: 100vh; text-align: center;"}
+             "loading…"]
+            ]]
+          #_(hiccup.page/include-js (cache-buster/cache-busted-path
+                                     "/borrow/leihs-shared-bundle.js"))
+          (hiccup.page/include-js
+           (cache-buster/cache-busted-path "/borrow/js/app.js")))})
 
 
 ;#### debug ###################################################################
