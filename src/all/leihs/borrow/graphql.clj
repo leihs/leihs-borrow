@@ -9,6 +9,7 @@
             [com.walmartlabs.lacinia.util :as graphql-util]
             [leihs.borrow.graphql.scalars :as scalars]
             [leihs.borrow.graphql.resolvers :as resolvers]
+            [leihs.borrow.authenticate :as authenticate]
             [leihs.core.graphql.helpers :as helpers]
             [leihs.core.ring-exception :refer [get-cause]]))
 
@@ -37,7 +38,7 @@
                    {:request request
                     ::lacinia/enable-timing? true}))
 
-(defn pure-handler
+(defn base-handler
   [{{query :query} :body, :as request}]
   (let [result (-> query 
                    (exec-query request)
@@ -60,19 +61,27 @@
            (log/debug e)
            (helpers/error-as-graphql-object "API_ERROR" m)))))
 
-(defn handler
-  [{{query :query} :body, :as request}]
-  (let [mutation? (->> query
-                       (parse-query-with-exception-handling schema)
-                       graphql-parser/operations
-                       :type
-                       (= :mutation))]
-    (if mutation?
+(defn schema? [query]
+  (->> query
+       (parse-query-with-exception-handling schema)
+       graphql-parser/operations
+       :operations
+       (= #{:__schema})))
+
+(defn mutation? [query]
+  (->> query
+       (parse-query-with-exception-handling schema)
+       graphql-parser/operations
+       :type
+       (= :mutation)))
+
+(defn handler-with-operation-type-check [{{query :query} :body, :as request}]
+  (if (mutation? query)
       (jdbc/with-db-transaction
         [tx (:tx request)]
         (try (let [response (->> tx
                                  (assoc request :tx)
-                                 pure-handler)]
+                                 base-handler)]
                (when (:graphql-error response)
                  (log/warn "Rolling back transaction because of graphql error")
                  (jdbc/db-set-rollback-only! tx))
@@ -81,7 +90,15 @@
                (log/warn "Rolling back transaction because of " th)
                (jdbc/db-set-rollback-only! tx)
                (throw th))))
-      (pure-handler request))))
+      (base-handler request)))
+
+(defn handler
+  [{{query :query} :body, :as request}]
+  (if (schema? query)
+    (base-handler request)
+    (-> handler-with-operation-type-check
+        authenticate/wrap-base
+        (apply [request]))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
