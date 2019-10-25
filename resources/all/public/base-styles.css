@@ -1,0 +1,37 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; 
+  padding: 0; 
+  width: 100vw;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont,
+              'avenir next', avenir,
+              'helvetica neue', helvetica,
+              ubuntu,
+              roboto, noto,
+              'segoe ui', arial,
+              sans-serif;
+}
+code, .code, pre, samp, kbd {
+  font-family: Consolas, monaco, monospace;
+}
+hr { border: none; border-bottom: 1px solid lightgrey }
+fieldset { border: 1px solid lightgrey }
+input { border: 1px solid grey; border-radius: 1rem; padding: 0 0.25rem }
+input:invalid { border-bottom: 1px solid tomato}
+
+img {max-width: 100%; max-height: 100%; height: auto;}
+
+@media (prefers-dark-interface) {
+  :root { 
+    background-color: #fefefe;
+    filter: invert(100%);
+  }
+  * { 
+    background-color: inherit;
+  }
+  img:not([src *=\".svg\"]), video {  
+  filter: invert(100%);
+  }
+}

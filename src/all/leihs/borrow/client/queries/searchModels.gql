@@ -1,0 +1,39 @@
+query searchModels(
+  $searchTerm: String
+  $startDate: String!
+  $endDate: String!
+  $categories: [UUID!]
+  $pools: [UUID!]
+) {
+  models(
+    searchTerm: $searchTerm
+    startDate: $startDate
+    endDate: $endDate
+    categoryIds: $categories
+    inventoryPoolIds: $pools
+    limit: 100
+  ) {
+    ...modelListProps
+  }
+}
+
+fragment modelListProps on Model {
+  id
+  name
+  description
+  manufacturer
+  images {
+    id
+    imageUrl
+    # thumbnails {
+    #   id
+    #   size
+    #   imageUrl
+    # }
+  }
+  # availability {
+  #  inventoryPool { id }
+  #  dates { date quantity }
+  # }
+}
+

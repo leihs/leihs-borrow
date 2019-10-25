@@ -7,28 +7,15 @@
             [hiccup.page :refer [html5 include-js]]
             [ring.util.response :refer [resource-response content-type status]]))
 
-(defn include-site-css []
-  (hiccup.page/include-css
-   (cache-buster/cache-busted-path "/borrow/css/site.css")))
-
-(defn include-font-css []
-  (hiccup.page/include-css
-   "/borrow/css/fontawesome-free-5.0.13/web-fonts-with-css/css/fontawesome-all.css"))
-
 (defn head []
   [:head
    [:meta {:charset "utf-8"}]
    [:meta {:name "viewport"
            :content "width=device-width, initial-scale=1, shrink-to-fit=no"}]
-   #_(include-site-css)
-   #_(include-font-css)])
-
-(defn body-attributes [request]
-  {:style "margin:0;padding:0;zoom:1.25"
-   ; :data-user (some-> (:authenticated-entity request) to-json url/encode)
-   ; :data-leihsborrowversion (url/encode (to-json release-info/leihs-borrow-version))
-   ; :data-leihsversion (url/encode (to-json release-info/leihs-version))
-   })
+   [:link {:rel "stylesheet" :href "/base-styles.css"}]
+   #_[:style ; TODO: cache those minimal base styles in prod mode
+      (slurp "resources/all/base-styles.css")]
+   ])
 
 (defn not-found-handler [request]
   {:status 404
@@ -36,7 +23,6 @@
    :body (html5
           (head)
           [:body
-           (body-attributes request)
            [:div.container-fluid
             [:h1.text-danger "Error 404 - Not Found"]]])})
 
@@ -44,16 +30,15 @@
   {:headers {"Content-Type" "text/html"}
    :body (html5
           (head)
-          [:body (body-attributes request)
+          [:body 
            [:div#app.container-fluid
-            [:noscript 
+            [:noscript
              [:div.alert.alert-warning
               {:style "height: 100vh; text-align: center;"}
               [:h1 "Leihs New Borrow"]
               [:p "This application requires Javascript."]]]
             [:pre {:style "line-height: 100vh; text-align: center;"}
-             "loading…"]
-            ]]
+             "loading…"]]]
           #_(hiccup.page/include-js (cache-buster/cache-busted-path
                                      "/borrow/leihs-shared-bundle.js"))
           (hiccup.page/include-js

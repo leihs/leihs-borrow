@@ -1,0 +1,10 @@
+query getSearchFilters {
+  mainCategories: categories(rootOnly: true) {
+    id
+    label: name
+  }
+  pools: inventoryPools {
+    id
+    label: name
+  }
+}
