@@ -1,5 +1,4 @@
 (ns leihs.borrow.resources.models
-  (:refer-clojure :exclude [first])
   (:require [clojure.spec.alpha :as spec]
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
@@ -49,6 +48,16 @@
       (sql/merge-where [:= :items.retired nil])
       (sql/merge-where [:= :items.is_borrowable true])
       (sql/merge-where [:= :items.parent_id nil])))
+
+(defn reservable? [tx model-id user-id]
+  (-> base-sqlmap
+      (merge-reservable-conditions user-id)
+      (sql/merge-where [:= :models.id model-id])
+      sql/format
+      (->> (jdbc/query tx))
+      first
+      nil?
+      not))
 
 (defn merge-search-conditions [sqlmap search-term]
   (sql/merge-where sqlmap ["~~*"

@@ -1,3 +1,5 @@
-(ns leihs.borrow.graphql.mutations)
+(ns leihs.borrow.graphql.mutations
+  (:require [leihs.borrow.resources.reservations :as reservations]))
 
-(def resolvers {})
+(def resolvers
+  {:create-reservation reservations/create})

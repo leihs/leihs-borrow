@@ -11,7 +11,8 @@
 
 (def defaults
   {:LEIHS_BORROW_HTTP_BASE_URL "http://localhost:3250"
-   :LEIHS_DATABASE_URL "jdbc:postgresql://leihs:leihs@localhost:5432/leihs?min-pool-size=1&max-pool-size=5"}) 
+   :LEIHS_DATABASE_URL "jdbc:postgresql://leihs:leihs@localhost:5432/leihs?min-pool-size=1&max-pool-size=5"
+   :LEIHS_LEGACY_HTTP_BASE_URL "http://localhost:3000"}) 
 
 (defn- get-from-env
   [kw]
@@ -37,6 +38,14 @@
          :LEIHS_BORROW_HTTP_BASE_URL
          (str "default: "))
     :default (-> :LEIHS_BORROW_HTTP_BASE_URL
+                 env-or-default
+                 http-url/parse-base-url)
+    :parse-fn http-url/parse-base-url]
+   ["-l" "--legacy-http-base-url LEIHS_LEGACY_HTTP_BASE_URL"
+    (->> defaults
+         :LEIHS_LEGACY_HTTP_BASE_URL
+         (str "default: "))
+    :default (-> :LEIHS_LEGACY_HTTP_BASE_URL
                  env-or-default
                  http-url/parse-base-url)
     :parse-fn http-url/parse-base-url]

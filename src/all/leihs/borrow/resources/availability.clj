@@ -8,7 +8,6 @@
             [clj-time.local :as clj-time-local]
             [clojure.tools.logging :as log]
             [clojure.core.async :as async]
-            [leihs.borrow.resources.reservations :as reservations]
             [cheshire.core :as json]
             [clj-http.client :as client]
             [camel-snake-kebab.core :as csk]
@@ -19,11 +18,22 @@
 (spec/def ::end-date string?)
 (spec/def ::inventory-pool-ids (spec/coll-of uuid? :min-count 1))
 
-(def FETCH-URL "http://localhost:3000/borrow/booking_calendar_availability")
+(def fetch-url (atom nil))
+
+(comment (reset! fetch-url "http://localhost:3333/borrow/booking_calendar_availability"))
+
+(defn init [options]
+  (reset! fetch-url (-> options
+                        :legacy-http-base-url
+                        :url
+                        (str "/borrow/booking_calendar_availability")))
+  (-> "URL to fetch availability set to: "
+      (str @fetch-url)
+      log/info))
 
 (defn fetch-from-legacy [args leihs-user-session-cookie-value]
   (client/get
-    FETCH-URL
+    @fetch-url
     {:accept :json
      :content-type :json
      :cookies {"leihs-user-session" {:value leihs-user-session-cookie-value}}
@@ -46,7 +56,8 @@
        json/parse-string
        walk/keywordize-keys
        :list
-       (map #(clojure.set/rename-keys % {:d :date}))))
+       (map #(clojure.set/rename-keys % {:d :date}))
+       (hash-map :dates)))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

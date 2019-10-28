@@ -12,6 +12,7 @@
             [leihs.core.status :as status]
             [leihs.borrow.cli :as cli]
             [leihs.borrow.routes :as routes]
+            [leihs.borrow.resources.availability :as availability]
             [logbug.catcher :as catcher]
             [signal.handler]
             ))
@@ -40,6 +41,7 @@
     (log/info "Invoking run with options: " options)
     ; (settings/init options)
     (shutdown/init options)
+    (availability/init options)
     (let [status (status/init)]
       (ds/init (:database-url options)
                (:health-check-registry status)))

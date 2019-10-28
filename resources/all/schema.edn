@@ -1,4 +1,5 @@
-{:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}}
+{:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}
+           :ISO8601 {:parse :iso8601-parse :serialize :iso8601-serialize}}
 
  :enums {:ModelsOrderByAttributeEnum {:values [:ID]},
          :UsersOrderByAttributeEnum {:values [:ID]},
@@ -90,7 +91,14 @@
                                                :orderBy {:type (list :ModelsOrderByInput)}
                                                :searchTerm {:type String}}}
                                :images {:type (list :Image)
-                                        :resolve :images}}}}
+                                        :resolve :images}}}
+           :Reservation {:fields {:id {:type (non-null :UUID)}
+                                  :model {:type (non-null :Model)}
+                                  :inventoryPool {:type (non-null :InventoryPool)}
+                                  :startDate {:type (non-null String)}
+                                  :endDate {:type (non-null String)}
+                                  :createdAt {:type (non-null :ISO8601)}
+                                  :updatedAt {:type (non-null :ISO8601)}}}}
 
  :input-objects {:ModelsOrderByInput {:fields {:attribute {:type (non-null :ModelsOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
@@ -140,4 +148,11 @@
                                :ids {:type (list :UUID)}
                                :rootOnly {:type Boolean}}
                         :resolve :categories
-                        :type (list :Category)}}}
+                        :type (list :Category)}}
+  :mutations {:create_reservation {:args {:startDate {:type (non-null String)}
+                                          :endDate {:type (non-null String)}
+                                          :modelId {:type (non-null :UUID)}
+                                          :inventoryPoolId {:type (non-null :UUID)}
+                                          :quantity {:type (non-null Int)}}
+                                   :resolve :create-reservation
+                                   :type (list :Reservation)}}}

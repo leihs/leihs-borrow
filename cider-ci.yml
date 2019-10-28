@@ -87,6 +87,11 @@ jobs:
         job_key: backend-specs
         states: [passed]
 
+      check-graphql-schema was successful:
+        type: job
+        job_key: check-graphql-schema
+        states: [passed]
+
       # client-build was successful:
       #   type: job
       #   job_key: client-build
@@ -145,6 +150,7 @@ jobs:
           - cider-ci/database_task-component.yml
           - cider-ci/uberjar_task-component.yml
           - cider-ci/service_task-component.yml
+          - cider-ci/legacy-mock-server_task-component.yml
         environment_variables:
           LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
         traits:
@@ -154,6 +160,9 @@ jobs:
           LEIHS_BORROW_HTTP_PORT:
             min: 3300
             max: 3399
+          LEGACY_MOCK_SERVER_PORT:
+            min: 3400
+            max: 3499
         git_options:
           submodules:
             include_match: ^.*$

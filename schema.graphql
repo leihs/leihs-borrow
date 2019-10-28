@@ -1,8 +1,9 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Tue Oct 22 2019 20:16:35 GMT+0200 (Central European Summer Time)
+# timestamp: Mon Oct 28 2019 12:09:33 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
+  mutation: MutationRoot
 }
 
 type Attachment {
@@ -82,6 +83,8 @@ input InventoryPoolsOrderByInput {
   direction: OrderByDirectionEnum!
 }
 
+scalar ISO8601
+
 type Model {
   attachments: [Attachment]
   availability: [ModelInventoryPoolAvailability]
@@ -121,6 +124,11 @@ input ModelsOrderByInput {
   direction: OrderByDirectionEnum!
 }
 
+"""Root of all mutations."""
+type MutationRoot {
+  create_reservation(endDate: String!, inventoryPoolId: UUID!, modelId: UUID!, quantity: Int!, startDate: String!): [Reservation]
+}
+
 enum OrderByDirectionEnum {
   ASC
   DESC
@@ -146,6 +154,16 @@ type QueryRoot {
   models(categoryIds: [UUID], endDate: String, inventoryPoolIds: [UUID], limit: Int, offset: Int, orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): [Model]
   modelsConnection(after: String, categoryIds: [UUID], endDate: String, first: Int, inventoryPoolIds: [UUID], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): ModelsConnection
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
+}
+
+type Reservation {
+  createdAt: ISO8601!
+  endDate: String!
+  id: UUID!
+  inventoryPool: InventoryPool!
+  model: Model!
+  startDate: String!
+  updatedAt: ISO8601!
 }
 
 type Thumbnail {

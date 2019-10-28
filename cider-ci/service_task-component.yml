@@ -10,6 +10,9 @@ scripts:
       set -euxo 
       cd $LEIHS_BORROW_DIR
       mkdir tmp
+      if [ -n "${LEGACY_MOCK_SERVER_PORT:-}" ]; then
+        export LEIHS_LEGACY_HTTP_BASE_URL=http://localhost:${LEGACY_MOCK_SERVER_PORT}
+      fi
       java -jar target/leihs-borrow.jar run
 
   borrow-service-is-running:
