@@ -2,7 +2,7 @@
   "dependencies": {
     "create-react-class": "^15.6.3",
     "graphql-cli": "git://github.com/eins78/graphql-cli#567533bb766bbfee16c4a5d379d7ad338cf0e46b",
-    "graphql-schema-diff": "^0.6.3",
+    "@eins78/graphql-schema-diff": "0.7.0",
     "highlight.js": "9.15.10",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",

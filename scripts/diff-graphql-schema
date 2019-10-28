@@ -7,7 +7,9 @@ RES=1
 mv schema.graphql schema_orig.graphql
 ./scripts/dump-graphql-schema
 
-npm run -s graphql-schema-diff -- schema_orig.graphql schema.graphql && RES=0 || RES=1
+npm run -s graphql-schema-diff -- \
+  --fail-on-any-changes schema_orig.graphql schema.graphql \
+  && RES=0 || RES=1
 
-mv schema_orig.graphql schema.graphql 
+mv schema_orig.graphql schema.graphql
 exit $RES
