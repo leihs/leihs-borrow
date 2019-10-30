@@ -115,8 +115,8 @@
                    :type (list :User)}
            :currentUser {:type (non-null :CurrentUser)
                          :resolve :current-user}
-           :models {:args {:categoryIds {:type (list :UUID)}
-                           :inventoryPoolIds {:type (list :UUID)}
+           :models {:args {:categoryIds {:type (list (non-null :UUID))}
+                           :inventoryPoolIds {:type (list (non-null :UUID))}
                            :limit {:type Int}
                            :offset {:type Int}
                            :orderBy {:type (list :ModelsOrderByInput)}
@@ -125,8 +125,8 @@
                            :endDate {:type String}}
                     :resolve :models
                     :type (list :Model)}
-           :modelsConnection {:args {:categoryIds {:type (list :UUID)}
-                                     :inventoryPoolIds {:type (list :UUID)}
+           :modelsConnection {:args {:categoryIds {:type (list (non-null :UUID))}
+                                     :inventoryPoolIds {:type (list (non-null :UUID))}
                                      :orderBy {:type (list :ModelsOrderByInput)}
                                      :searchTerm {:type String}
                                      :startDate {:type String}
@@ -145,7 +145,7 @@
                           :type :Availability}
            :categories {:args {:limit {:type Int}
                                :offset {:type Int}
-                               :ids {:type (list :UUID)}
+                               :ids {:type (list (non-null :UUID))}
                                :rootOnly {:type Boolean}}
                         :resolve :categories
                         :type (list :Category)}}

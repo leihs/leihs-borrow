@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Mon Oct 28 2019 12:09:33 GMT+0100 (Central European Standard Time)
+# timestamp: Wed Oct 30 2019 09:43:51 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -148,11 +148,11 @@ type Property {
 """Root of all queries."""
 type QueryRoot {
   availability(endDate: String!, inventoryPoolId: UUID!, modelId: UUID!, startDate: String!): Availability
-  categories(ids: [UUID], limit: Int, offset: Int, rootOnly: Boolean): [Category]
+  categories(ids: [UUID!], limit: Int, offset: Int, rootOnly: Boolean): [Category]
   currentUser: CurrentUser!
   inventoryPools: [InventoryPool]
-  models(categoryIds: [UUID], endDate: String, inventoryPoolIds: [UUID], limit: Int, offset: Int, orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): [Model]
-  modelsConnection(after: String, categoryIds: [UUID], endDate: String, first: Int, inventoryPoolIds: [UUID], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): ModelsConnection
+  models(categoryIds: [UUID!], endDate: String, inventoryPoolIds: [UUID!], limit: Int, offset: Int, orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): [Model]
+  modelsConnection(after: String, categoryIds: [UUID!], endDate: String, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): ModelsConnection
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
 }
 
