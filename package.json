@@ -11,6 +11,10 @@
   },
   "scripts": {
     "graphql": "graphql",
-    "graphql-schema-diff": "graphql-schema-diff"
+    "graphql-schema-diff": "graphql-schema-diff",
+    "shadow-cljs": "shadow-cljs"
+  },
+  "devDependencies": {
+    "shadow-cljs": "^2.8.69"
   }
 }

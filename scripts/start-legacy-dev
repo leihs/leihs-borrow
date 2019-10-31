@@ -9,4 +9,5 @@ cd ../legacy || {
     exit 1
 }
 
+export RAILS_LOG_LEVEL=debug
 bundle exec rails s -p $LEIHS_LEGACY_PORT -b 127.0.0.1
