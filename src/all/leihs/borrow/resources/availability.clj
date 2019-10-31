@@ -21,7 +21,7 @@
 
 (def fetch-url (atom nil))
 
-(comment (reset! fetch-url "http://localhost:3333/borrow/booking_calendar_availability"))
+(comment (reset! fetch-url "http://localhost:3000/borrow/booking_calendar_availability"))
 
 (defn init [options]
   (reset! fetch-url (-> options
