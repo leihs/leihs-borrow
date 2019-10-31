@@ -117,7 +117,7 @@
 (defn merge-availability [models context args _]
   (spec/assert (spec/keys :req-un [::availability/start-date
                                    ::availability/end-date
-                                   ::availability/inventory-pool-ids])
+                                   #_::availability/inventory-pool-ids])
                args)
   (map (fn [model]
          (assoc model
