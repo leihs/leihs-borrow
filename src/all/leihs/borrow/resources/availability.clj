@@ -15,6 +15,7 @@
             [clojure.walk :as walk]))
 
 (spec/def ::start-date string?)
+
 (spec/def ::end-date string?)
 (spec/def ::inventory-pool-ids (spec/coll-of uuid? :min-count 1))
 

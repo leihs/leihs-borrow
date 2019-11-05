@@ -31,9 +31,9 @@ fragment modelListProps on Model {
     #   imageUrl
     # }
   }
-  # availability {
-  #  inventoryPool { id }
-  #  dates { date quantity }
-  # }
+  availability {
+   inventoryPool { id }
+   dates { date quantity }
+  }
 }
 

@@ -12,10 +12,14 @@
    [:meta {:charset "utf-8"}]
    [:meta {:name "viewport"
            :content "width=device-width, initial-scale=1, shrink-to-fit=no"}]
+
+   ; TMP add precompiled tailwindcss
+   [:link {:rel "stylesheet" :href "https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"}]
+
+   ; TODO: cache those minimal base styles in prod mode
    [:link {:rel "stylesheet" :href "/base-styles.css"}]
-   #_[:style ; TODO: cache those minimal base styles in prod mode
-      (slurp "resources/all/base-styles.css")]
-   ])
+   #_[:style
+      (slurp "resources/all/base-styles.css")]])
 
 (defn not-found-handler [request]
   {:status 404
@@ -30,14 +34,14 @@
   {:headers {"Content-Type" "text/html"}
    :body (html5
           (head)
-          [:body 
-           [:div#app.container-fluid
+          [:body.font-sans
+           [:div#app
             [:noscript
-             [:div.alert.alert-warning
+             [:div.p-4.font-mono
               {:style "height: 100vh; text-align: center;"}
-              [:h1 "Leihs New Borrow"]
-              [:p "This application requires Javascript."]]]
-            [:pre {:style "line-height: 100vh; text-align: center;"}
+              [:h1.pt-4.pb-4 "Leihs New Borrow"]
+              [:p.italic.font-black.text-red-800 "This application requires JavaScript."]]]
+            [:pre.font-mono.text-center {:style "line-height: 100vh"}
              "loading…"]]]
           #_(hiccup.page/include-js (cache-buster/cache-busted-path
                                      "/borrow/leihs-shared-bundle.js"))
