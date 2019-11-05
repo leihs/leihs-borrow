@@ -20,7 +20,15 @@ get '/borrow/booking_calendar_availability' do
       { d: d.strftime, quantity: 2 }
     end
     { list: dates }
+  when '2bc1deb5-9428-4178-afd0-c06bb8d31ff3', '210a4116-162f-4947-bcb0-2d7d1a5c7b1c'
+    { list: [
+      { d: '2019-10-24',
+        quantity: 1 },
+      { d: '2019-10-25',
+        quantity: 1 }
+      ]
+    }
   else
-    raise 'Unknown model ID'
+    raise "Unknown model ID: #{params[:model_id]}"
   end.to_json
 end

@@ -58,7 +58,12 @@ describe 'models' do
 
     q = <<-GRAPHQL
       {
-        models(orderBy: [{attribute: ID, direction: ASC}]) {
+        models(
+          orderBy: [{attribute: ID, direction: ASC}],
+          startDate: "2019-10-24",
+          endDate: "2019-10-25",
+          inventoryPoolIds: ["232547a5-5f43-450c-896a-b692275a04ea"]
+        ) {
           id
           images {
             imageUrl
@@ -71,6 +76,15 @@ describe 'models' do
           }
           recommends {
             id
+          }
+          availability {
+            inventoryPool {
+              id
+            }
+            dates {
+              date
+              quantity
+            }
           }
         }
       }
@@ -85,7 +99,19 @@ describe 'models' do
           'images' => [],
           'attachments' => [],
           'properties' => [],
-          'recommends' => []
+          'recommends' => [],
+          'availability' => [
+            { 'inventoryPool' => {
+                'id' => '232547a5-5f43-450c-896a-b692275a04ea'
+              },
+              'dates' => [
+                { 'date' => '2019-10-24',
+                  'quantity' => 1 },
+                { 'date' => '2019-10-25',
+                  'quantity' => 1 }
+              ]
+            }
+          ]
         },
         # model of interest
         { 'id' => '2bc1deb5-9428-4178-afd0-c06bb8d31ff3',
@@ -100,6 +126,18 @@ describe 'models' do
           ],
           'recommends' => [
             { 'id' => '210a4116-162f-4947-bcb0-2d7d1a5c7b1c' }
+          ],
+          'availability' => [
+            { 'inventoryPool' => {
+                'id' => '232547a5-5f43-450c-896a-b692275a04ea'
+              },
+              'dates' => [
+                { 'date' => '2019-10-24',
+                  'quantity' => 1 },
+                { 'date' => '2019-10-25',
+                  'quantity' => 1 }
+              ]
+            }
           ]
         }
       ]
