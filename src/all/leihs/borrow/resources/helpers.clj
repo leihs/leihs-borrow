@@ -1,5 +1,6 @@
 (ns leihs.borrow.resources.helpers
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [leihs.core.sql :as sql]))
 
 (defn treat-order-arg [order]
   (map #(as-> % <>
@@ -9,4 +10,24 @@
                   (comp keyword string/lower-case name))
           (vals <>))
        order))
+
+(defn iso8601-created-at
+  ([] (iso8601-created-at nil))
+  ([q]
+   [(sql/call :to_char
+             (if q
+               (sql/qualify q :created_at)
+               :created_at)
+             "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"")
+    :created_at]))
+
+(defn iso8601-updated-at
+  ([] (iso8601-updated-at nil))
+  ([q]
+   [(sql/call :to_char
+             (if q
+               (sql/qualify q :updated_at)
+               :updated_at)
+             "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"")
+    :updated_at]))
 

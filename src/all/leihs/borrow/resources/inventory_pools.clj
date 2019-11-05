@@ -24,19 +24,18 @@
           (-> (sql/order-by (helpers/treat-order-arg order-by))
               (sql/merge-order-by [:inventory_pools.name :asc])))
         sql/format
-        log/spy
         (->> (jdbc/query (-> context :request :tx))))))
 
-(defn get-one
-  ([tx id]
-   (-> base-sqlmap
-       (sql/merge-where [:= :inventory_pools.id id])
-       sql/format
-       (->> (jdbc/query tx))
-       first))
-  ([context _ value]
-   (get-one (-> context :request :tx)
-            (:inventory_pool_id value))))
+(defn get-by-id [tx id]
+  (-> base-sqlmap
+      (sql/merge-where [:= :inventory_pools.id id])
+      sql/format
+      (->> (jdbc/query tx))
+      first))
+
+(defn get-one [context _ value]
+  (get-by-id (-> context :request :tx)
+             (:inventory-pool-id value)))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

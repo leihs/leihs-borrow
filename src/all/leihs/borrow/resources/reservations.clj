@@ -3,41 +3,65 @@
   (:require [leihs.borrow.time :as time]
             [leihs.borrow.resources.models :as models]
             [leihs.borrow.resources.availability :as availability]
+            [leihs.borrow.resources.helpers :as helpers]
+            [leihs.core.database.helpers :as database]
             [leihs.core.sql :as sql]
-            [leihs.core.ds :refer [get-ds]]
             [camel-snake-kebab.core :as csk]
             [wharf.core :refer [transform-keys]]
+            [com.walmartlabs.lacinia :as lacinia]
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]))
 
-(defn columns [tx]
-  (-> (sql/select :column_name)
-      (sql/from :information_schema.columns)
-      (sql/where [:= :table_name "reservations"])
-      sql/format
-      (->> (jdbc/query (get-ds))
-           (map (comp keyword :column_name)))))
+(defn query [sql-format tx]
+  (jdbc/query tx
+              sql-format
+              {:row-fn 
+               #(update % :status clojure.string/upper-case)}))
 
 (defn count [tx model-id]
   (-> (sql/select :%count.*)
       (sql/from :reservations)
       (sql/where [:= :model_id model-id])
       sql/format
-      (->> (jdbc/query tx))
+      (query tx)
       first
       :count))
 
 (defn updated-at [tx model-id]
-  (def foo 'bar)
   (-> (sql/select :updated_at)
       (sql/from :reservations)
       (sql/where [:= :model_id model-id])
       (sql/order-by [:updated_at :desc])
       (sql/limit 1)
       sql/format
-      (->> (jdbc/query tx))
+      (query tx)
       first
       :updated_at))
+
+(defn for-customer-order [tx user-id]
+  (-> (sql/select :*)
+      (sql/from :reservations)
+      (sql/merge-where [:= :user_id user-id])
+      (sql/merge-where
+        [:=
+         :status
+         (sql/call :cast "unsubmitted" :reservation_status)])
+      sql/format
+      (->> (jdbc/query tx))))
+
+(defn get-multiple [{{:keys [tx]} :request :as context}
+                    {:keys [order-by]}
+                    value]
+  (-> (sql/select :*)
+      (sql/from :reservations)
+      (sql/where [:=
+                  (case (::lacinia/container-type-name context)
+                    :PoolOrder :order_id)
+                  (:id value)])
+      (cond-> (seq order-by)
+        (sql/order-by (helpers/treat-order-arg order-by)))
+      sql/format
+      (query tx)))
 
 (defn create [{{:keys [tx authenticated-entity]} :request :as context}
               {:keys [model-id quantity] :as args}
@@ -63,9 +87,10 @@
                            repeat
                            (take quantity)))
           (assoc :returning
-                 (->> (columns tx)
-                      (remove #{:created_at :updated_at})
-                      (concat [(sql/raw "TO_CHAR(created_at, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS created_at")
-                               (sql/raw "TO_CHAR(updated_at, 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') AS updated_at")])))
+                 (as-> (database/columns tx "reservations") <>
+                   (remove #{:created_at :updated_at} <>)
+                   (conj <>
+                         (helpers/iso8601-created-at)
+                         (helpers/iso8601-updated-at))))
           sql/format
-          (->> (jdbc/query tx))))))
+          (query tx)))))

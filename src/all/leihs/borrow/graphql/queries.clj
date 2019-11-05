@@ -7,7 +7,9 @@
     [leihs.borrow.resources.images :as images]
     [leihs.borrow.resources.inventory-pools :as inventory-pools]
     [leihs.borrow.resources.models :as models]
+    [leihs.borrow.resources.orders :as orders]
     [leihs.borrow.resources.properties :as properties]
+    [leihs.borrow.resources.reservations :as reservations]
     [leihs.borrow.resources.users :as users]
     ))
 
@@ -22,6 +24,10 @@
    :inventory-pools inventory-pools/get-multiple
    :models models/get-multiple
    :models-connection models/get-connection
+   :order orders/get-one
+   :orders orders/get-multiple
+   :pool-orders orders/get-multiple-by-pool
    :properties properties/get-multiple
+   :reservations reservations/get-multiple
    :thumbnails images/get-multiple-thumbnails
    :users users/get-multiple})

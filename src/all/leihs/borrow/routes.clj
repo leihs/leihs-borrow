@@ -115,7 +115,7 @@
   (-> ;wrap-handler-with-logging
       dispatch-to-handler
       ; anti-csrf/wrap
-      locale/wrap
+      ; locale/wrap
       authenticate/wrap
       session/wrap-authenticate
       wrap-cookies

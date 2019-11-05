@@ -17,7 +17,7 @@ get '/borrow/booking_calendar_availability' do
     }
   when '906ac7a7-1f1e-4367-b1f0-fa63052fbd0f'
     dates = (Date.tomorrow..Date.tomorrow + 1.day).map do |d|
-      { d: d.strftime, quantity: 3 }
+      { d: d.strftime, quantity: 2 }
     end
     { list: dates }
   else

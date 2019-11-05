@@ -4,7 +4,12 @@
  :enums {:ModelsOrderByAttributeEnum {:values [:ID]},
          :UsersOrderByAttributeEnum {:values [:ID]},
          :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME]},
-         :OrderByDirectionEnum {:values [:ASC :DESC]}}
+         :ReservationsOrderByAttributeEnum {:values [:ID]},
+         :PoolOrdersOrderByAttributeEnum {:values [:INVENTORY_POOL_ID :ID]},
+         :OrdersOrderByAttributeEnum {:values [:ID]},
+         :OrderByDirectionEnum {:values [:ASC :DESC]}
+         :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED]}
+         :ReservationStateEnum {:values [:UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}}
 
  :objects {:Contract {:fields {:id {:type (non-null :UUID)}
                                :compactId {:type (non-null :UUID)
@@ -96,14 +101,41 @@
                                   :model {:type (non-null :Model)}
                                   :inventoryPool {:type (non-null :InventoryPool)}
                                   :startDate {:type (non-null String)}
+                                  :status {:type (non-null :ReservationStateEnum)}
                                   :endDate {:type (non-null String)}
                                   :createdAt {:type (non-null :ISO8601)}
-                                  :updatedAt {:type (non-null :ISO8601)}}}}
+                                  :updatedAt {:type (non-null :ISO8601)}}}
+           :PoolOrder {:fields {:id {:type (non-null :UUID)}
+                                :inventoryPool {:type (non-null :InventoryPool)
+                                                :resolve :inventory-pool}
+                                :state {:type (non-null :PoolOrderStateEnum)}
+                                :rejectedReason {:type String}
+                                :reservations {:type (list :Reservation)
+                                               :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                               :resolve :reservations}
+                                :createdAt {:type (non-null :ISO8601)}
+                                :updatedAt {:type (non-null :ISO8601)}}}
+           :Order {:fields {:id {:type (non-null :UUID)}
+                            :purpose {:type (non-null String)}
+                            :state {:type (list :PoolOrderStateEnum)
+                                    :description "List of distinct states of all the sub-orders."}
+                            :subOrdersByPool {:type (list :PoolOrder)
+                                              :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
+                                              :resolve :pool-orders}
+                            :createdAt {:type (non-null :ISO8601)}
+                            :updatedAt {:type (non-null :ISO8601)}}
+                   :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}}
 
  :input-objects {:ModelsOrderByInput {:fields {:attribute {:type (non-null :ModelsOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :InventoryPoolsOrderByInput {:fields {:attribute {:type (non-null :InventoryPoolsOrderByAttributeEnum)}
                                                        :direction {:type (non-null :OrderByDirectionEnum)}}}
+                 :PoolOrdersOrderByInput {:fields {:attribute {:type (non-null :PoolOrdersOrderByAttributeEnum)}
+                                                   :direction {:type (non-null :OrderByDirectionEnum)}}}
+                 :OrdersOrderByInput {:fields {:attribute {:type (non-null :OrdersOrderByAttributeEnum)}
+                                               :direction {:type (non-null :OrderByDirectionEnum)}}}
+                 :ReservationsOrderByInput {:fields {:attribute {:type (non-null :ReservationsOrderByAttributeEnum)}
+                                                     :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :UsersOrderByInput {:fields {:attribute {:type (non-null :UsersOrderByAttributeEnum)}
                                               :direction {:type (non-null :OrderByDirectionEnum)}}}}
 
@@ -125,6 +157,14 @@
                            :endDate {:type String}}
                     :resolve :models
                     :type (list :Model)}
+           :order {:args {:id {:type (non-null :UUID)}}
+                   :resolve :order
+                   :type (non-null :Order)}
+           :orders {:resolve :orders
+                    :args {:states {:type (list :PoolOrderStateEnum)
+                                    :description "Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument."}
+                           :orderBy {:type (list :OrdersOrderByInput)}}
+                    :type (list :Order)}
            :modelsConnection {:args {:categoryIds {:type (list (non-null :UUID))}
                                      :inventoryPoolIds {:type (list (non-null :UUID))}
                                      :orderBy {:type (list :ModelsOrderByInput)}
@@ -149,10 +189,14 @@
                                :rootOnly {:type Boolean}}
                         :resolve :categories
                         :type (list :Category)}}
-  :mutations {:create_reservation {:args {:startDate {:type (non-null String)}
-                                          :endDate {:type (non-null String)}
-                                          :modelId {:type (non-null :UUID)}
-                                          :inventoryPoolId {:type (non-null :UUID)}
-                                          :quantity {:type (non-null Int)}}
-                                   :resolve :create-reservation
-                                   :type (list :Reservation)}}}
+
+ :mutations {:createReservation {:args {:startDate {:type (non-null String)}
+                                        :endDate {:type (non-null String)}
+                                        :modelId {:type (non-null :UUID)}
+                                        :inventoryPoolId {:type (non-null :UUID)}
+                                        :quantity {:type (non-null Int)}}
+                                 :resolve :create-reservation
+                                 :type (list :Reservation)}
+             :submitOrder {:args {:purpose {:type (non-null String)}}
+                           :resolve :submit-order
+                           :type (non-null :Order)}}}
