@@ -6,6 +6,7 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.database.helpers :as database]
             [leihs.core.sql :as sql]
+            [leihs.core.ds :as ds]
             [camel-snake-kebab.core :as csk]
             [wharf.core :refer [transform-keys]]
             [com.walmartlabs.lacinia :as lacinia]
@@ -62,6 +63,23 @@
         (sql/order-by (helpers/treat-order-arg order-by)))
       sql/format
       (query tx)))
+
+(defn delete [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+              {:keys [ids]}
+              _]
+  (-> (sql/delete-from [:reservations :r])
+      (sql/where [:in :r.id ids])
+      (sql/merge-where
+        [:or
+         [:= :r.user_id user-id]
+         [:exists (-> (sql/select true)
+                      (sql/from [:delegations_users :du])
+                      (sql/where [:= :du.user_id user-id])
+                      (sql/merge-where [:= :du.delegation_id :r.user_id]))]])
+      (sql/returning :id)
+      sql/format
+      (->> (jdbc/query tx)
+           (map :id))))
 
 (defn create [{{:keys [tx authenticated-entity]} :request :as context}
               {:keys [model-id quantity] :as args}

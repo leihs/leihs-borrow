@@ -197,6 +197,9 @@
                                         :quantity {:type (non-null Int)}}
                                  :resolve :create-reservation
                                  :type (list :Reservation)}
+             :deleteReservations {:args {:ids {:type (list (non-null :UUID))}}
+                                  :resolve :delete-reservations
+                                  :type (list (non-null :UUID))}
              :submitOrder {:args {:purpose {:type (non-null String)}}
                            :resolve :submit-order
                            :type (non-null :Order)}}}

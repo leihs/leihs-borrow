@@ -4,4 +4,5 @@
 
 (def resolvers
   {:create-reservation reservations/create
+   :delete-reservations reservations/delete
    :submit-order orders/submit})

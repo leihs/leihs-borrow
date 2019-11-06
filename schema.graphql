@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Mon Nov 04 2019 12:03:08 GMT+0100 (Central European Standard Time)
+# timestamp: Wed Nov 06 2019 16:00:20 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -127,6 +127,7 @@ input ModelsOrderByInput {
 """Root of all mutations."""
 type MutationRoot {
   createReservation(endDate: String!, inventoryPoolId: UUID!, modelId: UUID!, quantity: Int!, startDate: String!): [Reservation]
+  deleteReservations(ids: [UUID!]): [UUID!]
   submitOrder(purpose: String!): Order!
 }
 
