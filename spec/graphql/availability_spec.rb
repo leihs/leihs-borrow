@@ -23,15 +23,16 @@ describe 'availability' do
       }
     GRAPHQL
 
-    result = query(q, user.id).deep_symbolize_keys
-    expect(result[:data]).to eq({
+    result = query(q, user.id)
+    expect_graphql_result(result, {
       availability: {
         dates: [
-          { date: "2019-10-24",
-            quantity: 1 }
+          { 
+            date: "2019-10-24",
+            quantity: 1 
+          }
         ]
       }
     })
-    expect(result[:errors]).to be_nil
   end
 end

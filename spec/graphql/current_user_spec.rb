@@ -57,21 +57,18 @@ describe 'currentUser' do
       }
     GRAPHQL
 
-    result = query(q, '0567f6b0-540c-4619-9251-9ea099a5d50d')
-
-    expect(result['data']).to eq({
-      'currentUser' => {
-        'user' => {
-          'id' => '0567f6b0-540c-4619-9251-9ea099a5d50d'
+    expect_graphql_result(query(q, '0567f6b0-540c-4619-9251-9ea099a5d50d'), {
+      currentUser: {
+        user: {
+          id: '0567f6b0-540c-4619-9251-9ea099a5d50d'
         },
-        'inventoryPools' => [
-          { 'name' => 'Pool A (customer)' },
-          { 'name' => 'Pool B (customer)' },
-          { 'name' => 'Pool C (lending manager)' }
+        inventoryPools: [
+          { name: 'Pool A (customer)' },
+          { name: 'Pool B (customer)' },
+          { name: 'Pool C (lending manager)' }
         ]
       }
     })
-
-    expect(result).not_to include(:errors)
+    
   end
 end

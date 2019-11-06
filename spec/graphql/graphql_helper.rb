@@ -49,11 +49,12 @@ end
 
 RSpec.shared_context 'graphql client' do
   def query(q, user_id = nil, variables = {})
-    GraphqlQuery.new(q, user_id, variables).perform.result
+    GraphqlQuery.new(q, user_id, variables).perform.result.deep_symbolize_keys
   end
 
-  def hash_to_graphql(h)
-    h.to_s.gsub(/:(.+?)=>/, "\\1: ")
+  def expect_graphql_result(result, compared)
+    expect(result[:errors]).to be_nil
+    expect(result[:data]).to eq(compared)
   end
 end
 
