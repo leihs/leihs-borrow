@@ -1,0 +1,17 @@
+mutation addModelToOrder(
+  $modelId: UUID!
+  $quantity: Int!
+  $inventoryPoolId: UUID!
+  $startDate: String!
+  $endDate: String!
+) {
+  reservation: createReservation(
+    modelId: $modelId
+    startDate: $startDate
+    endDate: $endDate
+    inventoryPoolId: $inventoryPoolId
+    quantity: $quantity
+  ) {
+    id
+  }
+}

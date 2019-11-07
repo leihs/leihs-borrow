@@ -25,11 +25,7 @@ fragment modelListProps on Model {
   images {
     id
     imageUrl
-    # thumbnails {
-    #   id
-    #   size
-    #   imageUrl
-    # }
+    # thumbnails { id size imageUrl }
   }
   availability {
    inventoryPool { id }
