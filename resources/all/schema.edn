@@ -98,7 +98,8 @@
                                :images {:type (list :Image)
                                         :resolve :images}}}
            :Reservation {:fields {:id {:type (non-null :UUID)}
-                                  :model {:type (non-null :Model)}
+                                  :model {:type (non-null :Model)
+                                          :resolve :model}
                                   :inventoryPool {:type (non-null :InventoryPool)}
                                   :startDate {:type (non-null String)}
                                   :status {:type (non-null :ReservationStateEnum)}

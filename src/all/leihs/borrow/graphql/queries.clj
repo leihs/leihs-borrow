@@ -22,6 +22,7 @@
    :images images/get-multiple
    :inventory-pool inventory-pools/get-one
    :inventory-pools inventory-pools/get-multiple
+   :model models/get-one
    :models models/get-multiple
    :models-connection models/get-connection
    :order orders/get-one

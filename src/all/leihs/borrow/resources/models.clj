@@ -167,6 +167,13 @@
                     value
                     post-process)) 
 
+(defn get-one [{{:keys [tx]} :request} _ value]
+  (-> base-sqlmap
+      (sql/where [:= :id (:model-id value)])
+      sql/format
+      (->> (jdbc/query tx))
+      first))
+
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
 ; (logging-config/set-logger! :level :info)
