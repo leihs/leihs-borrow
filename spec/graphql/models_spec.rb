@@ -808,4 +808,45 @@ describe 'models connection' do
       }
     )
   end
+
+  it 'available quantites' do
+    inventory_pool = FactoryBot.create(
+      :inventory_pool,
+      id: '6ce92dd1-cf47-4942-97a1-6bc5b495b425'
+    )
+    FactoryBot.create(:access_right,
+                      inventory_pool: inventory_pool,
+                      user: @user)
+
+    q = <<-GRAPHQL
+      {
+        models(
+          orderBy: [{attribute: ID, direction: ASC}],
+          startDate: "2019-10-24",
+          endDate: "2019-10-25"
+        ) {
+          edges {
+            node {
+              id
+              availableQuantityInDateRange
+            }
+          }
+        }
+      }
+    GRAPHQL
+
+    result = query(q, @user.id)
+    expect_graphql_result(result, {
+      models: {
+        edges: [
+          { node: { id: '0cad263d-14b9-4595-9878-7adde7f4f586',
+                    availableQuantityInDateRange: 0 } },
+          { node: { id: '1adfe883-3546-4b5c-9ed6-b18f01f77723',
+                    availableQuantityInDateRange: 2 } },
+          { node: { id: '29c1bdf9-7764-4e1e-bf9e-902f908be8d5',
+                    availableQuantityInDateRange: 0 } }
+        ]
+      }
+    })
+  end
 end
