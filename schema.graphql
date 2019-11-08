@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Wed Nov 06 2019 16:00:20 GMT+0100 (Central European Standard Time)
+# timestamp: Fri Nov 08 2019 13:36:03 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -26,7 +26,7 @@ type Category {
   """
   Includes only direct ones or all from self and the descendent sub-categories.
   """
-  models(directOnly: Boolean, limit: Int, offset: Int, orderBy: [ModelsOrderByInput], searchTerm: String): [Model]
+  models(directOnly: Boolean, limit: Int, offset: Int, orderBy: [ModelsOrderByInput], searchTerm: String): ModelsConnection
 
   """
   A name is either a label for the child-parent connection (if such exists) or the name of the category itself.
@@ -45,6 +45,31 @@ type Contract {
   note: String
   purpose: String!
   state: String!
+}
+
+type ContractEdge {
+  cursor: String!
+  node: Contract!
+}
+
+type ContractsConnection {
+  edges: [ContractEdge]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+enum ContractsOrderByAttributeEnum {
+  ID
+}
+
+input ContractsOrderByInput {
+  attribute: ContractsOrderByAttributeEnum!
+  direction: OrderByDirectionEnum!
+}
+
+enum ContractStateEnum {
+  OPEN
+  CLOSED
 }
 
 type CurrentUser {
@@ -96,7 +121,7 @@ type Model {
   """A name consists of product name and its version."""
   name: String!
   properties: [Property]
-  recommends: [Model]
+  recommends: ModelsConnection
 }
 
 type ModelEdge {
@@ -145,6 +170,17 @@ type Order {
 enum OrderByDirectionEnum {
   ASC
   DESC
+}
+
+type OrderEdge {
+  cursor: String!
+  node: Order!
+}
+
+type OrdersConnection {
+  edges: [OrderEdge]
+  pageInfo: PageInfo!
+  totalCount: Int!
 }
 
 enum OrdersOrderByAttributeEnum {
@@ -197,19 +233,21 @@ type Property {
 type QueryRoot {
   availability(endDate: String!, inventoryPoolId: UUID!, modelId: UUID!, startDate: String!): Availability
   categories(ids: [UUID!], limit: Int, offset: Int, rootOnly: Boolean): [Category]
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   currentUser: CurrentUser!
   inventoryPools: [InventoryPool]
-  models(categoryIds: [UUID!], endDate: String, inventoryPoolIds: [UUID!], limit: Int, offset: Int, orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): [Model]
-  modelsConnection(after: String, categoryIds: [UUID!], endDate: String, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): ModelsConnection
+  models(after: String, categoryIds: [UUID!], endDate: String, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): ModelsConnection
   order(id: UUID!): Order!
   orders(
+    after: String
+    first: Int
     orderBy: [OrdersOrderByInput]
 
     """
     Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument.
     """
     states: [PoolOrderStateEnum]
-  ): [Order]
+  ): OrdersConnection
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
 }
 
@@ -254,7 +292,7 @@ type Thumbnail {
 A `User` represents a human agent that can log into and use the system.
 """
 type User {
-  contracts: [Contract]
+  contracts: ContractsConnection
   email: String
   firstname: String
   id: UUID!

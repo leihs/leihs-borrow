@@ -149,14 +149,6 @@
     (executor/selects-field? context :Model/availability)
     (merge-availability context args)))
 
-(defn get-multiple [{{:keys [tx authenticated-entity]} :request :as context}
-                    {:keys [start-date end-date inventory-pool-ids] :as args}
-                    value]
-  (-> (get-multiple-sqlmap context args value)
-      sql/format
-      (->> (jdbc/query tx))
-      (merge-availability-if-selects-field context args)))
-
 (defn post-process [models context args _value]
   (merge-availability-if-selects-field models context args))
 
@@ -166,6 +158,13 @@
                     args
                     value
                     post-process)) 
+
+(defn get-one [{{:keys [tx]} :request} _ value]
+  (-> base-sqlmap
+      (sql/where [:= :id (:model-id value)])
+      sql/format
+      (->> (jdbc/query tx))
+      first))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

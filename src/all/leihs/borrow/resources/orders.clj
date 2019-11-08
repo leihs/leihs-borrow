@@ -6,6 +6,7 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]
             [com.walmartlabs.lacinia :as lacinia]
+            [leihs.borrow.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as reservations]))
 
@@ -54,10 +55,10 @@
 (defn equal-condition [a1 a2]
   [:and ["@>" a1 a2] ["<@" a1 a2]])
 
-(defn get-multiple
-  [{{:keys [tx], {user-id :id} :authenticated-entity} :request} 
-   {:keys [states order-by]} 
-   _]
+(defn get-connection-sql-map
+  [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+   {:keys [order-by states]}
+   value]
   (-> (multiple-base-sqlmap tx user-id)
       (cond-> states
         (sql/having (equal-condition
@@ -67,9 +68,13 @@
                            (map #(sql/call :cast (name %) :text))
                            sql/array))))
       (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by)))
-      sql/format
-      (->> (jdbc/query tx))))
+        (sql/order-by (helpers/treat-order-arg order-by)))))
+
+(defn get-connection [context args value]
+  (connections/wrap get-connection-sql-map
+                    context
+                    args
+                    value)) 
 
 (defn get-multiple-by-pool [{{:keys [tx]} :request :as context}
                             {:keys [order-by]}

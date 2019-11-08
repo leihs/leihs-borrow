@@ -21,6 +21,12 @@ def database
     end
 end
 
+def with_disabled_triggers
+  database.run 'SET session_replication_role = REPLICA;'
+  yield
+  database.run 'SET session_replication_role = DEFAULT;'
+end
+
 def clean_db
   sql = <<-SQL
     SELECT table_name

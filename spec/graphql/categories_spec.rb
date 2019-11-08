@@ -127,13 +127,21 @@ describe 'categories' do
 
       fragment directModelsField on Category {
         directModels: models(directOnly: true, orderBy: $idAsc) {
-          id
+          edges {
+            node {
+              id
+            }
+          }
         }
       }
 
       fragment modelsField on Category {
         models {
-          id
+          edges {
+            node {
+              id
+            }
+          }
         }
       }
     GRAPHQL
@@ -154,25 +162,45 @@ describe 'categories' do
                 thumbnails: [imageUrl: '/borrow/images/82085a7b-b428-4c4b-b977-efbc2045ff46']
               }
             ],
-            directModels: [{ id: '48e7de51-a1d3-4651-9afa-c5a185594e50' }],
-            models: [
-              { id: '0d082f18-e42b-4097-a73f-a1e970d86246' },
-              { id: '48e7de51-a1d3-4651-9afa-c5a185594e50' },
-              { id: 'f39b95d2-fcef-4b66-96ec-b86de1d7238b' }
-            ],
+            directModels: {
+              edges: [
+                { node: { id: '48e7de51-a1d3-4651-9afa-c5a185594e50' } }
+              ]
+            },
+            models: {
+              edges: [
+                { node: { id: '0d082f18-e42b-4097-a73f-a1e970d86246' } },
+                { node: { id: '48e7de51-a1d3-4651-9afa-c5a185594e50' } },
+                { node: { id: 'f39b95d2-fcef-4b66-96ec-b86de1d7238b' } }
+              ]
+            },
             children: [
               {
                 id: '33df18c8-6d86-44a1-a0d8-d76847d8b043',
-                directModels: [{ id: 'f39b95d2-fcef-4b66-96ec-b86de1d7238b' }],
-                models: [
-                  { id: '0d082f18-e42b-4097-a73f-a1e970d86246' },
-                  { id: 'f39b95d2-fcef-4b66-96ec-b86de1d7238b' }
-                ],
+                directModels: {
+                  edges: [
+                    { node: { id: 'f39b95d2-fcef-4b66-96ec-b86de1d7238b' } }
+                  ]
+                },
+                models: {
+                  edges: [
+                    { node: { id: '0d082f18-e42b-4097-a73f-a1e970d86246' }},
+                    { node: { id: 'f39b95d2-fcef-4b66-96ec-b86de1d7238b' }}
+                  ]
+                },
                 children: [
                   {
                     id: 'ef364d34-9ed5-4b51-bdff-17885e48c8bc',
-                    directModels: [{ id: '0d082f18-e42b-4097-a73f-a1e970d86246' }],
-                    models: [{ id: '0d082f18-e42b-4097-a73f-a1e970d86246' }],
+                    directModels: {
+                      edges: [
+                        { node: { id: '0d082f18-e42b-4097-a73f-a1e970d86246' } }
+                      ]
+                    },
+                    models: {
+                      edges: [
+                        { node: { id: '0d082f18-e42b-4097-a73f-a1e970d86246' } }
+                      ]
+                    },
                     children: []
                   }
                 ]

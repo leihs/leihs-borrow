@@ -1,15 +1,30 @@
 (ns leihs.borrow.resources.contracts
   (:require [clojure.java.jdbc :as jdbc]
-            [leihs.core.sql :as sql]))
+            [clojure.tools.logging :as log]
+            [clojure.string :refer [lower-case]]
+            [leihs.core.sql :as sql]
+            [leihs.borrow.resources.helpers :as helpers]
+            [leihs.borrow.connections :refer [row-cursor cursored-sqlmap] :as connections]))
 
-(defn get-multiple
-  [context _ value]
-  (jdbc/query
-    (-> context :request :tx)
-    (-> (sql/select :*)
-        (sql/from :contracts)
-        (sql/merge-where [:= :user_id (:id value)])
-        sql/format)))
+(defn get-connection-sql-map
+  [_ {:keys [states order-by]} value]
+  (-> (sql/select :*)
+      (sql/from :contracts)
+      (cond-> value
+        (sql/merge-where [:= :user_id (:id value)]))
+      (cond-> states
+        (sql/merge-where
+          [:in
+           :state
+           (map #(-> % name lower-case) states)]))
+      (cond-> (seq order-by)
+        (sql/order-by (helpers/treat-order-arg order-by)))))
+
+(defn get-connection [context args value]
+  (connections/wrap get-connection-sql-map
+                    context
+                    args
+                    value)) 
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

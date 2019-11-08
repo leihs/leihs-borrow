@@ -17,15 +17,15 @@
   {:attachments attachments/get-multiple
    :availability availability/get
    :categories categories/get-multiple
-   :contracts contracts/get-multiple,
+   :contracts-connection contracts/get-connection
    :current-user users/get-current
    :images images/get-multiple
    :inventory-pool inventory-pools/get-one
    :inventory-pools inventory-pools/get-multiple
-   :models models/get-multiple
+   :model models/get-one
    :models-connection models/get-connection
    :order orders/get-one
-   :orders orders/get-multiple
+   :orders-connection orders/get-connection
    :pool-orders orders/get-multiple-by-pool
    :properties properties/get-multiple
    :reservations reservations/get-multiple
