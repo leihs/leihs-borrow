@@ -5,10 +5,12 @@
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
    #_[leihs.borrow.client.components :as ui]
-   
+
+   [leihs.borrow.client.lib.routing :as routing]
+   [leihs.borrow.client.routes :as routes]
+
    [leihs.borrow.client.features.search :as search]
-   [leihs.borrow.client.features.shopping-cart :as cart]
-   ))
+   [leihs.borrow.client.features.shopping-cart :as cart]))
 
 (def re-graph-config {:ws-url nil :http-url "/borrow/graphql" :http-parameters {:with-credentials? true}})
 
@@ -23,8 +25,8 @@
                                 :order [2 0 1]})
             (assoc , :cart {:items {:index {} :order []}})
             (assoc , :search {:results []
-                              :filters {:current {:start-date "2019-11-01", :end-date "2019-11-02"}}})
-            (assoc , :meta {:app {:debug false}}))
+                              :filters {:current {:start-date "2020-12-01", :end-date "2020-12-02"}}})
+            (assoc , :meta {:app {:debug true}}))
     :dispatch [::re-graph/init re-graph-config]}))
 
 ;-; EVENTS
@@ -73,7 +75,7 @@
     "+"]])
 
 (defn model-grid-item [model]
-  [:div.ui-model-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-4.mb-2
+  [:div.ui-model-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-2.mb-3
    [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
     (if-let [img (get-in model [:images 0 :imageUrl])]
       [:img.absolute.object-contain.object-center.h-full.w-full.p-1 {:src img}]
@@ -86,43 +88,81 @@
 (defn products-list []
   (let
    [models @(rf/subscribe [::search/found-models])]
-    [:div.mx-3
+    [:div.mx-1.mt-2
      [:div.w-full.px-0
-      [:div.ui-models-list.flex.flex-wrap.-mx-4
+      [:div.ui-models-list.flex.flex-wrap
        (doall
         (for [model models]
           [:div {:class "w-1/2 min-h-16" :key (:id model)}
            [model-grid-item model]]))]]
      (when @(rf/subscribe [:is-debug?]) [:p (pr-str @(rf/subscribe [::search/found-models]))])]))
 
-(defn main-view []
-(fn []
-  (let [errors @(rf/subscribe [:app/fatal-errors])]
-    [:main
-     [:div.ui-main-nav.px-2.py-1.border-b-2
-      [:h1.font-black "AUSLEIHE"]]
 
-     (if errors
-       [fatal-error-screen errors]
+(defn main-view [views]
+  [:main
+   [:div.ui-main-nav.px-2.py-1.border-b-2
+    [:h1.font-black [:a {:href "/"} "AUSLEIHE"]]]
+
+   [:nav.border.border-black.m-3
+    [:b "nav"]
+    [:p [:a {:href "/borrow/"} "home"]]
+    [:p [:a {:href (str "/borrow/search?foo=bar")} "test search w/ query params"]]]
+
+   [routing/routed-view views]])
+
+(defn home-view []
+  (fn []
+    (let [errors @(rf/subscribe [:app/fatal-errors])]
+      [:<>
+       (if errors
+         [fatal-error-screen errors]
        ; else
-       [:<>
-        [search/search-panel]
-        [:hr.border-b-2]
-        [products-list]
-        #_[:hr]
-        #_[shopping-cart]])])))
+         [:<>
+          [search/search-panel]
+          [:hr.border-b-2]
+          [products-list]
+          #_[:hr]
+          #_[shopping-cart]])])))
+
+(defn search-view
+  []
+  (let 
+   [routing @(rf/subscribe [:routing/routing])]
+    [:h1 (str "This is search view ")
+     [:p "params:"]
+     [:pre (pr-str (get-in routing [:bidi-match :query-params]))]]))
+
+(defn not-found-view
+  []
+  [:div.loading
+   [:h1.loading__header "not found???"]])
 
 ;-; CORE APP
+(def views {::routes/home home-view
+            ::routes/search search-view
+            ;; Value of :else will be used if there's no mapping for route
+            :else not-found-view})
+
+(defn dummy-route-event-handler
+  [_ [_ route-match]]
+  (js/console.log "Router navigated: " route-match))
+
+(rf/reg-event-fx ::routes/home dummy-route-event-handler)
+
+(rf/reg-event-fx
+ ::routes/search
+ dummy-route-event-handler)
+
 (defn mount-root []
   (rf/clear-subscription-cache!)
-  (r/render [main-view]
+  (r/render [main-view views]
             (.getElementById js/document "app")))
 
-
 (defn ^:export main []
+  (rf/dispatch-sync [:routing/init-routing routes/routes-map])
   (rf/dispatch-sync [::load-app])
   (mount-root)
-  
+
   (rf/dispatch-sync
    [::re-graph/query
     (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql")

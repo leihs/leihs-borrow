@@ -4,6 +4,7 @@
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
+   [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.components :as ui]))
 
 ;-; EVENTS 
@@ -66,7 +67,11 @@
     (let
      [current @(rf/subscribe [::current-filters])]
       [:form.p-3
-       {:on-submit (fn [e] (.preventDefault e) (rf/dispatch [::get-models current]))}
+       {:action "/search"
+        :on-submit
+        (fn [event]
+          (.preventDefault event)
+          (rf/dispatch [:routing/navigate [::routes/search {:query-params current}]]))}
        [:fieldset {:style {:display :table}}
         [:legend "SUCHE"]
         [form-line :search-term "Text"

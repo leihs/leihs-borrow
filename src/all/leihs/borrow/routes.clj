@@ -7,6 +7,7 @@
     [clojure.string :refer [starts-with? replace]]
     [clojure.tools.logging :as log]
     [leihs.borrow.authenticate :as authenticate]
+    [leihs.borrow.client.routes :as client-routes]
     [leihs.borrow.graphql :as graphql]
     [leihs.borrow.html :as html]
     [leihs.borrow.resources.images :as images]
@@ -34,8 +35,7 @@
     [ring.util.response :refer [redirect status]]
     [clojure.tools.logging :as logging]
     [logbug.debug :as debug :refer [I>]]
-    [logbug.ring :refer [wrap-handler-with-logging]]
-    ))
+    [logbug.ring :refer [wrap-handler-with-logging]]))
 
 (def handler-resolve-table
   (merge core-routes/resolve-table
@@ -86,12 +86,16 @@
                       :uri
                       presence))
          {route-params :route-params, handler-key :handler}
-           (match-pair-with-fallback path)
-         handler-fn (handler-resolver handler-key)]
-     (handler (assoc request
-                     :route-params route-params
-                     :handler-key handler-key
-                     :handler handler-fn)))))
+         (match-pair-with-fallback path)
+         backend-handler-fn (handler-resolver handler-key)]
+     (let [handler-fn
+           (if (= (namespace handler-key) (namespace ::client-routes/routes))
+             html/html-handler
+             backend-handler-fn)]
+       (handler (assoc request
+                       :route-params route-params
+                       :handler-key handler-key
+                       :handler handler-fn))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
