@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Fri Nov 08 2019 17:37:45 GMT+0100 (Central European Standard Time)
+# timestamp: Thu Nov 14 2019 14:32:42 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -152,7 +152,19 @@ input ModelsOrderByInput {
 
 """Root of all mutations."""
 type MutationRoot {
-  createReservation(endDate: String!, inventoryPoolId: UUID!, modelId: UUID!, quantity: Int!, startDate: String!): [Reservation]
+  createReservation(
+    endDate: String!
+
+    """
+    If it is not used, then the individual reservations are distributed among
+    all inventory pools, where the user has access to and the available quantity
+    within the pool is greater than zero.
+    """
+    inventoryPoolIds: [UUID!]
+    modelId: UUID!
+    quantity: Int!
+    startDate: String!
+  ): [Reservation]
   deleteReservations(ids: [UUID!]): [UUID!]
   submitOrder(purpose: String!): Order!
 }

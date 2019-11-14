@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [count])
   (:require [leihs.borrow.time :as time]
             [leihs.borrow.resources.models :as models]
+            [leihs.borrow.resources.inventory-pools :as inventory-pools]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.database.helpers :as database]
@@ -81,34 +82,61 @@
       (->> (jdbc/query tx)
            (map :id))))
 
+(defn distribute [pool-avails quantity]
+  (if (> quantity
+         (->> pool-avails (map :quantity) (apply +)))
+    (throw (ex-info "The desired quantity is not available." {}))
+    (loop [[{pool-quantity :quantity :as pool-avail} & remaining-pool-avails]
+           (sort-by :quantity #(> %1 %2) pool-avails)
+         desired-quantity quantity
+         result []]
+      (if (< pool-quantity desired-quantity)
+        (recur remaining-pool-avails
+               (- desired-quantity pool-quantity)
+               (conj result pool-avail))
+        (conj result (assoc pool-avail :quantity desired-quantity))))))
+
 (defn create [{{:keys [tx authenticated-entity]} :request :as context}
-              {:keys [model-id quantity] :as args}
+              {:keys [model-id start-date end-date quantity inventory-pool-ids]}
               value]
   (let [user-id (:id authenticated-entity)]
     (if-not (models/reservable? tx model-id user-id)
-      (throw (ex-info "Model either does not exist or is not reservable by the user." {})))
-    (if-not (<= quantity (->> (availability/get context args value)
-                              :dates
-                              (map :quantity)
-                              (apply min)))
-      (throw (ex-info "The desired quantity is not available." {})))
-    (let [row (-> (transform-keys csk/->snake_case args)
-                  (update :start_date #(sql/call :cast % :date))
-                  (update :end_date #(sql/call :cast % :date))
-                  (assoc :quantity 1
-                         :user_id user-id
-                         :status (sql/call :cast "unsubmitted" :reservation_status)
-                         :created_at (time/now tx)
-                         :updated_at (time/now tx)))]
-      (-> (sql/insert-into :reservations)
-          (sql/values (->> row
-                           repeat
-                           (take quantity)))
-          (assoc :returning
-                 (as-> (database/columns tx "reservations") <>
-                   (remove #{:created_at :updated_at} <>)
-                   (conj <>
-                         (helpers/iso8601-created-at)
-                         (helpers/iso8601-updated-at))))
-          sql/format
-          (query tx)))))
+      (throw
+        (ex-info
+          "Model either does not exist or is not reservable by the user." {})))
+    (let [pool-ids (or (not-empty inventory-pool-ids)
+                       (map :id
+                            (inventory-pools/get-multiple context {} nil)))
+          pool-avails (availability/get-available-quantities
+                        context
+                        {:inventory-pool-ids pool-ids
+                         :model-ids [model-id]
+                         :start-date start-date
+                         :end-date end-date}
+                        nil)]
+      (->> quantity
+           (distribute pool-avails)
+           (map (fn [{:keys [quantity] :as attrs}]
+                  (let [row (-> (transform-keys csk/->snake_case attrs)
+                                (assoc :start_date (sql/call :cast start-date :date))
+                                (assoc :end_date (sql/call :cast end-date :date))
+                                (assoc :quantity 1
+                                       :user_id user-id
+                                       :status (sql/call :cast
+                                                         "unsubmitted"
+                                                         :reservation_status)
+                                       :created_at (time/now tx)
+                                       :updated_at (time/now tx)))]
+                    (-> (sql/insert-into :reservations)
+                        (sql/values (->> row
+                                         repeat
+                                         (take quantity)))
+                        (assoc :returning
+                               (as-> (database/columns tx "reservations") <>
+                                 (remove #{:created_at :updated_at} <>)
+                                 (conj <>
+                                       (helpers/iso8601-created-at)
+                                       (helpers/iso8601-updated-at))))
+                        sql/format
+                        (query tx)))))
+           flatten))))
