@@ -48,35 +48,7 @@
   (fetch-from-legacy
     (str @legacy-base-url "/borrow/models/availability")
     (session-cookie-value context)
-    (transform-keys csk/->snake_case args)))
-
-(comment
-  (def result
-    (let [context {:request {:cookies
-                             {"leihs-user-session"
-                              {:value "df306cab-9277-429e-8241-dfd04148429b"}}}}
-          args {:model-ids ["976a9fc7-a192-584f-8075-e90794e864be"
-                            "0fdfc760-ba04-52e3-9fee-4992f520abd7"]
-                :inventory-pool-ids ["8bd16d45-056d-5590-bc7f-12849f034351"
-                                     "5dd25b58-fa56-5095-bd97-2696d92c2fb1"]
-                :start-date "2019-11-11"
-                :end-date "2019-11-12"}]
-      (get-available-quantities context args nil)))
-  (->> result
-       (group-by :model_id)
-       (map (fn [[model-id pool-quantities]]
-              [model-id (as-> pool-quantities <>
-                          (map :quantity <>)
-                          (apply + <>)
-                          (cond-> <> (< <> 0) 0))]))
-       (into {}))
-  {"0fdfc760-ba04-52e3-9fee-4992f520abd7"
-   [{:model_id "0fdfc760-ba04-52e3-9fee-4992f520abd7", :inventory_pool_id "5dd25b58-fa56-5095-bd97-2696d92c2fb1", :quantity 0}
-    {:model_id "0fdfc760-ba04-52e3-9fee-4992f520abd7", :inventory_pool_id "8bd16d45-056d-5590-bc7f-12849f034351", :quantity 0}],
-   "976a9fc7-a192-584f-8075-e90794e864be"
-   [{:model_id "976a9fc7-a192-584f-8075-e90794e864be", :inventory_pool_id "5dd25b58-fa56-5095-bd97-2696d92c2fb1", :quantity 0}
-    {:model_id "976a9fc7-a192-584f-8075-e90794e864be", :inventory_pool_id "8bd16d45-056d-5590-bc7f-12849f034351", :quantity 1}]}
-  )
+      (transform-keys csk/->snake_case args)))
 
 (defn get [context args _value]
   (->> (fetch-from-legacy

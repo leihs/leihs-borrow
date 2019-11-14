@@ -112,7 +112,8 @@
            :Reservation {:fields {:id {:type (non-null :UUID)}
                                   :model {:type (non-null :Model)
                                           :resolve :model}
-                                  :inventoryPool {:type (non-null :InventoryPool)}
+                                  :inventoryPool {:type (non-null :InventoryPool)
+                                                  :resolve :inventory-pool}
                                   :startDate {:type (non-null String)}
                                   :status {:type (non-null :ReservationStateEnum)}
                                   :endDate {:type (non-null String)}
@@ -206,7 +207,8 @@
  :mutations {:createReservation {:args {:startDate {:type (non-null String)}
                                         :endDate {:type (non-null String)}
                                         :modelId {:type (non-null :UUID)}
-                                        :inventoryPoolId {:type (non-null :UUID)}
+                                        :inventoryPoolIds {:type (list (non-null :UUID))
+                                                           :description "If it is not used, then the individual reservations are distributed among all inventory pools, where the user has access to and the available quantity within the pool is greater than zero."}
                                         :quantity {:type (non-null Int)}}
                                  :resolve :create-reservation
                                  :type (list :Reservation)}
