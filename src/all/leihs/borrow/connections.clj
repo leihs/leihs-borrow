@@ -77,26 +77,30 @@
                        :cursor (:row_cursor %)))
        (hash-map :edges)))
 
-(defn wrap [sqlmap-fn
-            {{:keys [tx]} :request :as context}
-            {:keys [after first] :as args}
-            value
-            post-process]
-  (let [sqlmap (sqlmap-fn context args value)]
-    (if (and after (not (after-cursor-row-exists? tx sqlmap after)))
-      (throw (ex-info "After cursor row does not exist!" {}))
-      (let [rows (-> sqlmap
-                     (cursored-sqlmap after first)
-                     sql/format
-                     (->> (jdbc/query tx))
-                     (post-process context args value))]
-        (-> rows
-            wrap-in-nodes-and-edges
-            (assoc-total-count tx sqlmap)
-            (assoc-page-info tx
-                             sqlmap
-                             first
-                             (-> rows last :row_cursor)))))))
+(defn wrap
+  ([sqlmap-fn context args value]
+   (wrap sqlmap-fn context args value nil))
+  ([sqlmap-fn
+    {{:keys [tx]} :request :as context}
+    {:keys [after first] :as args}
+    value
+    post-process]
+   (let [sqlmap (sqlmap-fn context args value)]
+     (if (and after (not (after-cursor-row-exists? tx sqlmap after)))
+       (throw (ex-info "After cursor row does not exist!" {}))
+       (let [rows (-> sqlmap
+                      (cursored-sqlmap after first)
+                      sql/format
+                      (->> (jdbc/query tx))
+                      (cond-> post-process
+                        (post-process context args value)))]
+         (-> rows
+             wrap-in-nodes-and-edges
+             (assoc-total-count tx sqlmap)
+             (assoc-page-info tx
+                              sqlmap
+                              first
+                              (-> rows last :row_cursor))))))))
 (comment
   (-> (sql/select :*)
       (sql/modifiers :distinct)

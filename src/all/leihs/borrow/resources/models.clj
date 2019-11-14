@@ -86,7 +86,31 @@
         (descendents/descendent-ids tx <>)
         (conj <> value-id)))))
 
-(defn merge-availability [models context args]
+(defn merge-available-quantities
+  [models context {:keys [start-date end-date]} value]
+  (let [pool-ids (->> (inventory-pools/get-multiple context {} nil)
+                      (map :id))
+        legacy-response (availability/get-available-quantities
+                          context
+                          {:model-ids (map :id models)
+                           :inventory-pool-ids pool-ids
+                           :start-date start-date
+                           :end-date end-date}
+                          nil)
+        model-quantitites (->> legacy-response
+                               (group-by :model_id)
+                               (map (fn [[model-id pool-quantities]]
+                                      [model-id (->> pool-quantities
+                                                     (map :quantity)
+                                                     (apply +)
+                                                     (#(if (< % 0) 0 %)))]))
+                               (into {}))]
+    (map #(assoc %
+                 :available-quantity-in-date-range
+                 (-> % :id str model-quantitites))
+         models)))
+
+(defn merge-availability [models context args _]
   (spec/assert (spec/keys :req-un [::availability/start-date
                                    ::availability/end-date
                                    #_::availability/inventory-pool-ids])
@@ -144,21 +168,15 @@
       (cond-> offset
         (sql/offset offset))))
 
-(defn merge-availability-if-selects-field [models context args]
+(defn merge-availability-if-selects-fields [models context args value]
   (cond-> models
     (executor/selects-field? context :Model/availability)
-    (merge-availability context args)))
+    (merge-availability context args value)
+    (executor/selects-field? context :Model/availableQuantityInDateRange)
+    (merge-available-quantities context args value)))
 
-(defn get-multiple [{{:keys [tx authenticated-entity]} :request :as context}
-                    {:keys [start-date end-date inventory-pool-ids] :as args}
-                    value]
-  (-> (get-multiple-sqlmap context args value)
-      sql/format
-      (->> (jdbc/query tx))
-      (merge-availability-if-selects-field context args)))
-
-(defn post-process [models context args _value]
-  (merge-availability-if-selects-field models context args))
+(defn post-process [models context args value]
+  (merge-availability-if-selects-fields models context args value))
 
 (defn get-connection [context args value]
   (connections/wrap get-multiple-sqlmap

@@ -344,19 +344,27 @@ describe 'orders' do
           states: [APPROVED, SUBMITTED]
           orderBy: [{attribute: ID, direction: ASC}]
         ) {
-          id
-          state
+          edges {
+            node {
+              id
+              state
+            }
+          }
         }
       }
     GRAPHQL
 
     result = query(q, user.id).deep_symbolize_keys
-    result[:data][:orders].each { |o| o[:state] = o[:state].to_set }
+    result.dig(:data, :orders, :edges).each do |o|
+      o[:node][:state] = o[:node][:state].to_set
+    end
     expect(result[:data]).to eq({
-      orders: [
-        { id: '84391a0b-2a55-43f9-bf6d-bb144a2aaf96',
-          state: Set['SUBMITTED', 'APPROVED'] }
-      ]
+      orders: {
+        edges: [
+          { node: { id: '84391a0b-2a55-43f9-bf6d-bb144a2aaf96',
+                    state: Set['SUBMITTED', 'APPROVED'] } }
+        ]
+      }
     })
     expect(result[:errors]).to be_nil
   end

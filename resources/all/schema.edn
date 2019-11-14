@@ -6,8 +6,10 @@
          :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME]},
          :ReservationsOrderByAttributeEnum {:values [:ID]},
          :PoolOrdersOrderByAttributeEnum {:values [:INVENTORY_POOL_ID :ID]},
+         :ContractsOrderByAttributeEnum {:values [:ID]},
          :OrdersOrderByAttributeEnum {:values [:ID]},
          :OrderByDirectionEnum {:values [:ASC :DESC]}
+         :ContractStateEnum {:values [:OPEN :CLOSED]}
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED]}
          :ReservationStateEnum {:values [:UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}}
 
@@ -28,8 +30,8 @@
                            :id {:type (non-null :UUID)}
                            :lastname {:type String}
                            :login {:type String}
-                           :contracts {:type (list :Contract)
-                                       :resolve :contracts}}}
+                           :contracts {:type :ContractsConnection
+                                       :resolve :contracts-connection}}}
            :CurrentUser {:fields {:user {:type :User}
                                   :inventoryPools {:args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
                                                    :type (list :InventoryPool)
@@ -44,19 +46,29 @@
                             :manufacturer {:type String}
                             :description {:type String}
                             :availability {:type (list :ModelInventoryPoolAvailability)}
+                            :availableQuantityInDateRange {:type (non-null Int)}
                             :images {:type (list :Image)
                                      :resolve :images}
                             :attachments {:type (list :Attachment)
                                           :resolve :attachments}
                             :properties {:type (list :Property)
                                          :resolve :properties}
-                            :recommends {:type (list :Model)
-                                         :resolve :models}}}
+                            :recommends {:type :ModelsConnection
+                                         :resolve :models-connection}}}
            :ModelsConnection {:fields {:totalCount {:type (non-null Int)}
                                        :edges {:type (list :ModelEdge)}
-                                       :pageInfo {:type (non-null :PageInfo)}
-                                       }}
+                                       :pageInfo {:type (non-null :PageInfo)}}}
+           :OrdersConnection {:fields {:totalCount {:type (non-null Int)}
+                                       :edges {:type (list :OrderEdge)}
+                                       :pageInfo {:type (non-null :PageInfo)}}}
+           :ContractsConnection {:fields {:totalCount {:type (non-null Int)}
+                                          :edges {:type (list :ContractEdge)}
+                                          :pageInfo {:type (non-null :PageInfo)}}}
+           :ContractEdge {:fields {:node {:type (non-null :Contract)}
+                                   :cursor {:type (non-null String)}}}
            :ModelEdge {:fields {:node {:type (non-null :Model)}
+                                :cursor {:type (non-null String)}}}
+           :OrderEdge {:fields {:node {:type (non-null :Order)}
                                 :cursor {:type (non-null String)}}}
            :PageInfo {:fields {:endCursor {:type String}
                                :hasNextPage {:type (non-null Boolean)}}}
@@ -87,9 +99,9 @@
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
                                           :resolve :categories}
-                               :models {:type (list :Model)
+                               :models {:type :ModelsConnection
                                         :description "Includes only direct ones or all from self and the descendent sub-categories."
-                                        :resolve :models
+                                        :resolve :models-connection
                                         :args {:directOnly {:type Boolean}
                                                :limit {:type Int}
                                                :offset {:type Int}
@@ -133,6 +145,8 @@
                                                        :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :PoolOrdersOrderByInput {:fields {:attribute {:type (non-null :PoolOrdersOrderByAttributeEnum)}
                                                    :direction {:type (non-null :OrderByDirectionEnum)}}}
+                 :ContractsOrderByInput {:fields {:attribute {:type (non-null :ContractsOrderByAttributeEnum)}
+                                                  :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :OrdersOrderByInput {:fields {:attribute {:type (non-null :OrdersOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :ReservationsOrderByInput {:fields {:attribute {:type (non-null :ReservationsOrderByAttributeEnum)}
@@ -148,34 +162,32 @@
                    :type (list :User)}
            :currentUser {:type (non-null :CurrentUser)
                          :resolve :current-user}
-           :models {:args {:categoryIds {:type (list (non-null :UUID))}
-                           :inventoryPoolIds {:type (list (non-null :UUID))}
-                           :limit {:type Int}
-                           :offset {:type Int}
-                           :orderBy {:type (list :ModelsOrderByInput)}
-                           :searchTerm {:type String}
-                           :startDate {:type String}
-                           :endDate {:type String}}
-                    :resolve :models
-                    :type (list :Model)}
+           :contracts {:resolve :contracts-connection
+                       :args {:first {:type Int}
+                              :after {:type String}
+                              :states {:type (list :ContractStateEnum)}
+                              :orderBy {:type (list :ContractsOrderByInput)}}
+                       :type :ContractsConnection}
            :order {:args {:id {:type (non-null :UUID)}}
                    :resolve :order
                    :type (non-null :Order)}
-           :orders {:resolve :orders
-                    :args {:states {:type (list :PoolOrderStateEnum)
+           :orders {:resolve :orders-connection
+                    :args {:first {:type Int}
+                           :after {:type String}
+                           :states {:type (list :PoolOrderStateEnum)
                                     :description "Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument."}
                            :orderBy {:type (list :OrdersOrderByInput)}}
-                    :type (list :Order)}
-           :modelsConnection {:args {:categoryIds {:type (list (non-null :UUID))}
-                                     :inventoryPoolIds {:type (list (non-null :UUID))}
-                                     :orderBy {:type (list :ModelsOrderByInput)}
-                                     :searchTerm {:type String}
-                                     :startDate {:type String}
-                                     :endDate {:type String}
-                                     :first {:type Int}
-                                     :after {:type String}}
-                              :type :ModelsConnection
-                              :resolve :models-connection}
+                    :type :OrdersConnection}
+           :models {:args {:categoryIds {:type (list (non-null :UUID))}
+                           :inventoryPoolIds {:type (list (non-null :UUID))}
+                           :orderBy {:type (list :ModelsOrderByInput)}
+                           :searchTerm {:type String}
+                           :startDate {:type String}
+                           :endDate {:type String}
+                           :first {:type Int}
+                           :after {:type String}}
+                    :type :ModelsConnection
+                    :resolve :models-connection}
            :inventoryPools {:resolve :inventory-pools
                             :type (list :InventoryPool)}
            :availability {:args {:modelId {:type (non-null :UUID)}
