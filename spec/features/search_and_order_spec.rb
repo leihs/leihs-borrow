@@ -10,8 +10,15 @@ describe 'feature' do
 
     # prepare data in DB:
     user = FactoryBot.create(:user)
-    pool = FactoryBot.create(:inventory_pool)
-    FactoryBot.create(:access_right, role: :customer, user: user, inventory_pool: pool)
+    pools = {
+      general: FactoryBot.create(:inventory_pool, 'Allgemeine Ausleihe'),
+      film: FactoryBot.create(:inventory_pool, 'Film-Ausleihe'),
+      non_public: FactoryBot.create(:inventory_pool, 'Unzugängliche Ausleihe')
+    }
+    pool = pools[:general]
+    FactoryBot.create(:access_right, inventory_pool: pools[:general], role: :customer, user: user)
+    FactoryBot.create(:access_right, inventory_pool: pools[:film], role: :customer, user: user)
+
     categories = { film: FactoryBot.create(:category, name: 'Film') }
     model_names = %w[Kamera Stativ Mikrofon]
     models =
@@ -34,7 +41,9 @@ describe 'feature' do
 
     # STEP 1: search for a Kamera
     operation = File.read('src/all/leihs/borrow/client/queries/searchModels.gql')
-    variables = { searchTerm: 'Kamera', startDate: my_start_date, endDate: my_end_date, pools: [pool.id] }
+    variables = { searchTerm: 'Kamera', startDate: my_start_date, endDate: my_end_date }
+    
+    # FIXME: query should return availability for all accessible pools!
 
     search_result_1 = query(operation, user.id, variables)
     expect_graphql_result(
@@ -62,28 +71,9 @@ describe 'feature' do
     # STEP 1C: search for Mikrofon
 
     # STEP 2: add item to cart/order by creating a reservation
-    operation = <<-GRAPHQL
-      mutation addModelToOrder(
-        $modelId: UUID!
-        $quantity: Int!
-        $inventoryPoolId: UUID!
-        $startDate: String!
-        $endDate: String!
-      ) {
-        reservation: createReservation(
-          modelId: $modelId
-          startDate: $startDate
-          endDate: $endDate
-          inventoryPoolId: $inventoryPoolId
-          quantity: $quantity
-        ) {
-          id
-        }
-      }
-    GRAPHQL
+    op_add_model = File.read('src/all/leihs/borrow/client/queries/addModelToOrder.gql')
 
     wanted_from_pool = search_result_1[:data][:models].first[:availability].first[:inventoryPool]
-
     variables = {
       endDate: my_end_date,
       startDate: my_start_date,
@@ -92,7 +82,7 @@ describe 'feature' do
       quantity: 1
     }
 
-    reservation_result_1 = query(operation, user.id, variables)
+    reservation_result_1 = query(op_add_model, user.id, variables)
     # look for this reservation in the DB, so we know the ID:
     the_reservation_1 = Reservation.last
     expect_graphql_result(reservation_result_1, { reservation: [{ id: the_reservation_1.id }] })
@@ -124,28 +114,7 @@ describe 'feature' do
     )
 
     # STEP 4: see the order with status in the list of orders
-    all_my_orders_operation_1 = <<-GRAPHQL
-      query allMyOrders {
-        orders {
-          id
-          purpose
-          state
-          subOrdersByPool {
-            id
-            state
-            rejectedReason
-            inventoryPool { id }
-            reservations {
-              id
-              startDate
-              endDate
-              model { id }
-              status
-            }
-          }
-        }
-      }
-    GRAPHQL
+    all_my_orders_operation_1 = File.read('src/all/leihs/borrow/client/queries/addModelToOrder.gql')
 
     variables = { purpose: my_order_purpose }
 
@@ -185,20 +154,15 @@ describe 'feature' do
 
     # STEP 5: see the new order status
     all_my_orders_operation_2 = <<-GRAPHQL
-      query allMyOrders {
-        orders {
-          state
-          subOrdersByPool {
-            state
-          }
-        }
+      query allMyOrdersJustStates {
+        orderStates: rders { state subOrdersByPool { state } }
       }
     GRAPHQL
 
     all_my_orders_result_2 = query(all_my_orders_operation_2, user.id, variables)
     expect_graphql_result(
       all_my_orders_result_2,
-      { orders: [{ state: %w[APPROVED], subOrdersByPool: [{ state: 'APPROVED' }] }] }
+      { orderStates: [{ state: %w[APPROVED], subOrdersByPool: [{ state: 'APPROVED' }] }] }
     )
   end
 end
