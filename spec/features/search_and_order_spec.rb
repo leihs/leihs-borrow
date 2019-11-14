@@ -10,13 +10,15 @@ describe 'feature' do
 
     # prepare data in DB:
     user = FactoryBot.create(:user)
-    pool = FactoryBot.create(:inventory_pool)
+    pool = FactoryBot.create(:inventory_pool, id: '8e484119-76a4-4251-b37b-64847df99e9b')
     FactoryBot.create(:access_right, role: :customer, user: user, inventory_pool: pool)
     categories = { film: FactoryBot.create(:category, name: 'Film') }
-    model_names = %w[Kamera Stativ Mikrofon]
+    model_names = [['Kamera', 'f616b467-80f5-45d7-b708-08c00d506a92'],
+                   ['Stativ', 'e167e9c9-a298-46da-acc1-c1324b12f43a'],
+                   ['Mikrofon', '0a34281f-0373-46f5-bbe7-f1d868f3d7a4']]
     models =
-      model_names.map do |name|
-        m = FactoryBot.create(:leihs_model, product: name, categories: [categories[:film]])
+      model_names.map do |name, uuid|
+        m = FactoryBot.create(:leihs_model, id: uuid, product: name, categories: [categories[:film]])
         FactoryBot.create(:item, leihs_model: m, owner: pool, responsible: pool)
         [name.downcase, m]
       end.to_h
@@ -40,21 +42,18 @@ describe 'feature' do
     expect_graphql_result(
       search_result_1,
       {
-        models: [
-          {
-            description: nil,
-            id: models[:kamera].id,
-            images: [],
-            manufacturer: nil,
-            name: 'Kamera',
-            availability: [
-              {
-                inventoryPool: { id: pool.id },
-                dates: [{ date: my_start_date, quantity: 1 }, { date: my_end_date, quantity: 1 }]
-              }
-            ]
-          }
-        ]
+        models: {
+          edges: [
+            { node: {
+              description: nil,
+              id: models[:kamera].id,
+              images: [],
+              manufacturer: nil,
+              name: 'Kamera',
+              availableQuantityInDateRange: 1
+            }}
+          ]
+        }
       }
     )
 
@@ -66,7 +65,6 @@ describe 'feature' do
       mutation addModelToOrder(
         $modelId: UUID!
         $quantity: Int!
-        $inventoryPoolId: UUID!
         $startDate: String!
         $endDate: String!
       ) {
@@ -74,7 +72,6 @@ describe 'feature' do
           modelId: $modelId
           startDate: $startDate
           endDate: $endDate
-          inventoryPoolId: $inventoryPoolId
           quantity: $quantity
         ) {
           id
@@ -82,14 +79,11 @@ describe 'feature' do
       }
     GRAPHQL
 
-    wanted_from_pool = search_result_1[:data][:models].first[:availability].first[:inventoryPool]
-
     variables = {
       endDate: my_end_date,
       startDate: my_start_date,
-      inventoryPoolId: wanted_from_pool[:id],
       modelId: models[:kamera].id,
-      quantity: 1
+      quantity: search_result_1.dig(:data, :models, :edges).first.dig(:node, :availableQuantityInDateRange)
     }
 
     reservation_result_1 = query(operation, user.id, variables)
@@ -127,20 +121,24 @@ describe 'feature' do
     all_my_orders_operation_1 = <<-GRAPHQL
       query allMyOrders {
         orders {
-          id
-          purpose
-          state
-          subOrdersByPool {
-            id
-            state
-            rejectedReason
-            inventoryPool { id }
-            reservations {
+          edges {
+            node {
               id
-              startDate
-              endDate
-              model { id }
-              status
+              purpose
+              state
+              subOrdersByPool {
+                id
+                state
+                rejectedReason
+                inventoryPool { id }
+                reservations {
+                  id
+                  startDate
+                  endDate
+                  model { id }
+                  status
+                }
+              }
             }
           }
         }
@@ -153,30 +151,32 @@ describe 'feature' do
     expect_graphql_result(
       all_my_orders_result_1,
       {
-        orders: [
-          {
-            id: the_order_1.id,
-            purpose: my_order_purpose,
-            state: %w[SUBMITTED],
-            subOrdersByPool: [
-              {
-                id: the_pool_order_1.id,
-                inventoryPool: { id: pool.id },
-                rejectedReason: nil,
-                reservations: [
-                  {
-                    id: the_reservation_1.id,
-                    model: { id: models[:kamera].id },
-                    endDate: my_end_date,
-                    startDate: my_start_date,
-                    status: 'SUBMITTED'
-                  }
-                ],
-                state: 'SUBMITTED'
-              }
-            ]
-          }
-        ]
+        orders: {
+          edges: [
+            { node: {
+              id: the_order_1.id,
+              purpose: my_order_purpose,
+              state: %w[SUBMITTED],
+              subOrdersByPool: [
+                {
+                  id: the_pool_order_1.id,
+                  inventoryPool: { id: pool.id },
+                  rejectedReason: nil,
+                  reservations: [
+                    {
+                      id: the_reservation_1.id,
+                      model: { id: models[:kamera].id },
+                      endDate: my_end_date,
+                      startDate: my_start_date,
+                      status: 'SUBMITTED'
+                    }
+                  ],
+                  state: 'SUBMITTED'
+                }
+              ]
+            } }
+          ]
+        }
       }
     )
 
@@ -187,9 +187,13 @@ describe 'feature' do
     all_my_orders_operation_2 = <<-GRAPHQL
       query allMyOrders {
         orders {
-          state
-          subOrdersByPool {
-            state
+          edges {
+            node {
+              state
+              subOrdersByPool {
+                state
+              }
+            }
           }
         }
       }
@@ -198,7 +202,13 @@ describe 'feature' do
     all_my_orders_result_2 = query(all_my_orders_operation_2, user.id, variables)
     expect_graphql_result(
       all_my_orders_result_2,
-      { orders: [{ state: %w[APPROVED], subOrdersByPool: [{ state: 'APPROVED' }] }] }
+      { orders:
+        { edges:
+          [ { node:
+              { state: %w[APPROVED], subOrdersByPool: [{ state: 'APPROVED' }] }
+          }]
+        }
+      }
     )
   end
 end
