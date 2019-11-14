@@ -48,7 +48,10 @@ get '/borrow/models/availability' do
   elsif params[:model_ids] == ['f616b467-80f5-45d7-b708-08c00d506a92']
     [{ model_id: 'f616b467-80f5-45d7-b708-08c00d506a92',
        inventory_pool_id: '8e484119-76a4-4251-b37b-64847df99e9b',
-       quantity: 1 }]
+       quantity: 2 },
+     { model_id: 'f616b467-80f5-45d7-b708-08c00d506a92',
+       inventory_pool_id: 'a7d2e049-56ac-481a-937e-ee3f613f3cc7',
+       quantity: 2 }]
   else
     raise "Unknown model IDs: #{params[:model_ids]}"
   end.to_json

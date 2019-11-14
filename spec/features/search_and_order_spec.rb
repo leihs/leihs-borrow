@@ -10,8 +10,10 @@ describe 'feature' do
 
     # prepare data in DB:
     user = FactoryBot.create(:user)
-    pool = FactoryBot.create(:inventory_pool, id: '8e484119-76a4-4251-b37b-64847df99e9b')
-    FactoryBot.create(:access_right, role: :customer, user: user, inventory_pool: pool)
+    pool_1 = FactoryBot.create(:inventory_pool, id: '8e484119-76a4-4251-b37b-64847df99e9b')
+    pool_2 = FactoryBot.create(:inventory_pool, id: 'a7d2e049-56ac-481a-937e-ee3f613f3cc7')
+    FactoryBot.create(:access_right, role: :customer, user: user, inventory_pool: pool_1)
+    FactoryBot.create(:access_right, role: :customer, user: user, inventory_pool: pool_2)
     categories = { film: FactoryBot.create(:category, name: 'Film') }
     model_names = [['Kamera', 'f616b467-80f5-45d7-b708-08c00d506a92'],
                    ['Stativ', 'e167e9c9-a298-46da-acc1-c1324b12f43a'],
@@ -19,24 +21,44 @@ describe 'feature' do
     models =
       model_names.map do |name, uuid|
         m = FactoryBot.create(:leihs_model, id: uuid, product: name, categories: [categories[:film]])
-        FactoryBot.create(:item, leihs_model: m, owner: pool, responsible: pool)
+        2.times do
+          FactoryBot.create(:item, leihs_model: m, owner: pool_1, responsible: pool_1)
+        end
+        2.times do
+          FactoryBot.create(:item, leihs_model: m, owner: pool_2, responsible: pool_2)
+        end
         [name.downcase, m]
       end.to_h
         .deep_symbolize_keys
 
     # STEP 0: fetch initial data to do a search
-    op_get_search_filters = File.read('src/all/leihs/borrow/client/queries/getSearchFilters.gql')
+    get_search_filters_query = <<-GRAPHQL
+      query getSearchFilters {
+        mainCategories: categories(rootOnly: true) {
+          id
+          label: name
+        }
+        pools: inventoryPools(orderBy: [{attribute: ID, direction: ASC}]) {
+          id
+          label: name
+        }
+      }
+    GRAPHQL
+
     expect_graphql_result(
-      query(op_get_search_filters, user.id),
+      query(get_search_filters_query, user.id),
       {
         mainCategories: [{ id: categories[:film].id, label: categories[:film].name }],
-        pools: [{ id: pool.id, label: pool.name }]
+        pools: [
+          { id: pool_1.id, label: pool_1.name },
+          { id: pool_2.id, label: pool_2.name },
+        ]
       }
     )
 
     # STEP 1: search for a Kamera
     operation = File.read('src/all/leihs/borrow/client/queries/searchModels.gql')
-    variables = { searchTerm: 'Kamera', startDate: my_start_date, endDate: my_end_date, pools: [pool.id] }
+    variables = { searchTerm: 'Kamera', startDate: my_start_date, endDate: my_end_date }
 
     search_result_1 = query(operation, user.id, variables)
     expect_graphql_result(
@@ -50,7 +72,7 @@ describe 'feature' do
               images: [],
               manufacturer: nil,
               name: 'Kamera',
-              availableQuantityInDateRange: 1
+              availableQuantityInDateRange: 4
             }}
           ]
         }
@@ -68,7 +90,7 @@ describe 'feature' do
         $startDate: String!
         $endDate: String!
       ) {
-        reservation: createReservation(
+        reservations: createReservation(
           modelId: $modelId
           startDate: $startDate
           endDate: $endDate
@@ -83,13 +105,14 @@ describe 'feature' do
       endDate: my_end_date,
       startDate: my_start_date,
       modelId: models[:kamera].id,
-      quantity: search_result_1.dig(:data, :models, :edges).first.dig(:node, :availableQuantityInDateRange)
+      quantity: 3
     }
 
     reservation_result_1 = query(operation, user.id, variables)
     # look for this reservation in the DB, so we know the ID:
-    the_reservation_1 = Reservation.last
-    expect_graphql_result(reservation_result_1, { reservation: [{ id: the_reservation_1.id }] })
+    expect(
+      reservation_result_1.dig(:data, :reservations).map { |r| r[:id] }.to_set
+    ).to eq Reservation.select(:id).all.map(&:id).to_set
 
     # binding.pry
 
@@ -109,11 +132,11 @@ describe 'feature' do
 
     variables = { purpose: my_order_purpose }
 
-    reservation_result_1 = query(operation, user.id, variables)
+    submit_order_result_1 = query(operation, user.id, variables)
     the_order_1 = Order.last
-    the_pool_order_1 = PoolOrder.last
+    the_pool_order_1, the_pool_order_2 = PoolOrder.order(:inventory_pool_id).all
     expect_graphql_result(
-      reservation_result_1,
+      submit_order_result_1,
       { order: { id: the_order_1.id, purpose: my_order_purpose, state: %w[SUBMITTED] } }
     )
 
@@ -126,18 +149,18 @@ describe 'feature' do
               id
               purpose
               state
-              subOrdersByPool {
+              subOrdersByPool(orderBy: [{attribute: INVENTORY_POOL_ID, direction: ASC}]) {
                 id
                 state
                 rejectedReason
                 inventoryPool { id }
-                reservations {
-                  id
-                  startDate
-                  endDate
-                  model { id }
-                  status
-                }
+                # reservations {
+                #   id
+                #   startDate
+                #   endDate
+                #   model { id }
+                #   status
+                # }
               }
             }
           }
@@ -160,17 +183,32 @@ describe 'feature' do
               subOrdersByPool: [
                 {
                   id: the_pool_order_1.id,
-                  inventoryPool: { id: pool.id },
+                  inventoryPool: { id: pool_1.id },
                   rejectedReason: nil,
-                  reservations: [
-                    {
-                      id: the_reservation_1.id,
-                      model: { id: models[:kamera].id },
-                      endDate: my_end_date,
-                      startDate: my_start_date,
-                      status: 'SUBMITTED'
-                    }
-                  ],
+                  # reservations: [
+                  #   {
+                  #     id: the_reservation_1.id,
+                  #     model: { id: models[:kamera].id },
+                  #     endDate: my_end_date,
+                  #     startDate: my_start_date,
+                  #     status: 'SUBMITTED'
+                  #   }
+                  # ],
+                  state: 'SUBMITTED'
+                },
+                {
+                  id: the_pool_order_2.id,
+                  inventoryPool: { id: pool_2.id },
+                  rejectedReason: nil,
+                  # reservations: [
+                  #   {
+                  #     id: the_reservation_1.id,
+                  #     model: { id: models[:kamera].id },
+                  #     endDate: my_end_date,
+                  #     startDate: my_start_date,
+                  #     status: 'SUBMITTED'
+                  #   }
+                  # ],
                   state: 'SUBMITTED'
                 }
               ]
@@ -190,8 +228,12 @@ describe 'feature' do
           edges {
             node {
               state
-              subOrdersByPool {
+              subOrdersByPool(orderBy: [{attribute: INVENTORY_POOL_ID, direction: ASC}]) {
+                id
                 state
+                inventoryPool {
+                  id
+                }
               }
             }
           }
@@ -205,8 +247,24 @@ describe 'feature' do
       { orders:
         { edges:
           [ { node:
-              { state: %w[APPROVED], subOrdersByPool: [{ state: 'APPROVED' }] }
-          }]
+              { state: %w[APPROVED SUBMITTED],
+                subOrdersByPool: [
+                  { id: the_pool_order_1.id,
+                    state: 'APPROVED',
+                    inventoryPool: {
+                      id: '8e484119-76a4-4251-b37b-64847df99e9b'
+                    }
+                  },
+                  { id: the_pool_order_2.id,
+                    state: 'SUBMITTED',
+                    inventoryPool: {
+                      id: 'a7d2e049-56ac-481a-937e-ee3f613f3cc7' 
+                    }
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     )

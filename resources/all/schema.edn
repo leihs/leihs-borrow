@@ -190,6 +190,7 @@
                     :type :ModelsConnection
                     :resolve :models-connection}
            :inventoryPools {:resolve :inventory-pools
+                            :args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
                             :type (list :InventoryPool)}
            :availability {:args {:modelId {:type (non-null :UUID)}
                                  :inventoryPoolId {:type (non-null :UUID)}
