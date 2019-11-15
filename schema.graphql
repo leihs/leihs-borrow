@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Thu Nov 14 2019 16:52:24 GMT+0100 (Central European Standard Time)
+# timestamp: Fri Nov 15 2019 14:38:04 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -143,6 +143,7 @@ type ModelsConnection {
 
 enum ModelsOrderByAttributeEnum {
   ID
+  NAME
 }
 
 input ModelsOrderByInput {
