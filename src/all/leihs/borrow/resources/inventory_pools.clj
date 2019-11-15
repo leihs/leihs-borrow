@@ -10,7 +10,7 @@
       (sql/from :inventory_pools)
       (sql/merge-where [:= :inventory_pools.is_active true])))
 
-(defn get-multiple [context {:keys [order-by]} value]
+(defn get-multiple [context {:keys [order-by ids]} value]
   (let [user-id (-> value :user :id)]
     (-> base-sqlmap
         (cond-> user-id
@@ -20,6 +20,8 @@
                                :inventory_pools.id])
               (sql/merge-where [:= :access_rights.user_id user-id])
               (sql/merge-where [:= :access_rights.deleted_at nil])))
+        (cond-> (seq ids)
+          (-> (sql/merge-where [:in :inventory_pools.id ids])))
         (cond-> (seq order-by)
           (-> (sql/order-by (helpers/treat-order-arg order-by))
               (sql/merge-order-by [:inventory_pools.name :asc])))

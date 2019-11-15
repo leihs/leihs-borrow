@@ -1,7 +1,7 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}
            :ISO8601 {:parse :iso8601-parse :serialize :iso8601-serialize}}
 
- :enums {:ModelsOrderByAttributeEnum {:values [:ID]},
+ :enums {:ModelsOrderByAttributeEnum {:values [:ID :NAME]},
          :UsersOrderByAttributeEnum {:values [:ID]},
          :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME]},
          :ReservationsOrderByAttributeEnum {:values [:ID]},

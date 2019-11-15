@@ -10,8 +10,12 @@ describe 'feature' do
 
     # prepare data in DB:
     user = FactoryBot.create(:user)
-    pool_1 = FactoryBot.create(:inventory_pool, id: '8e484119-76a4-4251-b37b-64847df99e9b')
-    pool_2 = FactoryBot.create(:inventory_pool, id: 'a7d2e049-56ac-481a-937e-ee3f613f3cc7')
+    pool_1 = FactoryBot.create(:inventory_pool,
+                               id: '8e484119-76a4-4251-b37b-64847df99e9b',
+                               name: 'Pool A')
+    pool_2 = FactoryBot.create(:inventory_pool,
+                               id: 'a7d2e049-56ac-481a-937e-ee3f613f3cc7',
+                               name: 'Pool B')
     FactoryBot.create(:access_right, role: :customer, user: user, inventory_pool: pool_1)
     FactoryBot.create(:access_right, role: :customer, user: user, inventory_pool: pool_2)
     categories = { film: FactoryBot.create(:category, name: 'Film') }
@@ -116,8 +120,31 @@ describe 'feature' do
 
     # binding.pry
 
-    # STEP 2B: add more reservations
-    # STEP 2C: delete a reservation
+    # STEP 2B: increase quantity of a reservation
+    
+    operation = <<-GRAPHQL
+      mutation addModelToOrder(
+        $modelId: UUID!
+        $quantity: Int!
+        $startDate: String!
+        $endDate: String!
+      ) {
+        reservations: createReservation(
+          modelId: $modelId
+          startDate: $startDate
+          endDate: $endDate
+          quantity: $quantity
+        ) {
+          id
+        }
+      }
+    GRAPHQL
+
+    # STEP 2C: decrease quantity of a reservation
+
+    # STEP 2D: add a reservation for another model
+    
+    # STEP 2E: delete a reservation (= decrease quantity to 0)
 
     # STEP 3: submit the current order
     operation = <<-GRAPHQL
@@ -153,14 +180,16 @@ describe 'feature' do
                 id
                 state
                 rejectedReason
-                inventoryPool { id }
-                # reservations {
-                #   id
-                #   startDate
-                #   endDate
-                #   model { id }
-                #   status
-                # }
+                inventoryPool {
+                  id
+                  name
+                }
+                reservations {
+                  startDate
+                  endDate
+                  model { id }
+                  status
+                }
               }
             }
           }
@@ -183,32 +212,42 @@ describe 'feature' do
               subOrdersByPool: [
                 {
                   id: the_pool_order_1.id,
-                  inventoryPool: { id: pool_1.id },
+                  inventoryPool: {
+                    id: pool_1.id,
+                    name: 'Pool A'
+                  },
                   rejectedReason: nil,
-                  # reservations: [
-                  #   {
-                  #     id: the_reservation_1.id,
-                  #     model: { id: models[:kamera].id },
-                  #     endDate: my_end_date,
-                  #     startDate: my_start_date,
-                  #     status: 'SUBMITTED'
-                  #   }
-                  # ],
+                  reservations: [
+                    {
+                      model: { id: models[:kamera].id },
+                      endDate: my_end_date,
+                      startDate: my_start_date,
+                      status: 'SUBMITTED'
+                    },
+                    {
+                      model: { id: models[:kamera].id },
+                      endDate: my_end_date,
+                      startDate: my_start_date,
+                      status: 'SUBMITTED'
+                    }
+                  ],
                   state: 'SUBMITTED'
                 },
                 {
                   id: the_pool_order_2.id,
-                  inventoryPool: { id: pool_2.id },
+                  inventoryPool: {
+                    id: pool_2.id,
+                    name: 'Pool B'
+                  },
                   rejectedReason: nil,
-                  # reservations: [
-                  #   {
-                  #     id: the_reservation_1.id,
-                  #     model: { id: models[:kamera].id },
-                  #     endDate: my_end_date,
-                  #     startDate: my_start_date,
-                  #     status: 'SUBMITTED'
-                  #   }
-                  # ],
+                  reservations: [
+                    {
+                      model: { id: models[:kamera].id },
+                      endDate: my_end_date,
+                      startDate: my_start_date,
+                      status: 'SUBMITTED'
+                    }
+                  ],
                   state: 'SUBMITTED'
                 }
               ]
