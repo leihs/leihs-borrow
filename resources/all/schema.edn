@@ -72,7 +72,9 @@
                                           :resolve :attachments}
                             :properties {:type (list :Property)
                                          :resolve :properties}
-                            :recommends {:type :ModelsConnection
+                            :recommends {; NOTE: args must match those needed for the :ModelsConnection, does not happen automatically!
+                                         :args {:first {:type Int}} 
+                                         :type :ModelsConnection
                                          :resolve :models-connection}}}
            :ModelsConnection {:fields {:totalCount {:type (non-null Int)}
                                        :edges {:type (list :ModelEdge)}

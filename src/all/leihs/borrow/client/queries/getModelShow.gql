@@ -1,0 +1,35 @@
+query getModelShow($modelId: UUID!) {
+  model(id: $modelId) {
+    id
+    name
+    manufacturer
+    description
+    images {
+      id
+      imageUrl
+    }
+    attachments {
+      id
+      filename
+      url
+      size
+      content_type
+    }
+    properties {
+      id
+    }
+    recommends(first: 12) {
+      edges {
+        node {
+          id
+          name
+          manufacturer
+          images {
+            id
+            imageUrl
+          }
+        }
+      }
+    }
+  }
+}

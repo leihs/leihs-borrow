@@ -11,6 +11,7 @@
 
    [leihs.borrow.client.features.about-page :as about-page]
    [leihs.borrow.client.features.search :as search]
+   [leihs.borrow.client.features.model-show :as model-show]
    [leihs.borrow.client.features.shopping-cart :as cart]))
 
 (def re-graph-config {:ws-url nil :http-url "/borrow/graphql" :http-parameters {:with-credentials? true}})
@@ -109,7 +110,9 @@
     [:p [:a {:href "/borrow/"} "home"]]
 
     [:p [:a {:href (str "/borrow/search?foo=bar")} "test search w/ query params"]]
-    [:p [:a {:href "/borrow/about"} "about"]]]
+    [:p [:a {:href "/borrow/about"} "about"]]
+    [:p [:a {:href (str "/borrow/models/")} "test model index"]]
+    [:p [:a {:href (str "/borrow/models/1c18b3d3-88e8-57ac-8c28-24d3f8f77604")} "test model show"]]]
 
    [routing/routed-view views]])
 
@@ -127,7 +130,7 @@
           #_[:hr]
           #_[shopping-cart]])])))
 
-(defn search-view
+(defn- search-view
   []
   (let 
    [routing @(rf/subscribe [:routing/routing])]
@@ -140,24 +143,34 @@
   [:div.app-loading-view
    [:h1 "loading…"]])
 
+(defn- models-index-view [] [:h1.font-xl "MODELS INDEX"])
+
 ;-; CORE APP
 (def views {::routes/home home-view
             ::routes/search search-view
             ::routes/about-page about-page/view
+            ::routes/models-index models-index-view
+            ::routes/models-show model-show/view
             ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
             ;        *should* not be a real problem – if the routing is working correctly 
             ;        we can never end up on "not found" client-side!
             :else route-is-loading-view})
 
-(defn dummy-route-event-handler
+(defn- dummy-route-event-handler
   [_ [_ route-match]]
-  (js/console.log "Router navigated: " route-match))
+  (js/console.log "Router navigated to: " route-match))
 
 (rf/reg-event-fx ::routes/home dummy-route-event-handler)
 
-(rf/reg-event-fx
- ::routes/search
- dummy-route-event-handler)
+; when going to '/' instead of '/borrow', do a redirect.
+; this is only ever going to happen in development mode.
+(rf/reg-event-fx 
+ ::routes/absolute-root 
+ (fn [_ _] {:routing/navigate [::routes/home]}))
+
+;; tmp: attach handler for wip views to silence warnings
+(rf/reg-event-fx ::routes/search dummy-route-event-handler)
+(rf/reg-event-fx ::routes/models-index dummy-route-event-handler)
 
 (defn mount-root []
   (rf/clear-subscription-cache!)

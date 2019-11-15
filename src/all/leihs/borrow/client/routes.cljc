@@ -8,6 +8,9 @@
   {"" ::home
    "search" ::search
    "about" ::about-page
+   "models" {"" ::models-index
+             "/" ::models-index
+             ["/" :model-id] ::models-show}
    :else ::not-found})
 
 (def routes-map
