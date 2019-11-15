@@ -235,9 +235,9 @@
       (->> (jdbc/query tx))
       first))
 
-(defn get-one [{{:keys [tx]} :request} _ value]
+(defn get-one [{{:keys [tx]} :request} {:keys [id]} value]
   (-> base-sqlmap
-      (sql/where [:= :id (:model-id value)])
+    (sql/where [:= :id (or id (:model-id value))])
       sql/format
       (->> (jdbc/query tx))
       first))

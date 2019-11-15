@@ -214,6 +214,9 @@
                     :args {:limit {:type Int}
                            :orderBy {:type (list :VisitsOrderByInput)}}
                     :type (list :Visit)}
+           :model {:args {:id {:type (non-null :UUID)}}
+                   :resolve :model
+                   :type (non-null :Model)}
            :models {:args {:categoryIds {:type (list (non-null :UUID))}
                            :inventoryPoolIds {:type (list (non-null :UUID))}
                            :ids {:type (list (non-null :UUID))}
