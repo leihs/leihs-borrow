@@ -120,11 +120,10 @@
       (throw
         (ex-info
           "Model either does not exist or is not reservable by the user." {})))
-    (let [pools (->> (inventory-pools/get-multiple
-                       context
-                       {:ids (not-empty inventory-pool-ids)}
-                       nil)
-                     (sort-by :id))
+    (let [pools (inventory-pools/get-multiple
+                  context
+                  {:ids (not-empty inventory-pool-ids)}
+                  nil)
           pool-avails (->> (availability/get-available-quantities
                              context
                              {:inventory-pool-ids (map :id pools)
@@ -132,10 +131,15 @@
                               :start-date start-date
                               :end-date end-date}
                              nil)
-                           (sort-by :id)
-                           (mapv merge pools))]
+                           (map (fn [el]
+                                  (assoc el
+                                         :name
+                                         (->> pools
+                                              (filter #(= (:id el) (:id %)))
+                                              first
+                                              :name)))))]
       (->> quantity
-           (distribute pool-avails)
+           (distribute (log/spy pool-avails))
            (map (fn [{:keys [quantity] :as attrs}]
                   (let [row (-> attrs
                                 (select-keys [:inventory_pool_id :model_id :quantity])

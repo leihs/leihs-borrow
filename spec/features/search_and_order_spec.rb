@@ -120,31 +120,71 @@ describe 'feature' do
 
     # binding.pry
 
-    # STEP 2B: increase quantity of a reservation
+    # STEP 2B: increase quantity of a reservation for a specific pool
     
     operation = <<-GRAPHQL
-      mutation addModelToOrder(
+      mutation increaseQuantity(
         $modelId: UUID!
         $quantity: Int!
         $startDate: String!
         $endDate: String!
+        $inventoryPoolIds: [UUID!]
       ) {
         reservations: createReservation(
           modelId: $modelId
           startDate: $startDate
           endDate: $endDate
           quantity: $quantity
+          inventoryPoolIds: $inventoryPoolIds
         ) {
           id
         }
       }
     GRAPHQL
+    
+    variables = {
+      endDate: my_end_date,
+      startDate: my_start_date,
+      modelId: models[:kamera].id,
+      quantity: 1,
+      inventoryPoolIds: [pool_2.id]
+    }
 
-    # STEP 2C: decrease quantity of a reservation
+    reservation_result_2 = query(operation, user.id, variables)
+    expect(
+      reservation_result_2.dig(:data, :reservations).map { |r| r[:id] }.to_set
+    ).to eq \
+      Reservation
+      .select(:id)
+      .order(Sequel.desc(:created_at))
+      .limit(1)
+      .map(&:id)
+      .to_set
+
+    # STEP 2C: decrease quantity of a reservation for a specific pool
+
+    operation = <<-GRAPHQL
+      mutation($ids: [UUID!]) {
+        rIds: deleteReservations(
+          ids: $ids
+        )
+      }
+    GRAPHQL
+
+    r_ids = Reservation.where(inventory_pool_id: pool_1.id).limit(1).all.map(&:id)
+
+    variables = {
+      ids: r_ids
+    }
+
+    reservation_result_2 = query(operation, user.id, variables)
+    expect(reservation_result_2.dig(:data, :rIds)).to eq r_ids
 
     # STEP 2D: add a reservation for another model
     
     # STEP 2E: delete a reservation (= decrease quantity to 0)
+    
+    # TODO: STEP 2F: change date range of a reservation
 
     # STEP 3: submit the current order
     operation = <<-GRAPHQL
@@ -223,12 +263,6 @@ describe 'feature' do
                       endDate: my_end_date,
                       startDate: my_start_date,
                       status: 'SUBMITTED'
-                    },
-                    {
-                      model: { id: models[:kamera].id },
-                      endDate: my_end_date,
-                      startDate: my_start_date,
-                      status: 'SUBMITTED'
                     }
                   ],
                   state: 'SUBMITTED'
@@ -241,6 +275,12 @@ describe 'feature' do
                   },
                   rejectedReason: nil,
                   reservations: [
+                    {
+                      model: { id: models[:kamera].id },
+                      endDate: my_end_date,
+                      startDate: my_start_date,
+                      status: 'SUBMITTED'
+                    },
                     {
                       model: { id: models[:kamera].id },
                       endDate: my_end_date,
