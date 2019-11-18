@@ -1,7 +1,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; based on <https://github.com/MattiNieminen/re-fill/blob/960b4eaf/src/re_fill/routing.cljs> ;
 ; * replace :re-fill/ :routing/                                                              ;
-; * add support for query params                                                             ;
+; * add support for query params
+; * pushy: only capture&handle nav events if we defined a route for it!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (ns leihs.borrow.client.lib.routing
@@ -13,29 +14,33 @@
 
 ; from <https://github.com/juxt/bidi/issues/51#issuecomment-344101759>
 (defn bidi-match-route-with-query-params
-  [route path & {:as options}]
+  [routes path & {:as options}]
   (let [query-params (->> (:query (cemerick.url/url path))
                           (map (fn [[k v]] [(keyword k) v]))
                           (into {}))]
-    (-> (bidi/match-route* route path options)
+    (-> (bidi/match-route* routes path options)
         (assoc :query-params query-params))))
 
 (rf/reg-fx
  :routing/init-routing
- (fn [_]
+ (fn [routes]
    (let [pushy-instance (get-in @db/app-db [:routing/routing :pushy-instance])]
      (if-not pushy-instance
-       (->> (pushy/pushy #(rf/dispatch [:routing/change-view %]) identity)
-            (swap! db/app-db assoc-in [:routing/routing :pushy-instance])
-            :routing/routing
-            :pushy-instance
-            pushy/start!)))))
+       (let [dispatch-fn #(rf/dispatch [:routing/change-view %])
+             match-fn (fn [path] 
+                        (let [is-routed? (:handler (bidi/match-route routes path))]
+                          (if is-routed? path false)))]
+         (->> (pushy/pushy dispatch-fn match-fn)
+              (swap! db/app-db assoc-in [:routing/routing :pushy-instance])
+              :routing/routing
+              :pushy-instance
+              pushy/start!))))))
 
 (rf/reg-event-fx
  :routing/init-routing
  (fn [{:keys [db]} [_ routes]]
    {:db (assoc-in db [:routing/routing :routes] routes)
-    :routing/init-routing nil}))
+    :routing/init-routing routes}))
 
 (rf/reg-event-fx
  :routing/change-view

@@ -135,17 +135,19 @@
      [:p "params:"]
      [:pre (pr-str (get-in routing [:bidi-match :query-params]))]]))
 
-(defn not-found-view
+(defn- route-is-loading-view
   []
-  [:div.loading
-   [:h1.loading__header "not found???"]])
+  [:div.app-loading-view
+   [:h1 "loading…"]])
 
 ;-; CORE APP
 (def views {::routes/home home-view
             ::routes/search search-view
             ::routes/about-page about-page/view
-            ;; Value of :else will be used if there's no mapping for route
-            :else not-found-view})
+            ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
+            ;        *should* not be a real problem – if the routing is working correctly 
+            ;        we can never end up on "not found" client-side!
+            :else route-is-loading-view})
 
 (defn dummy-route-event-handler
   [_ [_ route-match]]
