@@ -9,6 +9,7 @@
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]
 
+   [leihs.borrow.client.features.about-page :as about-page]
    [leihs.borrow.client.features.search :as search]
    [leihs.borrow.client.features.shopping-cart :as cart]))
 
@@ -106,7 +107,9 @@
    [:nav.border.border-black.m-3
     [:b "nav"]
     [:p [:a {:href "/borrow/"} "home"]]
-    [:p [:a {:href (str "/borrow/search?foo=bar")} "test search w/ query params"]]]
+
+    [:p [:a {:href (str "/borrow/search?foo=bar")} "test search w/ query params"]]
+    [:p [:a {:href "/borrow/about"} "about"]]]
 
    [routing/routed-view views]])
 
@@ -140,6 +143,7 @@
 ;-; CORE APP
 (def views {::routes/home home-view
             ::routes/search search-view
+            ::routes/about-page about-page/view
             ;; Value of :else will be used if there's no mapping for route
             :else not-found-view})
 

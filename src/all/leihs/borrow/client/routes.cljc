@@ -7,6 +7,7 @@
 (def client-routes
   {"" ::home
    "search" ::search
+   "about" ::about-page
    :else ::not-found})
 
 (def routes-map
