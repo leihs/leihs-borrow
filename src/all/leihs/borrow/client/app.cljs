@@ -109,10 +109,15 @@
     [:b "nav"]
     [:p [:a {:href "/borrow/"} "home"]]
 
-    [:p [:a {:href (str "/borrow/search?foo=bar")} "test search w/ query params"]]
-    [:p [:a {:href "/borrow/about"} "about"]]
-    [:p [:a {:href (str "/borrow/models/")} "test model index"]]
-    [:p [:a {:href (str "/borrow/models/1c18b3d3-88e8-57ac-8c28-24d3f8f77604")} "test model show"]]]
+    [:p [:a {:href (routing/path-for ::routes/search :query-params {:foo :bar})} "test search w/ query params"]]
+    [:p [:a {:href (routing/path-for ::routes/about-page)} "about"]]
+    [:p [:a {:href (routing/path-for ::models-index)} "test model index"]]
+    [:p [:a {:href 
+             (routing/path-for 
+              ::routes/models-show 
+              :model-id "1c18b3d3-88e8-57ac-8c28-24d3f8f77604")} 
+         "test model show"]]
+    ]
 
    [routing/routed-view views]])
 

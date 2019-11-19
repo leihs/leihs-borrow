@@ -2,6 +2,9 @@
 ; based on <https://github.com/MattiNieminen/re-fill/blob/960b4eaf/src/re_fill/routing.cljs> ;
 ; * replace :re-fill/ :routing/                                                              ;
 ; * add support for query params
+;   * when matching routes
+;   * when navigating using dispatch
+;   * when using `path-for`  
 ; * pushy: only capture&handle nav events if we defined a route for it!
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -10,7 +13,8 @@
             [pushy.core :as pushy]
             [cemerick.url]
             [re-frame.core :as rf]
-            [re-frame.db :as db]))
+            [re-frame.db :as db]
+            [leihs.borrow.client.routes :as routes]))
 
 ; from <https://github.com/juxt/bidi/issues/51#issuecomment-344101759>
 (defn bidi-match-route-with-query-params
@@ -100,3 +104,17 @@
         component (or (get views (get-in r [:bidi-match :handler]))
                       (:else views))]
     [component]))
+
+(defn bidi-path-for-with-query-params [routes-map name & args]
+  (let [route-args args ; FIXME: remove :query params from seq!
+        query-params (get (apply hash-map args) :query-params)
+        bidi-path (apply bidi/path-for routes-map name route-args)
+        query-string (when-not (empty? query-params)
+                       (str "?" (cemerick.url/map->query query-params)))]
+    (str bidi-path query-string)))
+
+; TODO: define this next to routes (so this lib does not need to import routes!)
+(defn path-for [name & args]
+  (apply
+   bidi-path-for-with-query-params routes/routes-map name
+   args))
