@@ -13,10 +13,10 @@ query getModelShow($modelId: UUID!) {
       filename
       url
       size
-      content_type
+      # content_type # FIXME: include this field when API bug is fixed
     }
     properties {
-      id
+      id key value
     }
     recommends(first: 12) {
       edges {

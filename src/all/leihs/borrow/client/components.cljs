@@ -30,3 +30,13 @@
                 (not active?) (conj :bg-grey :border-grey))}
       props)
      label]))
+
+(defn error-view [errors]
+  [:section.p-4
+   {:style {:white-space "pre-wrap" :background "salmon" :padding "1rem"}}
+   [:h1 "ERROR :("]
+   [:p [:button.border-black.border-2.rounded-full.py-1.px-3 {:type :button, :on-click #(-> js/window (.-location) (.reload))} "RELOAD"]]
+   (doall
+    (for
+     [[idx error] (map-indexed vector errors)]
+      [:small.code {:key idx} (js/JSON.stringify (clj->js error) 0 2)]))])
