@@ -27,7 +27,6 @@
    :is-favorited-model models/favorited?
    :is-reservable-model models/reservable?
    :model models/get-one
-   :models models/get-multiple
    :models-connection models/get-connection
    :order orders/get-one
    :orders-connection orders/get-connection
