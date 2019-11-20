@@ -5,6 +5,9 @@ traits:
   S3-Cache: true
 
 scripts:
+  prepare-shared-ui:
+    body: scripts/prepare-shared-ui.sh
+
   build-borrow-uberjar:
     timeout: 10 Minutes
     exclusive_executor_resource: build-leihs-borrow-jar
@@ -12,6 +15,9 @@ scripts:
       RUBY: '{{RUBY_ENGINE}}-{{RUBY_VERSION}}'
       RUBY_ENGINE: ruby
       RUBY_VERSION: 2.6.0
+    start_when:
+      shared ui was built:
+        script_key: prepare-shared-ui
     body: |
       #!/usr/bin/env bash
       set -euxo

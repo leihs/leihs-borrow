@@ -17,7 +17,6 @@
   target {:dir #{"target"}}
   aot {:all true}
   repl {:init-ns 'app}
-  sift {:include #{#"leihs-borrow.jar"}}
   jar {:file "leihs-borrow.jar", :main 'leihs.borrow.main})
 
 (deftask prod
@@ -29,11 +28,11 @@
 (deftask uberjar
   "Build an uberjar of the application."
   []
-  (comp (prod)
+  (comp (prod) ; does not seem to work, that's why sift later on
         (aot)
         (uber)
+        (sift :add-resource #{"resources/all" "resources/prod"})
         (jar)
-        (sift)
         (target)))
 
 (deftask run
