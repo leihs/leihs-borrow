@@ -3,16 +3,15 @@
    [reagent.core :as r]
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   #_[leihs.borrow.client.components :as ui]
+   #_[shadow.resource :as rc]
+   [leihs.borrow.client.components :as ui]
 
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]
 
    [leihs.borrow.client.features.about-page :as about-page]
-   [leihs.borrow.client.features.search :as search]
-   [leihs.borrow.client.features.model-show :as model-show]
-   [leihs.borrow.client.features.shopping-cart :as cart]))
+   [leihs.borrow.client.features.search-models :as search-models]
+   [leihs.borrow.client.features.model-show :as model-show]))
 
 (def re-graph-config {:ws-url nil :http-url "/borrow/graphql" :http-parameters {:with-credentials? true}})
 
@@ -28,8 +27,9 @@
             (assoc , :cart {:items {:index {} :order []}})
             (assoc , :search {:results []
                               :filters {:current {:start-date "2020-12-01", :end-date "2020-12-02"}}})
-            (assoc , :meta {:app {:debug true}}))
-    :dispatch [::re-graph/init re-graph-config]}))
+            (assoc , :meta {:app {:debug false}}))
+    :dispatch-n (list [::re-graph/init re-graph-config]
+                      #_[::search-models/fetch-search-filters])}))
 
 ;-; EVENTS
 (rf/reg-event-db :set-debug (fn [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
@@ -46,79 +46,10 @@
  
 
 ;-; VIEWS
-(defn fatal-error-screen [errors]
-  [:section.p-4
-   {:style {:white-space "pre-wrap" :background "salmon" :padding "1rem"}}
-   [:h1 "FATAL ERROR :("]
-   [:p [:button.border-black.border-2.rounded-full.py-1.px-3 {:type :button, :on-click #(-> js/window (.-location) (.reload))} "RELOAD"]]
-   (doall
-    (for
-     [[idx error] (map-indexed vector errors)]
-      [:small.code {:key idx} (js/JSON.stringify (clj->js error) 0 2)]))])
-
-(def product-card-width-in-rem 12)
-(def product-card-margins-in-rem 1)
-
-(defn product-card [model width-in-rem]
-  [:div.ui-product-card
-   {:style {:width (str width-in-rem "rem")
-            :min-height "15rem"
-            :overflow-y "scroll"
-            :border "1px solid tomato"
-            :padding "1rem"
-            :display "inline-block"
-            :margin-right "1rem"}}
-   [:h2 (:name model)]
-   (if-let [img (get-in model [:images 0 :imageUrl])] 
-     [:img {:src img :style {:width "100%"}}])
-   #_[:p (pr-str model)]
-   [:button
-    {:type :button :on-click #(rf/dispatch [::cart/add-item (:id model)])}
-    "+"]])
-
-(defn model-grid-item [model]
-  [:div.ui-model-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-2.mb-3
-   [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
-    (if-let [img (get-in model [:images 0 :imageUrl])]
-      [:img.absolute.object-contain.object-center.h-full.w-full.p-1 {:src img}]
-      [:div.absolute.h-full.w-full.bg-gray-400 " "])]
-   [:div.mx-0.mt-1.leading-snug
-    [:p.truncate.font-bold (:name model)]
-    [:p.truncate (:manufacturer model)]
-    ]])
-
-(defn products-list []
-  (let
-   [models @(rf/subscribe [::search/found-models])]
-    [:div.mx-1.mt-2
-     [:div.w-full.px-0
-      [:div.ui-models-list.flex.flex-wrap
-       (doall
-        (for [model models]
-          [:div {:class "w-1/2 min-h-16" :key (:id model)}
-           [model-grid-item model]]))]]
-     (when @(rf/subscribe [:is-debug?]) [:p (pr-str @(rf/subscribe [::search/found-models]))])]))
-
 
 (defn main-view [views]
   [:main
-   [:div.ui-main-nav.px-2.py-1.border-b-2
-    [:h1.font-black [:a {:href "/"} "AUSLEIHE"]]]
-
-   [:nav.border.border-black.m-3
-    [:b "nav"]
-    [:p [:a {:href "/borrow/"} "home"]]
-
-    [:p [:a {:href (routing/path-for ::routes/search :query-params {:foo :bar})} "test search w/ query params"]]
-    [:p [:a {:href (routing/path-for ::routes/about-page)} "about"]]
-    [:p [:a {:href (routing/path-for ::models-index)} "test model index"]]
-    [:p [:a {:href 
-             (routing/path-for 
-              ::routes/models-show 
-              :model-id "1c18b3d3-88e8-57ac-8c28-24d3f8f77604")} 
-         "test model show"]]
-    ]
-
+   [ui/main-nav]
    [routing/routed-view views]])
 
 (defn home-view []
@@ -126,22 +57,12 @@
     (let [errors @(rf/subscribe [:app/fatal-errors])]
       [:<>
        (if errors
-         [fatal-error-screen errors]
+         [ui/fatal-error-screen errors]
        ; else
          [:<>
-          [search/search-panel]
+          [search-models/search-panel]
           [:hr.border-b-2]
-          [products-list]
-          #_[:hr]
-          #_[shopping-cart]])])))
-
-(defn- search-view
-  []
-  (let 
-   [routing @(rf/subscribe [:routing/routing])]
-    [:h1 (str "This is search view ")
-     [:p "params:"]
-     [:pre (pr-str (get-in routing [:bidi-match :query-params]))]]))
+          [ui/tmp-nav]])])))
 
 (defn- route-is-loading-view
   []
@@ -152,7 +73,7 @@
 
 ;-; CORE APP
 (def views {::routes/home home-view
-            ::routes/search search-view
+            ::routes/search search-models/view
             ::routes/about-page about-page/view
             ::routes/models-index models-index-view
             ::routes/models-show model-show/view
@@ -174,7 +95,6 @@
  (fn [_ _] {:routing/navigate [::routes/home]}))
 
 ;; tmp: attach handler for wip views to silence warnings
-(rf/reg-event-fx ::routes/search dummy-route-event-handler)
 (rf/reg-event-fx ::routes/models-index dummy-route-event-handler)
 
 (defn mount-root []
@@ -186,11 +106,9 @@
   (rf/dispatch-sync [:routing/init-routing routes/routes-map])
   (rf/dispatch-sync [::load-app])
   (mount-root)
-
-  (rf/dispatch-sync
-   [::re-graph/query
-    (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql")
-    {}
-    [::search/on-fetched-search-filters]]))
+  
+  ; FIXME: should be dispatched from `load-app` but that doesnt work :/
+  (search-models/fetch-search-filters))
+  
 
 (main)

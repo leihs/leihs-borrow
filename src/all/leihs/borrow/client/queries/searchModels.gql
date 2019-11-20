@@ -10,7 +10,7 @@ query searchModels(
     startDate: $startDate
     endDate: $endDate
     categoryIds: $categories
-    first: 100
+    first: 12
   ) {
     edges {
       node {
