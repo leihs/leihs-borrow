@@ -56,10 +56,9 @@
                     value]
   (-> (sql/select :*)
       (sql/from :reservations)
-      (sql/where [:=
-                  (case (::lacinia/container-type-name context)
-                    :PoolOrder :order_id)
-                  (:id value)])
+      (sql/where (case (::lacinia/container-type-name context)
+                   :PoolOrder [:= :order_id (:id value)]
+                   :Visit [:in :id (:reservation-ids value)]))
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by)))
       sql/format

@@ -11,6 +11,7 @@
     [leihs.borrow.resources.properties :as properties]
     [leihs.borrow.resources.reservations :as reservations]
     [leihs.borrow.resources.users :as users]
+    [leihs.borrow.resources.visits :as visits]
     ))
 
 (def resolvers
@@ -30,4 +31,6 @@
    :properties properties/get-multiple
    :reservations reservations/get-multiple
    :thumbnails images/get-multiple-thumbnails
-   :users users/get-multiple})
+   :users users/get-multiple
+   :visits visits/get-multiple
+   })

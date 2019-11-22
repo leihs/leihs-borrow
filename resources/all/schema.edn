@@ -8,9 +8,11 @@
          :PoolOrdersOrderByAttributeEnum {:values [:INVENTORY_POOL_ID :ID]},
          :ContractsOrderByAttributeEnum {:values [:ID]},
          :OrdersOrderByAttributeEnum {:values [:ID]},
+         :VisitsOrderByAttributeEnum {:values [:DATE]},
          :OrderByDirectionEnum {:values [:ASC :DESC]}
          :ContractStateEnum {:values [:OPEN :CLOSED]}
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED]}
+         :VisitTypeEnum {:values [:PICKUP :RETURN]}
          :ReservationStateEnum {:values [:UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}}
 
  :objects {:Contract {:fields {:id {:type (non-null :UUID)}
@@ -138,7 +140,17 @@
                                               :resolve :pool-orders}
                             :createdAt {:type (non-null :ISO8601)}
                             :updatedAt {:type (non-null :ISO8601)}}
-                   :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}}
+                   :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}
+           :Visit {:fields {:id {:type (non-null :UUID)}
+                            :date {:type (non-null String)}
+                            :visitType {:type (non-null :VisitTypeEnum)}
+                            :isApproved {:type (non-null Boolean)}
+                            :quantity {:type (non-null Int)}
+                            :inventoryPool {:type (non-null :InventoryPool)
+                                            :resolve :inventory-pool}
+                            :reservations {:type (list :Reservation)
+                                           :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                           :resolve :reservations}}}}
 
  :input-objects {:ModelsOrderByInput {:fields {:attribute {:type (non-null :ModelsOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
@@ -149,6 +161,8 @@
                  :ContractsOrderByInput {:fields {:attribute {:type (non-null :ContractsOrderByAttributeEnum)}
                                                   :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :OrdersOrderByInput {:fields {:attribute {:type (non-null :OrdersOrderByAttributeEnum)}
+                                               :direction {:type (non-null :OrderByDirectionEnum)}}}
+                 :VisitsOrderByInput {:fields {:attribute {:type (non-null :VisitsOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :ReservationsOrderByInput {:fields {:attribute {:type (non-null :ReservationsOrderByAttributeEnum)}
                                                      :direction {:type (non-null :OrderByDirectionEnum)}}}
@@ -179,6 +193,10 @@
                                     :description "Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument."}
                            :orderBy {:type (list :OrdersOrderByInput)}}
                     :type :OrdersConnection}
+           :visits {:resolve :visits
+                    :args {:limit {:type Int}
+                           :orderBy {:type (list :VisitsOrderByInput)}}
+                    :type (list :Visit)}
            :models {:args {:categoryIds {:type (list (non-null :UUID))}
                            :inventoryPoolIds {:type (list (non-null :UUID))}
                            :orderBy {:type (list :ModelsOrderByInput)}
