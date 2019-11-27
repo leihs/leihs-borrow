@@ -179,7 +179,10 @@
 
 (defn model-grid-item [model]
   (let [href (routing/path-for ::routes/models-show :model-id (:id model))]
+  (let [href (routing/path-for ::routes/models-show :model-id (:id model))
+        available? (> (:availableQuantityInDateRange model) 0)]
     [:div.ui-model-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-2.mb-3
+     {:style {:opacity (if available? 1 0.35) }}
      [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
       [:a {:href href}
        (if-let [img (get-in model [:images 0 :imageUrl])]
