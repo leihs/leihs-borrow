@@ -81,19 +81,19 @@
                                                      :dates {:type (list :DayData)}}}
            :Attachment {:fields {:id {:type (non-null :UUID)}
                                  :url {:type (non-null String)}
-                                 :content_type {:type (non-null String)}
+                                 :contentType {:type (non-null String)}
                                  :filename {:type (non-null String)}
                                  :size {:type (non-null Int)}}}
            :Image {:fields {:id {:type (non-null :UUID)}
                             :imageUrl {:type (non-null String)}
-                            :content_type {:type (non-null String)}
+                            :contentType {:type (non-null String)}
                             :filename {:type (non-null String)}
                             :size {:type (non-null Int)}
                             :thumbnails {:type (list :Thumbnail)
                                          :resolve :thumbnails}}}
            :Thumbnail {:fields {:id {:type (non-null :UUID)}
                                 :imageUrl {:type (non-null String)}
-                                :content_type {:type (non-null String)}
+                                :contentType {:type (non-null String)}
                                 :filename {:type (non-null String)}
                                 :size {:type (non-null Int)}}}
            :Category {:fields {:id {:type (non-null :UUID)}

@@ -737,6 +737,7 @@ describe 'models connection' do
                 imageUrl
               }
               attachments {
+                contentType
                 url
               }
               properties {
@@ -786,7 +787,8 @@ describe 'models connection' do
             { node: {
               id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3',
               images: [{ imageUrl: '/borrow/images/7484b5d2-376a-4b15-8db0-54cc6bab02ea' }],
-              attachments: [{ url: '/borrow/attachments/919fbdd1-111c-49b7-aeb0-2d5d8825ed00' }],
+              attachments: [{ contentType: 'application/pdf',
+                              url: '/borrow/attachments/919fbdd1-111c-49b7-aeb0-2d5d8825ed00' }],
               properties: [{ id: '2df736a4-825c-4f36-b48a-75875b3a3c26' }],
               recommends: {
                 edges: [
