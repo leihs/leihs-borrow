@@ -15,13 +15,10 @@
 
    ; TMP add precompiled tailwindcss
    [:link {:rel "stylesheet" :href "https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css"}]
+   
+   (hiccup.page/include-css (cache-buster/cache-busted-path "/borrow/css/base-styles.css"))])
 
-   ; TODO: cache those minimal base styles in prod mode
-   [:link {:rel "stylesheet" :href "/base-styles.css"}]
-   #_[:style
-      (slurp "resources/all/base-styles.css")]])
-
-(defn not-found-handler [request]
+(defn not-found-handler [_request]
   {:status 404
    :headers {"Content-Type" "text/html"}
    :body (html5
@@ -30,7 +27,7 @@
            [:div.container-fluid
             [:h1.text-danger "Error 404 - Not Found"]]])})
 
-(defn html-handler [request]
+(defn html-handler [_request]
   {:headers {"Content-Type" "text/html"}
    :body (html5
           (head)
