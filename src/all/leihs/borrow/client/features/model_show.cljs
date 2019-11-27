@@ -56,7 +56,7 @@
 
     [:section.m-3
      (cond 
-       is-loading? [:pre "loading model" [:samp model-id] "…"]
+       is-loading? [:div [:div [ui/spinner-clock]] [:pre "loading model" [:samp model-id] "…"]]
        errors [ui/error-view errors]
        :else
         [:<>

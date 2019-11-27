@@ -11,6 +11,7 @@
    "models" {"" ::models-index
              "/" ::models-index
              ["/" :model-id] ::models-show}
+   "order" ::shopping-cart
    :else ::not-found})
 
 (def routes-map

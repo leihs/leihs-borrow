@@ -64,9 +64,10 @@
 (defn- route-is-loading-view
   []
   [:div.app-loading-view
-   [:h1 "loading…"]])
+   [:h1 [ui/spinner-clock]]])
 
 (defn- wip-models-index-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 "WIP MODELS INDEX"])
+(defn- wip-shopping-cart-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 [ui/spinner-clock] [:br] "WIP SHOPPING CART"])
 
 ;-; CORE APP
 (def views {::routes/home home-view

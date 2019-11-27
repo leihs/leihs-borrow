@@ -1,6 +1,6 @@
 (ns leihs.borrow.client.components
   (:require
-   #_[reagent.core :as r]
+   [reagent.core :as reagent]
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]))
 
@@ -52,13 +52,15 @@
      [[idx error] (map-indexed vector errors)]
       [:small.code {:key idx} (js/JSON.stringify (clj->js error) 0 2)]))])
 
+(def menu-icon [:span.ui-icon.ui-menu-icon "☰"])
+(def shopping-cart-icon [:span.ui-icon.ui-icon-colored.ui-shopping-cart-icon "🛒"])
 (defn main-nav []
-  [:nav.ui-main-nav.px-2.py-1.border-b-2
-   [:h1.inline.font-black [:a {:href (routing/path-for ::routes/home)} "AUSLEIHE"]]
+  [:nav.ui-main-nav.px-2.py-1.border-b-2.flex.flex-wrap.items-center.justify-between.sticky.bg-content
+   {:style {:top 0}}
+   [:span [:a {:href (routing/path-for ::routes/about-page)} menu-icon]]
+   [:h1.inline.font-black [:a {:href (routing/path-for ::routes/home)} "LEIHS"]]
    " "
-   [:h2.inline.text-sm [:a {:href (routing/path-for ::routes/about-page)} "about"]]
-   " "
-   #_[:h2.inline.text-sm [:a {:href (routing/path-for ::routes/about-page)} "cart"]]])
+   [:h2.inline.text-sm [:a {:href (routing/path-for ::routes/shopping-cart)} shopping-cart-icon]]])
 
 
 (defn tmp-nav []
@@ -73,3 +75,23 @@
              ::routes/models-show
              :model-id "1c18b3d3-88e8-57ac-8c28-24d3f8f77604")}
         "test model show"]]])
+
+
+; copied from <https://github.com/sindresorhus/cli-spinners/blob/af93e2f345a73a16c7686066c08dd970d66d8870/spinners.json#L720>
+(def spinner-data-clock
+  {
+		:interval 100,
+		:frames ["🕛 " "🕐 " "🕑 " "🕒 " "🕓 " "🕔 " "🕕 " "🕖 " "🕗 " "🕘 " "🕙 " "🕚 "]
+	})
+
+(defn spinner-clock []
+  (let [spinner spinner-data-clock
+        speed (:interval spinner)
+        frame (reagent/atom 0)]
+    (fn []
+      (js/setTimeout
+       (fn [] (swap! frame #(mod (inc %) (count (:frames spinner)))))
+       speed)
+
+      [:span.ui-spinner.ui-spinner-clock 
+       [:span.ui-icon-colored (get-in spinner [:frames @frame])]])))
