@@ -1,12 +1,12 @@
 {
   "dependencies": {
+    "@eins78/graphql-schema-diff": "0.7.0",
     "create-react-class": "^15.6.3",
     "graphql-cli": "git://github.com/eins78/graphql-cli#01f3598c95acf1114901446cda22e5819269f9db",
-    "@eins78/graphql-schema-diff": "0.7.0",
     "highlight.js": "9.15.10",
-    "react": "^16.11.0",
-    "react-dom": "^16.11.0",
-    "react-flip-move": "3.0.4",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-flip-move": "3.0.3",
     "react-highlight.js": "1.0.7"
   },
   "scripts": {

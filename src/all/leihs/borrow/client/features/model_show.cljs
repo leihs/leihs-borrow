@@ -32,15 +32,18 @@
  (fn [db [_ id]]
    (get-in db [:models id])))
 
+(def nbsp \u00A0) ; non-breaking space
+
 (def decorate-file-size-formatter
   (js/Intl.NumberFormat.
    js/navigator.language
-   (clj->js {:maximumFractionDigits 2
-    :style :unit
-    :unit :megabyte})))
+   (clj->js {:maximumFractionDigits 2 :style :decimal})))
 
 (defn decorate-file-size [bytes]
-  (.format decorate-file-size-formatter (-> bytes (/ (* 1024 1024)))))
+  (str
+    (.format decorate-file-size-formatter (-> bytes (/ (* 1024 1024))))
+    nbsp
+    "MB"))
 
 (defn view []
   (let
@@ -66,9 +69,10 @@
          ; FIXME: show all images not just the first one
          (if-let [first-image (first (:images model))]
            [:div.flex.justify-center.py-4.mt-4.border-b-2.border-gray-300
-            [:img {:src (:imageUrl first-image)}]])
+            [:div [:img {:src (:imageUrl first-image)}]]])
 
-         [:p.py-4.border-b-2.border-gray-300 (:description model)]
+         (if-let [description (:description model)]
+           [:p.py-4.border-b-2.border-gray-300 description])
 
          (if-let [attachments  (:attachments model)]
            [:<>

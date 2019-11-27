@@ -93,7 +93,7 @@
 ;-; VIEWS
 (defn form-line [name label input-props]
   [:label {:style {:display :table-row}}
-   [:span.w-8 {:style {:display :table-cell :padding-right "0.5rem"}} (str label " ")]
+   [:span.w-8.text-sm {:style {:display :table-cell :padding-right "0.5rem"}} (str label " ")]
    [:div.block.w-full {:style {:display :table-cell}}
     [:input.py-1.px-2.mb-1
      (merge
@@ -119,8 +119,8 @@
             (rf/dispatch [:routing/navigate [::routes/search {:query-params current}]]))
           )}
        [:fieldset {:style {:display :table}}
-        [:legend "SUCHE"]
-        [form-line :search-term "Text"
+        [:legend.sr-only "Suche"]
+        [form-line :search-term "Suche"
          {:type :text
           :value (get current :term)
           :on-change #(rf/dispatch [::set-filter :term (-> % .-target .-value)])}]
@@ -178,7 +178,6 @@
 ;       "+"]]))
 
 (defn model-grid-item [model]
-  (let [href (routing/path-for ::routes/models-show :model-id (:id model))]
   (let [href (routing/path-for ::routes/models-show :model-id (:id model))
         available? (> (:availableQuantityInDateRange model) 0)]
     [:div.ui-model-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-2.mb-3
@@ -186,7 +185,7 @@
      [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
       [:a {:href href}
        (if-let [img (get-in model [:images 0 :imageUrl])]
-         [:img.absolute.object-contain.object-center.h-full.w-full.p-1 {:src img}]
+         [:img.absolute.object-contain.object-center.h-full.w-full.p-1.bg-content {:src img}]
          [:span.block.absolute.h-full.w-full.bg-gray-400 " "])]]
      [:div.mx-0.mt-1.leading-snug
       [:a {:href href}

@@ -27,9 +27,7 @@
             (assoc , :cart {:items {:index {} :order []}})
             (assoc , :search {:results []
                               :filters {:current {:start-date "2020-12-01", :end-date "2020-12-02"}}})
-            (assoc , :meta {:app {:debug false}}))
-    :dispatch-n (list [::re-graph/init re-graph-config]
-                      #_[::search-models/fetch-search-filters])}))
+            (assoc , :meta {:app {:debug false}}))}))
 
 ;-; EVENTS
 (rf/reg-event-db :set-debug (fn [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
@@ -43,7 +41,7 @@
  :products/index
  (fn [] [(rf/subscribe [:products-fake])])
  (fn [[products]] (get-in products [:index] {})))
- 
+
 
 ;-; VIEWS
 
@@ -61,24 +59,24 @@
        ; else
          [:<>
           [search-models/search-panel]
-          [:hr.border-b-2]
-          [ui/tmp-nav]])])))
+          [:hr.border-b-2]])])))
 
 (defn- route-is-loading-view
   []
   [:div.app-loading-view
    [:h1 "loading…"]])
 
-(defn- models-index-view [] [:h1.font-xl "MODELS INDEX"])
+(defn- wip-models-index-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 "WIP MODELS INDEX"])
 
 ;-; CORE APP
 (def views {::routes/home home-view
             ::routes/search search-models/view
             ::routes/about-page about-page/view
-            ::routes/models-index models-index-view
+            ::routes/models-index wip-models-index-view
             ::routes/models-show model-show/view
+            ::routes/shopping-cart wip-shopping-cart-view
             ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
-            ;        *should* not be a real problem – if the routing is working correctly 
+            ;        *should* not be a real problem – if the routing is working correctly
             ;        we can never end up on "not found" client-side!
             :else route-is-loading-view})
 
@@ -90,8 +88,8 @@
 
 ; when going to '/' instead of '/borrow', do a redirect.
 ; this is only ever going to happen in development mode.
-(rf/reg-event-fx 
- ::routes/absolute-root 
+(rf/reg-event-fx
+ ::routes/absolute-root
  (fn [_ _] {:routing/navigate [::routes/home]}))
 
 ;; tmp: attach handler for wip views to silence warnings
@@ -103,12 +101,13 @@
             (.getElementById js/document "app")))
 
 (defn ^:export main []
-  (rf/dispatch-sync [:routing/init-routing routes/routes-map])
-  (rf/dispatch-sync [::load-app])
-  (mount-root)
-  
-  ; FIXME: should be dispatched from `load-app` but that doesnt work :/
-  (search-models/fetch-search-filters))
-  
+  ; start the app framework; NOTE: order is important!
+  (rf/dispatch [::re-graph/init re-graph-config])
+  (rf/dispatch [::load-app])
+  (rf/dispatch [:routing/init-routing routes/routes-map])
+
+  ; start the ui
+  (mount-root))
+
 
 (main)
