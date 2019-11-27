@@ -49,6 +49,8 @@
                             :description {:type String}
                             :availability {:type (list :ModelInventoryPoolAvailability)}
                             :availableQuantityInDateRange {:type (non-null Int)}
+                            :categories {:type (list :Category)
+                                         :resolve :categories}
                             :images {:type (list :Image)
                                      :resolve :images}
                             :attachments {:type (list :Attachment)
@@ -101,6 +103,8 @@
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
                                           :resolve :categories}
+                               :parents {:type (list :Category)
+                                         :resolve :categories}
                                :models {:type :ModelsConnection
                                         :description "Includes only direct ones or all from self and the descendent sub-categories."
                                         :resolve :models-connection
