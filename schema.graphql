@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Thu Nov 28 2019 11:28:03 GMT+0100 (Central European Standard Time)
+# timestamp: Thu Nov 28 2019 13:31:08 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -78,6 +78,8 @@ type CurrentUser {
   user: User
 }
 
+scalar DateTime
+
 type DayData {
   date: String!
   quantity: Int!
@@ -108,8 +110,6 @@ input InventoryPoolsOrderByInput {
   attribute: InventoryPoolsOrderByAttributeEnum!
   direction: OrderByDirectionEnum!
 }
-
-scalar ISO8601
 
 type Model {
   attachments: [Attachment]
@@ -171,14 +171,14 @@ type MutationRoot {
 }
 
 type Order {
-  createdAt: ISO8601!
+  createdAt: DateTime!
   id: UUID!
   purpose: String!
 
   """List of distinct states of all the sub-orders."""
   state: [PoolOrderStateEnum]
   subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
-  updatedAt: ISO8601!
+  updatedAt: DateTime!
 }
 
 enum OrderByDirectionEnum {
@@ -212,13 +212,13 @@ type PageInfo {
 }
 
 type PoolOrder {
-  createdAt: ISO8601!
+  createdAt: DateTime!
   id: UUID!
   inventoryPool: InventoryPool!
   rejectedReason: String
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
   state: PoolOrderStateEnum!
-  updatedAt: ISO8601!
+  updatedAt: DateTime!
 }
 
 enum PoolOrdersOrderByAttributeEnum {
@@ -267,14 +267,14 @@ type QueryRoot {
 }
 
 type Reservation {
-  createdAt: ISO8601!
+  createdAt: DateTime!
   endDate: String!
   id: UUID!
   inventoryPool: InventoryPool!
   model: Model!
   startDate: String!
   status: ReservationStateEnum!
-  updatedAt: ISO8601!
+  updatedAt: DateTime!
 }
 
 enum ReservationsOrderByAttributeEnum {
@@ -305,7 +305,7 @@ type Thumbnail {
 
 type UnsubmittedOrder {
   reservations: [Reservation]
-  validUntil: ISO8601
+  validUntil: DateTime
 }
 
 """

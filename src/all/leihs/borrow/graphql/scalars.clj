@@ -3,7 +3,7 @@
   (:import [java.util UUID]
            [java.time.format DateTimeFormatter]))
 
-(defn iso8601 [x]
+(defn date-time [x]
   (try (->> x
             (java-time/instant DateTimeFormatter/ISO_INSTANT)
             (java-time/format DateTimeFormatter/ISO_INSTANT))
@@ -13,8 +13,8 @@
 (def scalars
   {:uuid-parse #(UUID/fromString %)
    :uuid-serialize str
-   :iso8601-parse iso8601
-   :iso8601-serialize iso8601})
+   :date-time-parse date-time
+   :date-time-serialize date-time})
 
 (comment
   (->> "2011-12-03T10:15:30Z"

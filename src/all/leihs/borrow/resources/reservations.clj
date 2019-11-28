@@ -14,6 +14,13 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]))
 
+(defn columns [tx]
+  (as-> (database/columns tx "reservations") <>
+    (remove #{:created_at :updated_at} <>)
+    (conj <>
+          (helpers/iso8601-created-at)
+          (helpers/iso8601-updated-at))))
+
 (defn query [sql-format tx]
   (jdbc/query tx
               sql-format
@@ -55,7 +62,7 @@
   [{{:keys [tx] user :authenticated-entity} :request :as context}
    {:keys [order-by]}
    value]
-  (-> (sql/select :*)
+  (-> (apply sql/select (columns tx))
       (sql/from :reservations)
       (sql/where (case (::lacinia/container-type-name context)
                    :PoolOrder [:= :order_id (:id value)]
@@ -136,12 +143,7 @@
                         (sql/values (->> row
                                          repeat
                                          (take quantity)))
-                        (assoc :returning
-                               (as-> (database/columns tx "reservations") <>
-                                 (remove #{:created_at :updated_at} <>)
-                                 (conj <>
-                                       (helpers/iso8601-created-at)
-                                       (helpers/iso8601-updated-at))))
+                        (assoc :returning (columns tx))
                         sql/format
                         (query tx)))))
            flatten))))

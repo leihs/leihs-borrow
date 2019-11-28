@@ -1,5 +1,5 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}
-           :ISO8601 {:parse :iso8601-parse :serialize :iso8601-serialize}}
+           :DateTime {:parse :date-time-parse :serialize :date-time-serialize}}
 
  :enums {:ModelsOrderByAttributeEnum {:values [:ID]},
          :UsersOrderByAttributeEnum {:values [:ID]},
@@ -34,7 +34,7 @@
                            :login {:type String}
                            :contracts {:type :ContractsConnection
                                        :resolve :contracts-connection}}}
-           :UnsubmittedOrder {:fields {:validUntil {:type :ISO8601}
+           :UnsubmittedOrder {:fields {:validUntil {:type :DateTime}
                                        :reservations {:type (list :Reservation)}}}
            :CurrentUser {:fields {:user {:type :User}
                                   :inventoryPools {:args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
@@ -123,8 +123,8 @@
                                   :startDate {:type (non-null String)}
                                   :status {:type (non-null :ReservationStateEnum)}
                                   :endDate {:type (non-null String)}
-                                  :createdAt {:type (non-null :ISO8601)}
-                                  :updatedAt {:type (non-null :ISO8601)}}}
+                                  :createdAt {:type (non-null :DateTime)}
+                                  :updatedAt {:type (non-null :DateTime)}}}
            :PoolOrder {:fields {:id {:type (non-null :UUID)}
                                 :inventoryPool {:type (non-null :InventoryPool)
                                                 :resolve :inventory-pool}
@@ -133,8 +133,8 @@
                                 :reservations {:type (list :Reservation)
                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                                :resolve :reservations}
-                                :createdAt {:type (non-null :ISO8601)}
-                                :updatedAt {:type (non-null :ISO8601)}}}
+                                :createdAt {:type (non-null :DateTime)}
+                                :updatedAt {:type (non-null :DateTime)}}}
            :Order {:fields {:id {:type (non-null :UUID)}
                             :purpose {:type (non-null String)}
                             :state {:type (list :PoolOrderStateEnum)
@@ -142,8 +142,8 @@
                             :subOrdersByPool {:type (list :PoolOrder)
                                               :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
                                               :resolve :pool-orders}
-                            :createdAt {:type (non-null :ISO8601)}
-                            :updatedAt {:type (non-null :ISO8601)}}
+                            :createdAt {:type (non-null :DateTime)}
+                            :updatedAt {:type (non-null :DateTime)}}
                    :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}
            :Visit {:fields {:id {:type (non-null :UUID)}
                             :date {:type (non-null String)}

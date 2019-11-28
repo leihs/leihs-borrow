@@ -11,6 +11,8 @@
           (vals <>))
        order))
 
+(def format-string "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"")
+
 (defn iso8601-created-at
   ([] (iso8601-created-at nil))
   ([q]
@@ -18,7 +20,7 @@
              (if q
                (sql/qualify q :created_at)
                :created_at)
-             "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"")
+             format-string)
     :created_at]))
 
 (defn iso8601-updated-at
@@ -28,6 +30,6 @@
              (if q
                (sql/qualify q :updated_at)
                :updated_at)
-             "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"")
+             format-string)
     :updated_at]))
 
