@@ -31,6 +31,7 @@
    :properties properties/get-multiple
    :reservations reservations/get-multiple
    :thumbnails images/get-multiple-thumbnails
+   :unsubmitted-order orders/get-unsubmitted
    :users users/get-multiple
    :visits visits/get-multiple
    })

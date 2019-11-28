@@ -34,10 +34,14 @@
                            :login {:type String}
                            :contracts {:type :ContractsConnection
                                        :resolve :contracts-connection}}}
+           :UnsubmittedOrder {:fields {:validUntil {:type :ISO8601}
+                                       :reservations {:type (list :Reservation)}}}
            :CurrentUser {:fields {:user {:type :User}
                                   :inventoryPools {:args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
                                                    :type (list :InventoryPool)
-                                                   :resolve :inventory-pools}}}
+                                                   :resolve :inventory-pools}
+                                  :unsubmittedOrder {:type :UnsubmittedOrder
+                                                     :resolve :unsubmitted-order}}}
            :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null String)}
                               :visitsCount {:type (non-null Int)}

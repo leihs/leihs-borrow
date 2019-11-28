@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Wed Nov 27 2019 16:38:50 GMT+0100 (Central European Standard Time)
+# timestamp: Thu Nov 28 2019 11:28:03 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -74,6 +74,7 @@ enum ContractStateEnum {
 
 type CurrentUser {
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
+  unsubmittedOrder: UnsubmittedOrder
   user: User
 }
 
@@ -300,6 +301,11 @@ type Thumbnail {
   id: UUID!
   imageUrl: String!
   size: Int!
+}
+
+type UnsubmittedOrder {
+  reservations: [Reservation]
+  validUntil: ISO8601
 }
 
 """

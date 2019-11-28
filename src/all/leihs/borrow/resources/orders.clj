@@ -95,6 +95,10 @@
                     <>
                     {:row-fn pool-order-row}))))
 
+(defn get-unsubmitted [context args value]
+  {:valid-until nil
+   :reservations (reservations/get-multiple context args value)})
+
 (defn submit [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
               {:keys [purpose]}
               _]

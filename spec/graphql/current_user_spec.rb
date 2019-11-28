@@ -3,9 +3,9 @@ require_relative 'graphql_helper'
 
 describe 'currentUser' do
   it 'works' do
-    FactoryBot.create(:inventory_pool,
-                      id: 'de1ab6c2-5c85-45fb-aebf-527b6096411c',
-                      name: 'Pool A (customer)')
+    pool_A = FactoryBot.create(:inventory_pool,
+                               id: 'de1ab6c2-5c85-45fb-aebf-527b6096411c',
+                               name: 'Pool A (customer)')
     FactoryBot.create(:inventory_pool,
                       id: 'b94b417c-2b7e-45de-af9e-9ce6718ac84d',
                       name: 'Pool B (customer)')
@@ -21,7 +21,7 @@ describe 'currentUser' do
                       id: 'c52b6ec9-f213-42e6-8273-b2efa71360c0',
                       name: 'Pool F (inactive)',
                       is_active: false)
-    FactoryBot.create(
+    user = FactoryBot.create(
       :user,
       id: '0567f6b0-540c-4619-9251-9ea099a5d50d',
       access_rights: [
@@ -44,6 +44,14 @@ describe 'currentUser' do
       ]
     )
 
+    FactoryBot.create(:reservation,
+                      id: '770632c4-f268-4ed6-bcc0-c8bc032bc9b5',
+                      status: 'unsubmitted',
+                      user: user,
+                      inventory_pool: pool_A,
+                      start_date: Date.tomorrow,
+                      end_date: Date.tomorrow + 5.days)
+
     q = <<-GRAPHQL
       query Query {
         currentUser {
@@ -52,6 +60,11 @@ describe 'currentUser' do
           }
           inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
             name
+          }
+          unsubmittedOrder {
+            reservations {
+              id
+            }
           }
         }
       }
@@ -66,9 +79,13 @@ describe 'currentUser' do
           { name: 'Pool A (customer)' },
           { name: 'Pool B (customer)' },
           { name: 'Pool C (lending manager)' }
-        ]
+        ],
+        unsubmittedOrder: {
+          reservations: [
+            { id: '770632c4-f268-4ed6-bcc0-c8bc032bc9b5' }
+          ]
+        }
       }
     })
-    
   end
 end

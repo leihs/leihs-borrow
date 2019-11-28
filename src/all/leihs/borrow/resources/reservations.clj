@@ -51,14 +51,20 @@
       sql/format
       (->> (jdbc/query tx))))
 
-(defn get-multiple [{{:keys [tx]} :request :as context}
-                    {:keys [order-by]}
-                    value]
+(defn get-multiple
+  [{{:keys [tx] user :authenticated-entity} :request :as context}
+   {:keys [order-by]}
+   value]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where (case (::lacinia/container-type-name context)
                    :PoolOrder [:= :order_id (:id value)]
-                   :Visit [:in :id (:reservation-ids value)]))
+                   :Visit [:in :id (:reservation-ids value)]
+                   :CurrentUser [:and
+                                 [:= :status (sql/call :cast
+                                                       "unsubmitted"
+                                                       :reservation_status)]
+                                 [:= :user_id (:id user)]]))
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by)))
       sql/format
