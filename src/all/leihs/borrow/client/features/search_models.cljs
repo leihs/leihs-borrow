@@ -7,7 +7,7 @@
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.components :as ui]
-   [leihs.borrow.client.features.shopping-cart :as cart]))
+   #_[leihs.borrow.client.features.shopping-cart :as cart]))
 
 ;-; EVENTS 
 (rf/reg-event-fx
@@ -25,10 +25,11 @@
 
 (rf/reg-event-fx
   ::fetch-search-filters
-  {:dispatch [::re-graph/query
-             (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql")
-             {}
-             [::on-fetched-search-filters]]})
+  (fn [_ [_ _]]
+    {:dispatch [::re-graph/query
+                (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql")
+                {}
+                [::on-fetched-search-filters]]}))
 
 ;tmp
 (defn fetch-search-filters []

@@ -9,6 +9,7 @@
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]
 
+   [leihs.borrow.client.features.home-page :as home-page]
    [leihs.borrow.client.features.about-page :as about-page]
    [leihs.borrow.client.features.search-models :as search-models]
    [leihs.borrow.client.features.model-show :as model-show]))
@@ -20,6 +21,10 @@
  ::load-app
  (fn [{:keys [db]}]
    {:db (-> db
+            ; NOTE: clear the routing instance on (re-)load,
+            ; otherwise the even wont re-run when hot reloading!
+            (dissoc , :routing/routing)
+            
             (assoc , :products {:index {0 {:id 0 :name "Kamera"}
                                         1 {:id 1 :name "Mikrofon"}
                                         2 {:id 2 :name "Stativ"}}
@@ -46,31 +51,24 @@
 ;-; VIEWS
 
 (defn main-view [views]
-  [:main
-   [ui/main-nav]
-   [routing/routed-view views]])
-
-(defn home-view []
-  (fn []
-    (let [errors @(rf/subscribe [:app/fatal-errors])]
-      [:<>
-       (if errors
-         [ui/fatal-error-screen errors]
-       ; else
-         [:<>
-          [search-models/search-panel]
-          [:hr.border-b-2]])])))
+  (let [errors @(rf/subscribe [:app/fatal-errors])]
+    [:main
+     [ui/main-nav]
+     (when errors [ui/fatal-error-screen errors])
+     [routing/routed-view views]]))
 
 (defn- route-is-loading-view
   []
   [:div.app-loading-view
-   [:h1 [ui/spinner-clock]]])
+   [:h1.font-black.font-mono.text-5xl.text-center.p-8 
+    [ui/spinner-clock] 
+    [:p.text-xl "loading…"]]])
 
 (defn- wip-models-index-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 "WIP MODELS INDEX"])
 (defn- wip-shopping-cart-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 [ui/spinner-clock] [:br] "WIP SHOPPING CART"])
 
 ;-; CORE APP
-(def views {::routes/home home-view
+(def views {::routes/home home-page/view
             ::routes/search search-models/view
             ::routes/about-page about-page/view
             ::routes/models-index wip-models-index-view
@@ -81,20 +79,12 @@
             ;        we can never end up on "not found" client-side!
             :else route-is-loading-view})
 
-(defn- dummy-route-event-handler
-  [_ [_ route-match]]
-  (js/console.log "Router navigated to: " route-match))
-
-(rf/reg-event-fx ::routes/home dummy-route-event-handler)
-
 ; when going to '/' instead of '/borrow', do a redirect.
 ; this is only ever going to happen in development mode.
 (rf/reg-event-fx
  ::routes/absolute-root
  (fn [_ _] {:routing/navigate [::routes/home]}))
 
-;; tmp: attach handler for wip views to silence warnings
-(rf/reg-event-fx ::routes/models-index dummy-route-event-handler)
 
 (defn mount-root []
   (rf/clear-subscription-cache!)
