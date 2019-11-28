@@ -102,9 +102,9 @@
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
-                                          :resolve :categories}
+                                          :resolve :child-categories}
                                :parents {:type (list :Category)
-                                         :resolve :categories}
+                                         :resolve :parent-categories}
                                :models {:type :ModelsConnection
                                         :description "Includes only direct ones or all from self and the descendent sub-categories."
                                         :resolve :models-connection

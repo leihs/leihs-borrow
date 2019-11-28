@@ -19,6 +19,7 @@
    :availability availability/get
    :categories categories/get-multiple
    :contracts-connection contracts/get-connection
+   :child-categories categories/get-children
    :current-user users/get-current
    :images images/get-multiple
    :inventory-pool inventory-pools/get-one
@@ -27,6 +28,7 @@
    :models-connection models/get-connection
    :order orders/get-one
    :orders-connection orders/get-connection
+   :parent-categories categories/get-parents
    :pool-orders orders/get-multiple-by-pool
    :properties properties/get-multiple
    :reservations reservations/get-multiple
