@@ -1,0 +1,9 @@
+mutation submitOrder(
+  $purpose: String!
+) {
+   submitOrder(
+    purpose: $purpose
+  ) {
+    id
+  }
+}

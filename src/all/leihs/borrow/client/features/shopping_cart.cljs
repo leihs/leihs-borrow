@@ -1,6 +1,6 @@
 (ns leihs.borrow.client.features.shopping-cart
   (:require
-   #_[reagent.core :as r]
+   [reagent.core :as reagent]
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
@@ -48,6 +48,23 @@
             (get-in line [:startDate])
             (get-in line [:endDate])])))))
 
+(rf/reg-event-fx
+ ::submit-order
+ (fn [_ [_ args]]
+   {:dispatch [::re-graph/mutate
+               (rc/inline "leihs/borrow/client/queries/submitOrderMutation.gql")
+               args
+               [::on-submit-order-result]]}))
+
+(rf/reg-event-fx
+ ::on-submit-order-result
+ (fn [{:keys [_db]} [_ {:keys [data errors]}]]
+   (if errors
+     {:alert (str "FAIL! " (pr-str errors))}
+     {:alert (str "OK! " (pr-str data))
+      :routing/refresh-page "yes"})))
+
+
 ;_; VIEWS
 (defn reservation-line [quantity line]
   (let 
@@ -72,40 +89,47 @@
        ui/trash-icon]]])
   )
 
+
 (defn view []
   (let [order @(rf/subscribe [::current-order])
         errors @(rf/subscribe [::errors])
         reservations @(rf/subscribe [::reservations-grouped])
-        is-loading? (not (or order errors))]
+        is-loading? (not (or order errors))
+        state (reagent/atom {:purpose ""})]
 
-    [:div.p-2
-     [:h1.mt-2.font-bold.text-3xl "Order Overview"]
+    (fn []
+      [:div.p-2
+       [:h1.mt-2.font-bold.text-3xl "Order Overview"]
 
-     [:input.text-xl.my-2 {:placeholder "Name Your Order"}]
+       [:input.text-xl.my-2 
+        {:name :purpose
+         :value (:purpose @state)
+         :on-change (fn [e] (swap! state assoc :purpose (-> e .-target .-value)))
+         :placeholder "Name Your Order"}]
 
-     #_[:p.font-mono.m-2 (pr-str reservations)]
+       #_[:p.font-mono.m-2 (pr-str reservations)]
 
-     (cond
-       is-loading?  [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
-       errors [ui/error-view errors]
-       :else
-       [:<>
-        (when reservations
-          [:div
-           (doall
-            (for [[_keys lines] reservations]
-              (let [line (first lines) quantity (count lines)]
-                [reservation-line quantity line])))
+       (cond
+         is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
+         errors [ui/error-view errors]
+         :else
+         [:<>
+          (when reservations
+            [:div
+             (doall
+              (for [[_keys lines] reservations]
+                (let [line (first lines) quantity (count lines)]
+                  [reservation-line quantity line])))
 
-           [:label.w-100
-            [:span.text-xs.block.mt-4
-             "Optional: enter more details about the purpose of the order (if the name is sufficient)"]
-            [:input.text-md.w-100.my-2
-             {:placeholder "details about the order purpose"}]]
+             #_[:label.w-100
+                [:span.text-xs.block.mt-4
+                 "Optional: enter more details about the purpose of the order (if the name is sufficient)"]
+                [:input.text-md.w-100.my-2
+                 {:placeholder "details about the order purpose"}]]
 
-           [:div
-            [:button.w-100.p-2.my-4.rounded-full.bg-black.text-white.text-xl
-             {:on-click #(js/alert "TODO")}
-             "Confirm order"]]
+             [:div
+              [:button.w-100.p-2.my-4.rounded-full.bg-black.text-white.text-xl
+               {:on-click #(rf/dispatch [::submit-order @state])}
+               "Confirm order"]]
 
-           #_[:div.mt-4 [:hr] [:p.font-mono.m-2 (pr-str order)]]])])]))
+             #_[:div.mt-4 [:hr] [:p.font-mono.m-2 (pr-str order)]]])])])))

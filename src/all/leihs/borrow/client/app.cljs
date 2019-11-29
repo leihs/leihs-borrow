@@ -84,6 +84,7 @@
  ::routes/absolute-root
  (fn [_ _] {:routing/navigate [::routes/home]}))
 
+(rf/reg-fx :alert (fn [msg] (js/alert msg)))
 
 (defn mount-root []
   (rf/clear-subscription-cache!)
