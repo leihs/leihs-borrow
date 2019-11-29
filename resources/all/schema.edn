@@ -49,8 +49,8 @@
                             :description {:type String}
                             :availability {:type (list :ModelInventoryPoolAvailability)}
                             :availableQuantityInDateRange {:type (non-null Int)}
-                            :categories {:type (list :Category)
-                                         :resolve :categories}
+                            :categoryVertices {:type (list :CategoryVertex)
+                                               :resolve :category-vertices}
                             :images {:type (list :Image)
                                      :resolve :images}
                             :attachments {:type (list :Attachment)
@@ -115,6 +115,10 @@
                                                :searchTerm {:type String}}}
                                :images {:type (list :Image)
                                         :resolve :images}}}
+           :CategoryVertex {:fields {:id {:type (non-null :UUID)}
+                                     :label {:type (non-null String)}
+                                     :parents {:type (list :CategoryVertex)
+                                               :resolve :category-vertices}}}
            :Reservation {:fields {:id {:type (non-null :UUID)}
                                   :model {:type (non-null :Model)
                                           :resolve :model}
@@ -202,6 +206,7 @@
                            :orderBy {:type (list :VisitsOrderByInput)}}
                     :type (list :Visit)}
            :models {:args {:categoryIds {:type (list (non-null :UUID))}
+                           :ids {:type (list :UUID)}
                            :inventoryPoolIds {:type (list (non-null :UUID))}
                            :orderBy {:type (list :ModelsOrderByInput)}
                            :searchTerm {:type String}

@@ -18,6 +18,7 @@
   {:attachments attachments/get-multiple
    :availability availability/get
    :categories categories/get-multiple
+   :category-vertices categories/get-vertices
    :contracts-connection contracts/get-connection
    :child-categories categories/get-children
    :current-user users/get-current

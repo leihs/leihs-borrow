@@ -8,7 +8,7 @@
             [leihs.borrow.resources.models :as models]))
 
 (def base-sqlmap
-  (-> (sql/select :model_groups.id [:model_groups.name :name])
+  (-> (sql/select :model_groups.id :model_groups.name)
       (sql/modifiers :distinct)
       (sql/from :model_groups)
       (sql/merge-join :model_links
@@ -72,6 +72,45 @@
       sql/format
       (->> (jdbc/query tx))))
 
+(defn labels [tx cat-id]
+  (-> (sql/select :model_groups.id
+                  [(sql/call :coalesce
+                             :model_group_links.label
+                             :model_groups.name) :label]
+                  :model_group_links.parent_id)
+      (sql/from :model_groups)
+      (sql/left-join :model_group_links
+                     [:=
+                      :model_group_links.child_id
+                      :model_groups.id])
+      (sql/where [:= :model_groups.id cat-id])
+      (sql/format)
+      (->> (jdbc/query tx))))
+
+(defn get-vertices
+  [{{:keys [tx]} :request :as context} args value]
+  (case (::lacinia/container-type-name context)
+    :Model (let [cat-ids (-> (sql/select :model_groups.id)
+                             (sql/from :model_links)
+                             (sql/join :model_groups
+                                       [:=
+                                        :model_groups.id
+                                        :model_links.model_group_id])
+                             (sql/where [:and
+                                         [:= :model_links.model_id (:id value)]
+                                         [:= :model_groups.type "Category"]])
+                             sql/format
+                             (->> (jdbc/query tx)
+                                  (map :id)))]
+             (if (not-empty cat-ids)
+               (->> cat-ids
+                    (map (partial labels tx))
+                    flatten)
+               []))
+    :CategoryVertex (if-let [parent-id (:parent-id value)]
+                      (labels tx parent-id)
+                      [])))
+
 (defn get-multiple
   [{{:keys [tx authenticated-entity]} :request :as context} args value]
   (-> base-sqlmap
@@ -79,7 +118,11 @@
       (extend-based-on-args args)
       (cond-> (and value
                    (= (::lacinia/container-type-name context) :Model))
-        (sql/merge-where [:= :models.id (:id value)]))
+        (-> (sql/select :model_groups.id
+                        [(sql/call :coalesce
+                                   :model_group_links.label
+                                   :model_groups.name) :name])
+            (sql/merge-where [:= :models.id (:id value)])))
       sql/format
       (->> (jdbc/query tx))))
 

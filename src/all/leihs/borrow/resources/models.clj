@@ -150,7 +150,7 @@
       (merge-category-ids-conditions category-ids))))
 
 (defn get-multiple-sqlmap [{{:keys [tx authenticated-entity]} :request :as context}
-                           {:keys [limit offset direct-only order-by search-term]}
+                           {:keys [limit offset direct-only order-by search-term ids]}
                            value]
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
@@ -158,6 +158,8 @@
       (cond-> (= (::lacinia/container-type-name context) :Category)
         (merge-categories-conditions tx value direct-only))
       (merge-reservable-conditions (:id authenticated-entity))
+      (cond-> ids
+        (sql/merge-where [:in :models.id ids]))
       (cond-> search-term
         (merge-search-conditions search-term))
       (cond-> (seq order-by)

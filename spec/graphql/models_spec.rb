@@ -722,6 +722,20 @@ describe 'models connection' do
       )
     )
 
+    FactoryBot.create(
+      :category,
+      id: 'a377be21-c0dd-47cc-9075-75e0a5fbcab0',
+      name: 'Category A',
+      children: [
+        FactoryBot.create(
+          :category,
+          id: '93c9d9a5-1682-4019-8067-a4f6f34fc949',
+          name: 'Subcategory of A',
+          direct_models: [model]
+        )
+      ]
+    )
+
     q = <<-GRAPHQL
       {
         models(
@@ -759,14 +773,21 @@ describe 'models connection' do
                   quantity
                 }
               }
+              categories {
+                name
+                parents {
+                  name
+                }
+              }
             }
           }
         }
       }
     GRAPHQL
 
-    expect_graphql_result(
-      query(q, user.id),
+    result = query(q, user.id)
+
+    expect_graphql_result(result,
       { models: {
           edges: [
             # recommend
@@ -803,7 +824,14 @@ describe 'models connection' do
                   inventoryPool: { id: '232547a5-5f43-450c-896a-b692275a04ea' },
                   dates: [{ date: '2019-10-24', quantity: 1 }, { date: '2019-10-25', quantity: 1 }]
                 }
-              ]}
+              ]},
+              categories: [
+                { name: 'Subcategory of A',
+                  parents: [
+                    { name: 'Category A' }
+                  ]
+                }
+              ]
             }
           ]
         }
