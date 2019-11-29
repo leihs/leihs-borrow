@@ -18,8 +18,8 @@
 
 (defn view []
   (fn []
-    (let [available-filters @(rf/subscribe [::search-models/available-filters])]
+    (let [_available-filters @(rf/subscribe [::search-models/available-filters])]
       [:<>
        [search-models/search-panel]
        [:hr.border-b-2]
-       [:p (pr-str available-filters)]])))
+       #_[:p (pr-str _available-filters)]])))

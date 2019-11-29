@@ -24,9 +24,14 @@ body {
   padding-bottom: 100%;
 }
 
+
 /* semantic classes for colors */
 .bg-content {
   background: white
+}
+.text-color-muted {
+  /* .text-gray-600 */
+  color: #718096;
 }
 .text-color-content-link {
   /* .text-blue-500 */

@@ -2,77 +2,110 @@
   (:require
    #_[reagent.core :as r]
    [re-frame.core :as rf]
-   #_[re-graph.core :as re-graph]
-   #_[shadow.resource :as rc]
-   #_[leihs.borrow.client.components :as ui]))
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]
+   [leihs.borrow.client.components :as ui]
+   [leihs.borrow.client.routes :as routes]))
 
-(rf/reg-sub ::cart (fn [db] (get-in db [:cart] {})))
-(rf/reg-sub
- ::items
- (fn [] [(rf/subscribe [::cart])])
- (fn [[cart]] (get-in cart [:items] {})))
 
-(rf/reg-sub
- ::items-index
- (fn [] [(rf/subscribe [::items])])
- (fn [[items]] (get-in items [:index] {})))
-
-(rf/reg-sub
- ::items-list
- (fn [] [(rf/subscribe [::items]) (rf/subscribe [:products/index])])
- (fn [[items products-index]]
-   (map
-    (fn [pid]
-      {:product (get products-index pid)
-       :quantity (get-in items [:index pid])})
-    (:order items))))
-
-(rf/reg-sub
- ::counts
- (fn [] [(rf/subscribe [::items-index])])
- (fn [[index]]
-   {:products (count index)
-    :items (reduce + (vals index))}))
+; is kicked off from router when this view is loaded
+(rf/reg-event-fx
+ ::routes/shopping-cart
+ (fn [_ [_ _]]
+   {:dispatch [::re-graph/query
+               (rc/inline "leihs/borrow/client/queries/getShoppingCart.gql")
+               {}
+               [::on-fetched-data]]}))
 
 (rf/reg-event-db
- ::add-item
- (fn [db [_ pid]]
+ ::on-fetched-data
+ (fn [db [_ {:keys [data errors]}]]
    (-> db
-       (update-in , [:cart :items :index pid] (fnil inc 0))
-       (update-in , [:cart :items :order]
-                    (fn [order]
-                      (if (get-in db [:cart :items :index pid])
-                        order
-                        (conj order pid)))))))
+       (assoc-in , [::current-order :errors] errors)
+       (assoc-in , [::current-order :data] (get-in data [:currentUser :unsubmittedOrder])))))
 
-(rf/reg-event-db
- ::decrease-item-quantity
- (fn [db [_ pid]]
-   (let [current-count (get-in db [:cart :items :index pid] 0)]
-     ; decrease by 1, BUT if last one, remove from index-map and order-vec
-     (if (<= current-count 1)
-       (-> db
-           (update-in , [:cart :items :index] dissoc pid)
-           (update-in , [:cart :items :order] (fn [ids] (vec (filter #(not= pid %) ids)))))
-       (update-in db [:cart :items :index pid] dec)))))
+(rf/reg-sub ::errors (fn [db] (get-in db [::current-order :errors])))
 
-(defn shopping-cart []
-  (fn []
-    (let [counts @(rf/subscribe [::counts])]
-      [:<>
-       [:h2 (str "SHOPPING CART (" (:products counts) "/" (:items counts) ")")]
-       [:ul
-        (doall
-         (for [line @(rf/subscribe [::items-list])]
-           (let [pid (get-in line [:product :id])]
-             [:li  {:key pid}
-              (get-in line [:product :name]) " / "
-              [:b (:quantity line)] " "
-              [:button
-               {:type :button :on-click #(rf/dispatch [::decrease-item-quantity pid])}
-               "-"]
-              [:button
-               {:type :button :on-click #(rf/dispatch [::add-item pid])}
-               "+"]])))]
+(rf/reg-sub
+ ::current-order
+ (fn [db _]
+   (get-in db [::current-order :data])))
 
-       (when @(rf/subscribe [:is-debug?]) [:p (pr-str @(rf/subscribe [:cart]))])])))
+(rf/reg-sub
+ ::reservations
+ (fn [] [(rf/subscribe [::current-order])])
+ (fn [[order]] 
+   (not-empty (get-in order [:reservations]))))
+
+(rf/reg-sub 
+ ::reservations-grouped
+ (fn [] [(rf/subscribe [::reservations])])
+ (fn [[lines]]
+   (->> lines 
+        (group-by 
+         (fn [line] 
+           [(get-in line [:model :id])
+            (get-in line [:startDate])
+            (get-in line [:endDate])])))))
+
+;_; VIEWS
+(defn reservation-line [quantity line]
+  (let 
+   [model (:model line)
+    img (get-in model [:images 0])
+    pool (get-in line [:inventoryPool :name])]
+    [:div.flex.flex-row.border-b.mb-2.pb-2
+     [:div.pr-2.flex-none {:class "w-1/4"} [ui/image-square-thumb img]]
+     [:div.pl-2.flex-1
+      [:div.font-semibold (:name model)]
+      [:div.text-sm 
+       (get-in line [:startDate]) 
+       (str ui/thin-space "–" ui/thin-space)
+       (get-in line [:endDate])]
+      [:div.text-sm.text-color-muted
+       [:span quantity " Items"]
+       [:span " • "]
+       [:span pool]]]
+     [:div.self-center.flex-none
+      [:button.text-sm
+       {:on-click #(js/alert "TODO")}
+       ui/trash-icon]]])
+  )
+
+(defn view []
+  (let [order @(rf/subscribe [::current-order])
+        errors @(rf/subscribe [::errors])
+        reservations @(rf/subscribe [::reservations-grouped])
+        is-loading? (not (or order errors))]
+
+    [:div.p-2
+     [:h1.mt-2.font-bold.text-3xl "Order Overview"]
+
+     [:input.text-xl.my-2 {:placeholder "Name Your Order"}]
+
+     #_[:p.font-mono.m-2 (pr-str reservations)]
+
+     (cond
+       is-loading?  [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
+       errors [ui/error-view errors]
+       :else
+       [:<>
+        (when reservations
+          [:div
+           (doall
+            (for [[_keys lines] reservations]
+              (let [line (first lines) quantity (count lines)]
+                [reservation-line quantity line])))
+
+           [:label.w-100
+            [:span.text-xs.block.mt-4
+             "Optional: enter more details about the purpose of the order (if the name is sufficient)"]
+            [:input.text-md.w-100.my-2
+             {:placeholder "details about the order purpose"}]]
+
+           [:div
+            [:button.w-100.p-2.my-4.rounded-full.bg-black.text-white.text-xl
+             {:on-click #(js/alert "TODO")}
+             "Confirm order"]]
+
+           #_[:div.mt-4 [:hr] [:p.font-mono.m-2 (pr-str order)]]])])]))

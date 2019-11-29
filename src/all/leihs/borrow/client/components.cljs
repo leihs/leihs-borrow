@@ -32,6 +32,17 @@
       props)
      label]))
 
+(defn image-square-thumb [image href]
+  (let 
+   [img-src (:imageUrl image)
+    inner
+    (if img-src
+      [:img.absolute.object-contain.object-center.h-full.w-full.p-1.bg-content {:src img-src}]
+      [:span.block.absolute.h-full.w-full.bg-gray-400 " "])]
+    
+    [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
+     (if href [:a {:href href} inner] inner)]))
+
 (defn error-view [errors]
   [:section.p-4
    {:style {:white-space "pre-wrap" :background "salmon" :padding "1rem"}}
@@ -53,14 +64,20 @@
       [:small.code {:key idx} (js/JSON.stringify (clj->js error) 0 2)]))])
 
 (def menu-icon [:span.ui-icon.ui-menu-icon "☰"])
+(def trash-icon [:span.ui-icon.ui-icon-colored.ui-trash-icon "🗑️"])
 (def shopping-cart-icon [:span.ui-icon.ui-icon-colored.ui-shopping-cart-icon "🛒"])
+
 (defn main-nav []
-  [:nav.ui-main-nav.px-2.py-1.border-b-2.flex.flex-wrap.items-center.justify-between.sticky.bg-content
-   {:style {:top 0}}
+  [:nav.ui-main-nav.px-2.border-b.shadow-md.flex.flex-wrap.items-center.justify-between.sticky.bg-content.text-xl.py-2
+   {:style 
+    {:top 0 :z-index 1000
+     :border-bottom-color "rgba(0,0,0, 0.08)"
+     :backdrop-filter "blur(12px)" :-webkit-backdrop-filter "blur(12px)"
+     :background "rgba(255,255,255, 0.83)"}}
    [:span [:a {:href (routing/path-for ::routes/about-page)} menu-icon]]
-   [:h1.inline.font-black [:a {:href (routing/path-for ::routes/home)} "LEIHS"]]
+   [:span.font-black [:a {:href (routing/path-for ::routes/home)} "LEIHS"]]
    " "
-   [:h2.inline.text-sm [:a {:href (routing/path-for ::routes/shopping-cart)} shopping-cart-icon]]])
+   [:span.text-sm [:a {:href (routing/path-for ::routes/shopping-cart)} shopping-cart-icon]]])
 
 
 (defn tmp-nav []
@@ -95,3 +112,17 @@
 
       [:span.ui-spinner.ui-spinner-clock 
        [:span.ui-icon-colored (get-in spinner [:frames @frame])]])))
+
+
+; ; Intl stuff
+; (defn format-date [date style]
+;   (-> (js/Intl.DateTimeFormat. "default") (.format date)))
+
+
+; chars
+(def thin-space \u2009)
+(def non-breaking-space \u00A0)
+(def en-space \u2003)
+(def em-space \u2003)
+(def nbsp non-breaking-space)
+

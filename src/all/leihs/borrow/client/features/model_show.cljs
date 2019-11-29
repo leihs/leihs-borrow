@@ -1,6 +1,6 @@
 (ns leihs.borrow.client.features.model-show
   (:require
-   #_[reagent.core :as r]
+   [reagent.core :as reagent]
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
@@ -45,10 +45,55 @@
     nbsp
     "MB"))
 
+(rf/reg-fx :alert (fn [msg] (js/alert msg)))
+
+(rf/reg-event-fx
+ ::model-create-reservation
+  (fn [_ [_ args]]
+    {:dispatch [::re-graph/mutate
+                (rc/inline "leihs/borrow/client/queries/createReservationMutation.gql")
+                args
+                [::on-model-create-reservation-result]]}))
+
+(rf/reg-event-fx
+ ::on-model-create-reservation-result
+ (fn [{:keys [_db]} [_ {:keys [data errors]}]]
+   (if errors
+     {:alert (str "FAIL! " (pr-str errors))}
+     {:alert (str "OK! " (pr-str data))})))
+
+(defn order-panel [model params]
+  ; TODO: constrain quantity to max. available
+  (let [state (reagent/atom (merge params {:quantity 1}))]
+    (fn []
+      (when (and (:start-date params) (:end-date params))
+        [:div.border-b2.border-gray-300.mt-4
+         [:p (pr-str state)]
+         [:div
+          [:input.mr-2 {:type :date :name :start-date :value (:start-date params)}]
+          [:input.ml-2 {:type :date :name :end-date :value (:end-date params)}]]
+         [:div.mt-2
+          [:input 
+           {:type :number 
+            :name :quantity 
+            :value (:quantity @state) 
+            :on-change 
+            (fn [e] (let [val (.-value (.-target e))] (swap! state assoc :quantity val)))}]
+          [:button.px-4.py-2.rounded-lg.bg-black.text-white 
+           {:on-click #(rf/dispatch 
+                        [::model-create-reservation 
+                         {:modelId (:id model)
+                          :startDate (:start-date @state)
+                          :endDate (:end-date @state)
+                          :quantity (:quantity @state)}
+                         ])}
+           "Order"]]]))))
+
 (defn view []
   (let
    [routing @(rf/subscribe [:routing/routing])
     model-id (get-in routing [:bidi-match :route-params :model-id])
+    params (get-in routing [:bidi-match :query-params])
     fetched @(rf/subscribe [::model-data model-id])
     model (get-in fetched [:data :model])
     errors (:errors fetched)
@@ -61,7 +106,7 @@
        :else
         [:<>
          [:header
-          [:h1.text-3xl.font-extrabold.leading-none 
+          [:h1.text-3xl.font-extrabold.leading-none
            (:name model)
            [:span " "]
            [:small.font-normal.text-gray-600.leading-none (:manufacturer model)]]]
@@ -70,6 +115,8 @@
          (if-let [first-image (first (:images model))]
            [:div.flex.justify-center.py-4.mt-4.border-b-2.border-gray-300
             [:div [:img {:src (:imageUrl first-image)}]]])
+
+         [order-panel model params]
 
          (if-let [description (:description model)]
            [:p.py-4.border-b-2.border-gray-300 description])
@@ -98,7 +145,7 @@
             [:div.flex.flex-wrap.-mx-2
              (doall
               (for [edge recommends]
-                (let 
+                (let
                  [rec (:node edge)
                   href (str "/borrow/models/" (:id rec))]
                   [:div {:key (:id rec) :class "w-1/2"}
@@ -109,7 +156,7 @@
                       (if-let [img (get-in rec [:images 0 :imageUrl])]
                         [:img.absolute.object-contain.object-center.h-full.w-full.p-1 {:src img}]
                         [:div.absolute.h-full.w-full.bg-gray-400 " "])]]
-                    
+
                     [:a.text-gray-700.font-semibold {:href href}
                      (:name rec)]]])))]])
 

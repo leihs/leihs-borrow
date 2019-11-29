@@ -12,6 +12,7 @@
    [leihs.borrow.client.features.home-page :as home-page]
    [leihs.borrow.client.features.about-page :as about-page]
    [leihs.borrow.client.features.search-models :as search-models]
+   [leihs.borrow.client.features.shopping-cart :as shopping-cart]
    [leihs.borrow.client.features.model-show :as model-show]))
 
 (def re-graph-config {:ws-url nil :http-url "/borrow/graphql" :http-parameters {:with-credentials? true}})
@@ -29,7 +30,6 @@
                                         1 {:id 1 :name "Mikrofon"}
                                         2 {:id 2 :name "Stativ"}}
                                 :order [2 0 1]})
-            (assoc , :cart {:items {:index {} :order []}})
             (assoc , :search {:results []
                               :filters {:current {:start-date "2020-12-01", :end-date "2020-12-02"}}})
             (assoc , :meta {:app {:debug false}}))}))
@@ -65,7 +65,6 @@
     [:p.text-xl "loading…"]]])
 
 (defn- wip-models-index-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 "WIP MODELS INDEX"])
-(defn- wip-shopping-cart-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 [ui/spinner-clock] [:br] "WIP SHOPPING CART"])
 
 ;-; CORE APP
 (def views {::routes/home home-page/view
@@ -73,7 +72,7 @@
             ::routes/about-page about-page/view
             ::routes/models-index wip-models-index-view
             ::routes/models-show model-show/view
-            ::routes/shopping-cart wip-shopping-cart-view
+            ::routes/shopping-cart shopping-cart/view
             ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
             ;        *should* not be a real problem – if the routing is working correctly
             ;        we can never end up on "not found" client-side!

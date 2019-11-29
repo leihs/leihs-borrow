@@ -179,15 +179,14 @@
 ;       "+"]]))
 
 (defn model-grid-item [model]
-  (let [href (routing/path-for ::routes/models-show :model-id (:id model))
+  (let [routing @(rf/subscribe [:routing/routing])
+        params (get-in routing [:bidi-match :query-params])
+        model-show-params {:end-date (:end-date params) :start-date (:start-date params)}
+        href (routing/path-for ::routes/models-show :model-id (:id model) :query-params model-show-params)
         available? (> (:availableQuantityInDateRange model) 0)]
     [:div.ui-model-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-2.mb-3
      {:style {:opacity (if available? 1 0.35) }}
-     [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
-      [:a {:href href}
-       (if-let [img (get-in model [:images 0 :imageUrl])]
-         [:img.absolute.object-contain.object-center.h-full.w-full.p-1.bg-content {:src img}]
-         [:span.block.absolute.h-full.w-full.bg-gray-400 " "])]]
+     [ui/image-square-thumb (get-in model [:images 0]) href]
      [:div.mx-0.mt-1.leading-snug
       [:a {:href href}
        [:span.block.truncate.font-bold (:name model)]
@@ -214,7 +213,7 @@
      [search-panel]
      #_[:p (pr-str models)]
      (cond
-       (nil? models) [:p.p-6.w-full.text-center "loading…"]
+       (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
        (empty? models) [:p.p-6.w-full.text-center "nothing found!"]
        :else
        [:<>
