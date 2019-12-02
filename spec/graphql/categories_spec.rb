@@ -136,7 +136,7 @@ describe 'categories' do
       }
 
       fragment modelsField on Category {
-        models {
+        models(orderBy: $idAsc) {
           edges {
             node {
               id
@@ -150,8 +150,8 @@ describe 'categories' do
       idAsc: [{attribute: 'ID', direction: 'ASC'}]
     }
 
-    expect_graphql_result(
-      query(q, user.id, vars),
+    result = query(q, user.id, vars)
+    expect_graphql_result(result,
       {
         categories: [
           {

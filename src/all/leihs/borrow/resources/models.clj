@@ -20,7 +20,8 @@
                              :models.version)
                    :name])
       (sql/modifiers :distinct)
-      (sql/from :models)))
+      (sql/from :models)
+      (sql/order-by [:name :asc])))
 
 (defn merge-reservable-conditions [sqlmap user-id]
   (-> sqlmap
@@ -49,10 +50,13 @@
       (sql/merge-where [:= :items.is_borrowable true])
       (sql/merge-where [:= :items.parent_id nil])))
 
-(defn reservable? [tx model-id user-id]
+(defn reservable?
+  [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}
+   _
+   value]
   (-> base-sqlmap
       (merge-reservable-conditions user-id)
-      (sql/merge-where [:= :models.id model-id])
+      (sql/merge-where [:= :models.id (:id value)])
       sql/format
       (->> (jdbc/query tx))
       first
@@ -149,15 +153,19 @@
       (seq category-ids)
       (merge-category-ids-conditions category-ids))))
 
-(defn get-multiple-sqlmap [{{:keys [tx authenticated-entity]} :request :as context}
-                           {:keys [limit offset direct-only order-by search-term]}
-                           value]
+(defn get-multiple-sqlmap
+  [{{:keys [tx authenticated-entity]} :request :as context}
+   {:keys [ids limit offset direct-only order-by search-term unscope-reservable]}
+   value]
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
         (from-compatibles value))
       (cond-> (= (::lacinia/container-type-name context) :Category)
         (merge-categories-conditions tx value direct-only))
-      (merge-reservable-conditions (:id authenticated-entity))
+      (cond-> (not unscope-reservable)
+        (merge-reservable-conditions (:id authenticated-entity)))
+      (cond-> (seq ids)
+        (sql/merge-where [:in :models.id ids]))
       (cond-> search-term
         (merge-search-conditions search-term))
       (cond-> (seq order-by)
@@ -167,6 +175,34 @@
         (sql/limit limit))
       (cond-> offset
         (sql/offset offset))))
+
+(defn get-favorites-sqlmap
+  [{{{user-id :id} :authenticated-entity} :request :as context}
+   args
+   value]
+  (-> (get-multiple-sqlmap context
+                           (assoc args :unscope-reservable true)
+                           value)
+      (sql/merge-join :favorite_models
+                      [:and
+                       [:= :models.id :favorite_models.model_id]
+                       [:= :favorite_models.user_id user-id]])))
+
+(defn favorited?
+  [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+   _
+   value]
+  (-> (sql/select
+        (sql/call :exists
+                  (-> (sql/select true)
+                      (sql/from :favorite_models)
+                      (sql/where [:and
+                                  [:= :model_id (:id value)]
+                                  [:= :user_id user-id]]))))
+      sql/format
+      (->> (jdbc/query tx))
+      first
+      :exists))
 
 (defn merge-availability-if-selects-fields [models context args value]
   (cond-> models
@@ -183,7 +219,21 @@
                     context
                     args
                     value
-                    post-process)) 
+                    #(post-process % context args value))) 
+
+(defn get-favorites-connection [context args value]
+  (connections/wrap get-favorites-sqlmap
+                    context
+                    args
+                    value
+                    #(post-process % context args value)))
+
+(defn get-one-by-id [tx id]
+  (-> base-sqlmap
+      (sql/where [:= :id id])
+      sql/format
+      (->> (jdbc/query tx))
+      first))
 
 (defn get-one [{{:keys [tx]} :request} _ value]
   (-> base-sqlmap

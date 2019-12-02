@@ -50,9 +50,11 @@
 (defn assoc-total-count [result-map tx sqlmap]
   (assoc result-map
          :total-count
-         (-> sqlmap
-             (sql/select [(sql/call :count :*) :row_count])
-             (dissoc :modifiers :order-by) 
+         (-> (sql/select [(sql/call :count :*) :row_count])
+             (sql/from [(-> sqlmap
+                            (dissoc :modifiers :order-by)
+                            (update :modifiers conj :distinct))
+                        :tmp])
              sql/format
              (->> (jdbc/query tx))
              clojure.core/first
@@ -92,8 +94,7 @@
                       (cursored-sqlmap after first)
                       sql/format
                       (->> (jdbc/query tx))
-                      (cond-> post-process
-                        (post-process context args value)))]
+                      (cond-> post-process post-process))]
          (-> rows
              wrap-in-nodes-and-edges
              (assoc-total-count tx sqlmap)
@@ -101,10 +102,3 @@
                               sqlmap
                               first
                               (-> rows last :row_cursor))))))))
-(comment
-  (-> (sql/select :*)
-      (sql/modifiers :distinct)
-      (sql/from :foo)
-      (sql/order-by :bar)
-      (dissoc :order-by :modifiers)
-      sql/format))

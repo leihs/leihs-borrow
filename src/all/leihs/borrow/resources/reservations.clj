@@ -108,11 +108,12 @@
                (conj result pool-avail))
         (conj result (assoc pool-avail :quantity desired-quantity))))))
 
-(defn create [{{:keys [tx authenticated-entity]} :request :as context}
-              {:keys [model-id start-date end-date quantity inventory-pool-ids]}
-              value]
+(defn create
+  [{{:keys [tx authenticated-entity]} :request :as context}
+   {:keys [model-id start-date end-date quantity inventory-pool-ids] :as args}
+   value]
   (let [user-id (:id authenticated-entity)]
-    (if-not (models/reservable? tx model-id user-id)
+    (if-not (models/reservable? context args {:id model-id})
       (throw
         (ex-info
           "Model either does not exist or is not reservable by the user." {})))

@@ -6,6 +6,11 @@ class User < Sequel::Model
                right_key: :user_id,
                class: self,
                join_table: :delegations_users)
+  many_to_many(:favorite_models,
+               class: LeihsModel,
+               join_table: :favorite_models,
+               left_key: :user_id,
+               right_key: :model_id)
 end
 
 FactoryBot.define do

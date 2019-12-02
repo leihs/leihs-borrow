@@ -56,6 +56,12 @@ RSpec.shared_context 'graphql client' do
     expect(result[:errors]).to be_nil
     expect(result[:data]).to eq(compared)
   end
+
+  def expect_graphql_error(result)
+    expect(result[:data]).to be_nil
+    expect(result[:errors]).not_to be_empty
+    yield if block_given?
+  end
 end
 
 RSpec.configure do |config|

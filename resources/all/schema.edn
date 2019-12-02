@@ -41,7 +41,16 @@
                                                    :type (list :InventoryPool)
                                                    :resolve :inventory-pools}
                                   :unsubmittedOrder {:type :UnsubmittedOrder
-                                                     :resolve :unsubmitted-order}}}
+                                                     :resolve :unsubmitted-order}
+                                  :favoriteModels {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
+                                                          :orderBy {:type (list :ModelsOrderByInput)}
+                                                          :searchTerm {:type String}
+                                                          :startDate {:type String}
+                                                          :endDate {:type String}
+                                                          :first {:type Int}
+                                                          :after {:type String}}
+                                                   :type :ModelsConnection
+                                                   :resolve :favorite-models-connection}}}
            :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null String)}
                               :visitsCount {:type (non-null Int)}
@@ -51,6 +60,10 @@
                                    :description "A name consists of product name and its version."}
                             :manufacturer {:type String}
                             :description {:type String}
+                            :isReservable {:type (non-null Boolean)
+                                           :resolve :is-reservable-model}
+                            :isFavorited {:type (non-null Boolean)
+                                          :resolve :is-favorited-model}
                             :availability {:type (list :ModelInventoryPoolAvailability)}
                             :availableQuantityInDateRange {:type (non-null Int)}
                             :images {:type (list :Image)
@@ -203,6 +216,7 @@
                     :type (list :Visit)}
            :models {:args {:categoryIds {:type (list (non-null :UUID))}
                            :inventoryPoolIds {:type (list (non-null :UUID))}
+                           :ids {:type (list (non-null :UUID))}
                            :orderBy {:type (list :ModelsOrderByInput)}
                            :searchTerm {:type String}
                            :startDate {:type String}
@@ -239,4 +253,10 @@
                                   :type (list (non-null :UUID))}
              :submitOrder {:args {:purpose {:type (non-null String)}}
                            :resolve :submit-order
-                           :type (non-null :Order)}}}
+                           :type (non-null :Order)}
+             :favoriteModel {:args {:id {:type (non-null :UUID)}}
+                             :resolve :favorite-model
+                             :type (non-null :Model)}
+             :unfavoriteModel {:args {:id {:type (non-null :UUID)}}
+                               :resolve :unfavorite-model
+                               :type (non-null :Model)}}}

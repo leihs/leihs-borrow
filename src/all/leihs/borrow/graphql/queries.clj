@@ -20,9 +20,12 @@
    :categories categories/get-multiple
    :contracts-connection contracts/get-connection
    :current-user users/get-current
+   :favorite-models-connection models/get-favorites-connection
    :images images/get-multiple
    :inventory-pool inventory-pools/get-one
    :inventory-pools inventory-pools/get-multiple
+   :is-favorited-model models/favorited?
+   :is-reservable-model models/reservable?
    :model models/get-one
    :models-connection models/get-connection
    :order orders/get-one
