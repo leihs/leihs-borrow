@@ -72,8 +72,10 @@ describe 'currentUser' do
             name
           }
           unsubmittedOrder {
+            validUntil
             reservations {
               id
+              updatedAt
             }
           }
           favoriteModels {
@@ -89,7 +91,12 @@ describe 'currentUser' do
       }
     GRAPHQL
 
+
     result = query(q, '0567f6b0-540c-4619-9251-9ea099a5d50d')
+    timestamp = \
+      result
+      .dig(:data, :currentUser, :unsubmittedOrder, :reservations)
+      .first[:updatedAt]
     expect_graphql_result(result, {
       currentUser: {
         user: {
@@ -101,8 +108,10 @@ describe 'currentUser' do
           { name: 'Pool C (lending manager)' }
         ],
         unsubmittedOrder: {
+          validUntil: timestamp,
           reservations: [
-            { id: '770632c4-f268-4ed6-bcc0-c8bc032bc9b5' }
+            { id: '770632c4-f268-4ed6-bcc0-c8bc032bc9b5',
+              updatedAt: timestamp }
           ]
         },
         favoriteModels: {

@@ -95,9 +95,22 @@
                     <>
                     {:row-fn pool-order-row}))))
 
-(defn get-unsubmitted [context args value]
-  {:valid-until nil
-   :reservations (reservations/get-multiple context args value)})
+(defn get-unsubmitted
+  [{{:keys [tx] {user-id :id} :authenticated-entity} :request} _ _]
+  (let [sqlmap (-> (apply sql/select (reservations/columns tx))
+                   (sql/from :reservations)
+                   (sql/where [:and
+                               [:= :status (sql/call :cast
+                                                     "unsubmitted"
+                                                     :reservation_status)]
+                               [:= :user_id user-id]]))]
+    {:valid-until (-> sqlmap
+                      (sql/order-by [:updated_at :asc])
+                      sql/format
+                      (reservations/query tx)
+                      first
+                      :updated_at)
+     :reservations (-> sqlmap sql/format (reservations/query tx))}))
 
 (defn submit [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
               {:keys [purpose]}
