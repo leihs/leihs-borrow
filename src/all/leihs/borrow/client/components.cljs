@@ -15,10 +15,17 @@
    {:style (merge (get defaults :style)
                   (get givens :style))}))
 
+; chars
+(def thin-space \u2009)
+(def non-breaking-space \u00A0)
+(def en-space \u2003)
+(def em-space \u2003)
+(def nbsp non-breaking-space)
+
 (defn button [label active? props]
   (let 
    [base-cls
-    #{:text-white  :font-bold
+    #{:text-color-content-inverse  :font-bold
       :py-0 :px-2
       :rounded-full
       :border-solid :border-4 :border-black}]
@@ -27,7 +34,7 @@
       {:type :button
        :disabled (not active?)
        :class (cond-> base-cls
-                active? (conj :bg-black :border-black)
+                active? (conj :bg-content-inverse :border-black)
                 (not active?) (conj :bg-grey :border-grey))}
       props)
      label]))
@@ -115,14 +122,20 @@
 
 
 ; ; Intl stuff
-; (defn format-date [date style]
-;   (-> (js/Intl.DateTimeFormat. "default") (.format date)))
+(defn format-date [style date]
+  (let [date (if (= (.-constructor date) js/Date) date (js/Date. date))]
+    ; style oneof :full :long :medium :short
+    (-> (js/Intl.DateTimeFormat. #_nil {:dateStyle style}) (.format date))))
 
+(def decorate-file-size-formatter
+  (js/Intl.NumberFormat.
+   :default
+   (clj->js {:maximumFractionDigits 2 :style :decimal})))
 
-; chars
-(def thin-space \u2009)
-(def non-breaking-space \u00A0)
-(def en-space \u2003)
-(def em-space \u2003)
-(def nbsp non-breaking-space)
+(defn decorate-file-size [bytes]
+  (str
+   (.format decorate-file-size-formatter (-> bytes (/ (* 1024 1024))))
+   nbsp
+   "MB"))
+
 

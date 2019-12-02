@@ -1,5 +1,6 @@
 (ns leihs.borrow.client.features.about-page
   (:require
+   [clojure.string :as string]
    #_[reagent.core :as r]
    [re-frame.core :as rf]
    #_[re-graph.core :as re-graph]
@@ -21,7 +22,8 @@
 
 (defn- get-about-page-data []
   [["browser time" (js/String (js/Date.))]
-   ["browser language" (.-language js/navigator)]
+   ["browser timezone" (-> (js/Intl.DateTimeFormat. :default) .resolvedOptions .-timeZone)]
+   ["browser language(s)" (string/join ", " (or (.-languages js/navigator) [(.-language js/navigator)]))]
    ["CSS dark mode" (deco-bool (matches-media-query? "(prefers-color-scheme: dark)"))]
    ["CSS reduced motion" (deco-bool (matches-media-query? "(prefers-reduced-motion: reduce)"))]
    ["CSS pointer support" (cond

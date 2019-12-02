@@ -19,17 +19,17 @@
                   :end-date (get params :end-date)
                   ;( TODO: categories & pools 
                   }]
-     {:dispatch-n (list 
+     {:dispatch-n (list
                    [::set-filters filters]
                    [::get-models filters])})))
 
 (rf/reg-event-fx
-  ::fetch-search-filters
-  (fn [_ [_ _]]
-    {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql")
-                {}
-                [::on-fetched-search-filters]]}))
+ ::fetch-search-filters
+ (fn [_ [_ _]]
+   {:dispatch [::re-graph/query
+               (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql")
+               {}
+               [::on-fetched-search-filters]]}))
 
 ;tmp
 (defn fetch-search-filters []
@@ -66,10 +66,10 @@
       :endDate (get filters :end-date)
       ;TODO: categories & pools 
       }]
-     
+
      {; NOTE: no caching yet, clear results before new search  
       :db (assoc-in db [:search :results] nil)
-      
+
       :dispatch-n (list
                    [:routing/navigate [::routes/search {:query-params filters}]]
                    [::re-graph/query
@@ -117,8 +117,7 @@
           (.preventDefault event)
           (if on-search-view?
             (rf/dispatch [::get-models current])
-            (rf/dispatch [:routing/navigate [::routes/search {:query-params current}]]))
-          )}
+            (rf/dispatch [:routing/navigate [::routes/search {:query-params current}]])))}
        [:fieldset {:style {:display :table}}
         [:legend.sr-only "Suche"]
         [form-line :search-term "Suche"
@@ -181,11 +180,14 @@
 (defn model-grid-item [model]
   (let [routing @(rf/subscribe [:routing/routing])
         params (get-in routing [:bidi-match :query-params])
-        model-show-params {:end-date (:end-date params) :start-date (:start-date params)}
-        href (routing/path-for ::routes/models-show :model-id (:id model) :query-params model-show-params)
-        available? (> (:availableQuantityInDateRange model) 0)]
+        max-quant (:availableQuantityInDateRange model)
+        available? (> max-quant 0)
+        model-show-params {:end (:end-date params) :start (:start-date params) :maxQuantity max-quant}
+        href (routing/path-for ::routes/models-show
+                               :model-id (:id model)
+                               :query-params model-show-params)]
     [:div.ui-model-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-2.mb-3
-     {:style {:opacity (if available? 1 0.35) }}
+     {:style {:opacity (if available? 1 0.35)}}
      [ui/image-square-thumb (get-in model [:images 0]) href]
      [:div.mx-0.mt-1.leading-snug
       [:a {:href href}
@@ -194,7 +196,7 @@
 
 (defn products-list [models]
   (let
-   []
+   [debug? @(rf/subscribe [:is-debug?])]
     [:div.mx-1.mt-2
      [:div.w-full.px-0
       [:div.ui-models-list.flex.flex-wrap
@@ -203,7 +205,7 @@
           (let [model (:node m)]
             [:div {:class "w-1/2 min-h-16" :key (:id model)}
              [model-grid-item model]])))]]
-     (when @(rf/subscribe [:is-debug?]) [:p (pr-str @(rf/subscribe [::search-results]))])]))
+     (when debug? [:p (pr-str @(rf/subscribe [::search-results]))])]))
 
 (defn view
   []
