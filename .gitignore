@@ -4,7 +4,7 @@
 .rebel_readline_history
 .shadow-cljs
 log
-resources/all/public/borrow/js
+resources/all/public/app/borrow/js
 scratch*
 target
 node_modules

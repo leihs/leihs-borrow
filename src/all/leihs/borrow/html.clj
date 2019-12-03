@@ -13,8 +13,8 @@
    [:meta {:name "viewport"
            :content "width=device-width, initial-scale=1, shrink-to-fit=no"}]
 
-   (hiccup.page/include-css (cache-buster/cache-busted-path "/borrow/css/tailwind.min.css"))
-   (hiccup.page/include-css (cache-buster/cache-busted-path "/borrow/css/base-styles.css"))])
+   (hiccup.page/include-css (cache-buster/cache-busted-path "/app/borrow/css/tailwind.min.css"))
+   (hiccup.page/include-css (cache-buster/cache-busted-path "/app/borrow/css/base-styles.css"))])
 
 (defn not-found-handler [_request]
   {:status 404
@@ -41,7 +41,7 @@
           #_(hiccup.page/include-js (cache-buster/cache-busted-path
                                      "/borrow/leihs-shared-bundle.js"))
           (hiccup.page/include-js
-           (cache-buster/cache-busted-path "/borrow/js/app.js")))})
+           (cache-buster/cache-busted-path "/app/borrow/js/app.js")))})
 
 
 ;#### debug ###################################################################

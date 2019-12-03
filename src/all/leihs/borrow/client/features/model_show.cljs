@@ -149,7 +149,7 @@
              (for [edge recommends]
                (let
                 [rec (:node edge)
-                 href (str "/borrow/models/" (:id rec))]
+                 href (str "/app/borrow/models/" (:id rec))]
                  [:div {:key (:id rec) :class "w-1/2"}
                   [:div.p-2
                      ; FIXME: use path helper!
