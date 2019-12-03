@@ -29,6 +29,7 @@
   "Build an uberjar of the application."
   []
   (comp (prod) ; does not seem to work, that's why sift later on
+        (javac :options ["-release" "1.8" "-target" "1.8" "-source" "1.8" "-Xlint:-options"])
         (aot)
         (uber)
         (sift :add-resource #{"resources/all" "resources/prod"})

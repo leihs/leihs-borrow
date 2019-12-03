@@ -21,10 +21,18 @@
 
 ## PROD
 
-### Build backend
+compile it:
 
-`$ boot uberjar`
+```shell
+# Build frontend
+npx shadow-cljs release app
 
-### Build frontend
+# Build backend
+boot uberjar
+```
 
-`$ shadow-cljs release <ID>`
+start it:
+
+```shell
+java -jar ./target/leihs-borrow.jar run
+```

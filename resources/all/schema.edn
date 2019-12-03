@@ -1,7 +1,7 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}
            :DateTime {:parse :date-time-parse :serialize :date-time-serialize}}
 
- :enums {:ModelsOrderByAttributeEnum {:values [:ID]},
+ :enums {:ModelsOrderByAttributeEnum {:values [:ID :NAME]},
          :UsersOrderByAttributeEnum {:values [:ID]},
          :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME]},
          :ReservationsOrderByAttributeEnum {:values [:ID]},
@@ -72,7 +72,9 @@
                                           :resolve :attachments}
                             :properties {:type (list :Property)
                                          :resolve :properties}
-                            :recommends {:type :ModelsConnection
+                            :recommends {; NOTE: args must match those needed for the :ModelsConnection, does not happen automatically!
+                                         :args {:first {:type Int}} 
+                                         :type :ModelsConnection
                                          :resolve :models-connection}}}
            :ModelsConnection {:fields {:totalCount {:type (non-null Int)}
                                        :edges {:type (list :ModelEdge)}
@@ -214,6 +216,9 @@
                     :args {:limit {:type Int}
                            :orderBy {:type (list :VisitsOrderByInput)}}
                     :type (list :Visit)}
+           :model {:args {:id {:type (non-null :UUID)}}
+                   :resolve :model
+                   :type (non-null :Model)}
            :models {:args {:categoryIds {:type (list (non-null :UUID))}
                            :inventoryPoolIds {:type (list (non-null :UUID))}
                            :ids {:type (list (non-null :UUID))}
@@ -226,6 +231,7 @@
                     :type :ModelsConnection
                     :resolve :models-connection}
            :inventoryPools {:resolve :inventory-pools
+                            :args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
                             :type (list :InventoryPool)}
            :availability {:args {:modelId {:type (non-null :UUID)}
                                  :inventoryPoolId {:type (non-null :UUID)}

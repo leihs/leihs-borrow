@@ -99,7 +99,14 @@
          (->> pool-avails (map :quantity) (apply +)))
     (throw (ex-info "The desired quantity is not available." {}))
     (loop [[{pool-quantity :quantity :as pool-avail} & remaining-pool-avails]
-           (sort-by :quantity #(> %1 %2) pool-avails)
+           (sort-by identity
+                    #(let [first-comp (compare (:quantity %2)
+                                               (:quantity %1))]
+                       (if (= first-comp 0)
+                         (compare (:name %1)
+                                  (:name %2))
+                         first-comp))
+                    pool-avails)
          desired-quantity quantity
          result []]
       (if (< pool-quantity desired-quantity)
@@ -117,20 +124,29 @@
       (throw
         (ex-info
           "Model either does not exist or is not reservable by the user." {})))
-    (let [pool-ids (or (not-empty inventory-pool-ids)
-                       (map :id
-                            (inventory-pools/get-multiple context {} nil)))
-          pool-avails (availability/get-available-quantities
-                        context
-                        {:inventory-pool-ids pool-ids
-                         :model-ids [model-id]
-                         :start-date start-date
-                         :end-date end-date}
-                        nil)]
+    (let [pools (inventory-pools/get-multiple
+                  context
+                  {:ids (not-empty inventory-pool-ids)}
+                  nil)
+          pool-avails (->> (availability/get-available-quantities
+                             context
+                             {:inventory-pool-ids (map :id pools)
+                              :model-ids [model-id]
+                              :start-date start-date
+                              :end-date end-date}
+                             nil)
+                           (map (fn [el]
+                                  (assoc el
+                                         :name
+                                         (->> pools
+                                              (filter #(= (:id el) (:id %)))
+                                              first
+                                              :name)))))]
       (->> quantity
-           (distribute pool-avails)
+           (distribute (log/spy pool-avails))
            (map (fn [{:keys [quantity] :as attrs}]
-                  (let [row (-> (transform-keys csk/->snake_case attrs)
+                  (let [row (-> attrs
+                                (select-keys [:inventory_pool_id :model_id :quantity])
                                 (assoc :start_date (sql/call :cast start-date :date))
                                 (assoc :end_date (sql/call :cast end-date :date))
                                 (assoc :quantity 1

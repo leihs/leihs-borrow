@@ -1,0 +1,27 @@
+query getShoppingCart {
+  currentUser {
+    unsubmittedOrder {
+      # validUntil
+      reservations {
+        endDate
+        id
+        inventoryPool {
+          id
+          name
+        }
+        model {
+          id
+          name
+          images {
+            id
+            imageUrl
+          }
+        }
+        startDate
+        status
+        # createdAt
+        # updatedAt
+      }
+    }
+  }
+}

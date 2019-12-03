@@ -3,12 +3,17 @@
    [reagent.core :as r]
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   #_[leihs.borrow.client.components :as ui]
-   
-   [leihs.borrow.client.features.search :as search]
-   [leihs.borrow.client.features.shopping-cart :as cart]
-   ))
+   #_[shadow.resource :as rc]
+   [leihs.borrow.client.components :as ui]
+
+   [leihs.borrow.client.lib.routing :as routing]
+   [leihs.borrow.client.routes :as routes]
+
+   [leihs.borrow.client.features.home-page :as home-page]
+   [leihs.borrow.client.features.about-page :as about-page]
+   [leihs.borrow.client.features.search-models :as search-models]
+   [leihs.borrow.client.features.shopping-cart :as shopping-cart]
+   [leihs.borrow.client.features.model-show :as model-show]))
 
 (def re-graph-config {:ws-url nil :http-url "/borrow/graphql" :http-parameters {:with-credentials? true}})
 
@@ -17,15 +22,17 @@
  ::load-app
  (fn [{:keys [db]}]
    {:db (-> db
+            ; NOTE: clear the routing instance on (re-)load,
+            ; otherwise the even wont re-run when hot reloading!
+            (dissoc , :routing/routing)
+            
             (assoc , :products {:index {0 {:id 0 :name "Kamera"}
                                         1 {:id 1 :name "Mikrofon"}
                                         2 {:id 2 :name "Stativ"}}
                                 :order [2 0 1]})
-            (assoc , :cart {:items {:index {} :order []}})
             (assoc , :search {:results []
-                              :filters {:current {:start-date "2019-11-01", :end-date "2019-11-02"}}})
-            (assoc , :meta {:app {:debug false}}))
-    :dispatch [::re-graph/init re-graph-config]}))
+                              :filters {:current {:start-date "2020-12-01", :end-date "2020-12-02"}}})
+            (assoc , :meta {:app {:debug false}}))}))
 
 ;-; EVENTS
 (rf/reg-event-db :set-debug (fn [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
@@ -39,94 +46,59 @@
  :products/index
  (fn [] [(rf/subscribe [:products-fake])])
  (fn [[products]] (get-in products [:index] {})))
- 
+
 
 ;-; VIEWS
-(defn fatal-error-screen [errors]
-  [:section.p-4
-   {:style {:white-space "pre-wrap" :background "salmon" :padding "1rem"}}
-   [:h1 "FATAL ERROR :("]
-   [:p [:button.border-black.border-2.rounded-full.py-1.px-3 {:type :button, :on-click #(-> js/window (.-location) (.reload))} "RELOAD"]]
-   (doall
-    (for
-     [[idx error] (map-indexed vector errors)]
-      [:small.code {:key idx} (js/JSON.stringify (clj->js error) 0 2)]))])
 
-(def product-card-width-in-rem 12)
-(def product-card-margins-in-rem 1)
-
-(defn product-card [model width-in-rem]
-  [:div.ui-product-card
-   {:style {:width (str width-in-rem "rem")
-            :min-height "15rem"
-            :overflow-y "scroll"
-            :border "1px solid tomato"
-            :padding "1rem"
-            :display "inline-block"
-            :margin-right "1rem"}}
-   [:h2 (:name model)]
-   (if-let [img (get-in model [:images 0 :imageUrl])] 
-     [:img {:src img :style {:width "100%"}}])
-   #_[:p (pr-str model)]
-   [:button
-    {:type :button :on-click #(rf/dispatch [::cart/add-item (:id model)])}
-    "+"]])
-
-(defn model-grid-item [model]
-  [:div.ui-model-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-4.mb-2
-   [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
-    (if-let [img (get-in model [:images 0 :imageUrl])]
-      [:img.absolute.object-contain.object-center.h-full.w-full.p-1 {:src img}]
-      [:div.absolute.h-full.w-full.bg-gray-400 " "])]
-   [:div.mx-0.mt-1.leading-snug
-    [:p.truncate.font-bold (:name model)]
-    [:p.truncate (:manufacturer model)]
-    ]])
-
-(defn products-list []
-  (let
-   [models @(rf/subscribe [::search/found-models])]
-    [:div.mx-3
-     [:div.w-full.px-0
-      [:div.ui-models-list.flex.flex-wrap.-mx-4
-       (doall
-        (for [model models]
-          [:div {:class "w-1/2 min-h-16" :key (:id model)}
-           [model-grid-item model]]))]]
-     (when @(rf/subscribe [:is-debug?]) [:p (pr-str @(rf/subscribe [::search/found-models]))])]))
-
-(defn main-view []
-(fn []
+(defn main-view [views]
   (let [errors @(rf/subscribe [:app/fatal-errors])]
     [:main
-     [:div.ui-main-nav.px-2.py-1.border-b-2
-      [:h1.font-black "AUSLEIHE"]]
+     [ui/main-nav]
+     (when errors [ui/fatal-error-screen errors])
+     [routing/routed-view views]]))
 
-     (if errors
-       [fatal-error-screen errors]
-       ; else
-       [:<>
-        [search/search-panel]
-        [:hr.border-b-2]
-        [products-list]
-        #_[:hr]
-        #_[shopping-cart]])])))
+(defn- route-is-loading-view
+  []
+  [:div.app-loading-view
+   [:h1.font-black.font-mono.text-5xl.text-center.p-8 
+    [ui/spinner-clock] 
+    [:p.text-xl "loading…"]]])
+
+(defn- wip-models-index-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 "WIP MODELS INDEX"])
 
 ;-; CORE APP
+(def views {::routes/home home-page/view
+            ::routes/search search-models/view
+            ::routes/about-page about-page/view
+            ::routes/models-index wip-models-index-view
+            ::routes/models-show model-show/view
+            ::routes/shopping-cart shopping-cart/view
+            ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
+            ;        *should* not be a real problem – if the routing is working correctly
+            ;        we can never end up on "not found" client-side!
+            :else route-is-loading-view})
+
+; when going to '/' instead of '/borrow', do a redirect.
+; this is only ever going to happen in development mode.
+(rf/reg-event-fx
+ ::routes/absolute-root
+ (fn [_ _] {:routing/navigate [::routes/home]}))
+
+(rf/reg-fx :alert (fn [msg] (js/alert msg)))
+
 (defn mount-root []
   (rf/clear-subscription-cache!)
-  (r/render [main-view]
+  (r/render [main-view views]
             (.getElementById js/document "app")))
 
-
 (defn ^:export main []
-  (rf/dispatch-sync [::load-app])
-  (mount-root)
-  
-  (rf/dispatch-sync
-   [::re-graph/query
-    (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql")
-    {}
-    [::search/on-fetched-search-filters]]))
+  ; start the app framework; NOTE: order is important!
+  (rf/dispatch [::re-graph/init re-graph-config])
+  (rf/dispatch [::load-app])
+  (rf/dispatch [:routing/init-routing routes/routes-map])
+
+  ; start the ui
+  (mount-root))
+
 
 (main)

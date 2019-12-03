@@ -10,10 +10,13 @@ query searchModels(
     startDate: $startDate
     endDate: $endDate
     categoryIds: $categories
-    inventoryPoolIds: $pools
-    limit: 100
+    first: 12
   ) {
-    ...modelListProps
+    edges {
+      node {
+        ...modelListProps
+      }
+    }
   }
 }
 
@@ -25,15 +28,8 @@ fragment modelListProps on Model {
   images {
     id
     imageUrl
-    # thumbnails {
-    #   id
-    #   size
-    #   imageUrl
-    # }
+    # thumbnails { id size imageUrl }
   }
-  availability {
-   inventoryPool { id }
-   dates { date quantity }
-  }
+  availableQuantityInDateRange
 }
 

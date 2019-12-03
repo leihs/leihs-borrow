@@ -45,6 +45,22 @@ get '/borrow/models/availability' do
      { model_id: 'b5925821-6835-4b77-bd16-2ae280113eb6',
        inventory_pool_id: '5271c14b-e6ef-4252-8d2a-cb0af9ed5a1f',
        quantity: 1 }]
+  elsif
+    params[:model_ids] == ['f616b467-80f5-45d7-b708-08c00d506a92'] and
+    params[:inventory_pool_ids].to_set == Set['8e484119-76a4-4251-b37b-64847df99e9b',
+                                              'a7d2e049-56ac-481a-937e-ee3f613f3cc7']
+    [{ model_id: 'f616b467-80f5-45d7-b708-08c00d506a92',
+       inventory_pool_id: '8e484119-76a4-4251-b37b-64847df99e9b',
+       quantity: 2 },
+     { model_id: 'f616b467-80f5-45d7-b708-08c00d506a92',
+       inventory_pool_id: 'a7d2e049-56ac-481a-937e-ee3f613f3cc7',
+       quantity: 2 }]
+  elsif
+    params[:model_ids] == ['f616b467-80f5-45d7-b708-08c00d506a92'] and
+    params[:inventory_pool_ids] == ['a7d2e049-56ac-481a-937e-ee3f613f3cc7']
+    [{ model_id: 'f616b467-80f5-45d7-b708-08c00d506a92',
+       inventory_pool_id: 'a7d2e049-56ac-481a-937e-ee3f613f3cc7',
+       quantity: 1 }]
   else
     raise "Unknown model IDs: #{params[:model_ids]}"
   end.to_json

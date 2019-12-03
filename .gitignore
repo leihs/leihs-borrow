@@ -9,3 +9,4 @@ scratch*
 target
 node_modules
 tmp/
+/leihs-ui.tgz

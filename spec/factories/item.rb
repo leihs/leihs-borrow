@@ -12,6 +12,8 @@ FactoryBot.define do
     association :owner, factory: :inventory_pool
     association :responsible, factory: :inventory_pool
     room
+
+    is_borrowable { true }
     
     created_at { DateTime.now }
     updated_at { DateTime.now }

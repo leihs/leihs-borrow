@@ -3,4 +3,5 @@
 . ./scripts/_dev-env.sh
 
 cd database
+bundle
 bundle exec rake db:migrate

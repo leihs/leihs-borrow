@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Mon Dec 02 2019 14:35:56 GMT+0100 (Central European Standard Time)
+# timestamp: Tue Dec 03 2019 12:59:57 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -126,7 +126,7 @@ type Model {
   """A name consists of product name and its version."""
   name: String!
   properties: [Property]
-  recommends: ModelsConnection
+  recommends(first: Int): ModelsConnection
 }
 
 type ModelEdge {
@@ -147,6 +147,7 @@ type ModelsConnection {
 
 enum ModelsOrderByAttributeEnum {
   ID
+  NAME
 }
 
 input ModelsOrderByInput {
@@ -254,7 +255,8 @@ type QueryRoot {
   categories(ids: [UUID!], limit: Int, offset: Int, rootOnly: Boolean): [Category]
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   currentUser: CurrentUser!
-  inventoryPools: [InventoryPool]
+  inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
+  model(id: UUID!): Model!
   models(after: String, categoryIds: [UUID!], endDate: String, first: Int, ids: [UUID!], inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): ModelsConnection
   order(id: UUID!): Order!
   orders(
