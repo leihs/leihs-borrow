@@ -9,7 +9,7 @@
    ""
    leihs.core.paths/core-paths
    (branch
-    "/borrow"
+    "/app/borrow"
     (leaf "/shutdown" :shutdown)
     (leaf "/graphql" :graphql)
     (leaf "/status" :status)

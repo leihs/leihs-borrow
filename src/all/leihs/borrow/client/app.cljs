@@ -15,7 +15,7 @@
    [leihs.borrow.client.features.shopping-cart :as shopping-cart]
    [leihs.borrow.client.features.model-show :as model-show]))
 
-(def re-graph-config {:ws-url nil :http-url "/borrow/graphql" :http-parameters {:with-credentials? true}})
+(def re-graph-config {:ws-url nil :http-url "/app/borrow/graphql" :http-parameters {:with-credentials? true}})
 
 ;-; INIT APP & DB
 (rf/reg-event-fx

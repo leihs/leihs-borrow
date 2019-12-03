@@ -20,7 +20,7 @@ scripts:
       set -euxo 
       until curl --silent --fail -I \
         -H 'Accept: application/json' -H "Authorization: secret $CIDER_CI_TRIAL_ID" \
-        ${LEIHS_BORROW_HTTP_BASE_URL}/borrow/status;
+        ${LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/status;
         do sleep 1;
       done
     start_when:

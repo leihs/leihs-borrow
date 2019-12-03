@@ -44,7 +44,7 @@
           :image images/handler-one,
           :attachment attachments/handler-one,
           :not-found html/not-found-handler,
-          :status (status/routes "/borrow/status")}))
+          :status (status/routes "/app/borrow/status")}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -128,17 +128,17 @@
       (wrap-json-body {:keywords? true})
       wrap-empty
       datasource/wrap-tx
-      (wrap-graphiql {:path "/borrow/graphiql",
-                      :endpoint "/borrow/graphql"})
+      (wrap-graphiql {:path "/app/borrow/graphiql",
+                      :endpoint "/app/borrow/graphql"})
       core-routing/wrap-canonicalize-params-maps
       wrap-params
       wrap-multipart-params
       wrap-content-type
       (wrap-resource "public"
                      {:allow-symlinks? true
-                      :cache-bust-paths ["/borrow/css/site.css"
-                                         "/borrow/css/site.min.css"
-                                         "/borrow/js/app.js"]
+                      :cache-bust-paths ["/app/borrow/css/site.css"
+                                         "/app/borrow/css/site.min.css"
+                                         "/app/borrow/js/app.js"]
                       :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
                                            #".+_[0-9a-f]{40}\..+"]
                       :enabled? true})

@@ -38,7 +38,7 @@
    [ui/tmp-nav]
    [:h2.sr-only "Links"]
    [:ul.mb-4.list-disc.list-inside
-    [:li [:a {:href "/borrow/graphiql/index.html"} "Graph" [:i "i"] "QL API console"]]]
+    [:li [:a {:href "/app/borrow/graphiql/index.html"} "Graph" [:i "i"] "QL API console"]]]
    [:h2 "Debug Info"]
    [:p.font-mono.text-xs
     [:table>tbody
