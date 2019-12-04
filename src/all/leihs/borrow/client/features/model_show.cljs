@@ -36,7 +36,7 @@
            [::re-graph/mutate
             "mutation($modelId: UUID!) { favoriteModel(id: $modelId) { id } }"
             {:modelId model-id}
-            [::on-mutation-result]])}))
+            [::on-favorite-model-result]])}))
 
 (rf/reg-event-fx
   ::unfavorite-model
@@ -46,7 +46,13 @@
            [::re-graph/mutate
             "mutation($modelId: UUID!) { unfavoriteModel(id: $modelId) { id } }"
             {:modelId model-id}
-            [::on-mutation-result]])}))
+            [::on-favorite-model-result]])}))
+
+(rf/reg-event-fx
+ ::on-favorite-model-result
+ (fn [{:keys [_db]} [_ {:keys [data errors]}]]
+   (when errors
+     {:alert (str "FAIL! " (pr-str errors))})))
 
 (rf/reg-event-db
  ::toggle-favorite
@@ -135,17 +141,17 @@
        errors [ui/error-view errors]
        :else
        [:<>
-        [:header
+        [:header.flex.items-stretch
          [:h1.text-3xl.font-extrabold.leading-none
           (:name model)
-          [:form
-           [:button {:on-click #(do (.preventDefault %)
-                                    (rf/dispatch [(if (:isFavorited model)
-                                                    ::unfavorite-model
-                                                    ::favorite-model)
-                                                  (:id model)]))}
-             (if (:isFavorited model) "🖤" "♡")]]
-          [:small.font-normal.text-gray-600.leading-none (:manufacturer model)]]]
+          " "
+          [:small.font-normal.text-gray-600.leading-none (:manufacturer model)]]
+         [:span.text-4xl.ml-2.pr-2 
+          [:button {:on-click #(rf/dispatch [(if (:isFavorited model)
+                                               ::unfavorite-model
+                                               ::favorite-model)
+                                             (:id model)])}
+           (if (:isFavorited model) ui/favorite-yes-icon ui/favorite-no-icon)]]]
 
          ; FIXME: show all images not just the first one
         (if-let [first-image (first (:images model))]

@@ -63,11 +63,18 @@
 (defn- route-is-loading-view
   []
   [:div.app-loading-view
-   [:h1.font-black.font-mono.text-5xl.text-center.p-8 
-    [ui/spinner-clock] 
-    [:p.text-xl "loading…"]]])
+   [:h1.font-mono.text-center.p-8.show-after-1sec
+    [:p.text-5xl [ui/spinner-clock]]
+    [:p.font-black.text-xl "loading…"]
+    [:p.text-base "if this takes a long time something went wrong."]
+    [:p.mt-4
+     [:button.border-black.border-2.rounded-full.py-1.px-3
+      {:type :button, :on-click #(-> js/window (.-location) (.reload))}
+      "RELOAD"]]
+    ]])
 
-(defn- wip-models-index-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 "WIP MODELS INDEX"])
+; (defn- not-found-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 "404 NOT FOUND!"])
+(defn- wip-models-index-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 "WIP MODELS INDEX!"])
 
 ;-; CORE APP
 (def views {::routes/home home-page/view

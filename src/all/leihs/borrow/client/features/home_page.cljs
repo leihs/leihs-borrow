@@ -46,6 +46,12 @@
       [:<>
        [search-models/search-panel]
        [:hr.border-b-2]
-       (categories-list categories)
+       
+       [:div
+        [:div.mt-2.mx-3.flex.items-baseline.justify-between
+         [:h2.font-bold.text-2xl "Categories"]
+         #_[:a.font-semibold.text-l {:href "TODO"} "All"]]
+        (categories-list categories)]
+       
        [:hr.border-b-2]
        #_[:p (pr-str _available-filters)]])))

@@ -85,30 +85,36 @@
         {:keys [children] {models :edges} :models :as category} (get-in fetched [:data :category])
         errors (:errors fetched)
         is-loading? (not (or category errors))]
-    [:section.mx-3.my-4
+
+    [:<>
      (cond
        is-loading? [:div [:div [ui/spinner-clock]] [:pre "loading category" [:samp category-id] "…"]]
        errors [ui/error-view errors]
        :else
        [:<>
-        [:header
+        [:header.mb-4.mx-3.mt-4
          [:h1.text-3xl.font-extrabold.leading-none
-          (:name category)]]
+          (:name category)]
 
-        (if parent-id
-          [:a {:href (str (routing/path-for ::routes/categories-show
-                                            :categories-path (join "/" prev-ids)))}
-           "<<-"])
-        [:ul (doall
-               (for [{:keys [id] :as child} children]
-                 [:li [:a {:href (-> js/window .-location .-pathname (str "/" id))}
-                       (:name child)]]))]
+         (if parent-id
+           [:span.mt-2.text-color-muted.text-sm
+            [:a {:href (str (routing/path-for ::routes/categories-show
+                                              :categories-path (join "/" prev-ids)))} "← back"]])]
+
+        [:ul.font-semibold.mx-3.mb-4
+         (doall
+          (for [{:keys [id] :as child} children]
+            [:li.inline-block.mb-2.mr-1
+             [:a.border.rounded.py-1.px-2.mb-1
+              {:class "text-gray-800 bg-content border-gray-800 hover:bg-gray-200 Xhover:border-transparent"
+               :href (-> js/window .-location .-pathname (str "/" id))}
+              (:name child)]]))]
 
         #_[:p.debug (pr-str category)]
 
         [products-list models]
         [:hr]
-        [:div.p-3.text-center
+        [:div.p-3.text-center.mx-3
          [:button.border.border-black.p-2.rounded
           {:on-click #(rf/dispatch [::pagination/get-more
                                     query
