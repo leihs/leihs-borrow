@@ -16,6 +16,8 @@
              "/favorites" ::models-favorites
              ["/" :model-id] ::models-show}
    "order" ::shopping-cart
+   "orders" {"/" ::orders-index
+             ["/" :order-id] ::orders-show}
    :else ::not-found})
 
 (def routes-map

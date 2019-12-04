@@ -17,7 +17,8 @@
    [leihs.borrow.client.features.categories.index :as category-index]
    [leihs.borrow.client.features.model-show.core :as model-show]
    [leihs.borrow.client.features.favorite-models.core :as favorite-models]
-   ))
+   [leihs.borrow.client.features.customer-orders.index :as customer-orders-index]
+   [leihs.borrow.client.features.customer-orders.show :as customer-orders-show]))
 
 (def re-graph-config {:ws-url nil :http-url "/app/borrow/graphql" :http-parameters {:with-credentials? true}})
 
@@ -75,9 +76,13 @@
             ::routes/models-show model-show/view
             ::routes/models-favorites favorite-models/view
             ::routes/shopping-cart shopping-cart/view
+            ::routes/orders-index customer-orders-index/view
+            ::routes/orders-show customer-orders-show/view
+
             ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
             ;        *should* not be a real problem – if the routing is working correctly
             ;        we can never end up on "not found" client-side!
+            ; ::routes/not-found not-found-view
             :else route-is-loading-view})
 
 ; when going to '/' instead of '/borrow', do a redirect.

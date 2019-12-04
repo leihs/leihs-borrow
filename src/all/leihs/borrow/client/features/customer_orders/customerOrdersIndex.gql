@@ -1,0 +1,30 @@
+query customerOrdersIndex {
+  submittedOrders: orders(states: [SUBMITTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+    ...OrderConProps
+  }
+  rejectedOrders: orders(states: [REJECTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+    ...OrderConProps
+  }
+  approvedOrders: orders(states: [APPROVED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+    ...OrderConProps
+  }
+}
+
+fragment OrderConProps on OrdersConnection {
+  edges {
+    node {
+      ...orderProps
+    }
+  }
+}
+
+fragment orderProps on Order {
+  id
+  state
+  purpose
+  createdAt
+  updatedAt
+  subOrdersByPool {
+    id
+  }
+}
