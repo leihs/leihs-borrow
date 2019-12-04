@@ -65,6 +65,15 @@ body {
   white-space: pre-wrap;
 }
 
+.show-after-1sec {
+  animation: cssAnimation 0s 1s forwards;
+  visibility: hidden;
+}
+
+@keyframes cssAnimation {
+  to   { visibility: visible; }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     background-color: #dfdfdf;
