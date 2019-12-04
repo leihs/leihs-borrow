@@ -207,6 +207,7 @@ type OrdersConnection {
 
 enum OrdersOrderByAttributeEnum {
   ID
+  CREATED_AT
 }
 
 input OrdersOrderByInput {

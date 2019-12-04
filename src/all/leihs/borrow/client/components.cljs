@@ -97,11 +97,11 @@
 (defn tmp-nav []
   [:nav.border.border-black.m-3.p-2
    [:b "NAVIGATION MENU"]
-   
+
    [:p [:a {:href (routing/path-for ::routes/home)} "Home"]]
-   [:p [:a {:href (routing/path-for ::routes/about-page)} "About"]]
-   [:p [:a {:href (routing/path-for ::routes/models-favorites)} "Favorites"]]]
-  )
+   [:p [:a {:href (routing/path-for ::routes/models-favorites)} "Favorites"]]
+   [:p [:a {:href (routing/path-for ::routes/orders-index)} "Orders"]]
+   [:p [:a {:href (routing/path-for ::routes/about-page)} "About"]]])
 
 (defn dev-nav []
   [:nav.border.border-black.m-3.p-2

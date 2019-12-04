@@ -8,7 +8,7 @@
          :ReservationsOrderByAttributeEnum {:values [:ID]},
          :PoolOrdersOrderByAttributeEnum {:values [:INVENTORY_POOL_ID :ID]},
          :ContractsOrderByAttributeEnum {:values [:ID]},
-         :OrdersOrderByAttributeEnum {:values [:ID]},
+         :OrdersOrderByAttributeEnum {:values [:ID :CREATED_AT]},
          :VisitsOrderByAttributeEnum {:values [:DATE]},
          :OrderByDirectionEnum {:values [:ASC :DESC]}
          :ContractStateEnum {:values [:OPEN :CLOSED]}

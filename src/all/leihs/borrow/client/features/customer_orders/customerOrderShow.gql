@@ -1,0 +1,30 @@
+query customerOrderShow($id: UUID!) {
+  order(id: $id) {
+    id
+    purpose
+    state
+    createdAt
+    updatedAt
+    subOrdersByPool {
+      id
+      state
+      rejectedReason
+      inventoryPool {
+        id
+        name
+      }
+      # createdAt
+      # updatedAt
+      reservations {
+        id
+        # status
+        startDate
+        endDate
+        model {
+          id
+          name
+        }
+      }
+    }
+  }
+}
