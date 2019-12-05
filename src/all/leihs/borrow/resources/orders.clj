@@ -79,21 +79,26 @@
 (defn get-multiple-by-pool [{{:keys [tx]} :request :as context}
                             {:keys [order-by]}
                             value]
-  (-> (sql/select :*)
-      (sql/from :orders)
-      ; An old pool order without customer order become
-      ; customer order itself and contains itself as a
-      ; sub-order too.
-      (sql/where [:or
-                  [:= :customer_order_id (:id value)]
-                  [:= :id (:id value)]])
-      (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by)))
-      sql/format
-      (as-> <>
-        (jdbc/query tx
-                    <>
-                    {:row-fn pool-order-row}))))
+  (let [columns (as-> (database/columns tx "orders") <>
+                  (remove #{:created_at :updated_at} <>)
+                  (conj <>
+                        (helpers/iso8601-created-at)
+                        (helpers/iso8601-updated-at)))]
+    (-> (apply sql/select columns)
+        (sql/from :orders)
+        ; An old pool order without customer order become
+        ; customer order itself and contains itself as a
+        ; sub-order too.
+        (sql/where [:or
+                    [:= :customer_order_id (:id value)]
+                    [:= :id (:id value)]])
+        (cond-> (seq order-by)
+          (sql/order-by (helpers/treat-order-arg order-by)))
+        sql/format
+        (as-> <>
+          (jdbc/query tx
+                      <>
+                      {:row-fn pool-order-row})))))
 
 (defn get-unsubmitted
   [{{:keys [tx] {user-id :id} :authenticated-entity} :request} _ _]

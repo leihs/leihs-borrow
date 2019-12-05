@@ -1,7 +1,7 @@
 mutation createReservationForModel(
   $modelId: UUID!
-  $endDate: String!
-  $startDate: String!
+  $endDate: Date!
+  $startDate: Date!
   $quantity: Int!
 ) {
   createReservation(

@@ -20,6 +20,20 @@
 (spec/def ::end-date string?)
 (spec/def ::inventory-pool-ids (spec/coll-of uuid? :min-count 1))
 
+(defn validate-start-date [start-date]
+  (if-not (spec/valid? ::start-date start-date)
+    (-> ::start-date
+        (spec/explain-str start-date)
+        (ex-info {})
+        throw)))
+
+(defn validate-end-date [end-date]
+  (if-not (spec/valid? ::end-date end-date)
+    (-> ::end-date
+        (spec/explain-str end-date)
+        (ex-info {})
+        throw)))
+
 (def legacy-base-url (atom nil))
 
 (defn init [options]

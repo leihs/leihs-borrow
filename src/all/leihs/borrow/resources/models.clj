@@ -90,8 +90,32 @@
         (descendents/descendent-ids tx <>)
         (conj <> value-id)))))
 
+(defn available-quantity-in-date-range
+  "If the available quantity was already computed through the enclosing
+  resolver, then just return it. Otherwise fetch from legacy and compute."
+  [context {:keys [inventory-pool-ids start-date end-date]} value]
+  (or (:available-quantity-in-date-range value)
+      (do (availability/validate-start-date start-date)
+          (availability/validate-end-date end-date)
+          (let [pool-ids (or (not-empty inventory-pool-ids)
+                             (->> (inventory-pools/get-multiple context {} nil)
+                                  (map :id)))
+                legacy-response (availability/get-available-quantities
+                                  context
+                                  {:model-ids [(:id value)]
+                                   :inventory-pool-ids pool-ids
+                                   :start-date start-date
+                                   :end-date end-date}
+                                  nil)]
+            (->> legacy-response
+                 (map :quantity)
+                 (apply +)
+                 (#(if (< % 0) 0 %)))))))
+
 (defn merge-available-quantities
   [models context {:keys [start-date end-date]} value]
+  (availability/validate-start-date start-date)
+  (availability/validate-end-date end-date)
   (let [pool-ids (->> (inventory-pools/get-multiple context {} nil)
                       (map :id))
         legacy-response (availability/get-available-quantities
@@ -204,12 +228,18 @@
       first
       :exists))
 
-(defn merge-availability-if-selects-fields [models context args value]
+(defn merge-availability-if-selects-fields
+  [models
+   context
+   {:keys [start-date end-date inventory-pool-ids] :as args}
+   value]
   (cond-> models
     (executor/selects-field? context :Model/availability)
     (merge-availability context args value)
-    (executor/selects-field? context :Model/availableQuantityInDateRange)
+    (and (executor/selects-field? context :Model/availableQuantityInDateRange)
+         (some identity [start-date end-date inventory-pool-ids]))
     (merge-available-quantities context args value)))
+
 
 (defn post-process [models context args value]
   (merge-availability-if-selects-fields models context args value))

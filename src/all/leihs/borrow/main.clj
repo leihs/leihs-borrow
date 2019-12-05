@@ -11,6 +11,7 @@
             [leihs.core.shutdown :as shutdown]
             [leihs.core.status :as status]
             [leihs.borrow.cli :as cli]
+            [leihs.borrow.graphql :as graphql]
             [leihs.borrow.routes :as routes]
             [leihs.borrow.resources.availability :as availability]
             [logbug.catcher :as catcher]
@@ -42,6 +43,7 @@
     ; (settings/init options)
     (shutdown/init options)
     (availability/init options)
+    (graphql/init options)
     (let [status (status/init)]
       (ds/init (:database-url options)
                (:health-check-registry status)))

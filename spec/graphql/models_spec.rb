@@ -765,8 +765,9 @@ describe 'models connection' do
       }
     GRAPHQL
 
+    result = query(q, user.id)
     expect_graphql_result(
-      query(q, user.id),
+      result,
       { models: {
           edges: [
             # recommend

@@ -52,8 +52,8 @@ describe 'reservations' do
       <<-GRAPHQL
         mutation(
           $modelId: UUID!,
-          $startDate: String!,
-          $endDate: String!,
+          $startDate: Date!,
+          $endDate: Date!,
           $quantity: Int!,
         ) {
           createReservation(
@@ -118,8 +118,8 @@ describe 'reservations' do
         q = <<-GRAPHQL
           mutation(
             $modelId: UUID!,
-            $startDate: String!,
-            $endDate: String!,
+            $startDate: Date!,
+            $endDate: Date!,
             $quantity: Int!,
             $inventoryPoolIds: [UUID!]
           ) {

@@ -1,7 +1,7 @@
 query searchModels(
   $searchTerm: String
-  $startDate: String!
-  $endDate: String!
+  $startDate: Date!
+  $endDate: Date!
   $categories: [UUID!]
   $pools: [UUID!]
 ) {

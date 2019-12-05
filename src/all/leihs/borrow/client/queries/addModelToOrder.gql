@@ -2,8 +2,8 @@ mutation addModelToOrder(
   $modelId: UUID!
   $quantity: Int!
   $inventoryPoolId: UUID!
-  $startDate: String!
-  $endDate: String!
+  $startDate: Date!
+  $endDate: Date!
 ) {
   reservation: createReservation(
     modelId: $modelId

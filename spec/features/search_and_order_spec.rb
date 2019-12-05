@@ -91,8 +91,8 @@ describe 'feature' do
       mutation addModelToOrder(
         $modelId: UUID!
         $quantity: Int!
-        $startDate: String!
-        $endDate: String!
+        $startDate: Date!
+        $endDate: Date!
       ) {
         reservations: createReservation(
           modelId: $modelId
@@ -126,8 +126,8 @@ describe 'feature' do
       mutation increaseQuantity(
         $modelId: UUID!
         $quantity: Int!
-        $startDate: String!
-        $endDate: String!
+        $startDate: Date!
+        $endDate: Date!
         $inventoryPoolIds: [UUID!]
       ) {
         reservations: createReservation(

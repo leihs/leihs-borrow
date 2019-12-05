@@ -13,6 +13,14 @@
             [leihs.core.graphql.helpers :as helpers]
             [leihs.core.ring-exception :refer [get-cause]]))
 
+(def lacinia-enable-timing (atom nil))
+
+(defn init [options]
+  (reset! lacinia-enable-timing
+          (:leihs-borrow-lacinia-enable-timing options))
+  (if @lacinia-enable-timing
+    (log/info (str "Lacinia timing is enabled."))))
+
 (defn load-schema
   []
   (-> (io/resource "schema.edn")
@@ -35,14 +43,17 @@
                    (-> request
                        :body
                        :variables)
-                   {:request request
-                    ::lacinia/enable-timing? true}))
+                   (cond-> {:request request}
+                     @lacinia-enable-timing
+                     (assoc ::lacinia/enable-timing? true))))
 
 (defn base-handler
   [{{query :query} :body, :as request}]
   (let [result (-> query 
                    (exec-query request)
-                   helpers/attach-overall-timing)
+                   (cond->
+                     @lacinia-enable-timing
+                     helpers/attach-overall-timing))
         resp {:body result}]
     (if (:errors result)
       (do (log/debug result) (assoc resp :graphql-error true))

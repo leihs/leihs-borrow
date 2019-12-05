@@ -1,5 +1,5 @@
-# source: http://localhost:3250/borrow/graphql
-# timestamp: Tue Dec 03 2019 12:59:57 GMT+0100 (Central European Standard Time)
+# source: http://localhost:3250/app/borrow/graphql
+# timestamp: Thu Dec 05 2019 11:31:37 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -73,16 +73,18 @@ enum ContractStateEnum {
 }
 
 type CurrentUser {
-  favoriteModels(after: String, endDate: String, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): ModelsConnection
+  favoriteModels(after: String, endDate: Date, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: Date): ModelsConnection
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   unsubmittedOrder: UnsubmittedOrder
   user: User
 }
 
+scalar Date
+
 scalar DateTime
 
 type DayData {
-  date: String!
+  date: Date!
   quantity: Int!
   visitsCount: Int!
 }
@@ -115,7 +117,7 @@ input InventoryPoolsOrderByInput {
 type Model {
   attachments: [Attachment]
   availability: [ModelInventoryPoolAvailability]
-  availableQuantityInDateRange: Int!
+  availableQuantityInDateRange(endDate: Date, inventoryPoolIds: [UUID!], startDate: Date): Int!
   description: String
   id: UUID!
   images: [Image]
@@ -158,7 +160,7 @@ input ModelsOrderByInput {
 """Root of all mutations."""
 type MutationRoot {
   createReservation(
-    endDate: String!
+    endDate: Date!
 
     """
     If it is not used, then the individual reservations are distributed among
@@ -168,7 +170,7 @@ type MutationRoot {
     inventoryPoolIds: [UUID!]
     modelId: UUID!
     quantity: Int!
-    startDate: String!
+    startDate: Date!
   ): [Reservation]
   deleteReservations(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
@@ -251,13 +253,13 @@ type Property {
 
 """Root of all queries."""
 type QueryRoot {
-  availability(endDate: String!, inventoryPoolId: UUID!, modelId: UUID!, startDate: String!): Availability
+  availability(endDate: Date!, inventoryPoolId: UUID!, modelId: UUID!, startDate: Date!): Availability
   categories(ids: [UUID!], limit: Int, offset: Int, rootOnly: Boolean): [Category]
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   currentUser: CurrentUser!
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   model(id: UUID!): Model!
-  models(after: String, categoryIds: [UUID!], endDate: String, first: Int, ids: [UUID!], inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: String): ModelsConnection
+  models(after: String, categoryIds: [UUID!], endDate: Date, first: Int, ids: [UUID!], inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: Date): ModelsConnection
   order(id: UUID!): Order!
   orders(
     after: String
@@ -275,11 +277,11 @@ type QueryRoot {
 
 type Reservation {
   createdAt: DateTime!
-  endDate: String!
+  endDate: Date!
   id: UUID!
   inventoryPool: InventoryPool!
   model: Model!
-  startDate: String!
+  startDate: Date!
   status: ReservationStateEnum!
   updatedAt: DateTime!
 }
@@ -339,7 +341,7 @@ input UsersOrderByInput {
 scalar UUID
 
 type Visit {
-  date: String!
+  date: Date!
   id: UUID!
   inventoryPool: InventoryPool!
   isApproved: Boolean!

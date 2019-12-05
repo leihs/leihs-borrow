@@ -12,7 +12,8 @@
 (def defaults
   {:LEIHS_BORROW_HTTP_BASE_URL "http://localhost:3250"
    :LEIHS_DATABASE_URL "jdbc:postgresql://leihs:leihs@localhost:5432/leihs?min-pool-size=1&max-pool-size=5"
-   :LEIHS_LEGACY_HTTP_BASE_URL "http://localhost:3000"}) 
+   :LEIHS_LEGACY_HTTP_BASE_URL "http://localhost:3000"
+   :LEIHS_BORROW_LACINIA_ENABLE_TIMING false}) 
 
 (defn- get-from-env
   [kw]
@@ -59,8 +60,15 @@
     :parse-fn
     #(-> %
          jdbc-url/dissect
-         extend-pg-params)],
-   shutdown/pid-file-option])
+         extend-pg-params)]
+   shutdown/pid-file-option
+   ["-t" "--lacinia-enable-timing LEIHS_BORROW_LACINIA_ENABLE_TIMING"
+    (str "default: " (:LEIHS_BORROW_LACINIA_ENABLE_TIMING defaults))
+    :default
+    (->> :LEIHS_BORROW_LACINIA_ENABLE_TIMING
+         env-or-default
+         boolean)
+    :parse-fn boolean]])
 
 (defn parse
   [args]
