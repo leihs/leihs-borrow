@@ -116,10 +116,10 @@
 
 (defn init
   []
-  (-> ;wrap-handler-with-logging
+  (-> #_wrap-handler-with-logging
       dispatch-to-handler
-      ; anti-csrf/wrap
-      ; locale/wrap
+      #_anti-csrf/wrap
+      #_locale/wrap
       authenticate/wrap
       session/wrap-authenticate
       wrap-cookies
@@ -128,12 +128,11 @@
       (wrap-json-body {:keywords? true})
       wrap-empty
       datasource/wrap-tx
-      (wrap-graphiql {:path "/app/borrow/graphiql",
+      (wrap-graphiql {:path "/app/borrow/graphiql"
                       :endpoint "/app/borrow/graphql"})
       core-routing/wrap-canonicalize-params-maps
       wrap-params
       wrap-multipart-params
-      wrap-content-type
       (wrap-resource "public"
                      {:allow-symlinks? true
                       :cache-bust-paths ["/app/borrow/css/site.css"
@@ -142,6 +141,7 @@
                       :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
                                            #".+_[0-9a-f]{40}\..+"]
                       :enabled? true})
+      wrap-content-type
       wrap-resolve-handler
       wrap-accept
       ring-exception/wrap))
