@@ -2,7 +2,6 @@
   (:refer-clojure :exclude [get])
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as clj-str]
-            [clojure.spec.alpha :as spec]
             [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]
             [clj-time.core :as clj-time]
@@ -15,24 +14,6 @@
             [wharf.core :refer [transform-keys]]
             [clojure.walk :as walk]
             [ring.middleware.nested-params :refer [nested-params-request]]))
-
-(spec/def ::start-date string?)
-(spec/def ::end-date string?)
-(spec/def ::inventory-pool-ids (spec/coll-of uuid? :min-count 1))
-
-(defn validate-start-date [start-date]
-  (if-not (spec/valid? ::start-date start-date)
-    (-> ::start-date
-        (spec/explain-str start-date)
-        (ex-info {})
-        throw)))
-
-(defn validate-end-date [end-date]
-  (if-not (spec/valid? ::end-date end-date)
-    (-> ::end-date
-        (spec/explain-str end-date)
-        (ex-info {})
-        throw)))
 
 (def legacy-base-url (atom nil))
 

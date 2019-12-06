@@ -65,10 +65,14 @@
                                            :resolve :is-reservable-model}
                             :isFavorited {:type (non-null Boolean)
                                           :resolve :is-favorited-model}
-                            :availability {:type (list :ModelInventoryPoolAvailability)}
+                            :availability {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
+                                                  :startDate {:type (non-null :Date)}
+                                                  :endDate {:type (non-null :Date)}}
+                                           :type (list :ModelInventoryPoolAvailability)
+                                           :resolve :model-availability}
                             :availableQuantityInDateRange {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
-                                                                  :startDate {:type :Date}
-                                                                  :endDate {:type :Date}}
+                                                                  :startDate {:type (non-null :Date)}
+                                                                  :endDate {:type (non-null :Date)}}
                                                            :type (non-null Int)
                                                            :resolve :available-quantity-in-date-range}
                             :images {:type (list :Image)
@@ -225,12 +229,9 @@
                    :resolve :model
                    :type (non-null :Model)}
            :models {:args {:categoryIds {:type (list (non-null :UUID))}
-                           :inventoryPoolIds {:type (list (non-null :UUID))}
                            :ids {:type (list (non-null :UUID))}
                            :orderBy {:type (list :ModelsOrderByInput)}
                            :searchTerm {:type String}
-                           :startDate {:type :Date}
-                           :endDate {:type :Date}
                            :first {:type Int}
                            :after {:type String}}
                     :type :ModelsConnection

@@ -725,10 +725,7 @@ describe 'models connection' do
     q = <<-GRAPHQL
       {
         models(
-          orderBy: [{attribute: ID, direction: ASC}],
-          startDate: "2019-10-24",
-          endDate: "2019-10-25",
-          inventoryPoolIds: ["232547a5-5f43-450c-896a-b692275a04ea"]
+          orderBy: [{attribute: ID, direction: ASC}]
         ) {
           edges {
             node {
@@ -750,7 +747,11 @@ describe 'models connection' do
                   }
                 }
               }
-              availability {
+              availability(
+                startDate: "2019-10-24",
+                endDate: "2019-10-25",
+                inventoryPoolIds: ["232547a5-5f43-450c-896a-b692275a04ea"]
+              ) {
                 inventoryPool {
                   id
                 }
@@ -824,14 +825,15 @@ describe 'models connection' do
     q = <<-GRAPHQL
       {
         models(
-          orderBy: [{attribute: ID, direction: ASC}],
-          startDate: "2019-10-24",
-          endDate: "2019-10-25"
+          orderBy: [{attribute: ID, direction: ASC}]
         ) {
           edges {
             node {
               id
-              availableQuantityInDateRange
+              availableQuantityInDateRange(
+                startDate: "2019-10-24",
+                endDate: "2019-10-25"
+              )
             }
           }
         }

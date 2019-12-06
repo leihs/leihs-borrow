@@ -1,17 +1,5 @@
-query searchModels(
-  $searchTerm: String
-  $startDate: Date!
-  $endDate: Date!
-  $categories: [UUID!]
-  $pools: [UUID!]
-) {
-  models(
-    searchTerm: $searchTerm
-    startDate: $startDate
-    endDate: $endDate
-    categoryIds: $categories
-    first: 12
-  ) {
+query searchModels($searchTerm: String, $startDate: Date!, $endDate: Date!) {
+  models(searchTerm: $searchTerm, first: 12) {
     edges {
       node {
         ...modelListProps
@@ -30,6 +18,5 @@ fragment modelListProps on Model {
     imageUrl
     # thumbnails { id size imageUrl }
   }
-  availableQuantityInDateRange
+  availableQuantityInDateRange(startDate: $startDate, endDate: $endDate)
 }
-

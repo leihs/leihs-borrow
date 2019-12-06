@@ -118,8 +118,6 @@ describe 'feature' do
       reservation_result_1.dig(:data, :reservations).map { |r| r[:id] }.to_set
     ).to eq Reservation.select(:id).all.map(&:id).to_set
 
-    # binding.pry
-
     # STEP 2B: increase quantity of a reservation for a specific pool
     
     operation = <<-GRAPHQL

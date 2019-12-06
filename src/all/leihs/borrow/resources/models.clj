@@ -4,6 +4,9 @@
             [clojure.java.jdbc :as jdbc]
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.executor :as executor]
+            [wharf.core :refer [transform-keys]]
+            [camel-snake-kebab.core :as csk]
+            [logbug.debug :as debug]
             [leihs.core.sql :as sql]
             [leihs.borrow.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.resources.availability :as availability]
@@ -95,27 +98,23 @@
   resolver, then just return it. Otherwise fetch from legacy and compute."
   [context {:keys [inventory-pool-ids start-date end-date]} value]
   (or (:available-quantity-in-date-range value)
-      (do (availability/validate-start-date start-date)
-          (availability/validate-end-date end-date)
-          (let [pool-ids (or (not-empty inventory-pool-ids)
-                             (->> (inventory-pools/get-multiple context {} nil)
-                                  (map :id)))
-                legacy-response (availability/get-available-quantities
-                                  context
-                                  {:model-ids [(:id value)]
-                                   :inventory-pool-ids pool-ids
-                                   :start-date start-date
-                                   :end-date end-date}
-                                  nil)]
-            (->> legacy-response
-                 (map :quantity)
-                 (apply +)
-                 (#(if (< % 0) 0 %)))))))
+      (let [pool-ids (or (not-empty inventory-pool-ids)
+                         (->> (inventory-pools/get-multiple context {} nil)
+                              (map :id)))
+            legacy-response (availability/get-available-quantities
+                              context
+                              {:model-ids [(:id value)]
+                               :inventory-pool-ids pool-ids
+                               :start-date start-date
+                               :end-date end-date}
+                              nil)]
+        (->> legacy-response
+             (map :quantity)
+             (apply +)
+             (#(if (< % 0) 0 %))))))
 
 (defn merge-available-quantities
   [models context {:keys [start-date end-date]} value]
-  (availability/validate-start-date start-date)
-  (availability/validate-end-date end-date)
   (let [pool-ids (->> (inventory-pools/get-multiple context {} nil)
                       (map :id))
         legacy-response (availability/get-available-quantities
@@ -138,28 +137,23 @@
                  (-> % :id str model-quantitites))
          models)))
 
-(defn merge-availability [models context args _]
-  (spec/assert (spec/keys :req-un [::availability/start-date
-                                   ::availability/end-date
-                                   #_::availability/inventory-pool-ids])
-               args)
-  (map (fn [model]
-         (assoc model
-                :availability
-                (map (fn [pool-id]
-                       (let [avail (availability/get
-                                     context
-                                     (assoc args
-                                            :inventory-pool-id pool-id
-                                            :model-id (:id model))
-                                     nil)]
-                         (assoc avail
-                                :inventory-pool
-                                (inventory-pools/get-by-id
-                                  (-> context :request :tx)
-                                  pool-id))))
-                     (:inventory-pool-ids args))))
-       models))
+(defn get-availability [context args value]
+  (let [pool-ids (or (:inventory-pool-ids args)
+                   (->> (inventory-pools/get-multiple context {} nil)
+                        (map :id)))]
+    (map (fn [pool-id]
+           (let [avail (availability/get
+                         context
+                         (assoc args
+                                :inventory-pool-id pool-id
+                                :model-id (:id value))
+                         nil)]
+             (assoc avail
+                    :inventory-pool
+                    (inventory-pools/get-by-id
+                      (-> context :request :tx)
+                      pool-id))))
+         pool-ids)))
 
 (defn from-compatibles [sqlmap value]
   (-> sqlmap
@@ -229,16 +223,18 @@
       :exists))
 
 (defn merge-availability-if-selects-fields
-  [models
-   context
-   {:keys [start-date end-date inventory-pool-ids] :as args}
-   value]
+  [models context args value]
   (cond-> models
-    (executor/selects-field? context :Model/availability)
-    (merge-availability context args value)
-    (and (executor/selects-field? context :Model/availableQuantityInDateRange)
-         (some identity [start-date end-date inventory-pool-ids]))
-    (merge-available-quantities context args value)))
+    (executor/selects-field? context :Model/availableQuantityInDateRange)
+    (merge-available-quantities
+      context
+      (->> context
+           executor/selections-seq2
+           (filter #(= (:name %) :Model/availableQuantityInDateRange))
+           first
+           :args
+           (transform-keys csk/->kebab-case))
+      value)))
 
 
 (defn post-process [models context args value]
