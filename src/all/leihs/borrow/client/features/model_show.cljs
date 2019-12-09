@@ -13,10 +13,14 @@
 (rf/reg-event-fx
  ::routes/models-show
  (fn [_ [_ args]]
-   (let [model-id (get-in args [:route-params :model-id])]
+   (let [model-id (get-in args [:route-params :model-id])
+         q (get-in args [:query-params])
+         order-form-params {:startDate (:start q) :endDate (:end q)}
+         order-form? (boolean (some identity (vals order-form-params)))
+         ]
      {:dispatch [::re-graph/query
                  (rc/inline "leihs/borrow/client/queries/getModelShow.gql")
-                 {:modelId model-id}
+                 (merge {:modelId model-id :withOrderForm order-form?} order-form-params)
                  [::on-fetched-data model-id]]})))
 
 (rf/reg-event-db
