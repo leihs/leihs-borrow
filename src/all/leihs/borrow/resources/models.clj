@@ -123,35 +123,30 @@
 
 (defn merge-available-quantities
   [models context {:keys [start-date end-date]} value]
-  (map
-    (fn [model]
-      (assoc model
-             :available-quantity-in-date-range
-             (if (before?
-                   (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
-                   (local-date))
-               0
-               (let [pool-ids
-                     (->> (inventory-pools/get-multiple context {} nil)
-                          (map :id))
-                     legacy-response
-                     (availability/get-available-quantities
-                       context
-                       {:model-ids (map :id models)
-                        :inventory-pool-ids pool-ids
-                        :start-date start-date
-                        :end-date end-date}
-                       nil)
-                     model-quantitites
-                     (->> legacy-response
-                          (group-by :model_id)
-                          (map (fn [[model-id pool-quantities]]
-                                 [model-id (->> pool-quantities
-                                                (map :quantity)
-                                                (apply +)
-                                                (#(if (< % 0) 0 %)))]))
-                          (into {}))]
-                 (-> model :id str model-quantitites)))))
+  (map (if (before?
+             (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
+             (local-date))
+         #(assoc % :available-quantity-in-date-range 0)
+         (let [pool-ids (->> (inventory-pools/get-multiple context {} nil)
+                             (map :id))
+               legacy-response (availability/get-available-quantities
+                                 context
+                                 {:model-ids (map :id models)
+                                  :inventory-pool-ids pool-ids
+                                  :start-date start-date
+                                  :end-date end-date}
+                                 nil)
+               model-quantitites (->> legacy-response
+                                      (group-by :model_id)
+                                      (map (fn [[model-id pool-quantities]]
+                                             [model-id (->> pool-quantities
+                                                            (map :quantity)
+                                                            (apply +)
+                                                            (#(if (< % 0) 0 %)))]))
+                                      (into {}))]
+           #(assoc %
+                   :available-quantity-in-date-range
+                   (-> % :id str model-quantitites))))
        models))
 
 (defn get-availability
