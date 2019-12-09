@@ -76,9 +76,11 @@ get '/borrow/booking_calendar_availability' do
     }
   when '2bc1deb5-9428-4178-afd0-c06bb8d31ff3', '210a4116-162f-4947-bcb0-2d7d1a5c7b1c'
     { list: [
-      { d: '2019-10-24',
+      { d: Date.yesterday.to_s,
         quantity: 1 },
-      { d: '2019-10-25',
+      { d: Date.today.to_s,
+        quantity: 1 },
+      { d: (Date.today + 1.day).to_s,
         quantity: 1 }
       ]
     }
