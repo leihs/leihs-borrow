@@ -27,6 +27,23 @@
        (assoc-in , [:models model-id :errors] errors)
        (assoc-in , [:models model-id :data] data))))
 
+(rf/reg-event-fx
+ ::fetch-available-quantity
+ (fn [{:keys [db]} [_ model-id start end]]
+     {:db (assoc-in db [:models model-id :is-loading-availability [start end]] true)
+      :dispatch [::re-graph/query
+                 (rc/inline "leihs/borrow/client/queries/getModelAvailableQuantity.gql")
+                 {:modelId model-id :startDate start :endDate end}
+                 [::on-fetched-available-quantity model-id start end]]}))
+
+(rf/reg-event-db
+ ::on-fetched-available-quantity
+ (fn [db [_ model-id start end {:keys [data errors]}]]
+   (-> db
+       (assoc-in , [:models model-id :is-loading-availability [start end]] false)
+       (assoc-in , [:models model-id :errors] errors)
+       (update-in , [:models model-id :data :model] merge (get-in data [:model])))))
+
 (rf/reg-sub
  ::model-data
  (fn [db [_ id]]
@@ -52,7 +69,9 @@
   (let [state (reagent/atom (merge params {:quantity 1}))]
     (fn [model params]
       (let [given-order-dates? (and (:start params) (:end params))
-            max-available (:maxQuantity params)
+            max-available (:availableQuantityInDateRange model)
+            submit-disabled? (> (:start @state) max-available)
+            on-dates-change #(rf/dispatch [::fetch-available-quantity (:id model) (:start @state) (:end @state)])
             on-submit #(rf/dispatch
                         [::model-create-reservation
                          (merge {:modelId (:id model)
@@ -65,17 +84,30 @@
            [:div.flex.-mx-2
             [:label.px-2.w-1_2
              [:span.text-color-muted "from "]
-             [:input {:type :date :name :start-date :value (:start params)}]]
+             [:input {:type :date 
+                      :name :start-date 
+                      :value (:start @state) 
+                      :on-change 
+                      (fn [e] (let [val (.-value (.-target e))] 
+                                (swap! state assoc :start val)
+                                (on-dates-change)
+                                ))}]]
             [:label.px-2.w-1_2
              [:span.text-color-muted "until "]
-             [:input {:type :date :name :end-date :value (:end params)}]]]
+             [:input {:type :date
+                      :name :end-date
+                      :value (:end @state)
+                      :on-change
+                      (fn [e] (let [val (.-value (.-target e))]
+                                (swap! state assoc :end val)
+                                (on-dates-change)))}]]]
            [:div.flex.items-end.mt-2.-mx-2
             [:div.px-2.flex-none.w-1_2
              [:div.flex.flex-wrap.items-end.-mx-2
               [:div.flex-1.w-1_2.px-2
                [:label.block
                 [:span.block.text-color-muted "quantity "]
-                [:input.w-full
+                [:input.w-full.input-show-validation
                  {:type :number
                   :name :quantity
                   :max max-available
@@ -88,7 +120,8 @@
 
             [:div.flex-auto.px-2.w-1_2
              [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg
-              {:on-click on-submit}
+              {:disabled submit-disabled?
+               :on-click on-submit}
               "Order"]]]])))))
 
 (defn view []

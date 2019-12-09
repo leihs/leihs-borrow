@@ -65,6 +65,11 @@ body {
   white-space: pre-wrap;
 }
 
+.input-show-validation:invalid {
+  /* .bg-red-300 */
+  background-color: #feb2b2;
+}
+
 .show-after-1sec {
   animation: cssAnimation 0s 1s forwards;
   visibility: hidden;

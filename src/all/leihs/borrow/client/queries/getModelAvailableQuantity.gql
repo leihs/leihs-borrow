@@ -1,0 +1,9 @@
+query getModelAvailableQuantity(
+  $modelId: UUID!
+  $startDate: Date!
+  $endDate: Date!
+) {
+  model(id: $modelId) {
+    availableQuantityInDateRange(startDate: $startDate, endDate: $endDate)
+  }
+}
