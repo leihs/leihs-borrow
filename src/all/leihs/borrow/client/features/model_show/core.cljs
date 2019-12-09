@@ -1,4 +1,4 @@
-(ns leihs.borrow.client.features.model-show
+(ns leihs.borrow.client.features.model-show.core
   (:require
    [reagent.core :as reagent]
    [re-frame.core :as rf]
@@ -19,7 +19,7 @@
          order-form? (boolean (some identity (vals order-form-params)))
          ]
      {:dispatch [::re-graph/query
-                 (rc/inline "leihs/borrow/client/queries/getModelShow.gql")
+                 (rc/inline "leihs/borrow/client/features/model_show/getModelShow.gql")
                  (merge {:modelId model-id :withOrderForm order-form?} order-form-params)
                  [::on-fetched-data model-id]]})))
 
@@ -36,7 +36,7 @@
  (fn [{:keys [db]} [_ model-id start end]]
      {:db (assoc-in db [:models model-id :is-loading-availability [start end]] true)
       :dispatch [::re-graph/query
-                 (rc/inline "leihs/borrow/client/queries/getModelAvailableQuantity.gql")
+                 (rc/inline "leihs/borrow/client/features/model_show/getModelAvailableQuantity.gql")
                  {:modelId model-id :startDate start :endDate end}
                  [::on-fetched-available-quantity model-id start end]]}))
 
@@ -52,6 +52,11 @@
  ::model-data
  (fn [db [_ id]]
    (get-in db [:models id])))
+
+(rf/reg-sub
+ ::loading-availability?
+ (fn [db [_ id start end]]
+   (get-in db [:models id :is-loading-availability [start end]])))
 
 (rf/reg-event-fx
  ::model-create-reservation
@@ -73,8 +78,9 @@
   (let [state (reagent/atom (merge params {:quantity 1}))]
     (fn [model params]
       (let [given-order-dates? (and (:start params) (:end params))
+            loading-availability? @(rf/subscribe [::loading-availability? (:id model) (:start @state) (:end @state)])
             max-available (:availableQuantityInDateRange model)
-            submit-disabled? (> (:start @state) max-available)
+            submit-disabled? (or loading-availability? (> (:start @state) max-available))
             on-dates-change #(rf/dispatch [::fetch-available-quantity (:id model) (:start @state) (:end @state)])
             on-submit #(rf/dispatch
                         [::model-create-reservation
@@ -83,50 +89,56 @@
                                  :endDate (:end @state)
                                  :quantity (:quantity @state)})])]
         (when given-order-dates?
-          [:div.border-b-2.border-gray-300.mt-4.pb-4
-           [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
-           [:div.flex.-mx-2
-            [:label.px-2.w-1_2
-             [:span.text-color-muted "from "]
-             [:input {:type :date 
-                      :name :start-date 
-                      :value (:start @state) 
-                      :on-change 
-                      (fn [e] (let [val (.-value (.-target e))] 
-                                (swap! state assoc :start val)
-                                (on-dates-change)
-                                ))}]]
-            [:label.px-2.w-1_2
-             [:span.text-color-muted "until "]
-             [:input {:type :date
-                      :name :end-date
-                      :value (:end @state)
-                      :on-change
-                      (fn [e] (let [val (.-value (.-target e))]
-                                (swap! state assoc :end val)
-                                (on-dates-change)))}]]]
-           [:div.flex.items-end.mt-2.-mx-2
-            [:div.px-2.flex-none.w-1_2
-             [:div.flex.flex-wrap.items-end.-mx-2
-              [:div.flex-1.w-1_2.px-2
-               [:label.block
-                [:span.block.text-color-muted "quantity "]
-                [:input.w-full.input-show-validation
-                 {:type :number
-                  :name :quantity
-                  :max max-available
-                  :value (:quantity @state)
-                  :on-change
-                  (fn [e] (let [val (.-value (.-target e))] (swap! state assoc :quantity (int val))))}]]]
-              [:div.flex-1.w-1_2.px-2 [:span.no-underline.text-color-muted 
-                                       {:aria-label (str "maximum available quantity is " max-available)} 
-                                       "/" ui/thin-space max-available ui/thin-space "max."]]]]
+          [:form {::on-submit #((.preventDefault %) (on-submit))}
+           [:div.border-b-2.border-gray-300.mt-4.pb-4
+            [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
+            [:div.flex.-mx-2
+             [:label.px-2.w-1_2
+              [:span.text-color-muted "from "]
+              [:input {:type :date
+                       :name :start-date
+                       :value (:start @state)
+                       :max (:end @state)
+                       :on-change
+                       (fn [e] (let [val (.-value (.-target e))]
+                                 (swap! state assoc :start val)
+                                 (on-dates-change)))}]]
+             [:label.px-2.w-1_2
+              [:span.text-color-muted "until "]
+              [:input {:type :date
+                       :name :end-date
+                       :value (:end @state)
+                       :min (:start @state)
+                       :on-change
+                       (fn [e] (let [val (.-value (.-target e))]
+                                 (swap! state assoc :end val)
+                                 (on-dates-change)))}]]]
+            [:div.flex.items-end.mt-2.-mx-2
+             [:div.px-2.flex-none.w-1_2
+              [:div.flex.flex-wrap.items-end.-mx-2
+               [:div.flex-1.w-1_2.px-2
+                [:label.block
+                 [:span.block.text-color-muted "quantity "]
+                 [:input.w-full.input-show-validation
+                  {:type :number
+                   :name :quantity
+                   :max max-available
+                   :value (:quantity @state)
+                   :on-change
+                   (fn [e] (let [val (.-value (.-target e))] (swap! state assoc :quantity (int val))))}]]]
+               [:div.flex-1.w-1_2.px-2.text-color-muted
+                (if loading-availability?
+                  [:span
+                   {:aria-label (str "maximum available quantity is loading")}
+                   "/" ui/thin-space "…"]
+                  [:span
+                   {:aria-label (str "maximum available quantity is " max-available)}
+                   "/" ui/thin-space max-available ui/thin-space "max."])]]]
 
-            [:div.flex-auto.px-2.w-1_2
-             [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg
-              {:disabled submit-disabled?
-               :on-click on-submit}
-              "Order"]]]])))))
+             [:div.flex-auto.px-2.w-1_2
+              [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg
+               {:disabled submit-disabled? :type :submit}
+               "Order"]]]]])))))
 
 (defn view []
   (let

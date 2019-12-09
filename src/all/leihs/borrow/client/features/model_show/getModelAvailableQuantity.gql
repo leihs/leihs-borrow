@@ -4,6 +4,7 @@ query getModelAvailableQuantity(
   $endDate: Date!
 ) {
   model(id: $modelId) {
-    availableQuantityInDateRange(startDate: $startDate, endDate: $endDate)
+    availableQuantityInDateRange(
+      startDate: $startDate, endDate: $endDate)
   }
 }

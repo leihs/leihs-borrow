@@ -1,4 +1,9 @@
-query getModelShow($modelId: UUID!, $withOrderForm: Boolean!, $startDate: Date!, $endDate: Date!) {
+query getModelShow(
+  $modelId: UUID!,
+$withOrderForm: Boolean!,
+$startDate: Date!,
+$endDate: Date!
+) {
   model(id: $modelId) {
     id
     name

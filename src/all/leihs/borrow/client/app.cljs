@@ -13,7 +13,7 @@
    [leihs.borrow.client.features.about-page :as about-page]
    [leihs.borrow.client.features.search-models :as search-models]
    [leihs.borrow.client.features.shopping-cart :as shopping-cart]
-   [leihs.borrow.client.features.model-show :as model-show]))
+   [leihs.borrow.client.features.model-show.core :as model-show]))
 
 (def re-graph-config {:ws-url nil :http-url "/app/borrow/graphql" :http-parameters {:with-credentials? true}})
 
