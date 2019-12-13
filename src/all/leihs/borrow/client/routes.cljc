@@ -8,6 +8,9 @@
   {"" ::home
    "search" ::search
    "about" ::about-page
+   "categories" {"" ::categories-index
+                 "/" ::categories-index
+                 ["/" [#".+" :categories-path]] ::categories-show}
    "models" {"" ::models-index
              "/" ::models-index
              ["/" :model-id] ::models-show}

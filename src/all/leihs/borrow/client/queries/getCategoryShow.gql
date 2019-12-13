@@ -1,0 +1,30 @@
+query getCategoryShow($categoryId: UUID!, $parentId: UUID) {
+  category(id: $categoryId, parentId: $parentId) {
+    id
+    name
+    models(first: 12) {
+      edges {
+        node {
+          ...modelListProps
+        }
+      }
+    }
+    children {
+      id
+      name
+    }
+  }
+}
+
+fragment modelListProps on Model {
+  id
+  name
+  description
+  manufacturer
+  images {
+    id
+    imageUrl
+    # thumbnails { id size imageUrl }
+  }
+  # availableQuantityInDateRange(startDate: $startDate, endDate: $endDate)
+}

@@ -133,8 +133,8 @@
                                         :description "Includes only direct ones or all from self and the descendent sub-categories."
                                         :resolve :models-connection
                                         :args {:directOnly {:type Boolean}
-                                               :limit {:type Int}
-                                               :offset {:type Int}
+                                               :first {:type Int}
+                                               :after {:type String}
                                                :orderBy {:type (list :ModelsOrderByInput)}
                                                :searchTerm {:type String}}}
                                :images {:type (list :Image)
@@ -245,6 +245,10 @@
                                  :endDate {:type (non-null :Date)}}
                           :resolve :availability
                           :type :Availability}
+           :category {:args {:id {:type (non-null :UUID)}
+                             :parentId {:type :UUID}}
+                      :resolve :category
+                      :type :Category}
            :categories {:args {:limit {:type Int}
                                :offset {:type Int}
                                :ids {:type (list (non-null :UUID))}

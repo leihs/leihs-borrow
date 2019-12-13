@@ -13,7 +13,9 @@
    [leihs.borrow.client.features.about-page :as about-page]
    [leihs.borrow.client.features.search-models :as search-models]
    [leihs.borrow.client.features.shopping-cart :as shopping-cart]
-   [leihs.borrow.client.features.model-show :as model-show]))
+   [leihs.borrow.client.features.category-show :as category-show]
+   [leihs.borrow.client.features.model-show :as model-show]
+   ))
 
 (def re-graph-config {:ws-url nil :http-url "/app/borrow/graphql" :http-parameters {:with-credentials? true}})
 
@@ -70,6 +72,7 @@
 (def views {::routes/home home-page/view
             ::routes/search search-models/view
             ::routes/about-page about-page/view
+            ::routes/categories-show category-show/view
             ::routes/models-index wip-models-index-view
             ::routes/models-show model-show/view
             ::routes/shopping-cart shopping-cart/view

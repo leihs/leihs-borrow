@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Dec 06 2019 14:11:27 GMT+0100 (Central European Standard Time)
+# timestamp: Fri Dec 13 2019 13:44:25 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -26,7 +26,7 @@ type Category {
   """
   Includes only direct ones or all from self and the descendent sub-categories.
   """
-  models(directOnly: Boolean, limit: Int, offset: Int, orderBy: [ModelsOrderByInput], searchTerm: String): ModelsConnection
+  models(after: String, directOnly: Boolean, first: Int, orderBy: [ModelsOrderByInput], searchTerm: String): ModelsConnection
 
   """
   A name is either a label for the child-parent connection (if such exists) or the name of the category itself.
@@ -255,6 +255,7 @@ type Property {
 type QueryRoot {
   availability(endDate: Date!, inventoryPoolId: UUID!, modelId: UUID!, startDate: Date!): Availability
   categories(ids: [UUID!], limit: Int, offset: Int, rootOnly: Boolean): [Category]
+  category(id: UUID!, parentId: UUID): Category
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   currentUser: CurrentUser!
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]

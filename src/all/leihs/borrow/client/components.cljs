@@ -93,6 +93,9 @@
    [:p [:a {:href (routing/path-for ::routes/home)} "home"]]
 
    [:p [:a {:href (routing/path-for ::routes/about-page)} "about"]]
+   [:p [:a {:href (routing/path-for ::routes/categories-show
+                                    :categories-path "09ac0343-0d83-5c7f-b112-d5921e9479fd")}
+        "test category show"]]
    [:p [:a {:href (routing/path-for ::routes/models-index)} "test model index"]]
    [:p [:a {:href
             (routing/path-for

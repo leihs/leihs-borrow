@@ -10,7 +10,8 @@
   (-> (sql/select :model_groups.id [:model_groups.name :name])
       (sql/modifiers :distinct)
       (sql/from :model_groups)
-      (sql/merge-where [:= :model_groups.type "Category"])))
+      (sql/merge-where [:= :model_groups.type "Category"])
+      (sql/order-by [:name :asc])))
 
 (defn extend-based-on-args [sqlmap {:keys [limit offset ids root-only]}]
   (-> sqlmap
@@ -51,6 +52,25 @@
                               (:id value)])))
       sql/format
       (->> (jdbc/query tx))))
+
+(defn get-one [{{:keys [tx]} :request} {:keys [id parent-id]} _]
+  (-> base-sqlmap
+      (cond-> parent-id
+        (-> (sql/select :model_groups.id
+                        [(sql/call :coalesce
+                                   :model_group_links.label
+                                   :model_groups.name) :name])
+            (sql/merge-join :model_group_links
+                            [:=
+                             :model_groups.id
+                             :model_group_links.child_id])
+            (sql/merge-where [:=
+                              :model_group_links.parent_id
+                              parent-id])))
+      (sql/merge-where [:= :model_groups.id id])
+      sql/format
+      (->> (jdbc/query tx))
+      first))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
