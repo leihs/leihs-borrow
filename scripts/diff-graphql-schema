@@ -2,6 +2,9 @@
 
 # fetch schema from server and compare against the checked-in version
 
+# NOTE: ensure the bin is installed (comes from npm package)
+npm run -s graphql-schema-diff -- --version &> /dev/null || npm install --silent --no-audit
+
 RES=1
 
 mv schema.graphql schema_orig.graphql

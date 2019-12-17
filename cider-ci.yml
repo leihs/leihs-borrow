@@ -1,6 +1,6 @@
 jobs:
 
-  build-borrow-uberjar: 
+  build-borrow-uberjar:
 
     name: Build prod ready uberjar
 
@@ -8,7 +8,7 @@ jobs:
       any branch is pushed: { type: branch, include_match: ^.*$ }
 
     context:
-      task_defaults: 
+      task_defaults:
         include:
           - cider-ci/environment_variables.yml
         environment_variables:
@@ -16,8 +16,8 @@ jobs:
         git_options:
           submodules:
             include_match: ^.*$
-      tasks: 
-        build-borrowr-uberjar:
+      tasks:
+        build-borrow-uberjar:
           include:
             - cider-ci/uberjar_task-component.yml
 
@@ -61,7 +61,7 @@ jobs:
   #          include_match: ^.*$
   #      scripts:
   #        test:
-  #          start_when: 
+  #          start_when:
   #            borrow service is running:
   #              script_key: borrow-service-is-running
   #              states: [passed]
@@ -168,7 +168,7 @@ jobs:
             include_match: ^.*$
         scripts:
           test:
-            start_when: 
+            start_when:
               borrow service is running:
                 script_key: borrow-service-is-running
                 states: [passed]
@@ -227,4 +227,5 @@ jobs:
             test:
               body: |
                 sed -i '' -e "s/localhost:3250/localhost:${LEIHS_BORROW_HTTP_PORT}/" .graphqlconfig.yaml
+                npm install --silent --no-audit
                 ./scripts/diff-graphql-schema
