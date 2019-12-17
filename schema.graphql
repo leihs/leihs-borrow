@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Dec 13 2019 13:44:25 GMT+0100 (Central European Standard Time)
+# timestamp: Mon Dec 16 2019 13:16:47 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -254,6 +254,8 @@ type Property {
 """Root of all queries."""
 type QueryRoot {
   availability(endDate: Date!, inventoryPoolId: UUID!, modelId: UUID!, startDate: Date!): Availability
+
+  """This query probably does not return correct results!"""
   categories(ids: [UUID!], limit: Int, offset: Int, rootOnly: Boolean): [Category]
   category(id: UUID!, parentId: UUID): Category
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
@@ -272,6 +274,7 @@ type QueryRoot {
     """
     states: [PoolOrderStateEnum]
   ): OrdersConnection
+  rootCategories: [Category!]
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
   visits(limit: Int, orderBy: [VisitsOrderByInput]): [Visit]
 }

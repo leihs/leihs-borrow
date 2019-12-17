@@ -22,6 +22,7 @@
    :categories categories/get-multiple
    :contracts-connection contracts/get-connection
    :current-user users/get-current
+   :child-categories categories/get-children
    :favorite-models-connection models/get-favorites-connection
    :images images/get-multiple
    :inventory-pool inventory-pools/get-one
@@ -36,6 +37,7 @@
    :pool-orders orders/get-multiple-by-pool
    :properties properties/get-multiple
    :reservations reservations/get-multiple
+   :root-categories categories/get-roots
    :thumbnails images/get-multiple-thumbnails
    :unsubmitted-order orders/get-unsubmitted
    :users users/get-multiple

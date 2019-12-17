@@ -1,7 +1,10 @@
 query getSearchFilters {
-  mainCategories: categories(rootOnly: true) {
+  mainCategories: rootCategories {
     id
     label: name
+    images {
+      imageUrl
+    }
   }
   pools: inventoryPools {
     id

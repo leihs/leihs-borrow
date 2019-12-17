@@ -128,7 +128,7 @@
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
-                                          :resolve :categories}
+                                          :resolve :child-categories}
                                :models {:type :ModelsConnection
                                         :description "Includes only direct ones or all from self and the descendent sub-categories."
                                         :resolve :models-connection
@@ -249,10 +249,13 @@
                              :parentId {:type :UUID}}
                       :resolve :category
                       :type :Category}
+           :rootCategories {:resolve :root-categories
+                            :type (list (non-null :Category))}
            :categories {:args {:limit {:type Int}
                                :offset {:type Int}
                                :ids {:type (list (non-null :UUID))}
                                :rootOnly {:type Boolean}}
+                        :description "This query probably does not return correct results!"
                         :resolve :categories
                         :type (list :Category)}}
 
