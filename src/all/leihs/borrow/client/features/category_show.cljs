@@ -1,10 +1,12 @@
 (ns leihs.borrow.client.features.category-show
+  (:require-macros [leihs.borrow.client.macros :refer [spy]])
   (:require
    [reagent.core :as reagent]
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
    [clojure.string :refer [join split replace-first]]
+   [leihs.borrow.client.features.search-models :as search-models]
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.components :as ui]
    [leihs.borrow.client.routes :as routes]
@@ -67,6 +69,36 @@
              [model-grid-item model]])))]]
      (when debug? [:p (pr-str @(rf/subscribe [::search-results]))])]))
 
+(rf/reg-event-fx
+ ::get-more-models
+ (fn [{:keys [db]} [_ category-id parent-id]]
+   (let [page-info (get-in db [:categories category-id :data :category :models :pageInfo])
+         has-next? (get page-info :hasNextPage)
+         query-vars {:categoryId category-id
+                     :parentId parent-id
+                     :afterCursor (get page-info :endCursor)}]
+     (when has-next?
+       {:dispatch
+        [::re-graph/query
+         (rc/inline "leihs/borrow/client/queries/getCategoryShow.gql")
+         query-vars
+         [::on-fetched-more-models]]}))))
+
+(rf/reg-event-fx
+ ::on-fetched-more-models
+ (fn [{:keys [db]} [_ {:keys [data errors]}]]
+   (let [category-id (get-in data [:category :id])
+         more-edges (get-in data [:category :models :edges])
+         path-to-models [:categories category-id :data :category :models]]
+     (if errors
+       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
+       {:db (-> db
+                (assoc-in (conj path-to-models :pageInfo)
+                          (get-in data [:category :models :pageInfo]))
+                (update-in (conj path-to-models :edges)
+                           concat
+                           more-edges)) }))))
+
 (defn view []
   (let [routing @(rf/subscribe [:routing/routing])
         cat-ids (-> routing
@@ -74,6 +106,7 @@
                     (split #"/"))
         category-id (last cat-ids)
         prev-ids (butlast cat-ids)
+        parent-id (first prev-ids)
         fetched @(rf/subscribe [::category-data category-id])
         {:keys [children] {models :edges} :models :as category} (get-in fetched [:data :category])
         errors (:errors fetched)
@@ -88,7 +121,7 @@
          [:h1.text-3xl.font-extrabold.leading-none
           (:name category)]]
 
-        (if-let [prev-id (first prev-ids)]
+        (if parent-id
           [:a {:href (str (routing/path-for ::routes/categories-show
                                             :categories-path (join "/" prev-ids)))}
            "<<-"])
@@ -99,4 +132,9 @@
 
         #_[:p.debug (pr-str category)]
 
-        [products-list models]])]))
+        [products-list models]
+        [:hr]
+        [:div.p-3.text-center
+         [:button.border.border-black.p-2.rounded
+          {:on-click #(rf/dispatch [::get-more-models category-id parent-id])}
+          "LOAD MORE"]]])]))

@@ -1,4 +1,5 @@
 (ns leihs.borrow.client.features.search-models
+  (:require-macros [leihs.borrow.client.macros :refer [spy]])
   (:require
    #_[reagent.core :as r]
    [re-frame.core :as rf]
@@ -83,6 +84,36 @@
    (if errors
      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
      {:db (assoc-in db [:search :results] (get-in data [:models]))})))
+
+(rf/reg-event-fx
+ ::get-more-models
+ (fn [{:keys [db]} [_ filters]]
+   (let
+    [page-info (get-in db [:search :results :pageInfo])
+     has-next? (get page-info :hasNextPage)
+     query-vars 
+     {:searchTerm (get filters :term)
+      :startDate (get filters :start-date)
+      :endDate (get filters :end-date)
+      :afterCursor (get page-info :endCursor)
+      }]
+     (when has-next?
+       {:dispatch
+        [::re-graph/query
+         (rc/inline "leihs/borrow/client/queries/searchModels.gql")
+         query-vars
+         [::on-fetched-more-models]]}))))
+
+(rf/reg-event-fx
+ ::on-fetched-more-models
+ (fn [{:keys [db]} [_ {:keys [data errors]}]]
+   (if errors
+     {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
+     {:db (-> db
+              (assoc-in , [:search :results :pageInfo] (get-in data [:models :pageInfo]))
+              (update-in , [:search :results :edges] concat (get-in data [:models :edges]))
+              )
+      })))
 
 
 ;-; SUBSCRIPTIONS 
@@ -210,7 +241,8 @@
 (defn view
   []
   (let
-   [models @(rf/subscribe [::search-results])]
+   [models @(rf/subscribe [::search-results])
+    current-filters @(rf/subscribe [::current-filters])]
     [:<>
      [search-panel]
      #_[:p (pr-str models)]
@@ -224,4 +256,9 @@
             [:p "params:"]
             [:pre (pr-str (get-in routing [:bidi-match :query-params]))]
             [:hr]]]
-        [products-list models]])]))
+        [products-list models]
+        [:hr]
+        [:div.p-3.text-center
+         [:button.border.border-black.p-2.rounded
+          {:on-click #(rf/dispatch [::get-more-models current-filters])}
+          "LOAD MORE"]]])]))

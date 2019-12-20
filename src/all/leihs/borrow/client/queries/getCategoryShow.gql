@@ -1,12 +1,20 @@
-query getCategoryShow($categoryId: UUID!, $parentId: UUID) {
+query getCategoryShow(
+  $categoryId: UUID!,
+  $parentId: UUID,
+  $afterCursor: String
+) {
   category(id: $categoryId, parentId: $parentId) {
     id
     name
-    models(first: 12) {
+    models(first: 20, after: $afterCursor) {
       edges {
         node {
           ...modelListProps
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
       }
     }
     children {

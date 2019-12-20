@@ -1,9 +1,18 @@
-query searchModels($searchTerm: String, $startDate: Date!, $endDate: Date!) {
-  models(searchTerm: $searchTerm, first: 12) {
+query searchModels(
+  $searchTerm: String
+  $startDate: Date!
+  $endDate: Date!
+  $afterCursor: String
+) {
+  models(searchTerm: $searchTerm, first: 20, after: $afterCursor) {
     edges {
       node {
         ...modelListProps
       }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
     }
   }
 }

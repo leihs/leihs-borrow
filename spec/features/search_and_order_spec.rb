@@ -64,24 +64,17 @@ describe 'feature' do
     operation = File.read('src/all/leihs/borrow/client/queries/searchModels.gql')
     variables = { searchTerm: 'Kamera', startDate: my_start_date, endDate: my_end_date }
 
-    search_result_1 = query(operation, user.id, variables)
-    expect_graphql_result(
-      search_result_1,
-      {
-        models: {
-          edges: [
-            { node: {
-              description: nil,
-              id: models[:kamera].id,
-              images: [],
-              manufacturer: nil,
-              name: 'Kamera',
-              availableQuantityInDateRange: 4
-            }}
-          ]
-        }
-      }
-    )
+    search_result_1 = query(operation, user.id, variables).deep_symbolize_keys
+    expect(search_result_1.dig(:data, :models, :edges)).to eq [
+      { node: {
+        description: nil,
+        id: models[:kamera].id,
+        images: [],
+        manufacturer: nil,
+        name: 'Kamera',
+        availableQuantityInDateRange: 4
+      }}
+    ]
 
     # STEP 1B: search for Stativ
     # STEP 1C: search for Mikrofon
