@@ -1,38 +1,42 @@
 (ns leihs.borrow.client.features.category-show
   (:require-macros [leihs.borrow.client.macros :refer [spy]])
   (:require
-   [reagent.core :as reagent]
-   [re-frame.core :as rf]
-   [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   [clojure.string :refer [join split replace-first]]
-   [leihs.borrow.client.features.search-models :as search-models]
-   [leihs.borrow.client.lib.routing :as routing]
-   [leihs.borrow.client.components :as ui]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.client.components :as ui]))
+    [reagent.core :as reagent]
+    [re-frame.core :as rf]
+    [re-graph.core :as re-graph]
+    [shadow.resource :as rc]
+    [clojure.string :refer [join split replace-first]]
+    [leihs.borrow.client.features.search-models :as search-models]
+    [leihs.borrow.client.lib.routing :as routing]
+    [leihs.borrow.client.lib.pagination :as pagination]
+    [leihs.borrow.client.components :as ui]
+    [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.client.components :as ui]))
+
+(def query
+  (rc/inline "leihs/borrow/client/queries/getCategoryShow.gql"))
 
 ; is kicked off from router when this view is loaded
 (rf/reg-event-fx
- ::routes/categories-show
- (fn [_ [_ args]]
-   (let [categories-path (get-in args [:route-params :categories-path])
-         categories (split categories-path #"/")
-         category-id (last categories)
-         parent-id (last (butlast categories))]
-     {:dispatch [::re-graph/query
-                 (rc/inline "leihs/borrow/client/queries/getCategoryShow.gql")
-                 {:categoryId category-id
-                  :parentId parent-id}
-                 [::on-fetched-data category-id]]})))
+  ::routes/categories-show
+  (fn [_ [_ args]]
+    (let [categories-path (get-in args [:route-params :categories-path])
+          categories (split categories-path #"/")
+          category-id (last categories)
+          parent-id (last (butlast categories))]
+      {:dispatch [::re-graph/query
+                  query
+                  {:categoryId category-id
+                   :parentId parent-id}
+                  [::on-fetched-data category-id]]})))
 
 (rf/reg-event-db
- ::on-fetched-data
- (fn [db [_ category-id {:keys [data errors]}]]
-   (-> db
-       (update-in , [:categories category-id] (fnil identity {}))
-       (assoc-in , [:categories category-id :errors] errors)
-       (assoc-in , [:categories category-id :data] data))))
+  ::on-fetched-data
+  (fn [db [_ category-id {:keys [data errors]}]]
+    (-> db
+        (update-in , [:categories category-id] (fnil identity {}))
+        (assoc-in , [:categories category-id :errors] errors)
+        (assoc-in , [:categories category-id :data] data))))
 
 (rf/reg-sub
  ::category-data
@@ -68,36 +72,6 @@
             [:div {:class "w-1/2 min-h-16" :key (:id model)}
              [model-grid-item model]])))]]
      (when debug? [:p (pr-str @(rf/subscribe [::search-results]))])]))
-
-(rf/reg-event-fx
- ::get-more-models
- (fn [{:keys [db]} [_ category-id parent-id]]
-   (let [page-info (get-in db [:categories category-id :data :category :models :pageInfo])
-         has-next? (get page-info :hasNextPage)
-         query-vars {:categoryId category-id
-                     :parentId parent-id
-                     :afterCursor (get page-info :endCursor)}]
-     (when has-next?
-       {:dispatch
-        [::re-graph/query
-         (rc/inline "leihs/borrow/client/queries/getCategoryShow.gql")
-         query-vars
-         [::on-fetched-more-models]]}))))
-
-(rf/reg-event-fx
- ::on-fetched-more-models
- (fn [{:keys [db]} [_ {:keys [data errors]}]]
-   (let [category-id (get-in data [:category :id])
-         more-edges (get-in data [:category :models :edges])
-         path-to-models [:categories category-id :data :category :models]]
-     (if errors
-       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-       {:db (-> db
-                (assoc-in (conj path-to-models :pageInfo)
-                          (get-in data [:category :models :pageInfo]))
-                (update-in (conj path-to-models :edges)
-                           concat
-                           more-edges)) }))))
 
 (defn view []
   (let [routing @(rf/subscribe [:routing/routing])
@@ -136,5 +110,9 @@
         [:hr]
         [:div.p-3.text-center
          [:button.border.border-black.p-2.rounded
-          {:on-click #(rf/dispatch [::get-more-models category-id parent-id])}
+          {:on-click #(rf/dispatch [::pagination/get-more
+                                    query
+                                    {:categoryId category-id :parentId parent-id}
+                                    [:categories category-id :data :category :models]
+                                    [:category :models]])}
           "LOAD MORE"]]])]))

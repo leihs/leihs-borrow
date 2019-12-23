@@ -6,9 +6,16 @@
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
    [leihs.borrow.client.lib.routing :as routing]
+   [leihs.borrow.client.lib.pagination :as pagination]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.components :as ui]
    #_[leihs.borrow.client.features.shopping-cart :as cart]))
+
+(def query-gql
+  (rc/inline "leihs/borrow/client/queries/searchModels.gql"))
+
+(def search-filters-gql
+  (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql"))
 
 ;-; EVENTS 
 (rf/reg-event-fx
@@ -28,17 +35,16 @@
  ::fetch-search-filters
  (fn [_ [_ _]]
    {:dispatch [::re-graph/query
-               (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql")
+               search-filters-gql
                {}
                [::on-fetched-search-filters]]}))
 
 ;tmp
 (defn fetch-search-filters []
-  (rf/dispatch-sync
-   [::re-graph/query
-    (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql")
-    {}
-    [::on-fetched-search-filters]]))
+  (rf/dispatch-sync [::re-graph/query
+                     search-filters-gql
+                     {}
+                     [::on-fetched-search-filters]]))
 
 (rf/reg-event-fx
  ::on-fetched-search-filters
@@ -74,7 +80,7 @@
       :dispatch-n (list
                    [:routing/navigate [::routes/search {:query-params filters}]]
                    [::re-graph/query
-                    (rc/inline "leihs/borrow/client/queries/searchModels.gql")
+                    query-gql
                     query-vars
                     [::on-fetched-models]])})))
 
@@ -85,47 +91,19 @@
      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
      {:db (assoc-in db [:search :results] (get-in data [:models]))})))
 
-(rf/reg-event-fx
- ::get-more-models
- (fn [{:keys [db]} [_ filters]]
-   (let
-    [page-info (get-in db [:search :results :pageInfo])
-     has-next? (get page-info :hasNextPage)
-     query-vars 
-     {:searchTerm (get filters :term)
-      :startDate (get filters :start-date)
-      :endDate (get filters :end-date)
-      :afterCursor (get page-info :endCursor)
-      }]
-     (when has-next?
-       {:dispatch
-        [::re-graph/query
-         (rc/inline "leihs/borrow/client/queries/searchModels.gql")
-         query-vars
-         [::on-fetched-more-models]]}))))
-
-(rf/reg-event-fx
- ::on-fetched-more-models
- (fn [{:keys [db]} [_ {:keys [data errors]}]]
-   (if errors
-     {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-     {:db (-> db
-              (assoc-in , [:search :results :pageInfo] (get-in data [:models :pageInfo]))
-              (update-in , [:search :results :edges] concat (get-in data [:models :edges]))
-              )
-      })))
-
-
 ;-; SUBSCRIPTIONS 
-(rf/reg-sub ::available-filters (fn [db] (get-in db [:search :filters :available] nil)))
-(rf/reg-sub ::current-filters (fn [db] (get-in db [:search :filters :current] nil)))
-
-(rf/reg-sub ::search-results (fn [db] (-> (get-in db [:search :results :edges]))))
+(rf/reg-sub ::available-filters
+            (fn [db] (get-in db [:search :filters :available] nil)))
+(rf/reg-sub ::current-filters
+            (fn [db] (get-in db [:search :filters :current] nil)))
+(rf/reg-sub ::search-results
+            (fn [db] (-> (get-in db [:search :results :edges]))))
 
 ;-; VIEWS
 (defn form-line [name label input-props]
   [:label {:style {:display :table-row}}
-   [:span.w-8.text-sm {:style {:display :table-cell :padding-right "0.5rem"}} (str label " ")]
+   [:span.w-8.text-sm {:style {:display :table-cell :padding-right "0.5rem"}}
+    (str label " ")]
    [:div.block.w-full {:style {:display :table-cell}}
     [:input.py-1.px-2.mb-1
      (merge
@@ -240,9 +218,8 @@
 
 (defn view
   []
-  (let
-   [models @(rf/subscribe [::search-results])
-    current-filters @(rf/subscribe [::current-filters])]
+  (let [models @(rf/subscribe [::search-results])
+        {:keys [term start-date end-date]} @(rf/subscribe [::current-filters])]
     [:<>
      [search-panel]
      #_[:p (pr-str models)]
@@ -252,13 +229,19 @@
        :else
        [:<>
         #_[:div
-           [:h1 (str "This is search view ")
-            [:p "params:"]
-            [:pre (pr-str (get-in routing [:bidi-match :query-params]))]
-            [:hr]]]
+        [:h1 (str "This is search view ")
+        [:p "params:"]
+        [:pre (pr-str (get-in routing [:bidi-match :query-params]))]
+        [:hr]]]
         [products-list models]
         [:hr]
         [:div.p-3.text-center
          [:button.border.border-black.p-2.rounded
-          {:on-click #(rf/dispatch [::get-more-models current-filters])}
+          {:on-click #(rf/dispatch [::pagination/get-more
+                                    query-gql
+                                    {:searchTerm term,
+                                     :startDate start-date,
+                                     :endDate end-date}
+                                    [:search :results]
+                                    [:models]])}
           "LOAD MORE"]]])]))

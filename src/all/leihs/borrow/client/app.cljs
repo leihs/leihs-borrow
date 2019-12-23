@@ -15,6 +15,7 @@
    [leihs.borrow.client.features.shopping-cart :as shopping-cart]
    [leihs.borrow.client.features.category-show :as category-show]
    [leihs.borrow.client.features.model-show :as model-show]
+   [leihs.borrow.client.features.favorite-models :as favorite-models]
    ))
 
 (def re-graph-config {:ws-url nil :http-url "/app/borrow/graphql" :http-parameters {:with-credentials? true}})
@@ -75,6 +76,7 @@
             ::routes/categories-show category-show/view
             ::routes/models-index wip-models-index-view
             ::routes/models-show model-show/view
+            ::routes/models-favorites favorite-models/view
             ::routes/shopping-cart shopping-cart/view
             ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
             ;        *should* not be a real problem – if the routing is working correctly

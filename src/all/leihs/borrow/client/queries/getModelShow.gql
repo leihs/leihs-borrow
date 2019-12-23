@@ -4,6 +4,7 @@ query getModelShow($modelId: UUID!) {
     name
     manufacturer
     description
+    isFavorited
     images {
       id
       imageUrl

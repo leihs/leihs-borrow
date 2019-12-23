@@ -13,6 +13,7 @@
                  ["/" [#".+" :categories-path]] ::categories-show}
    "models" {"" ::models-index
              "/" ::models-index
+             "/favorites" ::models-favorites
              ["/" :model-id] ::models-show}
    "order" ::shopping-cart
    :else ::not-found})

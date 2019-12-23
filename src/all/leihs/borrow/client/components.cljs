@@ -101,7 +101,10 @@
             (routing/path-for
              ::routes/models-show
              :model-id "1c18b3d3-88e8-57ac-8c28-24d3f8f77604")}
-        "test model show"]]])
+        "test model show"]]
+   [:p [:a {:href
+            (routing/path-for ::routes/models-favorites)}
+        "test favorite models"]]])
 
 
 ; copied from <https://github.com/sindresorhus/cli-spinners/blob/af93e2f345a73a16c7686066c08dd970d66d8870/spinners.json#L720>

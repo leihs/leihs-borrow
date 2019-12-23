@@ -1,4 +1,5 @@
 (ns leihs.borrow.client.features.model-show
+  (:require-macros [leihs.borrow.client.macros :refer [spy]])
   (:require
    [reagent.core :as reagent]
    [re-frame.core :as rf]
@@ -27,6 +28,33 @@
        (assoc-in , [:models model-id :errors] errors)
        (assoc-in , [:models model-id :data] data))))
 
+(rf/reg-event-fx
+  ::favorite-model
+  (fn [_ [_ model-id]]
+    {:dispatch-n
+     (list [::toggle-favorite model-id]
+           [::re-graph/mutate
+            "mutation($modelId: UUID!) { favoriteModel(id: $modelId) { id } }"
+            {:modelId model-id}
+            [::on-mutation-result]])}))
+
+(rf/reg-event-fx
+  ::unfavorite-model
+  (fn [_ [_ model-id]]
+    {:dispatch-n
+     (list [::toggle-favorite model-id]
+           [::re-graph/mutate
+            "mutation($modelId: UUID!) { unfavoriteModel(id: $modelId) { id } }"
+            {:modelId model-id}
+            [::on-mutation-result]])}))
+
+(rf/reg-event-db
+ ::toggle-favorite
+ (fn [db [_ model-id]]
+   (update-in db
+              [:models model-id :data :model :isFavorited]
+              not)))
+
 (rf/reg-sub
  ::model-data
  (fn [db [_ id]]
@@ -38,10 +66,10 @@
    {:dispatch [::re-graph/mutate
                (rc/inline "leihs/borrow/client/queries/createReservationMutation.gql")
                args
-               [::on-model-create-reservation-result]]}))
+               [::on-mutation-result]]}))
 
 (rf/reg-event-fx
- ::on-model-create-reservation-result
+ ::on-mutation-result
  (fn [{:keys [_db]} [_ {:keys [data errors]}]]
    (if errors
      {:alert (str "FAIL! " (pr-str errors))}
@@ -110,7 +138,13 @@
         [:header
          [:h1.text-3xl.font-extrabold.leading-none
           (:name model)
-          [:span " "]
+          [:form
+           [:button {:on-click #(do (.preventDefault %)
+                                    (rf/dispatch [(if (:isFavorited model)
+                                                    ::unfavorite-model
+                                                    ::favorite-model)
+                                                  (:id model)]))}
+             (if (:isFavorited model) "🖤" "♡")]]
           [:small.font-normal.text-gray-600.leading-none (:manufacturer model)]]]
 
          ; FIXME: show all images not just the first one

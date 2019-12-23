@@ -233,7 +233,8 @@
                            :orderBy {:type (list :ModelsOrderByInput)}
                            :searchTerm {:type String}
                            :first {:type Int}
-                           :after {:type String}}
+                           :after {:type String}
+                           :isFavorited {:type Boolean}}
                     :type :ModelsConnection
                     :resolve :models-connection}
            :inventoryPools {:resolve :inventory-pools

@@ -193,7 +193,14 @@
 
 (defn get-multiple-sqlmap
   [{{:keys [tx authenticated-entity]} :request :as context}
-   {:keys [ids limit offset direct-only order-by search-term unscope-reservable]}
+   {:keys [ids
+           limit
+           offset
+           direct-only
+           order-by
+           search-term
+           unscope-reservable
+           is-favorited]}
    value]
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
@@ -206,6 +213,12 @@
         (sql/merge-where [:in :models.id ids]))
       (cond-> search-term
         (merge-search-conditions search-term))
+      (cond-> (not (nil? is-favorited))
+        (-> (sql/merge-left-join :favorite_models
+                                 [:= :favorite_models.model_id :models.id])
+            (sql/merge-where [(if is-favorited :!= :=)
+                              :favorite_models.model_id
+                              nil])))
       (cond-> (seq order-by)
         (-> (sql/order-by (helpers/treat-order-arg order-by))
             (sql/merge-order-by [:name :asc])))
