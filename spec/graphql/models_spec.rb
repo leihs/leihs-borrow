@@ -715,12 +715,10 @@ describe 'models connection' do
       recommends: [recommend]
     )
 
-    model.add_attachment(
-      FactoryBot.build(
-        :attachment,
-        id: '919fbdd1-111c-49b7-aeb0-2d5d8825ed00'
-      )
-    )
+    attachment = \
+      FactoryBot.build(:attachment,
+                       id: '919fbdd1-111c-49b7-aeb0-2d5d8825ed00')
+    model.add_attachment(attachment)
 
     q = <<-GRAPHQL
       {
@@ -792,7 +790,7 @@ describe 'models connection' do
               id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3',
               images: [{ imageUrl: '/app/borrow/images/7484b5d2-376a-4b15-8db0-54cc6bab02ea' }],
               attachments: [{ contentType: 'application/pdf',
-                              url: '/app/borrow/attachments/919fbdd1-111c-49b7-aeb0-2d5d8825ed00' }],
+                              url: "/app/borrow/attachments/919fbdd1-111c-49b7-aeb0-2d5d8825ed00/#{attachment.filename}" }],
               properties: [{ id: '2df736a4-825c-4f36-b48a-75875b3a3c26' }],
               recommends: {
                 edges: [

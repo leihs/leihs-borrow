@@ -57,20 +57,24 @@
 
 (defn view []
   (let [models @(rf/subscribe [::favorite-models])]
-    [:<>
-     #_[:p (pr-str models)]
-     (cond
-       (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
-       (empty? models) [:p.p-6.w-full.text-center "nothing found!"]
-       :else
-       [:<>
-        (products-list (:edges models))
-        [:hr]
-        [:div.p-3.text-center
-         [:button.border.border-black.p-2.rounded
-          {:on-click #(rf/dispatch [::pagination/get-more
-                                    query
-                                    {}
-                                    [:models]
-                                    [:models]])}
-          "LOAD MORE"]]])]))
+    [:section.mx-3.my-4
+     [:<>
+      [:header
+       [:h1.text-3xl.font-extrabold.leading-none
+        "My favorites"]]
+      #_[:p (pr-str models)]
+      (cond
+        (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
+        (empty? models) [:p.p-6.w-full.text-center "nothing found!"]
+        :else
+        [:<>
+         (products-list (:edges models))
+         [:hr]
+         [:div.p-3.text-center
+          [:button.border.border-black.p-2.rounded
+           {:on-click #(rf/dispatch [::pagination/get-more
+                                     query
+                                     {}
+                                     [:models]
+                                     [:models]])}
+           "LOAD MORE"]]])]]))

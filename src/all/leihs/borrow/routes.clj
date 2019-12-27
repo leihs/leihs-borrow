@@ -43,6 +43,7 @@
           :home html/html-handler,
           :image images/handler-one,
           :attachment attachments/handler-one,
+          :attachment-with-filename attachments/handler-one,
           :not-found html/not-found-handler,
           :status (status/routes "/app/borrow/status")}))
 

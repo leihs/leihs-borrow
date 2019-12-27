@@ -17,12 +17,13 @@
       (->> (jdbc/query tx))
       first))
 
-(defn merge-attachment-url [attachment]
-  (->> attachment
-       :id
-       (hash-map :attachment-id)
-       (path :attachment)
-       (assoc attachment :url)))
+(defn merge-attachment-url [{:keys [filename] :as attachment}]
+  (as-> attachment <>
+    (:id <>)
+    (hash-map :attachment-id <>)
+    (path :attachment <>)
+    (str <> "/" (:filename attachment))
+    (assoc attachment :url <>)))
 
 (defn get-multiple [{{:keys [tx]} :request} _ value]
   (-> attachment-base-query
