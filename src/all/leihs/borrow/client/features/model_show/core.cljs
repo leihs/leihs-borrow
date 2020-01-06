@@ -32,30 +32,15 @@
 
 (rf/reg-event-fx
  ::favorite-model
- (fn [_ [_ model-id]]
-   {:dispatch-n
-    (list [::toggle-favorite model-id]
-          [::favs/favorite-model model-id])}))
+ (fn [{:keys [db]} [_ model-id]]
+   {:db (assoc-in db [:models model-id :data :model :isFavorited] true)
+    :dispatch [::favs/favorite-model model-id]}))
 
 (rf/reg-event-fx
-  ::unfavorite-model
-  (fn [_ [_ model-id]]
-    {:dispatch-n
-     (list [::toggle-favorite model-id]
-          [::favs/unfavorite-model model-id])}))
-
-(rf/reg-event-fx
- ::on-favorite-model-result
- (fn [{:keys [_db]} [_ {:keys [_data errors]}]]
-   (when errors
-     {:alert (str "FAIL! " (pr-str errors))})))
-
-(rf/reg-event-db
- ::toggle-favorite
- (fn [db [_ model-id]]
-   (update-in db
-              [:models model-id :data :model :isFavorited]
-              not)))
+ ::unfavorite-model
+ (fn [{:keys [db]} [_ model-id]]
+   {:db (assoc-in db [:models model-id :data :model :isFavorited] false)
+    :dispatch [::favs/unfavorite-model model-id]}))
 
 (rf/reg-sub
  ::model-data
