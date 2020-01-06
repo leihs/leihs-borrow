@@ -13,7 +13,8 @@
    [leihs.borrow.client.features.about-page.core :as about-page]
    [leihs.borrow.client.features.search-models.core :as search-models]
    [leihs.borrow.client.features.shopping-cart.core :as shopping-cart]
-   [leihs.borrow.client.features.category-show.core :as category-show]
+   [leihs.borrow.client.features.categories.show :as category-show]
+   [leihs.borrow.client.features.categories.index :as category-index]
    [leihs.borrow.client.features.model-show.core :as model-show]
    [leihs.borrow.client.features.favorite-models.core :as favorite-models]
    ))
@@ -80,6 +81,7 @@
 (def views {::routes/home home-page/view
             ::routes/search search-models/view
             ::routes/about-page about-page/view
+            ::routes/categories-index category-index/view
             ::routes/categories-show category-show/view
             ::routes/models-index wip-models-index-view
             ::routes/models-show model-show/view
