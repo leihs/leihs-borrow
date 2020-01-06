@@ -1,54 +1,20 @@
 (ns leihs.borrow.resources.availability
   (:refer-clojure :exclude [get])
-  (:require [clojure.java.jdbc :as jdbc]
-            [clojure.string :as clj-str]
-            [leihs.core.sql :as sql]
-            [leihs.core.ds :as ds]
-            [clj-time.core :as clj-time]
-            [clj-time.local :as clj-time-local]
-            [clojure.tools.logging :as log]
-            [clojure.core.async :as async]
-            [cheshire.core :as json]
-            [clj-http.client :as client]
+  (:require [clojure.tools.logging :as log]
+            [leihs.borrow.legacy :as legacy]
             [camel-snake-kebab.core :as csk]
-            [wharf.core :refer [transform-keys]]
-            [clojure.walk :as walk]
-            [ring.middleware.nested-params :refer [nested-params-request]]))
-
-(def legacy-base-url (atom nil))
-
-(defn init [options]
-  (reset! legacy-base-url (-> options :legacy-http-base-url :url))
-  (-> "Legacy base URL set to: "
-      (str @legacy-base-url)
-      log/info))
-
-(defn fetch-from-legacy [url cookie-value query-params]
-  (-> (client/get
-        url
-        {:accept :json
-         :content-type :json
-         :cookies {"leihs-user-session" {:value cookie-value}}
-         :multi-param-style :array
-         :query-params query-params})
-      :body
-      json/parse-string
-      walk/keywordize-keys))
-
-(defn session-cookie-value [context]
-  (or (get-in context [:request :cookies "leihs-user-session" :value])
-      (throw (ex-info "Not authenticated!" {}))))
+            [wharf.core :refer [transform-keys]]))
 
 (defn get-available-quantities [context args _value]
-  (fetch-from-legacy
-    (str @legacy-base-url "/borrow/models/availability")
-    (session-cookie-value context)
-      (transform-keys csk/->snake_case args)))
+  (legacy/fetch
+    "/borrow/models/availability"
+    context
+    (transform-keys csk/->snake_case args)))
 
 (defn get [context args _value]
-  (->> (fetch-from-legacy
-         (str @legacy-base-url "/borrow/booking_calendar_availability")
-         (session-cookie-value context)
+  (->> (legacy/fetch
+         "/borrow/booking_calendar_availability"
+         context
          (->> [:model-id :inventory-pool-id :start-date :end-date]
               (select-keys args)
               (transform-keys csk/->snake_case)))

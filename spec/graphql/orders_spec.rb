@@ -2,6 +2,11 @@ require 'spec_helper'
 require_relative 'graphql_helper'
 
 describe 'orders' do
+  before :example do
+    FactoryBot.create(:settings,
+                      deliver_received_order_notifications: true)
+  end
+
   let(:user) do
     FactoryBot.create(
       :user,

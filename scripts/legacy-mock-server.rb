@@ -88,3 +88,7 @@ get '/borrow/booking_calendar_availability' do
     raise "Unknown model ID: #{params[:model_id]}"
   end.to_json
 end
+
+post '/mail/received' do
+  status 202
+end

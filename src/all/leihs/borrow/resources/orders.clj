@@ -1,4 +1,5 @@
 (ns leihs.borrow.resources.orders
+  (:refer-clojure :exclude [resolve])
   (:require [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]
             [leihs.core.database.helpers :as database]
@@ -6,7 +7,9 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]
             [com.walmartlabs.lacinia :as lacinia]
+            [com.walmartlabs.lacinia.resolve :as resolve]
             [leihs.borrow.connections :refer [row-cursor cursored-sqlmap] :as connections]
+            [leihs.borrow.mails :as mails]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as reservations]))
 
@@ -117,7 +120,7 @@
                       :updated_at)
      :reservations (-> sqlmap sql/format (reservations/query tx))}))
 
-(defn submit [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+(defn submit [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}
               {:keys [purpose]}
               _]
   (let [reservations (reservations/for-customer-order tx user-id)]
@@ -133,26 +136,33 @@
                                             (helpers/iso8601-updated-at))
                              sql/format
                              (->> (jdbc/query tx))
-                             first)]
-      (doseq [[pool-id rs] (group-by :inventory_pool_id reservations)]
-        (let [order (-> (sql/insert-into :orders)
-                        (sql/values [{:user_id user-id
-                                      :inventory_pool_id pool-id
-                                      :state "submitted"
-                                      :purpose purpose
-                                      :customer_order_id (:id customer-order)}])
-                        (sql/returning :*)
-                        sql/format
-                        (->> (jdbc/query tx))
-                        first)]
-          (-> (sql/update :reservations)
-              (sql/set {:status (sql/call :cast
-                                          "submitted"
-                                          :reservation_status)
-                        :inventory_pool_id pool-id
-                        :order_id (:id order)})
-              (sql/where [:in :id (map :id rs)])
-              (sql/returning :*)
-              sql/format
-              (reservations/query tx))))
-      (assoc customer-order :state #{"SUBMITTED"}))))
+                             first
+                             (assoc :state #{"SUBMITTED"}))]
+      (loop [[[pool-id rs :as group-el] & remainder]
+             (seq (group-by :inventory_pool_id reservations))
+             mails []]
+        (if (seq group-el)
+          (let [order (-> (sql/insert-into :orders)
+                          (sql/values [{:user_id user-id
+                                        :inventory_pool_id pool-id
+                                        :state "submitted"
+                                        :purpose purpose
+                                        :customer_order_id (:id customer-order)}])
+                          (sql/returning :*)
+                          sql/format
+                          (->> (jdbc/query tx))
+                          first)]
+            (-> (sql/update :reservations)
+                (sql/set {:status (sql/call :cast
+                                            "submitted"
+                                            :reservation_status)
+                          :inventory_pool_id pool-id
+                          :order_id (:id order)})
+                (sql/where [:in :id (map :id rs)])
+                (sql/returning :*)
+                sql/format
+                (reservations/query tx))
+            (recur remainder
+                   (conj mails #(mails/send-received context order))))
+          (do (set! ds/after-tx mails)
+              customer-order))))))

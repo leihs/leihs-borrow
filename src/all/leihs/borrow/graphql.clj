@@ -10,6 +10,7 @@
             [leihs.borrow.graphql.scalars :as scalars]
             [leihs.borrow.graphql.resolvers :as resolvers]
             [leihs.borrow.authenticate :as authenticate]
+            [leihs.core.ds :as ds]
             [leihs.core.graphql.helpers :as helpers]
             [leihs.core.ring-exception :refer [get-cause]]))
 
@@ -49,15 +50,17 @@
 
 (defn base-handler
   [{{query :query} :body, :as request}]
-  (let [result (-> query 
-                   (exec-query request)
-                   (cond->
-                     @lacinia-enable-timing
-                     helpers/attach-overall-timing))
-        resp {:body result}]
-    (if (:errors result)
-      (do (log/debug result) (assoc resp :graphql-error true))
-      resp)))
+  (binding [ds/after-tx nil]
+    (let [result (-> query 
+                     (exec-query request)
+                     (cond->
+                       @lacinia-enable-timing
+                       helpers/attach-overall-timing))
+          resp {:body result
+                :after-tx ds/after-tx}]
+      (if (:errors result)
+        (do (log/debug result) (assoc resp :graphql-error true))
+        resp))))
 
 (defn parse-query-with-exception-handling
   [schema query]

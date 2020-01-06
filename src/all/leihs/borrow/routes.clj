@@ -129,6 +129,7 @@
       (wrap-json-body {:keywords? true})
       wrap-empty
       datasource/wrap-tx
+      datasource/wrap-after-tx
       (wrap-graphiql {:path "/app/borrow/graphiql",
                       :endpoint "/app/borrow/graphql"})
       core-routing/wrap-canonicalize-params-maps
