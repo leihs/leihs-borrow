@@ -63,7 +63,7 @@
 (defn- route-is-loading-view
   []
   [:div.app-loading-view
-   [:h1.font-mono.text-center.p-8.show-after-1sec
+   [:h1.font-mono.text-center.p-8.show-after-3sec
     [:p.text-5xl [ui/spinner-clock]]
     [:p.font-black.text-xl "loading…"]
     [:p.text-base "if this takes a long time something went wrong."]
