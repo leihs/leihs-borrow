@@ -12,7 +12,7 @@
    #_[leihs.borrow.client.features.shopping-cart.core :as cart]))
 
 (def query
-  (rc/inline "leihs/borrow/client/queries/getFavoriteModels.gql"))
+  (rc/inline "leihs/borrow/client/features/favorite_models/getFavoriteModels.gql"))
 
 ;-; EVENTS 
 (rf/reg-event-fx

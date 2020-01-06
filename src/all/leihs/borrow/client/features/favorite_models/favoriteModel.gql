@@ -1,0 +1,5 @@
+mutation($modelId: UUID!) {
+  favoriteModel(id: $modelId) {
+    id
+  }
+}

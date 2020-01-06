@@ -1,0 +1,5 @@
+mutation($modelId: UUID!) {
+  unfavoriteModel(id: $modelId) {
+    id
+  }
+}
