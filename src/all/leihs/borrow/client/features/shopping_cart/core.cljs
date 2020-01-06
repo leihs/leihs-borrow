@@ -15,7 +15,7 @@
  ::routes/shopping-cart
  (fn [_ [_ _]]
    {:dispatch [::re-graph/query
-               (rc/inline "leihs/borrow/client/queries/getShoppingCart.gql")
+               (rc/inline "leihs/borrow/client/features/shopping_cart/getShoppingCart.gql")
                {}
                [::on-fetched-data]]}))
 
@@ -63,7 +63,7 @@
  ::submit-order
  (fn [_ [_ args]]
    {:dispatch [::re-graph/mutate
-               (rc/inline "leihs/borrow/client/queries/submitOrderMutation.gql")
+               (rc/inline "leihs/borrow/client/features/shopping_cart/submitOrderMutation.gql")
                args
                [::on-submit-order-result]]}))
 

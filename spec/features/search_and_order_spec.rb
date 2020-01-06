@@ -61,7 +61,7 @@ describe 'feature' do
     )
 
     # STEP 1: search for a Kamera
-    operation = File.read('src/all/leihs/borrow/client/queries/searchModels.gql')
+    operation = File.read('src/all/leihs/borrow/client/features/search_models/searchModels.gql')
     variables = { searchTerm: 'Kamera', startDate: my_start_date, endDate: my_end_date }
 
     search_result_1 = query(operation, user.id, variables).deep_symbolize_keys
@@ -112,7 +112,7 @@ describe 'feature' do
     ).to eq Reservation.select(:id).all.map(&:id).to_set
 
     # STEP 2B: increase quantity of a reservation for a specific pool
-    
+
     operation = <<-GRAPHQL
       mutation increaseQuantity(
         $modelId: UUID!
@@ -132,7 +132,7 @@ describe 'feature' do
         }
       }
     GRAPHQL
-    
+
     variables = {
       endDate: my_end_date,
       startDate: my_start_date,
@@ -172,9 +172,9 @@ describe 'feature' do
     expect(reservation_result_2.dig(:data, :rIds)).to eq r_ids
 
     # STEP 2D: add a reservation for another model
-    
+
     # STEP 2E: delete a reservation (= decrease quantity to 0)
-    
+
     # TODO: STEP 2F: change date range of a reservation
 
     # STEP 3: submit the current order
@@ -328,7 +328,7 @@ describe 'feature' do
                   { id: the_pool_order_2.id,
                     state: 'SUBMITTED',
                     inventoryPool: {
-                      id: 'a7d2e049-56ac-481a-937e-ee3f613f3cc7' 
+                      id: 'a7d2e049-56ac-481a-937e-ee3f613f3cc7'
                     }
                   }
                 ]
