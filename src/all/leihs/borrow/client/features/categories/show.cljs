@@ -1,4 +1,4 @@
-(ns leihs.borrow.client.features.category-show.core
+(ns leihs.borrow.client.features.categories.show
   (:require-macros [leihs.borrow.client.macros :refer [spy]])
   (:require
     #_[reagent.core :as reagent]
@@ -14,7 +14,7 @@
     #_[leihs.borrow.client.components :as ui]))
 
 (def query
-  (rc/inline "leihs/borrow/client/features/category_show/getCategoryShow.gql"))
+  (rc/inline "leihs/borrow/client/features/categories/getCategoryShow.gql"))
 
 ; is kicked off from router when this view is loaded
 (rf/reg-event-fx
@@ -42,6 +42,28 @@
  ::category-data
  (fn [db [_ id]]
    (get-in db [:categories id])))
+
+(defn category-grid-item [category]
+  (let [href (routing/path-for ::routes/categories-show
+                               :categories-path (:id category))]
+    [:div.ui-category-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-2.mb-3
+     {:style {:opacity 1}}
+     [ui/image-square-thumb (get-in category [:images 0]) href]
+     [:div.mx-0.mt-1.leading-snug
+      [:a {:href href}
+       [:span.block.truncate.font-bold (:label category)]]]]))
+
+(defn categories-list [categories]
+  (let
+   [debug? @(rf/subscribe [:is-debug?])]
+    [:div.mx-1.mt-2
+     [:div.w-full.px-0
+      [:div.ui-models-list.flex.flex-wrap
+       (doall
+        (for [category categories]
+          [:div {:class "w-1/2 min-h-16" :key (:id category)}
+           [category-grid-item category]]))]]
+     (when debug? [:p (pr-str @(rf/subscribe [::search-results]))])]))
 
 (defn model-grid-item [model]
   (let [routing @(rf/subscribe [:routing/routing])
