@@ -7,7 +7,9 @@
    [shadow.resource :as rc]
    [leihs.borrow.client.components :as ui]
    [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.client.components :as ui]))
+   [leihs.borrow.client.components :as ui]
+   
+   [leihs.borrow.client.features.favorite-models.events :as favs]))
 
 
 ; is kicked off from router when this view is loaded
@@ -16,7 +18,7 @@
  (fn [_ [_ args]]
    (let [model-id (get-in args [:route-params :model-id])]
      {:dispatch [::re-graph/query
-                 (rc/inline "leihs/borrow/client/queries/getModelShow.gql")
+                 (rc/inline "leihs/borrow/client/features/model_show/getModelShow.gql")
                  {:modelId model-id}
                  [::on-fetched-data model-id]]})))
 
@@ -29,28 +31,22 @@
        (assoc-in , [:models model-id :data] data))))
 
 (rf/reg-event-fx
-  ::favorite-model
-  (fn [_ [_ model-id]]
-    {:dispatch-n
-     (list [::toggle-favorite model-id]
-           [::re-graph/mutate
-            "mutation($modelId: UUID!) { favoriteModel(id: $modelId) { id } }"
-            {:modelId model-id}
-            [::on-favorite-model-result]])}))
+ ::favorite-model
+ (fn [_ [_ model-id]]
+   {:dispatch-n
+    (list [::toggle-favorite model-id]
+          [::favs/favorite-model model-id])}))
 
 (rf/reg-event-fx
   ::unfavorite-model
   (fn [_ [_ model-id]]
     {:dispatch-n
      (list [::toggle-favorite model-id]
-           [::re-graph/mutate
-            "mutation($modelId: UUID!) { unfavoriteModel(id: $modelId) { id } }"
-            {:modelId model-id}
-            [::on-favorite-model-result]])}))
+          [::favs/unfavorite-model model-id])}))
 
 (rf/reg-event-fx
  ::on-favorite-model-result
- (fn [{:keys [_db]} [_ {:keys [data errors]}]]
+ (fn [{:keys [_db]} [_ {:keys [_data errors]}]]
    (when errors
      {:alert (str "FAIL! " (pr-str errors))})))
 
@@ -70,7 +66,7 @@
  ::model-create-reservation
  (fn [_ [_ args]]
    {:dispatch [::re-graph/mutate
-               (rc/inline "leihs/borrow/client/queries/createReservationMutation.gql")
+               (rc/inline "leihs/borrow/client/features/model_show/createReservationMutation.gql")
                args
                [::on-mutation-result]]}))
 

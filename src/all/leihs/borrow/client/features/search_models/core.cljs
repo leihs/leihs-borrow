@@ -12,10 +12,10 @@
    #_[leihs.borrow.client.features.shopping-cart.core :as cart]))
 
 (def query-gql
-  (rc/inline "leihs/borrow/client/queries/searchModels.gql"))
+  (rc/inline "leihs/borrow/client/features/search_models/searchModels.gql"))
 
 (def search-filters-gql
-  (rc/inline "leihs/borrow/client/queries/getSearchFilters.gql"))
+  (rc/inline "leihs/borrow/client/features/search_models/getSearchFilters.gql"))
 
 ;-; EVENTS 
 (rf/reg-event-fx

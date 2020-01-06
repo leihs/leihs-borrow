@@ -14,7 +14,7 @@
     #_[leihs.borrow.client.components :as ui]))
 
 (def query
-  (rc/inline "leihs/borrow/client/queries/getCategoryShow.gql"))
+  (rc/inline "leihs/borrow/client/features/category_show/getCategoryShow.gql"))
 
 ; is kicked off from router when this view is loaded
 (rf/reg-event-fx
