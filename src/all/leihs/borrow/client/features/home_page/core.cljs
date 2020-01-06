@@ -1,4 +1,4 @@
-(ns leihs.borrow.client.features.home-page
+(ns leihs.borrow.client.features.home-page.core
   (:require
    #_[reagent.core :as r]
    [re-frame.core :as rf]
@@ -8,7 +8,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.components :as ui]
    [leihs.borrow.client.lib.routing :as routing]
-   [leihs.borrow.client.features.search-models :as search-models]))
+   [leihs.borrow.client.features.search-models.core :as search-models]))
 
 
 ; is kicked off from router when this view is loaded

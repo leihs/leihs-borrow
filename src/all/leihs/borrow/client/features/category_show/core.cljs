@@ -1,17 +1,17 @@
-(ns leihs.borrow.client.features.category-show
+(ns leihs.borrow.client.features.category-show.core
   (:require-macros [leihs.borrow.client.macros :refer [spy]])
   (:require
-    [reagent.core :as reagent]
+    #_[reagent.core :as reagent]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
     [clojure.string :refer [join split replace-first]]
-    [leihs.borrow.client.features.search-models :as search-models]
+    #_[leihs.borrow.client.features.search-models.core :as search-models]
     [leihs.borrow.client.lib.routing :as routing]
     [leihs.borrow.client.lib.pagination :as pagination]
     [leihs.borrow.client.components :as ui]
     [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.client.components :as ui]))
+    #_[leihs.borrow.client.components :as ui]))
 
 (def query
   (rc/inline "leihs/borrow/client/queries/getCategoryShow.gql"))

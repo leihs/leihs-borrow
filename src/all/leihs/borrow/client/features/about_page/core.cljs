@@ -1,4 +1,4 @@
-(ns leihs.borrow.client.features.about-page
+(ns leihs.borrow.client.features.about-page.core
   (:require
    [clojure.string :as string]
    #_[reagent.core :as r]
