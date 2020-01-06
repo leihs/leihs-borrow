@@ -1,4 +1,4 @@
-(ns leihs.borrow.client.features.search-models
+(ns leihs.borrow.client.features.search-models.core
   (:require-macros [leihs.borrow.client.macros :refer [spy]])
   (:require
    #_[reagent.core :as r]
@@ -9,7 +9,7 @@
    [leihs.borrow.client.lib.pagination :as pagination]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.components :as ui]
-   #_[leihs.borrow.client.features.shopping-cart :as cart]))
+   #_[leihs.borrow.client.features.shopping-cart.core :as cart]))
 
 (def query-gql
   (rc/inline "leihs/borrow/client/queries/searchModels.gql"))

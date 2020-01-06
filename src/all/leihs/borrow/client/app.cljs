@@ -9,13 +9,13 @@
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]
 
-   [leihs.borrow.client.features.home-page :as home-page]
-   [leihs.borrow.client.features.about-page :as about-page]
-   [leihs.borrow.client.features.search-models :as search-models]
-   [leihs.borrow.client.features.shopping-cart :as shopping-cart]
-   [leihs.borrow.client.features.category-show :as category-show]
-   [leihs.borrow.client.features.model-show :as model-show]
-   [leihs.borrow.client.features.favorite-models :as favorite-models]
+   [leihs.borrow.client.features.home-page.core :as home-page]
+   [leihs.borrow.client.features.about-page.core :as about-page]
+   [leihs.borrow.client.features.search-models.core :as search-models]
+   [leihs.borrow.client.features.shopping-cart.core :as shopping-cart]
+   [leihs.borrow.client.features.category-show.core :as category-show]
+   [leihs.borrow.client.features.model-show.core :as model-show]
+   [leihs.borrow.client.features.favorite-models.core :as favorite-models]
    ))
 
 (def re-graph-config {:ws-url nil :http-url "/app/borrow/graphql" :http-parameters {:with-credentials? true}})
