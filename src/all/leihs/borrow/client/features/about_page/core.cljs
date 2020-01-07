@@ -36,6 +36,7 @@
    [:h1.text-xl.font-black "ABOUT"]
    [:hr.mt-2.mb-4]
    [ui/tmp-nav]
+   [ui/dev-nav]
    [:h2.sr-only "Links"]
    [:ul.mb-4.list-disc.list-inside
     [:li [:a {:href "/app/borrow/graphiql/index.html"} "Graph" [:i "i"] "QL API console"]]]
