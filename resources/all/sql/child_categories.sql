@@ -43,7 +43,6 @@ WITH all_borrowable_categories AS (
   WHERE inventory_pools.is_active = 't'
     AND access_rights.user_id = :user-id
     AND model_groups.type = 'Category'
-    AND access_rights.deleted_at IS NULL
     AND items.retired IS NULL
     AND items.is_borrowable = 't'
     AND items.parent_id IS NULL
