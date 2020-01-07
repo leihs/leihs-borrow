@@ -96,22 +96,26 @@
 
 (defn tmp-nav []
   [:nav.border.border-black.m-3.p-2
-   [:b "tmp nav"]
-   [:p [:a {:href (routing/path-for ::routes/home)} "home"]]
+   [:b "NAVIGATION MENU"]
+   
+   [:p [:a {:href (routing/path-for ::routes/home)} "Home"]]
+   [:p [:a {:href (routing/path-for ::routes/about-page)} "About"]]
+   [:p [:a {:href (routing/path-for ::routes/models-favorites)} "Favorites"]]]
+  )
 
-   [:p [:a {:href (routing/path-for ::routes/about-page)} "about"]]
+(defn dev-nav []
+  [:nav.border.border-black.m-3.p-2
+   [:b "dev nav"]
+
    [:p [:a {:href (routing/path-for ::routes/categories-show
                                     :categories-path "09ac0343-0d83-5c7f-b112-d5921e9479fd")}
-        "test category show"]]
-   [:p [:a {:href (routing/path-for ::routes/models-index)} "test model index"]]
+        "a category show"]]
+   [:p [:a {:href (routing/path-for ::routes/models-index)} "model index"]]
    [:p [:a {:href
             (routing/path-for
              ::routes/models-show
              :model-id "1c18b3d3-88e8-57ac-8c28-24d3f8f77604")}
-        "test model show"]]
-   [:p [:a {:href
-            (routing/path-for ::routes/models-favorites)}
-        "test favorite models"]]])
+        "a model show"]]])
 
 
 ; copied from <https://github.com/sindresorhus/cli-spinners/blob/af93e2f345a73a16c7686066c08dd970d66d8870/spinners.json#L720>
