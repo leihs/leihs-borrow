@@ -18,8 +18,7 @@
                               [:=
                                :access_rights.inventory_pool_id
                                :inventory_pools.id])
-              (sql/merge-where [:= :access_rights.user_id user-id])
-              (sql/merge-where [:= :access_rights.deleted_at nil])))
+              (sql/merge-where [:= :access_rights.user_id user-id])))
         (cond-> (seq ids)
           (-> (sql/merge-where [:in :inventory_pools.id ids])))
         (cond-> (seq order-by)
