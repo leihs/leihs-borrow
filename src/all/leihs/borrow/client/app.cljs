@@ -27,15 +27,8 @@
  (fn [{:keys [db]}]
    {:db (-> db
             ; NOTE: clear the routing instance on (re-)load,
-            ; otherwise the even wont re-run when hot reloading!
+            ; otherwise the event wont re-run when hot reloading!
             (dissoc , :routing/routing)
-            
-            (assoc , :products {:index {0 {:id 0 :name "Kamera"}
-                                        1 {:id 1 :name "Mikrofon"}
-                                        2 {:id 2 :name "Stativ"}}
-                                :order [2 0 1]})
-            (assoc , :search {:results []
-                              :filters {:current {:start-date "2020-12-01", :end-date "2020-12-02"}}})
             (assoc , :meta {:app {:debug false}}))}))
 
 ;-; EVENTS
@@ -45,11 +38,6 @@
 (rf/reg-sub :app/fatal-errors (fn [db] (get-in db [:meta :app :fatal-errors])))
 
 (rf/reg-sub :is-debug? (fn [db] (get-in db [:meta :app :debug] false)))
-
-(rf/reg-sub
- :products/index
- (fn [] [(rf/subscribe [:products-fake])])
- (fn [[products]] (get-in products [:index] {})))
 
 
 ;-; VIEWS
