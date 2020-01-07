@@ -52,7 +52,8 @@
    (let [{:keys [routes]} (:routing/routing db)
          bidi-match (bidi-match-route-with-query-params routes token)]
      {:db (assoc-in db [:routing/routing :bidi-match] bidi-match)
-      :dispatch [(:handler bidi-match) bidi-match]})))
+      :dispatch-n (list [::scroll-to-top true]
+                        [(:handler bidi-match) bidi-match])})))
 
 (rf/reg-fx
  :routing/navigate
@@ -92,6 +93,9 @@
  :routing/refresh-page
  (fn [_]
    (.reload (.-location js/window))))
+
+(rf/reg-event-fx ::scroll-to-top (fn [_] {::scroll-to-top nil}))
+(rf/reg-fx ::scroll-to-top (fn [_] (js/window.scrollTo 0 0)))
 
 (rf/reg-sub
  :routing/routing
