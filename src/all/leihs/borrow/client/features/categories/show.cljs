@@ -126,11 +126,12 @@
         [:ul.font-semibold.mx-3.mb-4
          (doall
           (for [{:keys [id] :as child} children]
-            [:li.inline-block.mb-2.mr-1
-             [:a.border.rounded.py-1.px-2.mb-1
-              {:class "text-gray-800 bg-content border-gray-800 hover:bg-gray-200 Xhover:border-transparent"
-               :href (-> js/window .-location .-pathname (str "/" id))}
-              (:name child)]]))]
+            [:<> {:key id}
+              [:li.inline-block.mb-2.mr-1
+              [:a.border.rounded.py-1.px-2.mb-1
+                {:class "text-gray-800 bg-content border-gray-800 hover:bg-gray-200 Xhover:border-transparent"
+                :href (-> js/window .-location .-pathname (str "/" id))}
+                (:name child)]]]))]
 
         #_[:p.debug (pr-str category)]
 
