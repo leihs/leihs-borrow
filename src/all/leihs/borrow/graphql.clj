@@ -48,6 +48,13 @@
                      @lacinia-enable-timing
                      (assoc ::lacinia/enable-timing? true))))
 
+(def keys-order [:error :data :extensions])
+
+(defn rearrange-keys [m]
+  (into (sorted-map-by #(- (.indexOf keys-order %1)
+                           (.indexOf keys-order %2)))
+        m))
+
 (defn base-handler
   [{{query :query} :body, :as request}]
   (binding [ds/after-tx nil]
@@ -55,7 +62,8 @@
                      (exec-query request)
                      (cond->
                        @lacinia-enable-timing
-                       helpers/attach-overall-timing))
+                       helpers/attach-overall-timing)
+                     rearrange-keys)
           resp {:body result
                 :after-tx ds/after-tx}]
       (if (:errors result)
