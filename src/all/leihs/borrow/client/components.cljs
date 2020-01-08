@@ -1,6 +1,9 @@
 (ns leihs.borrow.client.components
+  (:refer-clojure :exclude [time])
   (:require
    [reagent.core :as reagent]
+   [re-frame.core :as rf]
+   cljsjs.moment
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]))
 
@@ -82,17 +85,22 @@
                        [:span {:style {:font-size "75%" }} "♡"]]])
 
 (defn main-nav []
-  [:nav.ui-main-nav.px-2.border-b.shadow-md.flex.flex-wrap.items-center.justify-between.sticky.bg-content.text-xl.py-2
-   {:style 
-    {:top 0 :z-index 1000
-     :border-bottom-color "rgba(0,0,0, 0.08)"
-     :backdrop-filter "blur(12px)" :-webkit-backdrop-filter "blur(12px)"
-     :background "rgba(255,255,255, 0.83)"}}
-   [:span [:a {:href (routing/path-for ::routes/about-page)} menu-icon]]
-   [:span.font-black [:a {:href (routing/path-for ::routes/home)} "LEIHS"]]
-   " "
-   [:span.text-sm [:a {:href (routing/path-for ::routes/shopping-cart)} shopping-cart-icon]]])
-
+  (let [current-order @(rf/subscribe [:leihs.borrow.client.features.shopping-cart/current-order])
+        valid-until (some-> (:valid-until current-order) js/moment)
+        timeout? (some->> valid-until (.isAfter (js/moment)))]
+    [:nav.ui-main-nav.px-2.border-b.shadow-md.flex.flex-wrap.items-center.justify-between.sticky.bg-content.text-xl.py-2
+     {:style 
+      {:top 0 :z-index 1000
+       :border-bottom-color "rgba(0,0,0, 0.08)"
+       :backdrop-filter "blur(12px)" :-webkit-backdrop-filter "blur(12px)"
+       :background "rgba(255,255,255, 0.83)"}}
+     [:span [:a {:href (routing/path-for ::routes/about-page)} menu-icon]]
+     [:span.font-black [:a {:href (routing/path-for ::routes/home)} "LEIHS"]]
+     " "
+     [:span.text-sm
+      [:span (if timeout? {:color "red"}) (str valid-until)]
+      " "
+      [:a {:href (routing/path-for ::routes/shopping-cart)} shopping-cart-icon]]]))
 
 (defn tmp-nav []
   [:nav.border.border-black.m-3.p-2

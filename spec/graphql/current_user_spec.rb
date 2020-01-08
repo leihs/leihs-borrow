@@ -2,6 +2,10 @@ require 'spec_helper'
 require_relative 'graphql_helper'
 
 describe 'currentUser' do
+  let(:settings) do
+    FactoryBot.create(:settings, timeout_minutes: 30)
+  end
+
   it 'works' do
     pool_A = FactoryBot.create(:inventory_pool,
                                id: 'de1ab6c2-5c85-45fb-aebf-527b6096411c',
@@ -97,6 +101,11 @@ describe 'currentUser' do
       result
       .dig(:data, :currentUser, :unsubmittedOrder, :reservations)
       .first[:updatedAt]
+
+    valid_until = \
+      (DateTime.parse(timestamp) + Settings.first.timeout_minutes.minutes)
+      .strftime('%FT%TZ')
+
     expect_graphql_result(result, {
       currentUser: {
         user: {
@@ -108,7 +117,7 @@ describe 'currentUser' do
           { name: 'Pool C (lending manager)' }
         ],
         unsubmittedOrder: {
-          validUntil: timestamp,
+          validUntil: valid_until,
           reservations: [
             { id: '770632c4-f268-4ed6-bcc0-c8bc032bc9b5',
               updatedAt: timestamp }

@@ -1,4 +1,4 @@
-(ns leihs.borrow.client.macros)
+(ns leihs.borrow.client.lib.macros)
 
 (defmacro spy [expr]
   `(let [res# ~expr]

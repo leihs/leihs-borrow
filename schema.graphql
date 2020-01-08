@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Dec 23 2019 11:45:16 GMT+0100 (Central European Standard Time)
+# timestamp: Wed Jan 08 2020 08:42:54 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -174,6 +174,7 @@ type MutationRoot {
   ): [Reservation]
   deleteReservations(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
+  refreshTimeout: DateTime
   submitOrder(purpose: String!): Order!
   unfavoriteModel(id: UUID!): Model!
 }

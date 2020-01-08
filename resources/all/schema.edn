@@ -279,4 +279,6 @@
                              :type (non-null :Model)}
              :unfavoriteModel {:args {:id {:type (non-null :UUID)}}
                                :resolve :unfavorite-model
-                               :type (non-null :Model)}}}
+                               :type (non-null :Model)}
+             :refreshTimeout {:resolve :refresh-timeout
+                              :type :DateTime}}}

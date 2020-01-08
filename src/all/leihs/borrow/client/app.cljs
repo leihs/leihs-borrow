@@ -7,6 +7,7 @@
    [leihs.borrow.client.components :as ui]
 
    [leihs.borrow.client.lib.routing :as routing]
+   [leihs.borrow.client.lib.timeout :as timeout]
    [leihs.borrow.client.routes :as routes]
 
    [leihs.borrow.client.features.home-page.core :as home-page]
@@ -34,6 +35,7 @@
 
 ;-; EVENTS
 (rf/reg-event-db :set-debug (fn [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
+
 
 ;-; SUBSCRIPTIONS
 (rf/reg-sub :app/fatal-errors (fn [db] (get-in db [:meta :app :fatal-errors])))

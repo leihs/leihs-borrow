@@ -1,7 +1,7 @@
 query getShoppingCart {
   currentUser {
     unsubmittedOrder {
-      # validUntil
+      validUntil
       reservations {
         endDate
         id

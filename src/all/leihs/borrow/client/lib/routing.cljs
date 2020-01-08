@@ -52,7 +52,8 @@
    (let [{:keys [routes]} (:routing/routing db)
          bidi-match (bidi-match-route-with-query-params routes token)]
      {:db (assoc-in db [:routing/routing :bidi-match] bidi-match)
-      :dispatch-n (list [::scroll-to-top true]
+      :dispatch-n (list [::on-change-view]
+                        [::scroll-to-top true]
                         [(:handler bidi-match) bidi-match])})))
 
 (rf/reg-fx

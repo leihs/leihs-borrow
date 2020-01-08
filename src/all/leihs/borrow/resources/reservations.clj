@@ -58,6 +58,15 @@
       sql/format
       (->> (jdbc/query tx))))
 
+(defn unsubmitted-sqlmap [tx user-id]
+  (-> (apply sql/select (columns tx))
+      (sql/from :reservations)
+      (sql/where [:and
+                  [:= :status (sql/call :cast
+                                        "unsubmitted"
+                                        :reservation_status)]
+                  [:= :user_id user-id]])))
+
 (defn get-multiple
   [{{:keys [tx] user :authenticated-entity} :request :as context}
    {:keys [order-by]}

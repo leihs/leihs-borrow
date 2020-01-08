@@ -11,6 +11,7 @@
             [leihs.borrow.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.mails :as mails]
             [leihs.borrow.resources.helpers :as helpers]
+            [leihs.borrow.resources.settings :as settings]
             [leihs.borrow.resources.reservations :as reservations]))
 
 (def distinct-states-sql-expr
@@ -103,26 +104,36 @@
                       <>
                       {:row-fn pool-order-row})))))
 
+(defn valid-until-sql [tx]
+  [(sql/call :to_char
+             (sql/raw
+               (str "updated_at + interval '"
+                    (:timeout_minutes (settings/get tx))
+                    "minutes'"))
+             helpers/format-string)
+   :updated_at])
+
+(defn valid-until [tx user-id]
+  (-> (reservations/unsubmitted-sqlmap tx user-id)
+      (sql/select (valid-until-sql tx))
+      (sql/order-by [:updated_at :asc])
+      (sql/limit 1)
+      sql/format
+      (->> (jdbc/query tx))
+      first
+      :updated_at))
+
 (defn get-unsubmitted
   [{{:keys [tx] {user-id :id} :authenticated-entity} :request} _ _]
-  (let [sqlmap (-> (apply sql/select (reservations/columns tx))
-                   (sql/from :reservations)
-                   (sql/where [:and
-                               [:= :status (sql/call :cast
-                                                     "unsubmitted"
-                                                     :reservation_status)]
-                               [:= :user_id user-id]]))]
-    {:valid-until (-> sqlmap
-                      (sql/order-by [:updated_at :asc])
-                      sql/format
-                      (reservations/query tx)
-                      first
-                      :updated_at)
-     :reservations (-> sqlmap sql/format (reservations/query tx))}))
+  {:valid-until (valid-until tx user-id)
+   :reservations (-> (reservations/unsubmitted-sqlmap tx user-id)
+                     sql/format
+                     (reservations/query tx))})
 
-(defn submit [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}
-              {:keys [purpose]}
-              _]
+(defn submit
+  [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}
+   {:keys [purpose]}
+   _]
   (let [reservations (reservations/for-customer-order tx user-id)]
     (if (empty? reservations)
       (throw (ex-info "User does not have any unsubmitted reservations." {})))
@@ -166,3 +177,39 @@
                    (conj mails #(mails/send-received context order))))
           (do (set! ds/after-tx mails)
               customer-order))))))
+
+(defn timeout? [tx user-id]
+  (let [minutes (:timeout_minutes (settings/get tx))]
+    (-> (sql/select
+          [(sql/call :>
+                     (sql/call :now)
+                     (sql/call :+
+                               (-> (reservations/unsubmitted-sqlmap tx user-id)
+                                   (sql/select :updated_at)
+                                   (sql/order-by [:updated_at :desc])
+                                   (sql/limit 1))
+                               (sql/raw (str "interval '" minutes " minutes'"))))
+           :result])
+        sql/format
+        (->> (jdbc/query tx))
+        first
+        :result)))
+
+(defn refresh-timeout
+  "Always returns the valid until date. If the unsubmitted order is not
+  timed-out, then it will be updated as a side-effect."
+  [{{:keys [tx] {user-id :id} :authenticated-entity} :request} _ _]
+  (if (timeout? tx user-id)
+    (valid-until tx user-id)
+    (-> (sql/update :reservations)
+        (sql/set {:updated_at (sql/call :now)})
+        (sql/where [:and
+                    [:= :status (sql/call :cast
+                                          "unsubmitted"
+                                          :reservation_status)]
+                    [:= :user_id user-id]])
+        (sql/returning (valid-until-sql tx))
+        (sql/format)
+        (->> (jdbc/query tx))
+        first
+        :updated_at)))

@@ -1,5 +1,5 @@
-(ns leihs.borrow.client.features.categories.show
-  (:require-macros [leihs.borrow.client.macros :refer [spy]])
+(ns leihs.borrow.client.features.category-show
+  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
     #_[reagent.core :as reagent]
     [re-frame.core :as rf]

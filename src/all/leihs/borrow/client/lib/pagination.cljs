@@ -1,5 +1,5 @@
 (ns leihs.borrow.client.lib.pagination
-  (:require-macros [leihs.borrow.client.macros :refer [spy]])
+  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require [re-frame.core :as rf]
             [re-graph.core :as re-graph]))
 

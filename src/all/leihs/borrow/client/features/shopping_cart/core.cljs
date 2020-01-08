@@ -1,13 +1,15 @@
-(ns leihs.borrow.client.features.shopping-cart.core
+(ns leihs.borrow.client.features.shopping-cart
+  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
-   [clojure.string :as string]
-   [reagent.core :as reagent]
-   [re-frame.core :as rf]
-   [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.client.lib.routing :as routing]
-   [leihs.borrow.client.components :as ui]))
+    [clojure.string :as string]
+    [reagent.core :as reagent]
+    [re-frame.core :as rf]
+    [re-graph.core :as re-graph]
+    [shadow.resource :as rc]
+    [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.client.lib.helpers :as help]
+    [leihs.borrow.client.lib.routing :as routing]
+    [leihs.borrow.client.components :as ui]))
 
 
 ; is kicked off from router when this view is loaded
@@ -20,44 +22,47 @@
                [::on-fetched-data]]}))
 
 (rf/reg-event-db
- ::on-fetched-data
- (fn [db [_ {:keys [data errors]}]]
-   (-> db
-       (assoc-in , [::current-order :errors] errors)
-       (assoc-in , [::current-order :data] (get-in data [:currentUser :unsubmittedOrder])))))
+  ::on-fetched-data
+  (fn [db [_ {:keys [data errors]}]]
+    (-> db
+        (assoc-in , [::current-order :errors] errors)
+        (assoc-in , [::current-order :data]
+                  (help/kebabize-keys
+                    (get-in data
+                            [:currentUser :unsubmittedOrder]))))))
 
 (rf/reg-sub ::errors (fn [db] (get-in db [::current-order :errors])))
 
 (rf/reg-sub
- ::current-order
- (fn [db _]
-   (get-in db [::current-order :data])))
+  ::current-order
+  (fn [db _]
+    (get-in db [::current-order :data])))
 
 (rf/reg-sub
- ::reservations
- (fn [] [(rf/subscribe [::current-order])])
- (fn [[order]]
-   (not-empty (get-in order [:reservations]))))
+  ::reservations
+  (fn [] [(rf/subscribe [::current-order])])
+  (fn [[order]]
+    (not-empty (get-in order [:reservations]))))
 
 (rf/reg-sub
- ::reservations-grouped
- (fn [] [(rf/subscribe [::reservations])])
- (fn [[lines]]
-   (->> lines
-        (group-by
-         (fn [line]
-           [(get-in line [:model :id])
-            (get-in line [:startDate])
-            (get-in line [:endDate])])))))
+  ::reservations-grouped
+  (fn [] [(rf/subscribe [::reservations])])
+  (fn [[lines]]
+    (->> lines
+         (group-by
+           (fn [line]
+             [(get-in line [:model :id])
+              (get-in line [:startDate])
+              (get-in line [:endDate])])))))
 (rf/reg-sub
- ::order-summary
- (fn [] [(rf/subscribe [::reservations])])
- (fn [[rs]]
-   {:pools (-> (map :inventoryPool rs) distinct)
-    :total-models (-> (map :model rs) distinct count)
-    :total-items (-> (map :model rs) count)
-    :earliest-start-date (-> (map :startDate rs) sort first)
-    :latest-end-date (-> (map :endDate rs) sort last)}))
+  ::order-summary
+  (fn [] [(rf/subscribe [::reservations])])
+  (fn [[rs]]
+    {:pools (-> (map :inventoryPool rs) distinct)
+     :total-models (-> (map :model rs) distinct count)
+     :total-items (-> (map :model rs) count)
+     :earliest-start-date (-> (map :startDate rs) sort first)
+     :latest-end-date (-> (map :endDate rs) sort last)}))
 
 (rf/reg-event-fx
  ::submit-order
@@ -68,20 +73,20 @@
                [::on-submit-order-result]]}))
 
 (rf/reg-event-fx
- ::on-submit-order-result
- (fn [{:keys [_db]} [_ {:keys [data errors]}]]
-   (if errors
-     {:alert (str "FAIL! " (pr-str errors))}
-     {:alert (str "OK! " (pr-str data))
-      :routing/refresh-page "yes"})))
+  ::on-submit-order-result
+  (fn [{:keys [_db]} [_ {:keys [data errors]}]]
+    (if errors
+      {:alert (str "FAIL! " (pr-str errors))}
+      {:alert (str "OK! " (pr-str data))
+       :routing/refresh-page "yes"})))
 
 
 ;_; VIEWS
 (defn reservation-line [quantity line]
   (let
-   [model (:model line)
-    img (get-in model [:images 0])
-    pool (get-in line [:inventoryPool :name])]
+    [model (:model line)
+     img (get-in model [:images 0])
+     pool (get-in line [:inventoryPool :name])]
     [:div.flex.flex-row.border-b.mb-2.pb-2.-mx-1
      [:div.px-1.flex-none {:class "w-1/4"} [ui/image-square-thumb img]]
      [:div.px-1.flex-1
@@ -120,7 +125,7 @@
             [:a.inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-full.px-6.py-2.my-4 
              {:href (routing/path-for ::routes/home)}
              "Borrow Items"]]
-           
+
            :else
            [:<>
             [:div
@@ -135,16 +140,16 @@
                [:button.rounded.border.border-gray-600.px-2.text-color-muted "edit"]]]
 
              (doall
-              (for [[grouped-key lines] reservations]
-                (let [line (first lines) quantity (count lines)]
-                  [:<> {:key grouped-key}
-                   [reservation-line quantity line]])))
+               (for [[grouped-key lines] reservations]
+                 (let [line (first lines) quantity (count lines)]
+                   [:<> {:key grouped-key}
+                    [reservation-line quantity line]])))
 
              #_[:label.w-100
-                [:span.text-xs.block.mt-4
-                 "Optional: enter more details about the purpose of the order (if the name is sufficient)"]
-                [:input.text-md.w-100.my-2
-                 {:placeholder "details about the order purpose"}]]
+             [:span.text-xs.block.mt-4
+             "Optional: enter more details about the purpose of the order (if the name is sufficient)"]
+             [:input.text-md.w-100.my-2
+             {:placeholder "details about the order purpose"}]]
 
              [:div.mt-4.text-sm.text-color-muted
               [:p
@@ -168,4 +173,4 @@
                "Confirm order"]]
 
              #_[:div.mt-4 [:hr] [:p.font-mono.m-2 (pr-str order)]]]])])))
-)
+  )
