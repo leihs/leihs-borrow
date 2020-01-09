@@ -1,4 +1,4 @@
-(ns leihs.borrow.client.features.shopping-cart
+(ns leihs.borrow.client.features.shopping-cart.core
   (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
     [clojure.string :as string]

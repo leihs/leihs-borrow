@@ -1,4 +1,4 @@
-(ns leihs.borrow.client.features.model-show
+(ns leihs.borrow.client.features.model-show.core
   (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
    [reagent.core :as reagent]

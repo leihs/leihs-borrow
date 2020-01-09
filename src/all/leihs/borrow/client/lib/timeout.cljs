@@ -2,7 +2,7 @@
   (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require [re-frame.core :as rf]
             [re-graph.core :as re-graph]
-            [leihs.borrow.client.features.shopping-cart :as cart]
+            [leihs.borrow.client.features.shopping-cart.core :as cart]
             [leihs.borrow.client.lib.routing :as routing]))
 
 (rf/reg-event-fx
