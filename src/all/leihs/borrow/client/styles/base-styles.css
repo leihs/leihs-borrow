@@ -61,6 +61,12 @@ body {
   /* .text-blue-500 */
   color: #4299e1;
 }
+.text-color-danger {
+  color: red;
+}
+.text-color-danger {
+  color: aquamarine;
+}
 .preserve-linebreaks {
   white-space: pre-wrap;
 }
@@ -89,6 +95,14 @@ body {
     background: transparent;
     filter: invert(100%);
   }
+  .text-color-danger {
+  color: red;
+}
+.text-color-danger {
+  color: aquamarine;
+}
+
+
 }
 
 /* while prototyping, constrain width */

@@ -2,9 +2,9 @@
   "dependencies": {
     "@eins78/graphql-schema-diff": "0.7.0",
     "create-react-class": "^15.6.3",
+    "date-fns": "^2.9.0",
     "graphql-cli": "git://github.com/eins78/graphql-cli#01f3598c95acf1114901446cda22e5819269f9db",
     "highlight.js": "9.15.10",
-    "moment": "^2.24.0",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-flip-move": "3.0.3",

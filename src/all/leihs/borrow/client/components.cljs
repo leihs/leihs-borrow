@@ -3,7 +3,7 @@
   (:require
    [reagent.core :as reagent]
    [re-frame.core :as rf]
-   cljsjs.moment
+   ["date-fns" :as datefn]
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]))
 
@@ -85,9 +85,9 @@
                        [:span {:style {:font-size "75%" }} "♡"]]])
 
 (defn main-nav []
-  (let [current-order @(rf/subscribe [:leihs.borrow.client.features.shopping-cart/current-order])
-        valid-until (some-> (:valid-until current-order) js/moment)
-        timeout? (some->> valid-until (.isAfter (js/moment)))]
+  (let [current-order @(rf/subscribe [:leihs.borrow.client.features.shopping-cart.core/current-order])
+        valid-until (some->> (:valid-until current-order) js/Date.)
+        timeout? (some->> valid-until (datefn/isAfter (js/Date.) ,))]
     [:nav.ui-main-nav.px-2.border-b.shadow-md.flex.flex-wrap.items-center.justify-between.sticky.bg-content.text-xl.py-2
      {:style 
       {:top 0 :z-index 1000
@@ -98,7 +98,9 @@
      [:span.font-black [:a {:href (routing/path-for ::routes/home)} "LEIHS"]]
      " "
      [:span.text-sm
-      [:span (if timeout? {:color "red"}) (str valid-until)]
+      (if timeout?
+        [:span {:class "text-color-danger" } "!!!"]
+        [:span {:class "text-color-info"} (datefn/formatDistanceToNow (js/Date. valid-until))])
       " "
       [:a {:href (routing/path-for ::routes/shopping-cart)} shopping-cart-icon]]]))
 
