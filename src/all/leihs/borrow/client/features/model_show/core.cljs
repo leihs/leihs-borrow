@@ -1,5 +1,5 @@
 (ns leihs.borrow.client.features.model-show.core
-  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
+  (:require-macros #_[leihs.borrow.client.lib.macros :refer [spy]])
   (:require
    [reagent.core :as reagent]
    [re-frame.core :as rf]
@@ -7,7 +7,7 @@
    [shadow.resource :as rc]
    [leihs.borrow.client.components :as ui]
    [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.client.components :as ui]
+   #_[leihs.borrow.client.components :as ui]
    
    [leihs.borrow.client.features.favorite-models.events :as favs]))
 
@@ -62,7 +62,7 @@
      {:alert (str "FAIL! " (pr-str errors))}
      {:alert (str "OK! " (pr-str data))})))
 
-(defn order-panel [model params]
+(defn order-panel [_model params]
   ; TODO: get availability from api, not param!
   (let [state (reagent/atom (merge params {:quantity 1}))]
     (fn [model params]

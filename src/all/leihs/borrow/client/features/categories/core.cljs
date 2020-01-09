@@ -1,5 +1,5 @@
 (ns leihs.borrow.client.features.categories.core
-  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
+  #_(:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
    #_[reagent.core :as reagent]
    [re-frame.core :as rf]
@@ -7,7 +7,7 @@
    [shadow.resource :as rc]
    #_[leihs.borrow.client.features.search-models.core :as search-models]
    [leihs.borrow.client.lib.routing :as routing]
-   [leihs.borrow.client.lib.pagination :as pagination]
+   #_[leihs.borrow.client.lib.pagination :as pagination]
    [leihs.borrow.client.components :as ui]
    [leihs.borrow.client.routes :as routes]
    #_[leihs.borrow.client.components :as ui]))

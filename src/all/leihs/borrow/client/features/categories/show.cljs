@@ -1,11 +1,11 @@
 (ns leihs.borrow.client.features.categories.show
-  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
+  #_(:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
     #_[reagent.core :as reagent]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
-    [clojure.string :refer [join split replace-first]]
+    [clojure.string :refer [join split #_replace-first]]
     #_[leihs.borrow.client.features.search-models.core :as search-models]
     [leihs.borrow.client.lib.routing :as routing]
     [leihs.borrow.client.lib.pagination :as pagination]
@@ -69,7 +69,7 @@
   (let [routing @(rf/subscribe [:routing/routing])
         params (get-in routing [:bidi-match :query-params])
         max-quant (:availableQuantityInDateRange model)
-        available? (> max-quant 0)
+        #_(available? (> max-quant 0))
         model-show-params {:end (:end-date params) :start (:start-date params) :maxQuantity max-quant}
         href (routing/path-for ::routes/models-show
                                :model-id (:id model)
@@ -118,7 +118,7 @@
          [:h1.text-3xl.font-extrabold.leading-none
           (:name category)]
 
-         (if parent-id
+         (when parent-id
            [:span.mt-2.text-color-muted.text-sm
             [:a {:href (str (routing/path-for ::routes/categories-show
                                               :categories-path (join "/" prev-ids)))} "← back"]])]

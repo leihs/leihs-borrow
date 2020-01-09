@@ -1,5 +1,5 @@
 (ns leihs.borrow.client.features.favorite-models.core
-  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
+  #_(:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
    #_[reagent.core :as r]
    [re-frame.core :as rf]
@@ -33,7 +33,7 @@
 (rf/reg-sub ::favorite-models (fn [db] (:models db)))
 
 (defn model-grid-item [model]
-  (let [routing @(rf/subscribe [:routing/routing])
+  (let [_routing @(rf/subscribe [:routing/routing])
         href (routing/path-for ::routes/models-show :model-id (:id model))]
     [:div.ui-model-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-2.mb-3
      {:style {:opacity 1}}

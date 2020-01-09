@@ -1,5 +1,5 @@
 (ns leihs.borrow.client.lib.timeout
-  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
+  #_(:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require [re-frame.core :as rf]
             [re-graph.core :as re-graph]
             [leihs.borrow.client.features.shopping-cart.core :as cart]

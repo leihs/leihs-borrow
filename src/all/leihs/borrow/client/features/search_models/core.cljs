@@ -1,5 +1,5 @@
 (ns leihs.borrow.client.features.search-models.core
-  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
+  #_(:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
    #_[reagent.core :as r]
    [re-frame.core :as rf]
@@ -20,7 +20,7 @@
 ;-; EVENTS 
 (rf/reg-event-fx
  ::routes/search
- (fn [{:keys [db]} [_ args]]
+ (fn [{:keys [_db]} [_ args]]
    (let [params (get-in args [:query-params])
          filters {:term (get params :term)
                   :start-date (get params :start-date)
