@@ -129,6 +129,7 @@
            :else
            [:<>
             [:div
+             [:span.text-color-info.font-mono (:valid-until order)]
              [:div.mt-2.mb-4.flex
               [:div.flex-grow
                [:input.text-xl.w-100
@@ -140,16 +141,16 @@
                [:button.rounded.border.border-gray-600.px-2.text-color-muted "edit"]]]
 
              (doall
-               (for [[grouped-key lines] reservations]
-                 (let [line (first lines) quantity (count lines)]
-                   [:<> {:key grouped-key}
-                    [reservation-line quantity line]])))
+              (for [[grouped-key lines] reservations]
+                (let [line (first lines) quantity (count lines)]
+                  [:<> {:key grouped-key}
+                   [reservation-line quantity line]])))
 
              #_[:label.w-100
-             [:span.text-xs.block.mt-4
-             "Optional: enter more details about the purpose of the order (if the name is sufficient)"]
-             [:input.text-md.w-100.my-2
-             {:placeholder "details about the order purpose"}]]
+                [:span.text-xs.block.mt-4
+                 "Optional: enter more details about the purpose of the order (if the name is sufficient)"]
+                [:input.text-md.w-100.my-2
+                 {:placeholder "details about the order purpose"}]]
 
              [:div.mt-4.text-sm.text-color-muted
               [:p

@@ -64,7 +64,7 @@ body {
 .text-color-danger {
   color: red;
 }
-.text-color-danger {
+.text-color-info {
   color: aquamarine;
 }
 .preserve-linebreaks {
@@ -96,12 +96,10 @@ body {
     filter: invert(100%);
   }
   .text-color-danger {
-  color: red;
-}
-.text-color-danger {
-  color: aquamarine;
-}
-
+  color: red;}
+  .text-color-danger {
+    color: aquamarine;
+  }
 
 }
 
