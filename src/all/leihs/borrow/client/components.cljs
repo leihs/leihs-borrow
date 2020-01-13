@@ -98,9 +98,10 @@
      [:span.font-black [:a {:href (routing/path-for ::routes/home)} "LEIHS"]]
      " "
      [:span.text-sm
-      (if timeout?
-        [:span {:class "text-color-danger" } "!!!"]
-        [:span {:class "text-color-info"} (datefn/formatDistanceToNow (js/Date. valid-until))])
+      (if valid-until
+        (if timeout?
+          [:span {:class "text-color-danger" } "!!!"]
+          [:span {:class "text-color-info"} (datefn/formatDistanceToNow (js/Date. valid-until))]))
       " "
       [:a {:href (routing/path-for ::routes/shopping-cart)} shopping-cart-icon]]]))
 

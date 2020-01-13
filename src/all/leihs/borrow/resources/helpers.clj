@@ -11,25 +11,21 @@
           (vals <>))
        order))
 
-(def format-string "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"")
+(def date-format "YYYY-MM-DD")
+(def date-time-format "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"")
 
-(defn iso8601-created-at
-  ([] (iso8601-created-at nil))
-  ([q]
-   [(sql/call :to_char
-             (if q
-               (sql/qualify q :created_at)
-               :created_at)
-             format-string)
-    :created_at]))
+(defmacro def-attribute-override-fn [fn-name attr format-str]
+  `(defn ~fn-name
+     ([] (~fn-name nil))
+     ([q#]
+      [(sql/call :to_char
+                 (if q#
+                   (sql/qualify q# ~attr)
+                   ~attr)
+                 ~format-str)
+       ~attr])))
 
-(defn iso8601-updated-at
-  ([] (iso8601-updated-at nil))
-  ([q]
-   [(sql/call :to_char
-             (if q
-               (sql/qualify q :updated_at)
-               :updated_at)
-             format-string)
-    :updated_at]))
-
+(def-attribute-override-fn date-start-date :start_date date-format)
+(def-attribute-override-fn date-end-date :end_date date-format)
+(def-attribute-override-fn date-time-created-at :created_at date-time-format)
+(def-attribute-override-fn date-time-updated-at :updated_at date-time-format)

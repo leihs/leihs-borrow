@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Wed Jan 08 2020 08:42:54 GMT+0100 (Central European Standard Time)
+# timestamp: Fri Jan 10 2020 14:56:03 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -174,7 +174,7 @@ type MutationRoot {
   ): [Reservation]
   deleteReservations(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
-  refreshTimeout: DateTime
+  refreshTimeout: RefreshTimeoutResult
   submitOrder(purpose: String!): Order!
   unfavoriteModel(id: UUID!): Model!
 }
@@ -279,6 +279,10 @@ type QueryRoot {
   rootCategories: [Category!]
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
   visits(limit: Int, orderBy: [VisitsOrderByInput]): [Visit]
+}
+
+type RefreshTimeoutResult {
+  unsubmittedOrder: UnsubmittedOrder
 }
 
 type Reservation {

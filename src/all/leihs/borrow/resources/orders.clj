@@ -22,8 +22,8 @@
     (-> (sql/select :orders_union.id
                     :orders_union.purpose
                     [distinct-states-sql-expr :state]
-                    (helpers/iso8601-created-at :orders_union)
-                    (helpers/iso8601-updated-at :orders_union))
+                    (helpers/date-time-created-at :orders_union)
+                    (helpers/date-time-updated-at :orders_union))
         (sql/from
           [{:union [(-> (apply sql/select common-columns)
                         (sql/from :customer_orders)
@@ -86,8 +86,8 @@
   (let [columns (as-> (database/columns tx "orders") <>
                   (remove #{:created_at :updated_at} <>)
                   (conj <>
-                        (helpers/iso8601-created-at)
-                        (helpers/iso8601-updated-at)))]
+                        (helpers/date-time-created-at)
+                        (helpers/date-time-updated-at)))]
     (-> (apply sql/select columns)
         (sql/from :orders)
         ; An old pool order without customer order become
@@ -110,7 +110,7 @@
                (str "updated_at + interval '"
                     (:timeout_minutes (settings/get tx))
                     "minutes'"))
-             helpers/format-string)
+             helpers/date-time-format)
    :updated_at])
 
 (defn valid-until [tx user-id]
@@ -137,14 +137,15 @@
   (let [reservations (reservations/for-customer-order tx user-id)]
     (if (empty? reservations)
       (throw (ex-info "User does not have any unsubmitted reservations." {})))
-    ; TODO: validations
+    (if-not (reservations/available-in-respective-pools? context reservations)
+      (throw (ex-info "Some reserved quantities are not available anymore." {})))
     (let [customer-order (-> (sql/insert-into :customer_orders)
                              (sql/values [{:purpose purpose
                                            :user_id user-id}])
                              (sql/returning :id
                                             :purpose
-                                            (helpers/iso8601-created-at)
-                                            (helpers/iso8601-updated-at))
+                                            (helpers/date-time-created-at)
+                                            (helpers/date-time-updated-at))
                              sql/format
                              (->> (jdbc/query tx))
                              first
@@ -198,9 +199,13 @@
 (defn refresh-timeout
   "Always returns the valid until date. If the unsubmitted order is not
   timed-out, then it will be updated as a side-effect."
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request} _ _]
-  (if (timeout? tx user-id)
-    (valid-until tx user-id)
+  [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}
+   args
+   value]
+  (if (or (not (timeout? tx user-id))
+          (->> user-id
+               (reservations/for-customer-order tx)
+               (reservations/available-in-respective-pools? context)))
     (-> (sql/update :reservations)
         (sql/set {:updated_at (sql/call :now)})
         (sql/where [:and
@@ -212,4 +217,5 @@
         (sql/format)
         (->> (jdbc/query tx))
         first
-        :updated_at)))
+        :updated_at))
+  {:unsubmitted-order (get-unsubmitted context args value)})

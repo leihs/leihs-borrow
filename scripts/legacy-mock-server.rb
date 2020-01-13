@@ -3,6 +3,8 @@ require 'json'
 require 'pry'
 require 'sinatra'
 
+set :show_exceptions, false
+
 get '/status' do
   'OK'
 end
@@ -31,6 +33,26 @@ get '/borrow/models/availability' do
     [{ model_id: '906ac7a7-1f1e-4367-b1f0-fa63052fbd0f',
        inventory_pool_id: '93c17c42-50d6-4af9-aa3b-96a0aafb8011',
        quantity: 2 }]
+  elsif params[:model_ids] == ['98d398e7-08b3-49d4-807c-42a3eac07de9'] and
+    params[:inventory_pool_ids] == ['8633ce17-37da-4802-a377-66ca78291d0a']
+    [{ model_id: '98d398e7-08b3-49d4-807c-42a3eac07de9',
+       inventory_pool_id: '8633ce17-37da-4802-a377-66ca78291d0a',
+       quantity: 1 }]
+  elsif params[:model_ids] == ['98d398e7-08b3-49d4-807c-42a3eac07de9'] and
+    params[:inventory_pool_ids] == ['4e2f1362-0891-4df7-b760-16a2a8d3373f']
+    [{ model_id: '98d398e7-08b3-49d4-807c-42a3eac07de9',
+       inventory_pool_id: '4e2f1362-0891-4df7-b760-16a2a8d3373f',
+       quantity: 1 }]
+  elsif params[:model_ids] == ['fd3cef3d-578c-4409-b814-eb20a46da21d'] and
+    params[:inventory_pool_ids] == ['8633ce17-37da-4802-a377-66ca78291d0a']
+    [{ model_id: 'fd3cef3d-578c-4409-b814-eb20a46da21d',
+       inventory_pool_id: '8633ce17-37da-4802-a377-66ca78291d0a',
+       quantity: 1 }]
+  elsif params[:model_ids] == ['34d2f947-1ec1-474c-9afd-4b71b6c1d966'] and
+    params[:inventory_pool_ids] == ['4e2f1362-0891-4df7-b760-16a2a8d3373f']
+    [{ model_id: '34d2f947-1ec1-474c-9afd-4b71b6c1d966',
+       inventory_pool_id: '4e2f1362-0891-4df7-b760-16a2a8d3373f',
+       quantity: 1 }]
   elsif params[:model_ids] == ['0a0feaf8-9537-4d39-b5f2-b9411778c90c']
     [{ model_id: '0a0feaf8-9537-4d39-b5f2-b9411778c90c',
        inventory_pool_id: '93c17c42-50d6-4af9-aa3b-96a0aafb8011',
@@ -47,8 +69,8 @@ get '/borrow/models/availability' do
        quantity: 1 }]
   elsif
     params[:model_ids] == ['f616b467-80f5-45d7-b708-08c00d506a92'] and
-    params[:inventory_pool_ids].to_set == Set['8e484119-76a4-4251-b37b-64847df99e9b',
-                                              'a7d2e049-56ac-481a-937e-ee3f613f3cc7']
+      params[:inventory_pool_ids].to_set == Set['8e484119-76a4-4251-b37b-64847df99e9b',
+                                                'a7d2e049-56ac-481a-937e-ee3f613f3cc7']
     [{ model_id: 'f616b467-80f5-45d7-b708-08c00d506a92',
        inventory_pool_id: '8e484119-76a4-4251-b37b-64847df99e9b',
        quantity: 2 },
@@ -57,10 +79,16 @@ get '/borrow/models/availability' do
        quantity: 2 }]
   elsif
     params[:model_ids] == ['f616b467-80f5-45d7-b708-08c00d506a92'] and
-    params[:inventory_pool_ids] == ['a7d2e049-56ac-481a-937e-ee3f613f3cc7']
+      params[:inventory_pool_ids] == ['a7d2e049-56ac-481a-937e-ee3f613f3cc7']
     [{ model_id: 'f616b467-80f5-45d7-b708-08c00d506a92',
        inventory_pool_id: 'a7d2e049-56ac-481a-937e-ee3f613f3cc7',
-       quantity: 1 }]
+       quantity: 2 }]
+  elsif
+    params[:model_ids] == ['f616b467-80f5-45d7-b708-08c00d506a92'] and
+      params[:inventory_pool_ids] == ['8e484119-76a4-4251-b37b-64847df99e9b']
+    [{ model_id: 'f616b467-80f5-45d7-b708-08c00d506a92',
+       inventory_pool_id: '8e484119-76a4-4251-b37b-64847df99e9b',
+       quantity: 2 }]
   else
     raise "Unknown model IDs: #{params[:model_ids]}"
   end.to_json

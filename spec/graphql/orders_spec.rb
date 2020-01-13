@@ -38,6 +38,11 @@ describe 'orders' do
                       id: '34d2f947-1ec1-474c-9afd-4b71b6c1d966')
   end
 
+  let(:model_3) do
+    FactoryBot.create(:leihs_model,
+                      id: 'fd3cef3d-578c-4409-b814-eb20a46da21d')
+  end
+
   before(:example) do
     FactoryBot.create(:access_right,
                       inventory_pool: inventory_pool_1,
@@ -48,100 +53,168 @@ describe 'orders' do
                       user: user)
   end
 
-  it 'create' do
-    model_1.add_item(
-      FactoryBot.create(:item,
-                        is_borrowable: true,
-                        responsible: inventory_pool_1)
-    )
+  context 'create' do
+    it 'succeeds' do
+      model_1.add_item(
+        FactoryBot.create(:item,
+                          is_borrowable: true,
+                          responsible: inventory_pool_1)
+      )
 
-    model_1.add_item(
-      FactoryBot.create(:item,
-                        is_borrowable: true,
-                        responsible: inventory_pool_2)
-    )
+      model_1.add_item(
+        FactoryBot.create(:item,
+                          is_borrowable: true,
+                          responsible: inventory_pool_2)
+      )
 
-    model_2.add_item(
-      FactoryBot.create(:item,
-                        is_borrowable: true,
-                        responsible: inventory_pool_2)
-    )
+      model_2.add_item(
+        FactoryBot.create(:item,
+                          is_borrowable: true,
+                          responsible: inventory_pool_2)
+      )
 
-    FactoryBot.create(:reservation,
-                      id: '100ffcc9-5401-415b-9185-5fffa8e5c526',
-                      leihs_model: model_1,
-                      inventory_pool: inventory_pool_1,
-                      user: user)
-    FactoryBot.create(:reservation,
-                      id: '20fbda2e-9265-4728-8e70-418c2b348d8a',
-                      leihs_model: model_1,
-                      inventory_pool: inventory_pool_2,
-                      user: user)
-    FactoryBot.create(:reservation,
-                      id: 'bf7080fb-2118-472e-8cff-50a51d648389',
-                      leihs_model: model_2,
-                      inventory_pool: inventory_pool_2,
-                      user: user)
+      start_date = Date.tomorrow
+      end_date = start_date + 1.day
 
-    q = <<-GRAPHQL
-      mutation(
-        $purpose: String!
-      ) {
-        submitOrder(
-          purpose: $purpose
+      FactoryBot.create(:reservation,
+                        id: '100ffcc9-5401-415b-9185-5fffa8e5c526',
+                        leihs_model: model_1,
+                        inventory_pool: inventory_pool_1,
+                        start_date: start_date,
+                        end_date: end_date,
+                        user: user)
+      FactoryBot.create(:reservation,
+                        id: '20fbda2e-9265-4728-8e70-418c2b348d8a',
+                        leihs_model: model_1,
+                        inventory_pool: inventory_pool_2,
+                        start_date: start_date,
+                        end_date: end_date,
+                        user: user)
+      FactoryBot.create(:reservation,
+                        id: 'bf7080fb-2118-472e-8cff-50a51d648389',
+                        leihs_model: model_2,
+                        inventory_pool: inventory_pool_2,
+                        start_date: start_date,
+                        end_date: end_date,
+                        user: user)
+
+      q = <<-GRAPHQL
+        mutation(
+          $purpose: String!
         ) {
-          purpose
-          state
-          subOrdersByPool(
-            orderBy: [{attribute: INVENTORY_POOL_ID, direction: ASC}]
+          submitOrder(
+            purpose: $purpose
           ) {
-            inventoryPool {
-              id
-            }
-            reservations(
-              orderBy: [{attribute: ID, direction: ASC}]
-            ){
-              id
-              status
-            }
+            purpose
             state
+            subOrdersByPool(
+              orderBy: [{attribute: INVENTORY_POOL_ID, direction: ASC}]
+            ) {
+              inventoryPool {
+                id
+              }
+              reservations(
+                orderBy: [{attribute: ID, direction: ASC}]
+              ){
+                id
+                status
+              }
+              state
+            }
           }
         }
+      GRAPHQL
+
+      purpose = Faker::Lorem.sentence
+
+      vars = {
+        purpose: purpose
       }
-    GRAPHQL
 
-    purpose = Faker::Lorem.sentence
+      result = query(q, user.id, vars).deep_symbolize_keys
+      expect(result[:data]).to eq({
+        submitOrder: {
+          purpose: purpose,
+          state: ['SUBMITTED'],
+          subOrdersByPool: [
+            { inventoryPool: { id: '4e2f1362-0891-4df7-b760-16a2a8d3373f' },
+              reservations: [
+                { id: '20fbda2e-9265-4728-8e70-418c2b348d8a',
+                  status: 'SUBMITTED' },
+                { id: 'bf7080fb-2118-472e-8cff-50a51d648389',
+                  status: 'SUBMITTED' }
+              ],
+              state: 'SUBMITTED'
+            },
+            { inventoryPool: { id: '8633ce17-37da-4802-a377-66ca78291d0a' },
+              reservations: [
+                { id: '100ffcc9-5401-415b-9185-5fffa8e5c526',
+                  status: 'SUBMITTED' }
+              ],
+              state: 'SUBMITTED'
+            }
+          ]
+        }
+      })
+      expect(result[:errors]).to be_nil
+    end
 
-    vars = {
-      purpose: purpose
-    }
+    it 'fails due to availability validation' do
+      Settings.first.update(timeout_minutes: 1)
 
-    result = query(q, user.id, vars).deep_symbolize_keys
-    expect(result[:data]).to eq({
-      submitOrder: {
-        purpose: purpose,
-        state: ['SUBMITTED'],
-        subOrdersByPool: [
-          { inventoryPool: { id: '4e2f1362-0891-4df7-b760-16a2a8d3373f' },
-            reservations: [
-              { id: '20fbda2e-9265-4728-8e70-418c2b348d8a',
-                status: 'SUBMITTED' },
-              { id: 'bf7080fb-2118-472e-8cff-50a51d648389',
-                status: 'SUBMITTED' }
-            ],
-            state: 'SUBMITTED'
-          },
-          { inventoryPool: { id: '8633ce17-37da-4802-a377-66ca78291d0a' },
-            reservations: [
-              { id: '100ffcc9-5401-415b-9185-5fffa8e5c526',
-                status: 'SUBMITTED' }
-            ],
-            state: 'SUBMITTED'
+      2.times do
+        model_3.add_item(
+          FactoryBot.create(:item,
+                            is_borrowable: true,
+                            responsible: inventory_pool_1)
+        )
+      end
+
+      2.times do
+        FactoryBot.create(:reservation,
+                          leihs_model: model_3,
+                          inventory_pool: inventory_pool_1,
+                          start_date: Date.tomorrow,
+                          end_date: Date.tomorrow + 1.day,
+                          user: user)
+      end
+
+      sleep(2)
+
+      user_2 = FactoryBot.create(:user)
+      FactoryBot.create(:access_right,
+                        inventory_pool: inventory_pool_1,
+                        user: user_2)
+
+      FactoryBot.create(:reservation,
+                        leihs_model: model_1,
+                        inventory_pool: inventory_pool_1,
+                        start_date: Date.tomorrow + 1.day,
+                        end_date: Date.tomorrow + 2.days,
+                        user: user_2)
+
+      q = <<-GRAPHQL
+        mutation(
+          $purpose: String!
+        ) {
+          submitOrder(
+            purpose: $purpose
+          ) {
+            purpose
           }
-        ]
+        }
+      GRAPHQL
+
+      purpose = Faker::Lorem.sentence
+
+      vars = {
+        purpose: purpose
       }
-    })
-    expect(result[:errors]).to be_nil
+
+      result = query(q, user.id, vars).deep_symbolize_keys
+      expect(result[:errors].map { |e| e[:message] })
+        .to include 'Some reserved quantities are not available anymore.'
+    end
   end
 
   it 'get one' do

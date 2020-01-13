@@ -2,6 +2,7 @@
   (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require [re-frame.core :as rf]
             [re-graph.core :as re-graph]
+            [shadow.resource :as rc]
             [leihs.borrow.client.features.shopping-cart.core :as cart]
             [leihs.borrow.client.lib.routing :as routing]))
 
@@ -14,7 +15,7 @@
   ::refresh
   (fn [_ _]
     {:dispatch [::re-graph/mutate
-                "mutation { refreshTimeout } "
+                (rc/inline "leihs/borrow/client/lib/refreshTimeout.gql")
                 nil
                 [::on-refresh]]}))
 
@@ -26,4 +27,4 @@
       (do (js/console.log "timeout refresh success")
           (assoc-in db
                     [::cart/current-order :data :valid-until]
-                    (:refreshTimeout data))))))
+                    (-> data :refreshTimeout :unsubmittedOrder :validUntil))))))

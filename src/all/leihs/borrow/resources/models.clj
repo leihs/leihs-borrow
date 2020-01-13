@@ -98,7 +98,9 @@
 (defn available-quantity-in-date-range
   "If the available quantity was already computed through the enclosing
   resolver, then just return it. Otherwise fetch from legacy and compute."
-  [context {:keys [inventory-pool-ids start-date end-date]} value]
+  [context
+   {:keys [inventory-pool-ids start-date end-date exclude-reservation-ids]}
+   value]
   (or (:available-quantity-in-date-range value)
       (if (before?
             (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
@@ -114,7 +116,8 @@
                                 {:model-ids [(:id value)]
                                  :inventory-pool-ids pool-ids
                                  :start-date start-date
-                                 :end-date end-date}
+                                 :end-date end-date
+                                 :exclude-reservation-ids exclude-reservation-ids}
                                 nil)]
           (->> legacy-response
                (map :quantity)

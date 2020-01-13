@@ -11,15 +11,24 @@
             [camel-snake-kebab.core :as csk]
             [wharf.core :refer [transform-keys]]
             [com.walmartlabs.lacinia :as lacinia]
+            [clojure.spec.alpha :as spec]
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]))
 
+(doseq [s [::model_id ::inventory_pool_id ::start_date ::end_date]]
+  (spec/def s (comp not nil?)))
+
+(spec/def ::reservation
+  (spec/keys :req-un [::model_id ::inventory_pool_id ::start_date ::end_date]))
+
 (defn columns [tx]
   (as-> (database/columns tx "reservations") <>
-    (remove #{:created_at :updated_at} <>)
+    (remove #{:created_at :updated_at :start_date :end_date} <>)
     (conj <>
-          (helpers/iso8601-created-at)
-          (helpers/iso8601-updated-at))))
+          (helpers/date-time-created-at)
+          (helpers/date-time-updated-at)
+          (helpers/date-start-date)
+          (helpers/date-end-date))))
 
 (defn query [sql-format tx]
   (jdbc/query tx
@@ -47,17 +56,6 @@
       first
       :updated_at))
 
-(defn for-customer-order [tx user-id]
-  (-> (sql/select :*)
-      (sql/from :reservations)
-      (sql/merge-where [:= :user_id user-id])
-      (sql/merge-where
-        [:=
-         :status
-         (sql/call :cast "unsubmitted" :reservation_status)])
-      sql/format
-      (->> (jdbc/query tx))))
-
 (defn unsubmitted-sqlmap [tx user-id]
   (-> (apply sql/select (columns tx))
       (sql/from :reservations)
@@ -66,6 +64,31 @@
                                         "unsubmitted"
                                         :reservation_status)]
                   [:= :user_id user-id]])))
+
+(defn for-customer-order [tx user-id]
+  (-> (unsubmitted-sqlmap tx user-id)
+      sql/format
+      (->> (jdbc/query tx))))
+
+(defn available-in-respective-pools? [context reservations]
+  (->> reservations
+       (map #(spec/assert ::reservation %))
+       (group-by #(-> %
+                      (select-keys [:model_id
+                                    :inventory_pool_id
+                                    :start_date
+                                    :end_date])
+                      vals))
+       (every? (fn [[[model-id pool-id start-date end-date] rs]]
+                 (let [available-quantity
+                       (models/available-quantity-in-date-range
+                         context
+                         {:inventory-pool-ids [pool-id]
+                          :start-date start-date
+                          :end-date end-date
+                          :exclude-reservation-ids (map :id reservations)}
+                         {:id model-id})]
+                   (>= available-quantity (clojure.core/count rs)))))))
 
 (defn get-multiple
   [{{:keys [tx] user :authenticated-entity} :request :as context}
@@ -152,7 +175,7 @@
                                               first
                                               :name)))))]
       (->> quantity
-           (distribute (log/spy pool-avails))
+           (distribute pool-avails)
            (map (fn [{:keys [quantity] :as attrs}]
                   (let [row (-> attrs
                                 (select-keys [:inventory_pool_id :model_id :quantity])

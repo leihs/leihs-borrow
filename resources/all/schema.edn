@@ -178,7 +178,8 @@
                                             :resolve :inventory-pool}
                             :reservations {:type (list :Reservation)
                                            :args {:orderBy {:type (list :ReservationsOrderByInput)}}
-                                           :resolve :reservations}}}}
+                                           :resolve :reservations}}}
+           :RefreshTimeoutResult {:fields {:unsubmittedOrder {:type :UnsubmittedOrder}}}}
 
  :input-objects {:ModelsOrderByInput {:fields {:attribute {:type (non-null :ModelsOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
@@ -281,4 +282,4 @@
                                :resolve :unfavorite-model
                                :type (non-null :Model)}
              :refreshTimeout {:resolve :refresh-timeout
-                              :type :DateTime}}}
+                              :type :RefreshTimeoutResult}}}
