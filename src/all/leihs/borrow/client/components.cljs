@@ -4,6 +4,7 @@
    [reagent.core :as reagent]
    [re-frame.core :as rf]
    ["date-fns" :as datefn]
+   #_[goog.string.format]
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]))
 
@@ -85,45 +86,52 @@
                        [:span {:style {:font-size "75%" }} "♡"]]])
 
 (defn countdown [until]
-  (let [formatter (fn [until]
-                    (let [now (js/Date.)
-                          timeout? (datefn/isAfter now until)
-                          minutes-remaining (datefn/differenceInMinutes until now)
-                          seconds-remaining (datefn/differenceInSeconds
-                                             (datefn/subMinutes until minutes-remaining)
-                                             now)]
-                      (when-not timeout? (str minutes-remaining ":" seconds-remaining))))
+  (let [zero-pad-num (fn [n] (if (< n 10) (str 0 n) n))
+        formatter (fn [until]
+                    (when until
+                      (let [now (js/Date.)
+                            timeout? (datefn/isAfter now until)
+                            minutes-remaining (datefn/differenceInMinutes until now)
+                            seconds-remaining (datefn/differenceInSeconds
+                                               (datefn/subMinutes until minutes-remaining)
+                                               now)]
+                        (when-not timeout? 
+                          (str (zero-pad-num minutes-remaining) ":" (zero-pad-num seconds-remaining))))))
         displayed-time (reagent/atom (formatter until))]
     (fn [until]
       (js/setTimeout #(reset! displayed-time (formatter until)) 1000)
-      [:<>  @displayed-time])))
+      (if-let [dt @displayed-time] dt))))
 
 (defn main-nav []
-  (let [current-order @(rf/subscribe [:leihs.borrow.client.features.shopping-cart.core/current-order])
-        now (js/Date.)
-        valid-until (some->> current-order (:valid-until) (datefn/parseISO))
-        timeout? (some->> valid-until (datefn/isAfter now))
-        navbar-styles {:height "3rem"
-                       :top 0 :z-index 1000
-                       :border-bottom-color "rgba(0,0,0, 0.08)"
-                       :backdrop-filter "blur(12px)" :-webkit-backdrop-filter "blur(12px)"
-                       :background "rgba(255,255,255, 0.83)"}]
-    [:nav.ui-main-nav.px-2.border-b.shadow-md.flex.flex-wrap.items-center.justify-between.sticky.bg-content.text-xl.py-2
-     {:style navbar-styles}
-     [:div.flex-1.text-left.border.border-red-200
-      [:a {:href (routing/path-for ::routes/about-page)} menu-icon]]
-     [:div.flex-1.text-center.border.border-red-200
-      [:span.font-black [:a {:href (routing/path-for ::routes/home)} " LEIHS "]]]
-     [:div.flex-1.self-stretch.relative.text-right.border.border-red-200
-      [:a.inline-flex.relative.rounded-full.bg-red-700
-       {:href (routing/path-for ::routes/shopping-cart)
-        :style {:height "2rem" :width "2rem"}}
-       [:span.absolute.pr-2.text-color-info {:style {:right "2rem"}}
-        #_displayed-time (when valid-until [countdown now valid-until])]
-       #_(if (and valid-until timeout?)
-           [:span.text-color-danger "!!!"]
-           [:span.text-color-info (datefn/formatDistanceToNow (js/Date. valid-until))])
-       [:span.absolute.text-sm.text-center  shopping-cart-icon]]]]))
+  (let [shopping-cart (rf/subscribe [:leihs.borrow.client.features.shopping-cart.core/current-order])]
+    (fn []
+      (let [now (js/Date.)
+            current-order (when (:validUntil @shopping-cart) @shopping-cart)
+            valid-until (some->> current-order (:valid-until) (datefn/parseISO))
+            timeout? (some->> valid-until (datefn/isAfter now))
+            navbar-styles {:height "3rem"
+                           :top 0 :z-index 1000
+                           :border-bottom-color "rgba(0,0,0, 0.08)"
+                           :backdrop-filter "blur(12px)" :-webkit-backdrop-filter "blur(12px)"
+                           :background "rgba(255,255,255, 0.83)"}]
+        [:nav.ui-main-nav.px-2.border-b.shadow-md.flex.flex-wrap.items-center.justify-between.sticky.bg-content.text-xl.py-2
+         {:style navbar-styles}
+         [:div.flex-1.text-left
+          [:a {:href (routing/path-for ::routes/about-page)} menu-icon]]
+         [:div.flex-1.text-center
+          [:span.font-black [:a {:href (routing/path-for ::routes/home)} " LEIHS "]]]
+         [:div.flex-1.self-stretch.relative.text-right
+          [:a.inline-flex.relative.rounded-full
+           {:href (routing/path-for ::routes/shopping-cart)
+            :class (cond timeout? "bg-red-700" current-order "bg-green-300")
+            :style {:height "2rem" :width "2rem"}}
+           (when true #_(and valid-until (not timeout?) )
+             [:span.absolute.pr-2.font-mono
+              {:style {:right "2rem" :class "text-green-300"}}
+              [countdown valid-until]])
+           [:span.absolute.text-sm.text-center
+            {:style {:height "2rem" :width "2rem" :line-height "2rem" :left "0.08rem"}}
+            shopping-cart-icon]]]]))))
 
 (defn tmp-nav []
   [:nav.border.border-black.m-3.p-2

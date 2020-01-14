@@ -1,8 +1,8 @@
-(ns leihs.borrow.client.lib.timeout
+(ns leihs.borrow.client.features.shopping-cart.timeout
   #_(:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require [re-frame.core :as rf]
             [re-graph.core :as re-graph]
-            [leihs.borrow.client.features.shopping-cart.core :as cart]
+            #_[leihs.borrow.client.features.shopping-cart.core :as cart]
             [leihs.borrow.client.lib.routing :as routing]))
 
 (rf/reg-event-fx
@@ -25,5 +25,6 @@
       (js/console.log "timeout refresh errors: " errors)
       (do (js/console.log "timeout refresh success")
           (assoc-in db
-                    [::cart/current-order :data :valid-until]
+                    ; FIXME: use imported namespace (needs soliution for circular dependency problem)
+                    [:leihs.borrow.client.features.shopping-cart.core/current-order :data :valid-until]
                     (:refreshTimeout data))))))

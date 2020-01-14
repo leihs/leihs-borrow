@@ -1,15 +1,20 @@
 (ns leihs.borrow.client.features.shopping-cart.core
   #_(:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
-    [clojure.string :as string]
-    [reagent.core :as reagent]
-    [re-frame.core :as rf]
-    [re-graph.core :as re-graph]
-    [shadow.resource :as rc]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.client.lib.helpers :as help]
-    [leihs.borrow.client.lib.routing :as routing]
-    [leihs.borrow.client.components :as ui]))
+   [clojure.string :as string]
+   [reagent.core :as reagent]
+   [re-frame.core :as rf]
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]
+   ["date-fns" :as datefn]
+   ["react-circular-progressbar" :as RCP :refer [CircularProgressbarWithChildren]]
+
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.client.lib.helpers :as help]
+   [leihs.borrow.client.lib.routing :as routing]
+   [leihs.borrow.client.components :as ui]
+
+   [leihs.borrow.client.features.shopping-cart.timeout]))
 
 
 ; is kicked off from router when this view is loaded
@@ -104,6 +109,31 @@
        {:on-click #(js/alert "TODO")}
        ui/trash-icon]]]))
 
+(def timeout-length 30) ; TODO: from settings!
+
+(defn circular-countdown [props]
+  (let [until (:until props)
+        zero-pad-num (fn [n] (if (< n 10) (str 0 n) n))
+        formatter (fn [until]
+                    (when until
+                      (let [now (js/Date.)
+                            timeout? (datefn/isAfter now until)
+                            minutes-remaining (datefn/differenceInMinutes until now)
+                            seconds-remaining (datefn/differenceInSeconds
+                                               (datefn/subMinutes until minutes-remaining)
+                                               now)]
+                        (when-not timeout?
+                          (str (zero-pad-num minutes-remaining) ":" (zero-pad-num seconds-remaining))))))
+        displayed-time (reagent/atom (formatter until))]
+    (fn [until]
+      (js/setTimeout #(reset! displayed-time (formatter until)) 1000)
+      [:> RCP/CircularProgressbarWithChildren
+       {:minValue 0 :maxValue timeout-length
+        :value (/ (datefn/differenceInSeconds until (js/Date.)) 60)}
+       (str @displayed-time)]
+      )))
+
+
 
 (defn view []
   (let [state (reagent/atom {:purpose ""})]
@@ -128,50 +158,64 @@
 
            :else
            [:<>
-            [:div
-             [:span.text-color-info.font-mono (:valid-until order)]
-             [:div.mt-2.mb-4.flex
-              [:div.flex-grow
-               [:input.text-xl.w-100
-                {:name :purpose
-                 :value (:purpose @state)
-                 :on-change (fn [e] (swap! state assoc :purpose (-> e .-target .-value)))
-                 :placeholder "Name Your Order"}]]
-              [:div.flex-none.px-1
-               [:button.rounded.border.border-gray-600.px-2.text-color-muted "edit"]]]
-
-             (doall
-              (for [[grouped-key lines] reservations]
-                (let [line (first lines) quantity (count lines)]
-                  [:<> {:key grouped-key}
-                   [reservation-line quantity line]])))
-
-             #_[:label.w-100
-                [:span.text-xs.block.mt-4
-                 "Optional: enter more details about the purpose of the order (if the name is sufficient)"]
-                [:input.text-md.w-100.my-2
-                 {:placeholder "details about the order purpose"}]]
-
-             [:div.mt-4.text-sm.text-color-muted
-              [:p
-               "Total "
-               (:total-models summary) ui/nbsp "Model(s), "
-               (:total-items summary) ui/nbsp "Item(s), "
-               "from "
-               (string/join ", " (map :name (:pools summary)))
-               "."]
-              [:p
-               "First pickup "
-               (ui/format-date :short (:earliest-start-date summary))
-               ", last return "
-               (ui/format-date :short (:latest-end-date summary))
-               "."]]
-
+            (let [now (js/Date.)
+                  current-order (when (:valid-until order) order)
+                  valid-until (some->> current-order (:valid-until) (datefn/parseISO))
+                  timeout? (some->> valid-until (datefn/isAfter now))]
              [:div
-              [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
-               {:disabled (empty? (:purpose @state))
-                :on-click #(rf/dispatch [::submit-order @state])}
-               "Confirm order"]]
+              
+              [:div
+               (when-not timeout? 
+                 [circular-countdown valid-until]
+                 #_[:> RCP/CircularProgressbarWithChildren
+                    {:minValue 0 :maxValue timeout-length
+                     :value (datefn/differenceInMinutes valid-until now)} 
+                    [countdown {:until valid-until}]])
+               #_[:p.text-color-info.font-mono [countdown valid-until]]
+               [:p.text-color-info.font-mono (js/JSON.stringify valid-until)]]
+              
+              [:div.mt-2.mb-4.flex
+               [:div.flex-grow
+                [:input.text-xl.w-100
+                 {:name :purpose
+                  :value (:purpose @state)
+                  :on-change (fn [e] (swap! state assoc :purpose (-> e .-target .-value)))
+                  :placeholder "Name Your Order"}]]
+               [:div.flex-none.px-1
+                [:button.rounded.border.border-gray-600.px-2.text-color-muted "edit"]]]
 
-             #_[:div.mt-4 [:hr] [:p.font-mono.m-2 (pr-str order)]]]])])))
+              (doall
+               (for [[grouped-key lines] reservations]
+                 (let [line (first lines) quantity (count lines)]
+                   [:<> {:key grouped-key}
+                    [reservation-line quantity line]])))
+
+              #_[:label.w-100
+                 [:span.text-xs.block.mt-4
+                  "Optional: enter more details about the purpose of the order (if the name is sufficient)"]
+                 [:input.text-md.w-100.my-2
+                  {:placeholder "details about the order purpose"}]]
+
+              [:div.mt-4.text-sm.text-color-muted
+               [:p
+                "Total "
+                (:total-models summary) ui/nbsp "Model(s), "
+                (:total-items summary) ui/nbsp "Item(s), "
+                "from "
+                (string/join ", " (map :name (:pools summary)))
+                "."]
+               [:p
+                "First pickup "
+                (ui/format-date :short (:earliest-start-date summary))
+                ", last return "
+                (ui/format-date :short (:latest-end-date summary))
+                "."]]
+
+              [:div
+               [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
+                {:disabled (empty? (:purpose @state))
+                 :on-click #(rf/dispatch [::submit-order @state])}
+                "Confirm order"]]
+
+              #_[:div.mt-4 [:hr] [:p.font-mono.m-2 (pr-str order)]]])])])))
   )

@@ -7,7 +7,6 @@
    [leihs.borrow.client.components :as ui]
 
    [leihs.borrow.client.lib.routing :as routing]
-   #_[leihs.borrow.client.lib.timeout :as timeout]
    [leihs.borrow.client.routes :as routes]
 
    [leihs.borrow.client.features.home-page.core :as home-page]
