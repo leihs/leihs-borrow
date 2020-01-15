@@ -100,7 +100,7 @@
         displayed-time (reagent/atom (formatter until))]
     (fn [until]
       (js/setTimeout #(reset! displayed-time (formatter until)) 1000)
-      (if-let [dt @displayed-time] dt))))
+      (str @displayed-time))))
 
 (defn main-nav []
   (let [shopping-cart (rf/subscribe [:leihs.borrow.client.features.shopping-cart.core/current-order])]

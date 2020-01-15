@@ -7,7 +7,7 @@
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
    ["date-fns" :as datefn]
-   ["react-circular-progressbar" :as RCP :refer [CircularProgressbarWithChildren]]
+   ["react-circular-progressbar" :as RCP]
 
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.lib.helpers :as help]
@@ -117,21 +117,24 @@
         formatter (fn [until]
                     (when until
                       (let [now (js/Date.)
-                            timeout? (datefn/isAfter now until)
-                            minutes-remaining (datefn/differenceInMinutes until now)
-                            seconds-remaining (datefn/differenceInSeconds
-                                               (datefn/subMinutes until minutes-remaining)
-                                               now)]
-                        (when-not timeout?
-                          (str (zero-pad-num minutes-remaining) ":" (zero-pad-num seconds-remaining))))))
-        displayed-time (reagent/atom (formatter until))]
+                            minutes-remaining (-> until (datefn/differenceInMinutes now) (max 0))
+                            seconds-remaining (-> until (datefn/subMinutes minutes-remaining)
+                                                  (datefn/differenceInSeconds now) (max 0))]
+                        (str (zero-pad-num minutes-remaining) ":" (zero-pad-num seconds-remaining)))))]
     (fn [until]
-      (js/setTimeout #(reset! displayed-time (formatter until)) 1000)
-      [:> RCP/CircularProgressbarWithChildren
-       {:minValue 0 :maxValue timeout-length
-        :value (/ (datefn/differenceInSeconds until (js/Date.)) 60)}
-       (str @displayed-time)]
-      )))
+      (let [displayed-time (reagent/atom (formatter until))
+            seconds-per-minute 60
+            max-val (* timeout-length seconds-per-minute)
+            seconds-remaining (datefn/differenceInSeconds until (js/Date.))
+            progress-value (- max-val seconds-remaining)]
+
+        (js/setTimeout #(reset! displayed-time (formatter until)) 1000)
+
+        [:> RCP/CircularProgressbarWithChildren
+         {:minValue 0 :maxValue max-val :value progress-value
+          :counterClockwise false
+          :styles (RCP/buildStyles #js{:pathColor "red" :trailColor "black"})}
+         [:span.font-mono (str @displayed-time)]]))))
 
 
 
@@ -164,15 +167,12 @@
                   timeout? (some->> valid-until (datefn/isAfter now))]
              [:div
               
-              [:div
-               (when-not timeout? 
-                 [circular-countdown valid-until]
-                 #_[:> RCP/CircularProgressbarWithChildren
-                    {:minValue 0 :maxValue timeout-length
-                     :value (datefn/differenceInMinutes valid-until now)} 
-                    [countdown {:until valid-until}]])
-               #_[:p.text-color-info.font-mono [countdown valid-until]]
-               [:p.text-color-info.font-mono (js/JSON.stringify valid-until)]]
+              [:div.text-center.text-sm
+               [:div {:style {:max-width "5rem" :margin "auto"}}
+                [circular-countdown valid-until]]
+               (if timeout?
+                 [:p.font-mono "reservations are timed out!"]
+                 [:p.font-mono "reservations are valid until " (-> valid-until (.toLocaleTimeString))])]
               
               [:div.mt-2.mb-4.flex
                [:div.flex-grow
