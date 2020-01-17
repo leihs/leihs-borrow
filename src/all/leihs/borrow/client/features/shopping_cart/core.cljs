@@ -78,7 +78,6 @@
   (fn [db [_ {{ids :deleteReservations} :data errors :errors}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
-      ; (assoc-in db [::current-order :data :reservations] [])
       (update-in db
                  [::current-order :data :reservations]
                  (partial filter #(->> %
@@ -169,12 +168,6 @@
                  [:<> {:key grouped-key}
                   [reservation-line reservations]]))
 
-             #_[:label.w-100
-             [:span.text-xs.block.mt-4
-             "Optional: enter more details about the purpose of the order (if the name is sufficient)"]
-             [:input.text-md.w-100.my-2
-             {:placeholder "details about the order purpose"}]]
-
              [:div.mt-4.text-sm.text-color-muted
               [:p
                "Total "
@@ -197,7 +190,4 @@
                "Confirm order"]
               [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl
                {:on-click #(rf/dispatch [::delete-reservations (map :id reservations)])}
-               "Delete order"]]
-
-             #_[:div.mt-4 [:hr] [:p.font-mono.m-2 (pr-str order)]]]])])))
-  )
+               "Delete order"]]]])]))))

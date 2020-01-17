@@ -18,7 +18,7 @@
  ::routes/home
  (fn [_ [_ _]] 
    {:dispatch-n (list 
-                 [::filters/fetch]
+                 [::filters/init]
                  [::categories/fetch-index 4])}))
 
 (defn view []
