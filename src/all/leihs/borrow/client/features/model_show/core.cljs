@@ -74,7 +74,7 @@
                                  :startDate (:start @state)
                                  :endDate (:end @state)
                                  :quantity (:quantity @state)})])]
-        (when given-order-dates?
+        (when true #_given-order-dates?
           [:div.border-b-2.border-gray-300.mt-4.pb-4
            [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
            [:div.flex.-mx-2

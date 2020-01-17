@@ -5,6 +5,7 @@
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
+   [leihs.borrow.client.lib.filters :as filters]
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.lib.pagination :as pagination]
    [leihs.borrow.client.routes :as routes]
@@ -14,9 +15,6 @@
 (def query-gql
   (rc/inline "leihs/borrow/client/features/search_models/searchModels.gql"))
 
-(def search-filters-gql
-  (rc/inline "leihs/borrow/client/features/search_models/getSearchFilters.gql"))
-
 ;-; EVENTS 
 (rf/reg-event-fx
  ::routes/search
@@ -25,43 +23,11 @@
          filters {:term (get params :term)
                   :start-date (get params :start-date)
                   :end-date (get params :end-date)
-                  ;( TODO: categories & pools 
+                  ; TODO: categories & pools 
                   }]
      {:dispatch-n (list
-                   [::set-filters filters]
+                   [::filters/set-all filters]
                    [::get-models filters])})))
-
-(rf/reg-event-fx
- ::fetch-search-filters
- (fn [_ [_ _]]
-   {:dispatch [::re-graph/query
-               search-filters-gql
-               {}
-               [::on-fetched-search-filters]]}))
-
-;tmp
-(defn fetch-search-filters []
-  (rf/dispatch-sync [::re-graph/query
-                     search-filters-gql
-                     {}
-                     [::on-fetched-search-filters]]))
-
-(rf/reg-event-fx
- ::on-fetched-search-filters
- (fn [{:keys [db]} [_ {:keys [data errors]}]]
-   (if errors
-     {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-     {:db (assoc-in db [:search :filters :available] data)})))
-
-(rf/reg-event-db
- ::set-filters
- (fn [db [_ filters]]
-   (assoc-in db [:search :filters :current] filters)))
-
-(rf/reg-event-db
- ::set-filter
- (fn [db [_ key value]]
-   (assoc-in db [:search :filters :current key] value)))
 
 (rf/reg-event-fx
  ::get-models
@@ -91,11 +57,6 @@
      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
      {:db (assoc-in db [:search :results] (get-in data [:models]))})))
 
-;-; SUBSCRIPTIONS 
-(rf/reg-sub ::available-filters
-            (fn [db] (get-in db [:search :filters :available] nil)))
-(rf/reg-sub ::current-filters
-            (fn [db] (get-in db [:search :filters :current] nil)))
 (rf/reg-sub ::search-results
             (fn [db] (-> (get-in db [:search :results :edges]))))
 
@@ -117,7 +78,7 @@
   (fn []
     (let
      [routing @(rf/subscribe [:routing/routing])
-      current @(rf/subscribe [::current-filters])
+      current @(rf/subscribe [::filters/current])
       on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/search)]
       [:form.p-3
        {:action "/search"
@@ -132,30 +93,30 @@
         [form-line :search-term "Suche"
          {:type :text
           :value (get current :term)
-          :on-change #(rf/dispatch [::set-filter :term (-> % .-target .-value)])}]
+          :on-change #(rf/dispatch [::filters/set-one :term (-> % .-target .-value)])}]
 
         [form-line :start-date "Start-datum"
          {:type :date
           :required true
           :value (get current :start-date)
-          :on-change #(rf/dispatch [::set-filter :start-date (-> % .-target .-value)])}]
+          :on-change #(rf/dispatch [::filters/set-one :start-date (-> % .-target .-value)])}]
 
         [form-line :end-date "End-datum"
          {:type :date
           :required true
           :min (get current :start-date)
           :value (get current :end-date)
-          :on-change #(rf/dispatch [::set-filter :end-date (-> % .-target .-value)])}]
+          :on-change #(rf/dispatch [::filters/set-one :end-date (-> % .-target .-value)])}]
 
         #_[form-line :category "Kategorie"
            {:type :select
             :value (get current :categories)
-            :on-change #(rf/dispatch [::set-filter :categories (-> % .-target .-value)])}]
+            :on-change #(rf/dispatch [::filters/set-one :categories (-> % .-target .-value)])}]
 
         #_[form-line :pool "Pool"
            {:type :select
             :value (get current :pools)
-            :on-change #(rf/dispatch [::set-filter :pools (-> % .-target .-value)])}]
+            :on-change #(rf/dispatch [::filters/set-one :pools (-> % .-target .-value)])}]
 
         (let [active? (boolean (and (get current :start-date) (get current :end-date)))]
           [ui/button "Get Results"
@@ -219,7 +180,7 @@
 (defn view
   []
   (let [models @(rf/subscribe [::search-results])
-        {:keys [term start-date end-date]} @(rf/subscribe [::current-filters])]
+        {:keys [term start-date end-date]} @(rf/subscribe [::filters/current])]
     [:<>
      [search-panel]
      #_[:p (pr-str models)]
