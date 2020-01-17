@@ -41,6 +41,17 @@
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
       {:db (assoc-in db [::results] (get-in data [:models]))})))
 
+(rf/reg-event-fx
+  ::clear
+  (fn [_ _]
+    {:dispatch-n (list [::filters/clear-current]
+                       [::clear-results]
+                       [:routing/navigate [::routes/home]])}))
+
+(rf/reg-event-db
+  ::clear-results
+  (fn [db _] (dissoc db ::results)))
+
 (rf/reg-sub
   ::results
   (fn [db] (-> (get-in db [::results :edges]))))
@@ -63,45 +74,54 @@
   (fn []
     (let
       [routing @(rf/subscribe [:routing/routing])
-       current @(rf/subscribe [::filters/current])
+       filters @(rf/subscribe [::filters/current])
        term @(rf/subscribe [::filters/term])
+       results @(rf/subscribe [::results])
        start-date @(rf/subscribe [::filters/start-date])
        end-date @(rf/subscribe [::filters/end-date])
        on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/search)]
-      [:form.p-3
-       {:action "/search"
-        :on-submit
-        (fn [event]
-          (.preventDefault event)
-          (if on-search-view?
-            (rf/dispatch [::get-models])
-            (rf/dispatch [:routing/navigate [::routes/search]])))}
-       [:fieldset {:style {:display :table}}
-        [:legend.sr-only "Suche"]
-        [form-line :search-term "Suche"
-         {:type :text
-          :value term
-          :on-change #(rf/dispatch [::filters/set-one ::filters/term (-> % .-target .-value)])}]
+      [:div.p-3
+       [:form
+        {:action "/search"
+         :on-submit
+         (fn [event]
+           (.preventDefault event)
+           (if on-search-view?
+             (rf/dispatch [::get-models])
+             (rf/dispatch [:routing/navigate [::routes/search]])))}
+        [:fieldset {:style {:display :table}}
+         [:legend.sr-only "Suche"]
+         [form-line :search-term "Suche"
+          {:type :text
+           :value term
+           :on-change #(rf/dispatch [::filters/set-one ::filters/term (-> % .-target .-value)])}]
 
-        [form-line :start-date "Start-datum"
-         {:type :date
-          :required true
-          :value start-date
-          :on-change #(rf/dispatch [::filters/set-one ::filters/start-date (-> % .-target .-value)])}]
+         [form-line :start-date "Start-datum"
+          {:type :date
+           :required true
+           :value start-date
+           :on-change #(rf/dispatch [::filters/set-one ::filters/start-date (-> % .-target .-value)])}]
 
-        [form-line :end-date "End-datum"
-         {:type :date
-          :required true
-          :min end-date
-          :value end-date
-          :on-change #(rf/dispatch [::filters/set-one ::filters/end-date (-> % .-target .-value)])}]
+         [form-line :end-date "End-datum"
+          {:type :date
+           :required true
+           :min end-date
+           :value end-date
+           :on-change #(rf/dispatch [::filters/set-one ::filters/end-date (-> % .-target .-value)])}]
 
-        (let [active? (boolean (and start-date end-date))]
-          [ui/button "Get Results"
-           active?
-           {:type :submit
-            :title (when-not active? "Select start- and end-date to search!")
-            :class :mt-2}])]])))
+         (let [active? (boolean (and start-date end-date))]
+           [ui/button "Get Results"
+            active?
+            {:type :submit
+             :title (when-not active? "Select start- and end-date to search!")
+             :class :mt-2}])]]
+
+       (if (or (seq filters) (seq results)) 
+         [ui/button "Clear"
+          true
+          {:type :button
+           :on-click #(rf/dispatch [::clear])
+           :class :mt-2}])])))
 
 (def product-card-width-in-rem 12)
 (def product-card-margins-in-rem 1)
@@ -113,8 +133,7 @@
         available? (> max-quant 0)
         model-show-params {:end (:end-date params) :start (:start-date params) :maxQuantity max-quant}
         href (routing/path-for ::routes/models-show
-                               :model-id (:id model)
-                               :query-params model-show-params)]
+                               :model-id (:id model))]
     [:div.ui-model-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-2.mb-3
      {:style {:opacity (if available? 1 0.35)}}
      [ui/image-square-thumb (get-in model [:images 0]) href]

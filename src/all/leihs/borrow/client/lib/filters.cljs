@@ -39,6 +39,11 @@
   (fn [db [_ key value]]
     (assoc-in db [::filters ::current key] value)))
 
+(rf/reg-event-db
+  ::clear-current
+  (fn [db _]
+    (assoc-in db [::filters ::current] nil)))
+
 (rf/reg-sub
   ::available
   (fn [db] (get-in db [::filters ::available] nil)))
