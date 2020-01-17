@@ -37,6 +37,9 @@ body {
 .bg-content {
   background: white;
 }
+.bg-content-danger {
+  background: red;
+}
 .bg-content-inverse {
   /* .bg-black */
   background: black;

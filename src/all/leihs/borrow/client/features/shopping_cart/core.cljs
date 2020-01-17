@@ -52,6 +52,7 @@
          (group-by
            (fn [line]
              [(get-in line [:model :id])
+              (get-in line [:inventoryPool :id])
               (get-in line [:startDate])
               (get-in line [:endDate])])))))
 (rf/reg-sub
@@ -63,6 +64,27 @@
      :total-items (-> (map :model rs) count)
      :earliest-start-date (-> (map :startDate rs) sort first)
      :latest-end-date (-> (map :endDate rs) sort last)}))
+
+(rf/reg-event-fx
+ ::delete-reservations
+ (fn [_ [_ ids]]
+   {:dispatch [::re-graph/mutate
+               (rc/inline "leihs/borrow/client/features/shopping_cart/deleteReservations.gql")
+               {:ids ids}
+               [::on-delete-reservations]]}))
+
+(rf/reg-event-db
+  ::on-delete-reservations
+  (fn [db [_ {{ids :deleteReservations} :data errors :errors}]]
+    (if errors
+      {:alert (str "FAIL! " (pr-str errors))}
+      ; (assoc-in db [::current-order :data :reservations] [])
+      (update-in db
+                 [::current-order :data :reservations]
+                 (partial filter #(->> %
+                                       :id
+                                       ((set ids))
+                                       not))))))
 
 (rf/reg-event-fx
  ::submit-order
@@ -82,26 +104,28 @@
 
 
 ;_; VIEWS
-(defn reservation-line [quantity line]
+(defn reservation-line [reservations]
   (let
-    [model (:model line)
+    [exemplar (first reservations)
+     model (:model exemplar)
      img (get-in model [:images 0])
-     pool (get-in line [:inventoryPool :name])]
+     pool (get-in exemplar [:inventoryPool :name])
+     quantity (count reservations)]
     [:div.flex.flex-row.border-b.mb-2.pb-2.-mx-1
      [:div.px-1.flex-none {:class "w-1/4"} [ui/image-square-thumb img]]
      [:div.px-1.flex-1
       [:div.font-semibold (:name model)]
       [:div.text-sm
-       (ui/format-date :short (get-in line [:startDate]))
+       (ui/format-date :short (get-in exemplar [:startDate]))
        (str ui/thin-space "–" ui/thin-space)
-       (ui/format-date :short (get-in line [:endDate]))]
+       (ui/format-date :short (get-in exemplar [:endDate]))]
       [:div.text-sm.text-color-muted
        [:span quantity " Items"]
        [:span " • "]
        [:span pool]]]
      [:div.px-1.self-center.flex-none
       [:button.text-sm
-       {:on-click #(js/alert "TODO")}
+       {:on-click #(rf/dispatch [::delete-reservations (map :id reservations)])}
        ui/trash-icon]]]))
 
 
@@ -110,7 +134,8 @@
     (fn []
       (let [order @(rf/subscribe [::current-order])
             errors @(rf/subscribe [::errors])
-            reservations @(rf/subscribe [::reservations-grouped])
+            reservations @(rf/subscribe [::reservations])
+            grouped-reservations @(rf/subscribe [::reservations-grouped])
             summary @(rf/subscribe [::order-summary])
             is-loading? (not (or order errors))]
         [:div.p-2
@@ -119,7 +144,7 @@
          (cond
            is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
            errors [ui/error-view errors]
-           (empty? reservations)
+           (empty? grouped-reservations)
            [:div.bg-content-muted.text-center.my-6.px-4.py-6.rounded-lg
             [:div "Your order ist empty."] 
             [:a.inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-full.px-6.py-2.my-4 
@@ -140,10 +165,9 @@
                [:button.rounded.border.border-gray-600.px-2.text-color-muted "edit"]]]
 
              (doall
-               (for [[grouped-key lines] reservations]
-                 (let [line (first lines) quantity (count lines)]
-                   [:<> {:key grouped-key}
-                    [reservation-line quantity line]])))
+               (for [[grouped-key reservations] grouped-reservations]
+                 [:<> {:key grouped-key}
+                  [reservation-line reservations]]))
 
              #_[:label.w-100
              [:span.text-xs.block.mt-4
@@ -170,7 +194,10 @@
               [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
                {:disabled (empty? (:purpose @state))
                 :on-click #(rf/dispatch [::submit-order @state])}
-               "Confirm order"]]
+               "Confirm order"]
+              [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl
+               {:on-click #(rf/dispatch [::delete-reservations (map :id reservations)])}
+               "Delete order"]]
 
              #_[:div.mt-4 [:hr] [:p.font-mono.m-2 (pr-str order)]]]])])))
   )
