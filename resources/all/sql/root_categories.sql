@@ -43,7 +43,6 @@ WITH all_borrowable_categories AS (
   WHERE inventory_pools.is_active = 't'
     AND access_rights.user_id = :user-id
     AND model_groups.type = 'Category'
-    AND access_rights.deleted_at IS NULL
     AND items.retired IS NULL
     AND items.is_borrowable = 't'
     AND items.parent_id IS NULL
@@ -54,7 +53,7 @@ WHERE NOT EXISTS (
   SELECT TRUE
   FROM model_group_links
   WHERE model_group_links.child_id = model_groups.id
-) 
+)
 AND ARRAY(
   WITH RECURSIVE category_tree(parent_id, child_id, PATH) AS
   (SELECT parent_id, child_id, ARRAY[parent_id]

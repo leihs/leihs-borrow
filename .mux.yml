@@ -1,0 +1,12 @@
+name: LEIHS/v5/borrow
+windows:
+  2:
+    name: app
+  5:
+    name: psql
+    command: |
+      psql -d leihs
+  6:
+    name: db
+    command: |
+      cd database
