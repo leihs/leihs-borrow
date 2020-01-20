@@ -128,7 +128,9 @@
 
             [:div.flex-auto.px-2.w-1_2
              [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg
-              {:on-click on-submit}
+              (cond-> {:on-click on-submit}
+                (> (:quantity @state) (:max-quantity @state))
+                (assoc :disabled true))
               "Order"]]])]))))
 
 (defn view []
