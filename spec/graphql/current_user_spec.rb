@@ -40,10 +40,6 @@ describe 'currentUser' do
                           inventory_pool_id: 'de1ab6c2-5c85-45fb-aebf-527b6096411c'),
         FactoryBot.create(:access_right,
                           role: :customer,
-                          deleted_at: Date.yesterday,
-                          inventory_pool_id: 'de1ab6c2-5c85-45fb-aebf-527b6096411c'),
-        FactoryBot.create(:access_right,
-                          role: :customer,
                           inventory_pool_id: 'c52b6ec9-f213-42e6-8273-b2efa71360c0')
       ]
     )

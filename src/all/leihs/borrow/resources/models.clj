@@ -50,7 +50,6 @@
                         [:= :pwg.entitlement_group_id nil]]])
       (sql/merge-where [:= :inventory_pools.is_active true])
       (sql/merge-where [:= :access_rights.user_id user-id])
-      (sql/merge-where [:= :access_rights.deleted_at nil])
       (sql/merge-where [:= :items.retired nil])
       (sql/merge-where [:= :items.is_borrowable true])
       (sql/merge-where [:= :items.parent_id nil])))
@@ -281,7 +280,7 @@
                     context
                     args
                     value
-                    #(post-process % context args value))) 
+                    #(post-process % context args value)))
 
 (defn get-favorites-connection [context args value]
   (connections/wrap get-favorites-sqlmap
