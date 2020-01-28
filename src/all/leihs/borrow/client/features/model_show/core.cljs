@@ -131,12 +131,14 @@
                   :name :quantity
                   :max (:max-quantity @state)
                   :value (:quantity @state)
+                  :disabled (or (nil? (:max-quantity @state))
+                                (> (:quantity @state) (:max-quantity @state)))
                   :on-change (fn [e]
                                (let [val (.-value (.-target e))]
                                  (swap! state assoc :quantity (int val))))}]]]
               [:div.flex-1.w-1_2.px-2 [:span.no-underline.text-color-muted 
                                        {:aria-label (str "maximum available quantity is " (:max-quantity @state))} 
-                                       "/" ui/thin-space (:max-quantity @state) ui/thin-space "max."]]]]
+                                       "/" ui/thin-space (or (:max-quantity @state) [ui/spinner-clock]) ui/thin-space "max."]]]]
 
             [:div.flex-auto.px-2.w-1_2
              [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg
