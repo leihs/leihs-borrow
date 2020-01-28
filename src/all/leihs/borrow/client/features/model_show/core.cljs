@@ -35,6 +35,15 @@
                  :bothDatesGiven (and (boolean start-date) (boolean end-date))}
                 [::on-fetched-data id]]}))
 
+(rf/reg-event-fx
+  ::reset-availability-and-fetch
+  (fn [{:keys [db]} [_ model-id start-date end-date]]
+    {:db (update-in db
+                    [:models model-id :data :model] 
+                    dissoc 
+                    :availableQuantityInDateRange)
+     :dispatch [::fetch model-id start-date end-date]}))
+
 (rf/reg-event-db
  ::on-fetched-data
  (fn [db [_ model-id {:keys [data errors]}]]
@@ -85,7 +94,16 @@
                                      {:modelId id
                                       :startDate (:start-date @state)
                                       :endDate (:end-date @state)
-                                      :quantity (:quantity @state)}])]
+                                      :quantity (:quantity @state)}])
+            on-change-date-fn (fn [date-key]
+                                (fn [e]
+                                  (let [val (.-value (.-target e))]
+                                    (swap! state assoc date-key val)
+                                    (when (and (:start-date @state) (:end-date @state))
+                                      (rf/dispatch  [::reset-availability-and-fetch
+                                                     id
+                                                     (:start-date @state)
+                                                     (:end-date @state)])))))]
         [:div.border-b-2.border-gray-300.mt-4.pb-4
          [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
          [:div.flex.-mx-2
@@ -94,19 +112,13 @@
            [:input {:type :date
                     :name :start-date
                     :value (:start-date @state)
-                    :on-change (fn [e]
-                                 (let [val (.-value (.-target e))]
-                                   (swap! state assoc :start-date val)
-                                   (rf/dispatch [::fetch id (:start-date @state) (:end-date @state)])))}]]
+                    :on-change (on-change-date-fn :start-date)}]]
           [:label.px-2.w-1_2
            [:span.text-color-muted "until "]
            [:input {:type :date
                     :name :end-date
                     :value (:end-date @state)
-                    :on-change (fn [e]
-                                 (let [val (.-value (.-target e))]
-                                   (swap! state assoc :end-date val)
-                                   (rf/dispatch [::fetch id (:start-date @state) (:end-date @state)])))}]]]
+                    :on-change (on-change-date-fn :end-date)}]]]
          (if (and (:start-date @state) (:end-date @state))
            [:div.flex.items-end.mt-2.-mx-2
             [:div.px-2.flex-none.w-1_2
