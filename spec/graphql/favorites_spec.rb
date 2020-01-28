@@ -33,7 +33,7 @@ describe 'favorites' do
       })
     end
 
-    example 'unique constraint' do
+    example 'idempotence' do
       result_1 = query(q, @user.id)
       expect_graphql_result(result_1, {
         :favoriteModel => {
@@ -41,17 +41,12 @@ describe 'favorites' do
         }
       })
       result_2 = query(q, @user.id)
-      expect_graphql_error(result_2)
-      expect(@user.favorite_models.count).to eq 1
+      expect_graphql_result(result_2, result_1[:data])
     end
   end
 
-  example 'delete' do
-    FactoryBot.create(:favorite_model,
-                      user: @user,
-                      leihs_model: @model)
-
-    q = \
+  context 'delete' do
+    let(:q) do
       <<-GRAPHQL
         mutation {
           unfavoriteModel(id: "#{@model.id}") {
@@ -59,12 +54,28 @@ describe 'favorites' do
           }
         }
       GRAPHQL
+    end
 
-    result = query(q, @user.id)
-    expect_graphql_result(result, {
-      :unfavoriteModel => {
-        :id => @model.id
-      }
-    })
+    example 'works' do
+      FactoryBot.create(:favorite_model,
+                        user: @user,
+                        leihs_model: @model)
+
+      result = query(q, @user.id)
+      expect_graphql_result(result, {
+        :unfavoriteModel => {
+          :id => @model.id
+        }
+      })
+    end
+
+    example 'idempotence' do
+      result = query(q, @user.id)
+      expect_graphql_result(result, {
+        :unfavoriteModel => {
+          :id => @model.id
+        }
+      })
+    end
   end
 end
