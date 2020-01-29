@@ -6,7 +6,7 @@ traits:
 
 scripts:
   prepare-shared-ui:
-    body: scripts/prepare-shared-ui.sh
+    body: $LEIHS_BORROW_DIR/scripts/prepare-shared-ui.sh
 
   build-borrow-uberjar:
     timeout: 10 Minutes
