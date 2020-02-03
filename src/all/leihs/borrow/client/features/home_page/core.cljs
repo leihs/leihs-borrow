@@ -7,6 +7,7 @@
    #_[leihs.borrow.client.components :as ui]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.components :as ui]
+   [leihs.borrow.client.lib.filters :as filters]
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.features.search-models.core :as search-models]
    [leihs.borrow.client.features.categories.core :as categories]))
@@ -17,7 +18,7 @@
  ::routes/home
  (fn [_ [_ _]] 
    {:dispatch-n (list 
-                 [::search-models/fetch-search-filters]
+                 [::filters/init]
                  [::categories/fetch-index 4])}))
 
 (defn view []
@@ -34,5 +35,4 @@
           "All"]]
         (categories/categories-list (take 4 cats))]
        
-       [:hr.border-b-2]
-       #_[:p (pr-str _available-filters)]])))
+       [:hr.border-b-2]])))

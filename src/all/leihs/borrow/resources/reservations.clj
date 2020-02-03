@@ -127,6 +127,7 @@
            (map :id))))
 
 (defn distribute [pool-avails quantity]
+  ; TODO: `reservation_advance_days` !!!
   (if (> quantity
          (->> pool-avails (map :quantity) (apply +)))
     (throw (ex-info "The desired quantity is not available." {}))

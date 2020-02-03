@@ -1,4 +1,4 @@
-query getSearchFilters {
+query getFilters {
   mainCategories: rootCategories {
     id
     label: name
