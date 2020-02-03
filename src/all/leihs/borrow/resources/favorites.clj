@@ -14,6 +14,8 @@
    _]
   (-> (sql/insert-into :favorite_models)
       (sql/values [{:user_id user-id, :model_id model-id}])
+      (sql/on-conflict :user_id :model_id)
+      sql/do-nothing
       sql/format
       (->> (jdbc/execute! tx)))
   (models/get-one-by-id tx model-id))
