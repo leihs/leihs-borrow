@@ -75,14 +75,18 @@
    {:dispatch [::re-graph/mutate
                (rc/inline "leihs/borrow/client/features/model_show/createReservationMutation.gql")
                args
-               [::on-mutation-result]]}))
+               [::on-mutation-result args]]}))
 
 (rf/reg-event-fx
  ::on-mutation-result
- (fn [{:keys [_db]} [_ {:keys [data errors]}]]
+ (fn [{:keys [_db]} [_ args {:keys [data errors]}]]
    (if errors
      {:alert (str "FAIL! " (pr-str errors))}
-     {:alert (str "OK! " (pr-str data))})))
+     {:alert (str "OK! " (pr-str data))
+      :dispatch [::reset-availability-and-fetch
+                 (:modelId args)
+                 (:startDate args)
+                 (:endDate args)]})))
 
 (defn order-panel [model filters]
   (let [state (reagent/atom {:quantity 1
