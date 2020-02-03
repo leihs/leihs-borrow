@@ -145,7 +145,7 @@
            errors [ui/error-view errors]
            (empty? grouped-reservations)
            [:div.bg-content-muted.text-center.my-6.px-4.py-6.rounded-lg
-            [:div "Your order ist empty."] 
+            [:div "Your order is empty."] 
             [:a.inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-full.px-6.py-2.my-4 
              {:href (routing/path-for ::routes/home)}
              "Borrow Items"]]
