@@ -18,7 +18,7 @@ scripts:
       WORK_DIR="$LEIHS_BORROW_DIR"
 
       ARTEFACT_NAME="leihs-ui"
-      DIGEST="$(cd leihs-ui && git log -n 1 HEAD --pretty=%T)"
+      DIGEST="$(cd "$WORK_DIR/leihs-ui" && git log -n 1 HEAD --pretty=%T)"
 
       ARTEFACT_DIR="./leihs-ui/dist"                              # path of artefact *relative to* working dir
       LOCAL_CACHED_ARTEFACT="/tmp/${ARTEFACT_NAME}_${DIGEST}.tgz" # path of locally cached artefact
