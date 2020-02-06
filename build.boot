@@ -11,6 +11,7 @@
       [clj-http "3.10.0"]
       [clojure.java-time "0.3.2"]
       [com.layerware/hugsql "0.5.1"]
+      [org.threeten/threeten-extra "1.2"]
       [threatgrid/ring-graphql-ui "0.1.1"]
       [org.clojure/spec.alpha "0.2.176"]]))
 

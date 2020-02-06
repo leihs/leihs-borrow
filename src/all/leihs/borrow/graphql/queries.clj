@@ -16,7 +16,6 @@
 
 (def resolvers
   {:attachments attachments/get-multiple
-   :availability availability/get
    :available-quantity-in-date-range models/available-quantity-in-date-range
    :category categories/get-one
    :categories categories/get-multiple

@@ -6,14 +6,14 @@
             [com.walmartlabs.lacinia.executor :as executor]
             [wharf.core :refer [transform-keys]]
             [camel-snake-kebab.core :as csk]
-            [java-time :refer [local-date before?] :as jt]
+            [java-time :refer [interval local-date before?] :as jt]
             [logbug.debug :as debug]
             [leihs.core.sql :as sql]
             [leihs.borrow.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
-            [leihs.borrow.resources.inventory-pools :as inventory-pools]
+            [leihs.borrow.resources.inventory-pools :as pools]
             [leihs.borrow.resources.categories.descendents :as descendents])
   (:import (java.time.format DateTimeFormatter)))
 
@@ -97,8 +97,8 @@
 (defn available-quantity-in-date-range
   "If the available quantity was already computed through the enclosing
   resolver, then just return it. Otherwise fetch from legacy and compute."
-  [context
-   {:keys [inventory-pool-ids start-date end-date exclude-reservation-ids]}
+  [{{tx :tx {user-id :id} :authenticated-entity} :request :as context}
+   {:keys [inventory-pool-ids start-date end-date exclude-reservation-ids] :as args}
    value]
   (or (:available-quantity-in-date-range value)
       (if (before?
@@ -106,10 +106,10 @@
             (local-date))
         0
         (let [pool-ids (or (not-empty inventory-pool-ids)
-                           (->> (inventory-pools/get-multiple context
-                                                              {}
-                                                              nil)
-                                (map :id)))
+                           (map :id (pools/to-reserve-from tx
+                                                           user-id
+                                                           start-date
+                                                           end-date)))
               legacy-response (availability/get-available-quantities
                                 context
                                 {:model-ids [(:id value)]
@@ -124,13 +124,18 @@
                (#(if (< % 0) 0 %)))))))
 
 (defn merge-available-quantities
-  [models context {:keys [start-date end-date]} value]
+  [models
+   {{tx :tx {user-id :id} :authenticated-entity} :request :as context}
+   {:keys [start-date end-date]}
+   value]
   (map (if (before?
              (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
              (local-date))
          #(assoc % :available-quantity-in-date-range 0)
-         (let [pool-ids (->> (inventory-pools/get-multiple context {} nil)
-                             (map :id))
+         (let [pool-ids (map :id (pools/to-reserve-from tx
+                                                        user-id
+                                                        start-date
+                                                        end-date))
                legacy-response (availability/get-available-quantities
                                  context
                                  {:model-ids (map :id models)
@@ -152,12 +157,27 @@
        models))
 
 (defn get-availability
-  [context {:keys [start-date end-date inventory-pool-ids]} value]
+  [{{tx :tx {user-id :id} :authenticated-entity} :request :as context}
+   {:keys [start-date end-date inventory-pool-ids]}
+   value]
+  ; TODO: `reservation_advance_days` ... ??
   (let [pool-ids (or inventory-pool-ids
-                     (->> (inventory-pools/get-multiple context {} nil)
-                          (map :id)))]
+                     (map :id
+                          (pools/to-reserve-from tx
+                                                 user-id
+                                                 start-date
+                                                 end-date)))
+        past-date? #(before? (local-date %) (local-date))
+        too-early-date? (fn [date pool]
+                          (and (:reservation_advance_days pool)
+                               (< (jt/time-between (local-date)
+                                                   (local-date date)
+                                                   :days)
+                                  (:reservation_advance_days pool))))]
     (map (fn [pool-id]
-           (let [avail (availability/get
+           (let [pool (pools/get-by-id (-> context :request :tx)
+                                       pool-id)
+                 avail (availability/get
                          context
                          {:start-date start-date
                           :end-date end-date
@@ -165,16 +185,16 @@
                           :model-id (:id value)}
                          nil)]
              (-> avail
-                 (cond-> (before? (local-date start-date) (local-date))
-                   (update :dates (fn [dates]
-                                    (map #(cond-> %
-                                            (before? (local-date (:date %))
-                                                     (local-date))
-                                            (assoc :quantity 0 :visits-count 0))
-                                         dates))))
-                 (assoc :inventory-pool (inventory-pools/get-by-id
-                                          (-> context :request :tx)
-                                          pool-id)))))
+                 (update :dates
+                         (fn [dates]
+                           (map #(cond
+                                   (past-date? (:date %))
+                                   (assoc % :quantity 0 :visits-count 0)
+                                   (too-early-date? (:date %) pool)
+                                   (assoc % :quantity 0)
+                                   :else %)
+                                dates)))
+                 (assoc :inventory-pool (log/spy pool)))))
          pool-ids)))
 
 (defn from-compatibles [sqlmap value]

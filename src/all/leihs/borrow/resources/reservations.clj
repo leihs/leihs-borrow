@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [count])
   (:require [leihs.borrow.time :as time]
             [leihs.borrow.resources.models :as models]
-            [leihs.borrow.resources.inventory-pools :as inventory-pools]
+            [leihs.borrow.resources.inventory-pools :as pools]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.database.helpers :as database]
@@ -157,10 +157,12 @@
       (throw
         (ex-info
           "Model either does not exist or is not reservable by the user." {})))
-    (let [pools (inventory-pools/get-multiple
-                  context
-                  {:ids (not-empty inventory-pool-ids)}
-                  nil)
+    (let [pools (cond->> (pools/to-reserve-from tx
+                                                (:id authenticated-entity)
+                                                start-date
+                                                end-date)
+                  (seq inventory-pool-ids)
+                  (filter #((set inventory-pool-ids) (:id %))))
           pool-avails (->> (availability/get-available-quantities
                              context
                              {:inventory-pool-ids (map :id pools)

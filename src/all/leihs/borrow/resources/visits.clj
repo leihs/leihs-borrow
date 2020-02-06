@@ -1,5 +1,4 @@
 (ns leihs.borrow.resources.visits
-  (:refer-clojure :exclude [count])
   (:require [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]
             [leihs.borrow.resources.helpers :as helpers]
@@ -26,9 +25,3 @@
                      #(assoc % :visit-type (case (:type %)
                                              "hand_over" "PICKUP"
                                              "take_back" "RETURN"))}))))
-
-(comment
-  (-> base-sqlmap
-      sql/format
-      (->> (jdbc/query (ds/get-ds)))
-      first))

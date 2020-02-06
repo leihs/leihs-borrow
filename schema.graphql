@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Jan 10 2020 14:56:03 GMT+0100 (Central European Standard Time)
+# timestamp: Wed Feb 05 2020 16:51:44 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -255,8 +255,6 @@ type Property {
 
 """Root of all queries."""
 type QueryRoot {
-  availability(endDate: Date!, inventoryPoolId: UUID!, modelId: UUID!, startDate: Date!): Availability
-
   """This query probably does not return correct results!"""
   categories(ids: [UUID!], limit: Int, offset: Int, rootOnly: Boolean): [Category]
   category(id: UUID!, parentId: UUID): Category
