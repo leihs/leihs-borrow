@@ -41,7 +41,7 @@
    [:ul.mb-4.list-disc.list-inside
     [:li [:a {:href "/app/borrow/graphiql/index.html"} "Graph" [:i "i"] "QL API console"]]]
    [:h2 "Debug Info"]
-   [:div.font-mono.text-xs
+   [:div.text-monospace.text-xs
     [:table>tbody
      (doall
       (for [[ix [k v]] (map-indexed vector (get-about-page-data))]

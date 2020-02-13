@@ -1,15 +1,16 @@
 (ns leihs.borrow.client.features.shopping-cart.core
-  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
+  #_(:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
-    [clojure.string :as string]
-    [reagent.core :as reagent]
-    [re-frame.core :as rf]
-    [re-graph.core :as re-graph]
-    [shadow.resource :as rc]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.client.lib.helpers :as help]
-    [leihs.borrow.client.lib.routing :as routing]
-    [leihs.borrow.client.components :as ui]))
+   [clojure.string :as string]
+   [reagent.core :as reagent]
+   [re-frame.core :as rf]
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.client.lib.helpers :as help]
+   [leihs.borrow.client.lib.routing :as routing]
+   [leihs.borrow.client.components :as ui]
+   [leihs.borrow.client.ui.icons :as icons]))
 
 
 ; is kicked off from router when this view is loaded
@@ -125,7 +126,7 @@
      [:div.px-1.self-center.flex-none
       [:button.text-sm
        {:on-click #(rf/dispatch [::delete-reservations (map :id reservations)])}
-       ui/trash-icon]]]))
+       icons/trash-icon]]]))
 
 
 (defn view []
@@ -138,15 +139,15 @@
             summary @(rf/subscribe [::order-summary])
             is-loading? (not (or order errors))]
         [:div.p-2
-         [:h1.mt-2.font-bold.text-3xl "Order Overview"]
+         [:h1.mt-3.font-bold.text-3xl "Order Overview"]
 
          (cond
            is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
            errors [ui/error-view errors]
            (empty? grouped-reservations)
-           [:div.bg-content-muted.text-center.my-6.px-4.py-6.rounded-lg
-            [:div "Your order is empty."] 
-            [:a.inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-full.px-6.py-2.my-4 
+           [:div.bg-content-muted.text-center.my-4.px-2.py-4.rounded-lg
+            [:div.text-base "Your order is empty."] 
+            [:a.d-inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-pill.px-4.py-2.my-4 
              {:href (routing/path-for ::routes/home)}
              "Borrow Items"]]
 

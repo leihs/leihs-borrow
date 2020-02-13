@@ -8,9 +8,11 @@
    [shadow.resource :as rc]
    [leihs.borrow.client.components :as ui]
    [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.client.components :as ui]
+
+   [leihs.borrow.client.ui.icons :as icons]
+
    [leihs.borrow.client.lib.filters :as filters]
-   
+
    [leihs.borrow.client.features.favorite-models.events :as favs]))
 
 
@@ -110,7 +112,7 @@
                                                      (:end-date @state)])))))]
         [:div.border-b-2.border-gray-300.mt-4.pb-4
          [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
-         [:div.flex.-mx-2
+         [:div.d-flex.mx-n2
           [:label.px-2.w-1_2
            [:span.text-color-muted "from "]
            [:input {:type :date
@@ -123,13 +125,13 @@
                     :name :end-date
                     :value (:end-date @state)
                     :on-change (on-change-date-fn :end-date)}]]]
-         (if (and (:start-date @state) (:end-date @state))
-           [:div.flex.items-end.mt-2.-mx-2
-            [:div.px-2.flex-none.w-1_2
-             [:div.flex.flex-wrap.items-end.-mx-2
-              [:div.flex-1.w-1_2.px-2
-               [:label.block
-                [:span.block.text-color-muted "quantity "]
+         (when (and (:start-date @state) (:end-date @state))
+           [:div.d-flex.items-end.mt-2
+            [:div.w-1_2
+             [:div.d-flex.flex-wrap.align-items-end
+              [:div.w-1_2
+               [:label.d-block.mb-0
+                [:span.d-block.text-color-muted "quantity "]
                 [:input.w-full
                  {:type :number
                   :name :quantity
@@ -140,11 +142,11 @@
                   :on-change (fn [e]
                                (let [val (.-value (.-target e))]
                                  (swap! state assoc :quantity (int val))))}]]]
-              [:div.flex-1.w-1_2.px-2 [:span.no-underline.text-color-muted 
+              [:div.flex-1.w-1_2 [:span.no-underline.text-color-muted 
                                        {:aria-label (str "maximum available quantity is " (:max-quantity @state))} 
                                        "/" ui/thin-space (or (:max-quantity @state) [ui/spinner-clock]) ui/thin-space "max."]]]]
 
-            [:div.flex-auto.px-2.w-1_2
+            [:div.flex-auto.w-1_2
              [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg
               (cond-> {:on-click on-submit}
                 (> (:quantity @state) (:max-quantity @state))
@@ -166,7 +168,7 @@
        errors [ui/error-view errors]
        :else
        [:<>
-        [:header.flex.items-stretch
+        [:header.d-flex.items-stretch
          [:h1.text-3xl.font-extrabold.leading-none
           (:name model)
           " "
@@ -176,7 +178,7 @@
                                                ::unfavorite-model
                                                ::favorite-model)
                                              (:id model)])}
-           (if (:isFavorited model) ui/favorite-yes-icon ui/favorite-no-icon)]]]
+           (if (:isFavorited model) icons/favorite-yes-icon icons/favorite-no-icon)]]]
 
         ; FIXME: show all images not just the first one
         (if-let [first-image (first (:images model))]
@@ -186,7 +188,7 @@
         [order-panel model filters]
 
         (if-let [description (:description model)]
-          [:p.py-4.border-b-2.border-gray-300.preserve-linebreaks description])
+          [:p.py-4.border-b-2.border-gray-300.text-base.preserve-linebreaks description])
 
         (if-let [attachments  (:attachments model)]
           [:<>
@@ -209,7 +211,7 @@
         (if-let [recommends (-> model :recommends :edges not-empty)]
           [:div.mt-4
            [:h2.text-xl.font-bold "Ergänzende Modelle"]
-           [:div.flex.flex-wrap.-mx-2
+           [:div.d-flex.flex-wrap.-mx-2
             (doall
               (for [edge recommends]
                 (let

@@ -1,0 +1,120 @@
+.w-100 {
+  width: 100%;
+}
+.h-100 {
+  height: 100%;
+}
+.w-1_2 {
+  width: 50% !important;
+}
+.w-1_3 {
+  width: 33.333333% !important;
+}
+.w-2_3 {
+  width: 66.666667% !important;
+}
+
+/* "only for screenreaders" from bootstrap */
+.sr-only {
+  display: none;
+}
+
+.square-container {
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%;
+}
+
+/* semantic classes for colors */
+.bg-content {
+  background: white;
+}
+.bg-content-danger {
+  background: red;
+}
+.bg-content-inverse {
+  /* .bg-black */
+  background: black;
+}
+.bg-content-muted {
+  /* .bg-gray-200  */
+  background-color: #edf2f7;
+}
+.text-color-muted {
+  /* .text-gray-600 */
+  color: #718096;
+}
+.text-color-content {
+  /* .text-black */
+  color: black;
+}
+.text-color-content-inverse {
+  /* .text-white */
+  color: white;
+}
+.text-color-content-link {
+  /* .text-blue-500 */
+  color: #4299e1;
+}
+.text-color-danger {
+  color: red;
+}
+.text-color-danger {
+  color: aquamarine;
+}
+.preserve-linebreaks {
+  white-space: pre-wrap;
+}
+
+.show-after-1sec {
+  animation: animation-to-visble 0s 1s forwards;
+  visibility: hidden;
+}
+.show-after-3sec {
+  animation: animation-to-visble 0s 3s forwards;
+  visibility: hidden;
+}
+@keyframes animation-to-visble {
+  to {
+    visibility: visible;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    background-color: #dfdfdf;
+    color: #444;
+    filter: invert(100%);
+  }
+  hr {
+    border-color: #666666;
+  }
+  * {
+    background-color: inherit;
+  }
+  img:not([src*='.svg']),
+  video,
+  .dont-invert {
+    filter: invert(100%);
+  }
+  .ui-icon-colored {
+    background: transparent;
+    filter: invert(100%);
+  }
+  .text-color-danger {
+    color: red;
+  }
+  .text-color-danger {
+    color: aquamarine;
+  }
+}
+
+/* while prototyping, constrain width */
+html {
+  background: rgba(0, 0, 0, 0.67);
+}
+body {
+  max-width: 40rem;
+  margin: 0 auto;
+  background: white;
+}
