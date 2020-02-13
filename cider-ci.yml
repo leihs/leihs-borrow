@@ -1,7 +1,5 @@
 jobs:
-
   build-borrow-uberjar:
-
     name: Build prod ready uberjar
 
     run_when:
@@ -12,7 +10,7 @@ jobs:
         include:
           - cider-ci/environment_variables.yml
         environment_variables:
-          LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
+          LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
         git_options:
           submodules:
             include_match: ^.*$
@@ -73,7 +71,6 @@ jobs:
   #            xvfb-run -a -e log/xvfb.log bundle exec rspec $CIDER_CI_TASK_FILE
 
   good-to-merge:
-
     name: Good To Merge
 
     description: |
@@ -125,7 +122,7 @@ jobs:
         max_trials: 1
       tasks:
         all relevant tests have passed:
-          name: "All relevant tests have passed, thus good to merge"
+          name: 'All relevant tests have passed, thus good to merge'
           scripts:
             main:
               body: echo 'All relevant tests have passed' ; exit 0
@@ -157,7 +154,7 @@ jobs:
           - cider-ci/service_task-component.yml
           - cider-ci/legacy-mock-server_task-component.yml
         environment_variables:
-          LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
+          LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
         traits:
           JDK 8: true
           Leiningen 2: true
@@ -185,7 +182,6 @@ jobs:
               bundle exec rspec --backtrace $CIDER_CI_TASK_FILE
 
   check-graphql-schema:
-
     name: Check GraphQL schema was dumped
 
     depends_on:
@@ -209,7 +205,7 @@ jobs:
           - cider-ci/uberjar_task-component.yml
           - cider-ci/service_task-component.yml
         environment_variables:
-          LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
+          LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
         traits:
           JDK 8: true
           Leiningen 2: true
@@ -236,7 +232,6 @@ jobs:
                 ./scripts/diff-graphql-schema
 
   check-ui-build:
-
     name: Check UI was build successfully
     run_when:
       any branch has been updated:
@@ -247,14 +242,18 @@ jobs:
         include:
           - cider-ci/environment_variables.yml
         environment_variables:
-          LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
+          LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
         git_options:
           submodules:
             include_match: ^.*$
       tasks:
         test:
+          include: ['cider-ci/ui_task_component.yml']
           scripts:
             test:
+              start_when:
+                shared ui was built:
+                  script_key: prepare-shared-ui
               body: |
                 npm install --silent --no-audit
                 npx shadow-cljs release app

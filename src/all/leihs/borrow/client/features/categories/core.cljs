@@ -10,6 +10,7 @@
    [leihs.borrow.client.lib.pagination :as pagination]
    [leihs.borrow.client.components :as ui]
    [leihs.borrow.client.routes :as routes]
+   ["/leihs-ui-client-side" :as UI]
    #_[leihs.borrow.client.components :as ui]))
 
 (rf/reg-event-fx
@@ -31,25 +32,16 @@
  ::categories-index
  (fn [db] (get-in db [:categories :index])))
 
-(defn category-grid-item [category]
-  (let [href (routing/path-for ::routes/categories-show
-                               :categories-path (:id category))]
-    [:div.ui-category-grid-item.max-w-sm.rounded.overflow-hidden.bg-white.px-2.mb-3
-     {:style {:opacity 1}}
-     [ui/image-square-thumb (get-in category [:images 0]) href]
-     [:div.mx-0.mt-1.leading-snug
-      [:a {:href href}
-       [:span.block.truncate.font-bold (:name category)]]]]))
-
 (defn categories-list [categories]
-  (let
-   [debug? @(rf/subscribe [:is-debug?])]
+  (let [list
+        (doall
+         (for [category categories]
+           {:id (:id category)
+            :href (routing/path-for ::routes/categories-show
+                                    :categories-path (:id category))
+            :caption (:name category)
+            :imgSrc (get-in category [:images 0 :imageUrl])}))]
+    
     [:div.mx-1.mt-2
-     [:div.w-full.px-0
-      [:div.ui-models-list.flex.flex-wrap
-       (doall
-        (for [category categories]
-          [:div {:class "w-1/2 min-h-16" :key (:id category)}
-           [category-grid-item category]]))]]
-     (when debug? [:p (pr-str @(rf/subscribe [::search-results]))])]))
+     [:> UI/Components.CategoryList {:list list}]]))
 

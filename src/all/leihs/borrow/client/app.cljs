@@ -5,6 +5,7 @@
    [re-graph.core :as re-graph]
    #_[shadow.resource :as rc]
    [leihs.borrow.client.components :as ui]
+   [leihs.borrow.client.ui.main-nav :as main-nav]
 
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.lib.timeout :as timeout]
@@ -48,14 +49,14 @@
 (defn main-view [views]
   (let [errors @(rf/subscribe [:app/fatal-errors])]
     [:main
-     [ui/main-nav]
+     [main-nav/navbar]
      (when errors [ui/fatal-error-screen errors])
      [routing/routed-view views]]))
 
 (defn- route-is-loading-view
   []
   [:div.app-loading-view
-   [:h1.font-mono.text-center.p-8.show-after-3sec
+   [:h1.text-monospace.text-center.p-8.show-after-3sec
     [:p.text-5xl [ui/spinner-clock]]
     [:p.font-black.text-xl "loading…"]
     [:p.text-base "if this takes a long time something went wrong."]
@@ -65,8 +66,8 @@
       "RELOAD"]]
     ]])
 
-; (defn- not-found-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 "404 NOT FOUND!"])
-(defn- wip-models-index-view [] [:h1.font-black.font-mono.text-5xl.text-center.p-8 "WIP MODELS INDEX!"])
+; (defn- not-found-view [] [:h1.font-black.text-monospace.text-5xl.text-center.p-8 "404 NOT FOUND!"])
+(defn- wip-models-index-view [] [:h1.font-black.text-monospace.text-5xl.text-center.p-8 "WIP MODELS INDEX!"])
 
 ;-; CORE APP
 (def views {::routes/home home-page/view
