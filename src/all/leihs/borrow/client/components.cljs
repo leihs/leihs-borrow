@@ -63,7 +63,10 @@
    [:p [:a {:href (routing/path-for ::routes/shopping-cart)} "Cart"]]
    [:p [:a {:href (routing/path-for ::routes/models-favorites)} "Favorites"]]
    [:p [:a {:href (routing/path-for ::routes/orders-index)} "Orders"]]
-   [:p [:a {:href (routing/path-for ::routes/about-page)} "About"]]])
+   [:p [:a {:href (routing/path-for ::routes/about-page)} "About"]]
+   [:form {:action "/sign-out" :method "POST"}
+    [:button {:type "submit"}
+     "Logout"]]])
 
 (defn dev-nav []
   [:nav.border.border-black.m-3.p-2

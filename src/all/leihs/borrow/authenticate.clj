@@ -1,25 +1,33 @@
 (ns leihs.borrow.authenticate
   (:require [clojure.tools.logging :as log]
-            [leihs.core.graphql.helpers :as helpers]))
+            [leihs.core.core :refer [presence]]
+            [leihs.core.graphql.helpers :as helpers]
+            [leihs.core.sign-in.external-authentication.back :as ext-auth]
+            [leihs.borrow.paths :refer [path]]
+            [ring.util.response :as response]))
 
 (def skip-authorization-handler-keys
-  #{:home
-    :graphql ; authenticates by its own
-    :sign-in
-    :status
-    :image
-    :attachment})
+  (clojure.set/union #{:attachment
+                       :graphql ; authenticates by its own
+                       :home
+                       :image
+                       :sign-in
+                       :status}
+                     ext-auth/skip-authorization-handler-keys))
 
 (defn- skip? [handler-key]
   (some #(= handler-key %) skip-authorization-handler-keys))
 
 (defn wrap-base [handler]
-  (fn [request]
+  (fn [{:keys [uri query-string] :as request}]
     (if (:authenticated-entity request)
       (handler request)
-      {:status 401,
-       :body (helpers/error-as-graphql-object "NOT_AUTHENTICATED"
-                                              "Not authenticated!")})))
+      (response/redirect
+        (path :sign-in
+              nil
+              {:return-to (cond-> uri
+                            (presence query-string)
+                            (str "?" query-string))})))))
 
 (defn wrap [handler]
   (fn [request]
