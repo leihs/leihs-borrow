@@ -2,5 +2,5 @@
 
 . ./scripts/_dev-env.sh
 
-git submodule update --init --force
+git submodule update --init --recursive
 bin/boot --offline focus
