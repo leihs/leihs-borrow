@@ -80,50 +80,31 @@
       results @(rf/subscribe [::results])
       start-date @(rf/subscribe [::filters/start-date])
       end-date @(rf/subscribe [::filters/end-date])
+      active? (boolean (and start-date end-date))
       on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/search)]
       [:div.p-3
-       [:form.form.form-compact
-        {:action "/search"
-         :on-submit
-         (fn [event]
-           (.preventDefault event)
-           (if on-search-view?
-             (rf/dispatch [::get-models])
-             (rf/dispatch [:routing/navigate [::routes/search]])))}
-        [:fieldset {:style {:display :table}}
-         [:legend.sr-only "Suche"]
-         [form-line :search-term "Suche"
-          {:type :text
-           :value term
-           :on-change #(rf/dispatch [::filters/set-one ::filters/term (-> % .-target .-value)])}]
-
-         [form-line :start-date "Start-datum"
-          {:type :date
-           :required true
-           :value start-date
-           :on-change #(rf/dispatch [::filters/set-one ::filters/start-date (-> % .-target .-value)])}]
-
-         [form-line :end-date "End-datum"
-          {:type :date
-           :required true
-           :min end-date
-           :value end-date
-           :on-change #(rf/dispatch [::filters/set-one ::filters/end-date (-> % .-target .-value)])}]
-
-         (let [active? (boolean (and start-date end-date))]
-           [:button.btn.btn-success.dont-invert.rounded-pill
-            {:type :submit
-             :disabled (not active?)
-             :title (when-not active? "Select start- and end-date to search!")
-             :class :mt-2}
-            "Get Results"])
-
-         [:button.btn.btn-secondary.dont-invert.rounded-pill.mx-1
-          {:type :button
-           :disabled (not (or (seq filters) (seq results)))
-           :on-click #(rf/dispatch [::clear])
-           :class :mt-2}
-          "Clear"]]]])))
+       [:> UI/Components.SearchForm
+        {:url "/search"
+         :fields
+         {:searchTerm
+          {:value term
+           :on-change #(rf/dispatch [::filters/set-one ::filters/term (-> % .-target .-value)])
+           :placeholder "Search"}
+          :startDate
+          {:value start-date
+           :onChange #(rf/dispatch [::filters/set-one ::filters/start-date (-> % .-target .-value)])}
+          :endDate
+          {:value end-date
+           :onChange #(rf/dispatch [::filters/set-one ::filters/end-date (-> % .-target .-value)])}}
+         :actions
+         {:clear {:disabled (not (or (seq filters) (seq results)))
+                  :fn #(rf/dispatch [::clear])}
+          :submit {:disabled (not active?)
+                   :title (when-not active? "Select start- and end-date to search!")
+                   :fn (fn []
+                         (if on-search-view?
+                           (rf/dispatch [::get-models])
+                           (rf/dispatch [:routing/navigate [::routes/search]])))}}}]])))
 
 (def product-card-width-in-rem 12)
 (def product-card-margins-in-rem 1)
