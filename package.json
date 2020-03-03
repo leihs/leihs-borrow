@@ -1,9 +1,7 @@
 {
   "dependencies": {
-    "@eins78/graphql-schema-diff": "0.7.0",
     "create-react-class": "^15.6.3",
     "date-fns": "^2.9.0",
-    "graphql-cli": "git://github.com/eins78/graphql-cli#01f3598c95acf1114901446cda22e5819269f9db",
     "highlight.js": "9.15.10",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
@@ -16,6 +14,8 @@
     "shadow-cljs": "shadow-cljs"
   },
   "devDependencies": {
+    "@eins78/graphql-cli": "4.0.1",
+    "@eins78/graphql-schema-diff": "0.7.0",
     "@prettier/plugin-ruby": "^0.15.1",
     "prettier": "^1.18.2",
     "shadow-cljs": "^2.8.69"
