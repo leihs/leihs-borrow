@@ -2,10 +2,13 @@
   (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:refer-clojure :exclude [key])
   (:require
+    [akiroz.re-frame.storage :refer [persist-db]]
     [reagent.core :as reagent]
     [re-frame.core :as rf]
+    [re-frame.std-interceptors :refer [path]]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
+    [leihs.borrow.client.lib.localstorage :as ls]
     [leihs.borrow.client.components :as ui]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.client.components :as ui]
@@ -13,6 +16,8 @@
 
 (def filters-gql
   (rc/inline "leihs/borrow/client/lib/getFilters.gql"))
+
+(def current-path [::filters ::current])
 
 (rf/reg-event-fx
   ::init
@@ -22,45 +27,49 @@
                 {}
                 [::on-fetched]]}))
 
-(rf/reg-event-fx
+(ls/reg-event-fx-ls
   ::on-fetched
   (fn [{:keys [db]} [_ {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-      {:db (assoc-in db [::filters ::available] data)})))
+      {:db (assoc-in db [:ls ::filters ::available] data)})))
 
-(rf/reg-event-db
+(ls/reg-event-ls
   ::set-all
-  (fn [db [_ filters]]
-    (assoc-in db [::filters ::current] filters)))
+  [(path current-path)]
+  (fn [_ [_ filters]] filters))
 
-(rf/reg-event-db
+(ls/reg-event-ls
   ::set-one
-  (fn [db [_ key value]]
-    (assoc-in db [::filters ::current key] value)))
+  (fn [ls [_ key value]]
+    (assoc-in ls (conj current-path key) value)))
 
-(rf/reg-event-db
+(ls/reg-event-ls
   ::clear-current
-  (fn [db _]
-    (assoc-in db [::filters ::current] nil)))
+  [(path current-path)]
+  (fn [_ _] nil))
 
-(rf/reg-sub
+(ls/reg-sub-ls
   ::available
-  (fn [db] (get-in db [::filters ::available] nil)))
+  (fn [ls _] (get-in ls [::filters ::available] nil)))
 
-(defn current [db]
-  (get-in db [::filters ::current] nil))
+(ls/reg-sub-ls
+  ::current
+  (fn [ls _] (get-in ls current-path nil)))
 
-(rf/reg-sub ::current (fn [db] (current db)))
-
-(rf/reg-sub
+(ls/reg-sub-ls
   ::term
-  (fn [db] (get-in db [::filters ::current ::term])))
+  (fn [ls _] (get-in ls (conj current-path ::term))))
 
-(rf/reg-sub
+(ls/reg-sub-ls
   ::start-date
-  (fn [db] (get-in db [::filters ::current ::start-date])))
+  (fn [ls _] (get-in ls (conj current-path ::start-date))))
 
-(rf/reg-sub
+(ls/reg-sub-ls
   ::end-date
-  (fn [db] (get-in db [::filters ::current ::end-date])))
+  (fn [ls _] (get-in ls (conj current-path ::end-date))))
+
+(defn current [db] (ls/get-in db current-path nil))
+(defn term [db] (ls/get-in db (conj current-path ::term)))
+(defn start-date [db] (ls/get-in db (conj current-path ::start-date)))
+(defn end-date [db] (ls/get-in db (conj current-path ::end-date)))

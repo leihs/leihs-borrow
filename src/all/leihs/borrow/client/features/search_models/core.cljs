@@ -2,9 +2,11 @@
   (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
    #_[reagent.core :as r]
+   [akiroz.re-frame.storage :refer [persist-db]]
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
+   [leihs.borrow.client.lib.localstorage :as ls]
    [leihs.borrow.client.lib.filters :as filters]
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.lib.pagination :as pagination]
@@ -21,13 +23,12 @@
  ::routes/search
  (fn [_ _] {:dispatch [::get-models]}))
 
-(rf/reg-event-fx
+(ls/reg-event-fx-ls
  ::get-models
  (fn [{:keys [db]} _]
-   (let [filters (filters/current db)
-         query-vars {:searchTerm (filters ::filters/term)
-                     :startDate (filters ::filters/start-date)
-                     :endDate (filters ::filters/end-date)}]
+   (let [query-vars {:searchTerm (filters/term db)
+                     :startDate (filters/start-date db)
+                     :endDate (filters/end-date db)}]
       ; NOTE: no caching yet, clear results before new search  
      {:db (assoc-in db [::results] nil)
       :dispatch [::re-graph/query
