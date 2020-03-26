@@ -197,9 +197,11 @@
                  (assoc :inventory-pool (log/spy pool)))))
          pool-ids)))
 
-(defn from-compatibles [sqlmap value]
+(defn from-compatibles [sqlmap value user-id unscope-reservable]
   (-> sqlmap
       (sql/from :models_compatibles)
+      (cond-> (not unscope-reservable)
+        (merge-reservable-conditions user-id))
       (sql/join :models [:=
                          :models.id
                          :models_compatibles.compatible_id])
@@ -226,7 +228,7 @@
    value]
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
-        (from-compatibles value))
+        (from-compatibles value (:id authenticated-entity) unscope-reservable))
       (cond-> (= (::lacinia/container-type-name context) :Category)
         (merge-categories-conditions tx value direct-only))
       (cond-> (not unscope-reservable)
