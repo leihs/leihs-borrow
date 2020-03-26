@@ -14,6 +14,7 @@
             [cemerick.url]
             [re-frame.core :as rf]
             [re-frame.db :as db]
+            [leihs.borrow.client.lib.localstorage :as ls]
             [leihs.borrow.client.routes :as routes]))
 
 ; from <https://github.com/juxt/bidi/issues/51#issuecomment-344101759>
@@ -46,7 +47,8 @@
    {:db (assoc-in db [:routing/routing :routes] routes)
     :routing/init-routing routes}))
 
-(rf/reg-event-fx
+; adds `:ls` to `app-db` necessary for initial rendering of the view
+(ls/reg-event-fx-ls
  :routing/change-view
  (fn [{:keys [db]} [_ token]]
    (let [{:keys [routes]} (:routing/routing db)

@@ -1,11 +1,12 @@
 (ns leihs.borrow.client.features.categories.show
-  #_(:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
+  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
    #_[reagent.core :as reagent]
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
    [clojure.string :refer [join split #_replace-first]]
+   [leihs.borrow.client.lib.localstorage :as ls]
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.lib.pagination :as pagination]
    [leihs.borrow.client.components :as ui]
@@ -29,18 +30,17 @@
                    :parentId parent-id}
                   [::on-fetched-data category-id]]})))
 
-(rf/reg-event-db
+(ls/reg-event-ls
   ::on-fetched-data
-  (fn [db [_ category-id {:keys [data errors]}]]
-    (-> db
+  (fn [ls [_ category-id {:keys [data errors]}]]
+    (-> ls
         (update-in , [:categories category-id] (fnil identity {}))
         (assoc-in , [:categories category-id :errors] errors)
         (assoc-in , [:categories category-id :data] data))))
 
-(rf/reg-sub
+(ls/reg-sub-ls
  ::category-data
- (fn [db [_ id]]
-   (get-in db [:categories id])))
+ (fn [ls [_ id]] (get-in ls [:categories id])))
 
 
 (defn view []
@@ -54,7 +54,7 @@
         fetched @(rf/subscribe [::category-data category-id])
         {:keys [children] {models :edges} :models :as category} (get-in fetched [:data :category])
         errors (:errors fetched)
-        is-loading? (not (or category errors))]
+        is-loading? (not category)]
 
     [:<>
      (cond

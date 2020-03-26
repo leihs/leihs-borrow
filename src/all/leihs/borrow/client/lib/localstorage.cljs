@@ -30,7 +30,11 @@
      handler)))
 
 (defn reg-sub-ls [id handler]
-  (rf/reg-sub id (fn [db] (handler (:ls db)))))
+  (rf/reg-sub id
+              (fn [db & args]
+                (apply handler (:ls db) args))))
+
+(reg-event-ls ::clear (constantly {}))
 
 (defn get
   ([db k] (get db [:ls k] nil))

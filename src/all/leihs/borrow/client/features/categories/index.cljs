@@ -9,6 +9,7 @@
    #_[leihs.borrow.client.features.search-models.core :as search-models]
    #_[leihs.borrow.client.lib.routing :as routing]
    #_[leihs.borrow.client.lib.pagination :as pagination]
+   [leihs.borrow.client.lib.localstorage :as ls]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.features.categories.core :as categories]))
 
@@ -24,12 +25,12 @@
                {}
                [::on-fetched-categories-index]]}))
 
-(rf/reg-event-fx
+(ls/reg-event-fx-ls
  ::on-fetched-categories-index
  (fn [{:keys [db]} [_ {:keys [data errors]}]]
    (if errors
      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-     {:db (assoc-in db [:categories :index] (get-in data [:categories]))})))
+     {:db (assoc-in db [:ls :categories :index] (get-in data [:categories]))})))
 
 
 (defn view []

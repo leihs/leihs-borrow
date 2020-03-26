@@ -5,6 +5,7 @@
    [re-frame.core :as rf]
    #_[re-graph.core :as re-graph]
    #_[shadow.resource :as rc]
+   [leihs.borrow.client.lib.localstorage :as ls]
    [leihs.borrow.client.components :as ui]
    [leihs.borrow.client.routes :as routes]
    #_[leihs.borrow.client.components :as ui]))
@@ -38,8 +39,14 @@
    [ui/tmp-nav]
    [ui/dev-nav]
    [:h2.sr-only "Links"]
-   [:ul.mb-4.list-disc.list-inside
+   [:ul.list-disc.list-inside
     [:li [:a {:href "/app/borrow/graphiql/index.html"} "Graph" [:i "i"] "QL API console"]]]
+   [:button.btn.btn-secondary.dont-invert.mx-1.mb-4
+    {:type :button
+     :on-click #(rf/dispatch [::ls/clear])
+     :class :mt-2}
+    "Clear :ls"]
+   [:hr.mt-2.mb-4]
    [:h2 "Debug Info"]
    [:div.text-monospace.text-xs
     [:table>tbody
