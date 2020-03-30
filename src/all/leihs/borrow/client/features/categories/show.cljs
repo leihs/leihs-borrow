@@ -5,6 +5,7 @@
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
+   [re-frame.std-interceptors :refer [path]]
    [clojure.string :refer [join split #_replace-first]]
    [leihs.borrow.client.lib.localstorage :as ls]
    [leihs.borrow.client.lib.routing :as routing]
@@ -32,15 +33,16 @@
 
 (ls/reg-event-ls
   ::on-fetched-data
+  [(path ::categories ::index)]
   (fn [ls [_ category-id {:keys [data errors]}]]
     (-> ls
-        (update-in , [:categories category-id] (fnil identity {}))
-        (assoc-in , [:categories category-id :errors] errors)
-        (assoc-in , [:categories category-id :data] data))))
+        (update category-id (fnil identity {}))
+        (assoc-in [category-id :errors] errors)
+        (assoc-in [category-id :data] data))))
 
 (ls/reg-sub-ls
  ::category-data
- (fn [ls [_ id]] (get-in ls [:categories id])))
+ (fn [ls [_ id]] (get-in ls [::categories ::index id])))
 
 
 (defn view []

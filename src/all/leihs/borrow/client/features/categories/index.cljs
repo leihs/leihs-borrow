@@ -17,21 +17,8 @@
   (rc/inline "leihs/borrow/client/features/categories/getCategories.gql"))
 
 ; is kicked off from router when this view is loaded
-(rf/reg-event-fx
- ::routes/categories-index
- (fn [_ [_ ]]
-   {:dispatch [::re-graph/query
-               (rc/inline "leihs/borrow/client/features/categories/getCategories.gql")
-               {}
-               [::on-fetched-categories-index]]}))
-
-(ls/reg-event-fx-ls
- ::on-fetched-categories-index
- (fn [{:keys [db]} [_ {:keys [data errors]}]]
-   (if errors
-     {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-     {:db (assoc-in db [:ls :categories :index] (get-in data [:categories]))})))
-
+(rf/reg-event-fx ::routes/categories-index
+                 categories/dispatch-fetch-index-handler)
 
 (defn view []
   (fn []

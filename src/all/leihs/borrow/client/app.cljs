@@ -8,13 +8,13 @@
    [leihs.borrow.client.ui.main-nav :as main-nav]
 
    [leihs.borrow.client.lib.routing :as routing]
-   [leihs.borrow.client.lib.timeout :as timeout]
    [leihs.borrow.client.routes :as routes]
 
    [leihs.borrow.client.features.home-page.core :as home-page]
    [leihs.borrow.client.features.about-page.core :as about-page]
    [leihs.borrow.client.features.search-models.core :as search-models]
    [leihs.borrow.client.features.shopping-cart.core :as shopping-cart]
+   [leihs.borrow.client.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.client.features.categories.show :as category-show]
    [leihs.borrow.client.features.categories.index :as category-index]
    [leihs.borrow.client.features.model-show.core :as model-show]

@@ -1,4 +1,4 @@
-(ns leihs.borrow.client.lib.timeout
+(ns leihs.borrow.client.features.shopping-cart.timeout
   (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require [re-frame.core :as rf]
             [re-graph.core :as re-graph]
@@ -15,7 +15,7 @@
   ::refresh
   (fn [_ _]
     {:dispatch [::re-graph/mutate
-                (rc/inline "leihs/borrow/client/lib/refreshTimeout.gql")
+                (rc/inline "leihs/borrow/client/features/shopping_cart/refreshTimeout.gql")
                 nil
                 [::on-refresh]]}))
 

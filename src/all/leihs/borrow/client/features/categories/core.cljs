@@ -14,24 +14,25 @@
    ["/leihs-ui-client-side" :as UI]
    #_[leihs.borrow.client.components :as ui]))
 
-(rf/reg-event-fx
- ::fetch-index
- (fn [_ [_ _how-many]]
-   {:dispatch [::re-graph/query
-               (rc/inline "leihs/borrow/client/features/categories/getCategories.gql")
-               {} #_{:count how-many}
-               [::on-fetched-categories-index]]}))
+(def dispatch-fetch-index-handler
+  (fn [_ _]
+    {:dispatch [::re-graph/query
+                (rc/inline "leihs/borrow/client/features/categories/getCategories.gql")
+                {} #_{:count how-many}
+                [::on-fetched-categories-index]]}) )
+
+(rf/reg-event-fx ::fetch-index dispatch-fetch-index-handler)
 
 (ls/reg-event-fx-ls
  ::on-fetched-categories-index
  (fn [{:keys [db]} [_ {:keys [data errors]}]]
    (if errors
      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-     {:db (assoc-in db [:ls :categories :index] (get-in data [:categories]))})))
+     {:db (assoc-in db [:ls ::categories ::index] (get-in data [:categories]))})))
 
 (ls/reg-sub-ls
  ::categories-index
- (fn [ls] (get-in ls [:categories :index])))
+ (fn [ls] (get-in ls [::categories ::index])))
 
 (defn categories-list [categories]
   (let [list
