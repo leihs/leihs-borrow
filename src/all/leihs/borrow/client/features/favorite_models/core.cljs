@@ -6,6 +6,7 @@
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
    #_[leihs.borrow.client.lib.routing :as routing]
+   [leihs.borrow.client.lib.localstorage :as ls]
    [leihs.borrow.client.lib.pagination :as pagination]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.components :as ui] 
@@ -23,15 +24,14 @@
                nil
                [::on-fetched-models-favorites]]}))
 
-(rf/reg-event-fx
+(ls/reg-event-fx-ls
  ::on-fetched-models-favorites
  (fn [{:keys [db]} [_ {:keys [data errors]}]]
    (if errors
      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-     {:db (merge db data)})))
+     {:db (assoc-in db [:ls ::models] (:models data))})))
 
-(rf/reg-sub ::favorite-models (fn [db] (:models db)))
-
+(ls/reg-sub-ls ::favorite-models (fn [ls] (::models ls)))
 
 (defn view []
   (let [models @(rf/subscribe [::favorite-models])]
@@ -52,6 +52,6 @@
           {:on-click #(rf/dispatch [::pagination/get-more
                                     query
                                     {}
-                                    [:models]
+                                    [::models]
                                     [:models]])}
           "LOAD MORE"]]])]))

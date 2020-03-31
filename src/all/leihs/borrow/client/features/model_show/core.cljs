@@ -2,19 +2,17 @@
   (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:refer-clojure :exclude [val])
   (:require
-   [reagent.core :as reagent]
-   [re-frame.core :as rf]
-   [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   [leihs.borrow.client.components :as ui]
-   [leihs.borrow.client.routes :as routes]
-
-   [leihs.borrow.client.ui.icons :as icons]
-
-   [leihs.borrow.client.lib.filters :as filters]
-
-   [leihs.borrow.client.features.favorite-models.events :as favs]))
-
+    [reagent.core :as reagent]
+    [re-frame.core :as rf]
+    [re-frame.std-interceptors :refer [path]]
+    [re-graph.core :as re-graph]
+    [shadow.resource :as rc]
+    [leihs.borrow.client.lib.localstorage :as ls]
+    [leihs.borrow.client.components :as ui]
+    [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.client.ui.icons :as icons]
+    [leihs.borrow.client.lib.filters :as filters]
+    [leihs.borrow.client.features.favorite-models.events :as favs]))
 
 ; is kicked off from router when this view is loaded
 (rf/reg-event-fx
@@ -37,58 +35,59 @@
                  :bothDatesGiven (and (boolean start-date) (boolean end-date))}
                 [::on-fetched-data id]]}))
 
-(rf/reg-event-fx
+(ls/reg-event-fx-ls
   ::reset-availability-and-fetch
   (fn [{:keys [db]} [_ model-id start-date end-date]]
     {:db (update-in db
-                    [:models model-id :data :model] 
+                    [:ls ::models model-id :data :model] 
                     dissoc 
                     :availableQuantityInDateRange)
      :dispatch [::fetch model-id start-date end-date]}))
 
-(rf/reg-event-db
- ::on-fetched-data
- (fn [db [_ model-id {:keys [data errors]}]]
-   (-> db
-       (update-in , [:models model-id] (fnil identity {}))
-       (assoc-in , [:models model-id :errors] errors)
-       (assoc-in , [:models model-id :data] data))))
+(ls/reg-event-ls
+  ::on-fetched-data
+  [(path ::models)]
+  (fn [ls [_ model-id {:keys [data errors]}]]
+    (-> ls
+        (update model-id (fnil identity {}))
+        (assoc-in [model-id :errors] errors)
+        (assoc-in [model-id :data] data))))
+
+(ls/reg-event-fx-ls
+  ::favorite-model
+  (fn [{:keys [db]} [_ model-id]]
+    {:db (assoc-in db [:ls ::models model-id :data :model :isFavorited] true)
+     :dispatch [::favs/favorite-model model-id]}))
+
+(ls/reg-event-fx-ls
+  ::unfavorite-model
+  (fn [{:keys [db]} [_ model-id]]
+    {:db (assoc-in db [:ls ::models model-id :data :model :isFavorited] false)
+     :dispatch [::favs/unfavorite-model model-id]}))
+
+(ls/reg-sub-ls
+  ::model-data
+  (fn [ls [_ id]]
+    (get-in ls [::models id])))
 
 (rf/reg-event-fx
- ::favorite-model
- (fn [{:keys [db]} [_ model-id]]
-   {:db (assoc-in db [:models model-id :data :model :isFavorited] true)
-    :dispatch [::favs/favorite-model model-id]}))
+  ::model-create-reservation
+  (fn [_ [_ args]]
+    {:dispatch [::re-graph/mutate
+                (rc/inline "leihs/borrow/client/features/model_show/createReservationMutation.gql")
+                args
+                [::on-mutation-result args]]}))
 
 (rf/reg-event-fx
- ::unfavorite-model
- (fn [{:keys [db]} [_ model-id]]
-   {:db (assoc-in db [:models model-id :data :model :isFavorited] false)
-    :dispatch [::favs/unfavorite-model model-id]}))
-
-(rf/reg-sub
- ::model-data
- (fn [db [_ id]]
-   (get-in db [:models id])))
-
-(rf/reg-event-fx
- ::model-create-reservation
- (fn [_ [_ args]]
-   {:dispatch [::re-graph/mutate
-               (rc/inline "leihs/borrow/client/features/model_show/createReservationMutation.gql")
-               args
-               [::on-mutation-result args]]}))
-
-(rf/reg-event-fx
- ::on-mutation-result
- (fn [{:keys [_db]} [_ args {:keys [data errors]}]]
-   (if errors
-     {:alert (str "FAIL! " (pr-str errors))}
-     {:alert (str "OK! " (pr-str data))
-      :dispatch [::reset-availability-and-fetch
-                 (:modelId args)
-                 (:startDate args)
-                 (:endDate args)]})))
+  ::on-mutation-result
+  (fn [{:keys [_db]} [_ args {:keys [data errors]}]]
+    (if errors
+      {:alert (str "FAIL! " (pr-str errors))}
+      {:alert (str "OK! " (pr-str data))
+       :dispatch [::reset-availability-and-fetch
+                  (:modelId args)
+                  (:startDate args)
+                  (:endDate args)]})))
 
 (defn order-panel [model filters]
   (let [state (reagent/atom {:quantity 1
@@ -143,8 +142,8 @@
                                (let [val (.-value (.-target e))]
                                  (swap! state assoc :quantity (int val))))}]]]
               [:div.flex-1.w-1_2 [:span.no-underline.text-color-muted 
-                                       {:aria-label (str "maximum available quantity is " (:max-quantity @state))} 
-                                       "/" ui/thin-space (or (:max-quantity @state) [ui/spinner-clock]) ui/thin-space "max."]]]]
+                                  {:aria-label (str "maximum available quantity is " (:max-quantity @state))} 
+                                  "/" ui/thin-space (or (:max-quantity @state) [ui/spinner-clock]) ui/thin-space "max."]]]]
 
             [:div.flex-auto.w-1_2
              [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg

@@ -33,7 +33,7 @@
 
 (ls/reg-event-ls
   ::on-fetched-data
-  [(path ::categories ::index)]
+  [(path ::categories :index)]
   (fn [ls [_ category-id {:keys [data errors]}]]
     (-> ls
         (update category-id (fnil identity {}))
@@ -42,7 +42,7 @@
 
 (ls/reg-sub-ls
  ::category-data
- (fn [ls [_ id]] (get-in ls [::categories ::index id])))
+ (fn [ls [_ id]] (get-in ls [::categories :index id])))
 
 
 (defn view []
