@@ -7,12 +7,6 @@ def cursor(uuid)
   ].first[:result]
 end
 
-class Hash
-  def delete_in!(*path, key)
-    self.dig(*path).try(:delete, key)
-  end
-end
-
 describe 'models connection' do
   before :each do
     @user = FactoryBot.create(
@@ -745,19 +739,6 @@ describe 'models connection' do
                   }
                 }
               }
-              availability(
-                startDate: "#{Date.yesterday}",
-                endDate: "#{Date.today + 1.day}",
-                inventoryPoolIds: ["232547a5-5f43-450c-896a-b692275a04ea"]
-              ) {
-                inventoryPool {
-                  id
-                }
-                dates {
-                  date
-                  quantity
-                }
-              }
             }
           }
         }
@@ -775,16 +756,8 @@ describe 'models connection' do
               images: [],
               attachments: [],
               properties: [],
-              recommends: { edges: [] },
-              availability: [
-                {
-                  inventoryPool: { id: '232547a5-5f43-450c-896a-b692275a04ea' },
-                  dates: [{ date: Date.yesterday.to_s, quantity: 0 },
-                          { date: Date.today.to_s, quantity: 1 },
-                          { date: (Date.today + 1.day).to_s, quantity: 1 }]
-                }
-              ]}
-            },
+              recommends: { edges: [] }
+            } },
             # model of interest
             { node: {
               id: '2bc1deb5-9428-4178-afd0-c06bb8d31ff3',
@@ -796,106 +769,13 @@ describe 'models connection' do
                 edges: [
                   { node: {
                     id: '210a4116-162f-4947-bcb0-2d7d1a5c7b1c'
-                  }
-                  }
+                  } }
                 ]
-              },
-              availability: [
-                {
-                  inventoryPool: { id: '232547a5-5f43-450c-896a-b692275a04ea' },
-                  dates: [{ date: Date.yesterday.to_s, quantity: 0 },
-                          { date: Date.today.to_s, quantity: 1 },
-                          { date: (Date.today + 1.day).to_s, quantity: 1 }]
-                }
-              ]}
-            }
+              }
+            } }
           ]
         }
       }
     )
-  end
-
-  it 'available quantites' do
-    inventory_pool = FactoryBot.create(
-      :inventory_pool,
-      id: '6ce92dd1-cf47-4942-97a1-6bc5b495b425'
-    )
-    FactoryBot.create(:access_right,
-                      inventory_pool: inventory_pool,
-                      user: @user)
-
-    q = <<-GRAPHQL
-      {
-        models(
-          orderBy: [{attribute: ID, direction: ASC}]
-        ) {
-          edges {
-            node {
-              id
-              availableQuantityInDateRange(
-                startDate: "#{Date.today}",
-                endDate: "#{Date.tomorrow}"
-              )
-            }
-          }
-        }
-      }
-    GRAPHQL
-
-    result = query(q, @user.id)
-    expect_graphql_result(result, {
-      models: {
-        edges: [
-          { node: { id: '0cad263d-14b9-4595-9878-7adde7f4f586',
-                    availableQuantityInDateRange: 0 } },
-          { node: { id: '1adfe883-3546-4b5c-9ed6-b18f01f77723',
-                    availableQuantityInDateRange: 2 } },
-          { node: { id: '29c1bdf9-7764-4e1e-bf9e-902f908be8d5',
-                    availableQuantityInDateRange: 0 } }
-        ]
-      }
-    })
-  end
-
-  it 'available quantites for start date in the past should be 0' do
-    inventory_pool = FactoryBot.create(
-      :inventory_pool,
-      id: '6ce92dd1-cf47-4942-97a1-6bc5b495b425'
-    )
-    FactoryBot.create(:access_right,
-                      inventory_pool: inventory_pool,
-                      user: @user)
-
-    q = <<-GRAPHQL
-      {
-        models(
-          orderBy: [{attribute: ID, direction: ASC}]
-        ) {
-          edges {
-            node {
-              id
-              availableQuantityInDateRange(
-                startDate: "#{Date.yesterday}",
-                endDate: "#{Date.tomorrow}"
-              )
-            }
-          }
-        }
-      }
-    GRAPHQL
-
-    result = query(q, @user.id)
-    expect_graphql_result(result, {
-      models: {
-        edges: [
-          { node: { id: '0cad263d-14b9-4595-9878-7adde7f4f586',
-                    availableQuantityInDateRange: 0 } },
-          { node: { id: '1adfe883-3546-4b5c-9ed6-b18f01f77723',
-                    availableQuantityInDateRange: 0 } },
-          { node: { id: '29c1bdf9-7764-4e1e-bf9e-902f908be8d5',
-                    availableQuantityInDateRange: 0 } }
-        ]
-      }
-    })
   end
 end

@@ -152,18 +152,19 @@
   [{{:keys [tx authenticated-entity]} :request :as context}
    {:keys [model-id start-date end-date quantity inventory-pool-ids] :as args}
    value]
-  (let [user-id (:id authenticated-entity)]
-    (if-not (models/reservable? context args {:id model-id})
-      (throw
-        (ex-info
-          "Model either does not exist or is not reservable by the user." {})))
-    (let [pools (cond->> (pools/to-reserve-from tx
-                                                (:id authenticated-entity)
-                                                start-date
-                                                end-date)
-                  (seq inventory-pool-ids)
-                  (filter #((set inventory-pool-ids) (:id %))))
-          pool-avails (->> (availability/get-available-quantities
+  (if-not (models/reservable? context args {:id model-id})
+    (throw
+      (ex-info
+        "Model either does not exist or is not reservable by the user." {})))
+  (let [pools (cond->> (pools/to-reserve-from tx
+                                              (:id authenticated-entity)
+                                              start-date
+                                              end-date)
+                (seq inventory-pool-ids)
+                (filter #((set inventory-pool-ids) (:id %))))]
+    (if (empty? pools)
+      (throw (ex-info "Not possible to reserve from any pool under given conditions."))
+      (let [pool-avails (->> (availability/get-available-quantities
                              context
                              {:inventory-pool-ids (map :id pools)
                               :model-ids [model-id]
@@ -185,7 +186,7 @@
                                 (assoc :start_date (sql/call :cast start-date :date))
                                 (assoc :end_date (sql/call :cast end-date :date))
                                 (assoc :quantity 1
-                                       :user_id user-id
+                                       :user_id (:id authenticated-entity)
                                        :status (sql/call :cast
                                                          "unsubmitted"
                                                          :reservation_status)
@@ -198,4 +199,4 @@
                         (assoc :returning (columns tx))
                         sql/format
                         (query tx)))))
-           flatten))))
+           flatten)))))

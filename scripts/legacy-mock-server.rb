@@ -11,22 +11,22 @@ end
 
 get '/borrow/models/availability' do
   if params[:model_ids].to_set ==
-      Set['0cad263d-14b9-4595-9878-7adde7f4f586',
-          '1adfe883-3546-4b5c-9ed6-b18f01f77723',
-          '29c1bdf9-7764-4e1e-bf9e-902f908be8d5']
-    [{ model_id: '0cad263d-14b9-4595-9878-7adde7f4f586',
-       inventory_pool_id: '8f613f14-3b6d-4d5c-9804-913e2da1109e',
+      Set['7efd48dc-676f-4438-9d1b-d0774b6704b7',
+          '5577cbcf-fdc4-4cfc-bdb9-435d75522c1d',
+          '87420e5a-c916-42f6-94ac-dd31ea32afb2']
+    [{ model_id: '7efd48dc-676f-4438-9d1b-d0774b6704b7',
+       inventory_pool_id: 'ab61cf01-08ce-4d9b-97d3-8dcd8360605a',
        quantity: 0 },
-     { model_id: '1adfe883-3546-4b5c-9ed6-b18f01f77723',
-       inventory_pool_id: '8f613f14-3b6d-4d5c-9804-913e2da1109e',
+     { model_id: '5577cbcf-fdc4-4cfc-bdb9-435d75522c1d',
+       inventory_pool_id: 'ab61cf01-08ce-4d9b-97d3-8dcd8360605a',
        quantity: 1 },
-     { model_id: '1adfe883-3546-4b5c-9ed6-b18f01f77723',
+     { model_id: '5577cbcf-fdc4-4cfc-bdb9-435d75522c1d',
        inventory_pool_id: '6ce92dd1-cf47-4942-97a1-6bc5b495b425',
        quantity: 1 },
-     { model_id: '29c1bdf9-7764-4e1e-bf9e-902f908be8d5',
-       inventory_pool_id: '8f613f14-3b6d-4d5c-9804-913e2da1109e',
+     { model_id: '87420e5a-c916-42f6-94ac-dd31ea32afb2',
+       inventory_pool_id: 'ab61cf01-08ce-4d9b-97d3-8dcd8360605a',
        quantity: -2 },
-     { model_id: '29c1bdf9-7764-4e1e-bf9e-902f908be8d5',
+     { model_id: '87420e5a-c916-42f6-94ac-dd31ea32afb2',
        inventory_pool_id: '6ce92dd1-cf47-4942-97a1-6bc5b495b425',
        quantity: 1 }]
   elsif params[:model_ids] == ['906ac7a7-1f1e-4367-b1f0-fa63052fbd0f']
@@ -99,16 +99,63 @@ get '/borrow/booking_calendar_availability' do
   when '91f2c252-ebb4-4265-8806-4669c8626913'
     { list: [
       { d: '2019-10-24',
+        visits_count: 0,
         quantity: 1 }
+      ]
+    }
+  when '948ee4ef-b576-4256-996f-38f25030f151'
+    { list: [
+      { d: Date.yesterday.to_s,
+        visits_count: 0,
+        quantity: 1 },
+      { d: Date.today.to_s,
+        visits_count: 0,
+        quantity: 1 },
+      { d: (Date.today + 1.day).to_s,
+        visits_count: 0,
+        quantity: 1 }
+      ]
+    }
+  when 'a95259db-b3bc-4324-907f-c4a5811cf049'
+    { list: [
+      { d: Date.today,
+        visits_count: 0,
+        quantity: 1 },
+      { d: (Date.today + 1.day).to_s,
+        visits_count: 0,
+        quantity: 1 },
+      { d: (Date.today + 2.days).to_s,
+        visits_count: 0,
+        quantity: 1 }
+      ]
+    }
+  when '8afe4e63-fded-4726-8808-6a097452374e'
+    { list: [
+      { d: Date.today,
+        visits_count: 0,
+        quantity: 1 },
+      { d: (Date.tomorrow).to_s,
+        visits_count: 0,
+        quantity: 1 },
+      ]
+    }
+  when 'da28cf22-db3e-4b9d-bfa8-199923b629cf'
+    { list: [
+      { d: Date.today,
+        quantity: 1,
+        visits_count: 1 }
       ]
     }
   when '2bc1deb5-9428-4178-afd0-c06bb8d31ff3', '210a4116-162f-4947-bcb0-2d7d1a5c7b1c'
     { list: [
       { d: Date.yesterday.to_s,
+        visits_count: 0,
         quantity: 1 },
       { d: Date.today.to_s,
+        visits_count: 0,
         quantity: 1 },
       { d: (Date.today + 1.day).to_s,
+        visits_count: 0,
         quantity: 1 }
       ]
     }

@@ -1,6 +1,7 @@
 (ns leihs.borrow.resources.availability
   (:refer-clojure :exclude [get])
   (:require [clojure.tools.logging :as log]
+            [clojure.spec.alpha :as spec]
             [leihs.borrow.legacy :as legacy]
             [camel-snake-kebab.core :as csk]
             [wharf.core :refer [transform-keys]]))
@@ -11,6 +12,13 @@
     context
     (transform-keys csk/->snake_case args)))
 
+(spec/def ::date string?)
+(spec/def ::quantity (comp #(>= % 0) integer?))
+(spec/def ::visits_count (comp #(>= % 0) integer?))
+
+(spec/def ::calendar-date
+  (spec/keys :req-un #{::date ::quantity ::visits_count}))
+
 (defn get [context args _value]
   (->> (legacy/fetch
          "/borrow/booking_calendar_availability"
@@ -19,7 +27,9 @@
               (select-keys args)
               (transform-keys csk/->snake_case)))
        :list
-       (map #(clojure.set/rename-keys % {:d :date}))
+       (map (fn [d]
+              (->> (clojure.set/rename-keys d {:d :date})
+                   (spec/assert ::calendar-date))))
        (hash-map :dates)))
 
 ;#### debug ###################################################################

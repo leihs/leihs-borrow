@@ -14,6 +14,7 @@
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.inventory-pools :as pools]
+            [leihs.borrow.resources.inventory-pools.visits-restrictions :as restrict]
             [leihs.borrow.resources.categories.descendents :as descendents])
   (:import (java.time.format DateTimeFormatter)))
 
@@ -160,20 +161,12 @@
   [{{tx :tx {user-id :id} :authenticated-entity} :request :as context}
    {:keys [start-date end-date inventory-pool-ids]}
    value]
-  ; TODO: `reservation_advance_days` ... ??
   (let [pool-ids (or inventory-pool-ids
                      (map :id
                           (pools/to-reserve-from tx
                                                  user-id
                                                  start-date
-                                                 end-date)))
-        past-date? #(before? (local-date %) (local-date))
-        too-early-date? (fn [date pool]
-                          (and (:reservation_advance_days pool)
-                               (< (jt/time-between (local-date)
-                                                   (local-date date)
-                                                   :days)
-                                  (:reservation_advance_days pool))))]
+                                                 end-date)))]
     (map (fn [pool-id]
            (let [pool (pools/get-by-id (-> context :request :tx)
                                        pool-id)
@@ -186,15 +179,10 @@
                          nil)]
              (-> avail
                  (update :dates
-                         (fn [dates]
-                           (map #(cond
-                                   (past-date? (:date %))
-                                   (assoc % :quantity 0 :visits-count 0)
-                                   (too-early-date? (:date %) pool)
-                                   (assoc % :quantity 0)
-                                   :else %)
-                                dates)))
-                 (assoc :inventory-pool (log/spy pool)))))
+                         (fn [dates-with-avail]
+                           (map #(restrict/validate-date-with-avail tx % pool)
+                                dates-with-avail)))
+                 (assoc :inventory-pool pool))))
          pool-ids)))
 
 (defn from-compatibles [sqlmap value user-id unscope-reservable]

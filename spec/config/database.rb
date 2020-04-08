@@ -51,3 +51,5 @@ RSpec.configure do |config|
   #   clean_db
   # end
 end
+
+database.extension :pg_json

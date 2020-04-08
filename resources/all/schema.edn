@@ -14,7 +14,9 @@
          :ContractStateEnum {:values [:OPEN :CLOSED]}
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED]}
          :VisitTypeEnum {:values [:PICKUP :RETURN]}
-         :ReservationStateEnum {:values [:UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}}
+         :ReservationStateEnum {:values [:UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}
+         :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
+         :endDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED]}}
 
  :objects {:Contract {:fields {:id {:type (non-null :UUID)}
                                :compactId {:type (non-null :UUID)
@@ -54,8 +56,9 @@
                                                    :resolve :favorite-models-connection}}}
            :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null :Date)}
-                              :visitsCount {:type (non-null Int)}
-                              :quantity {:type (non-null Int)}}}
+                              :quantity {:type (non-null Int)}
+                              :startDateRestriction {:type :startDateRestrictionEnum}
+                              :endDateRestriction {:type :endDateRestrictionEnum}}}
            :Model {:fields {:id {:type (non-null :UUID)}
                             :name {:type (non-null String)
                                    :description "A name consists of product name and its version."}

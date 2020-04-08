@@ -21,29 +21,12 @@
                        :inventory_pools.id])
       (sql/merge-where [:= :access_rights.user_id user-id])))
 
-(defn with-reservation-advance-days-sqlmap [sqlmap]
+(defn with-workdays-sqlmap [sqlmap]
   (-> sqlmap
-      (sql/merge-select :workdays.reservation_advance_days)
+      (sql/merge-select :workdays.*)
       (sql/left-join :workdays [:=
                                 :workdays.inventory_pool_id
                                 :inventory_pools.id])))
-
-(defn ready-for-hand-over-sqlmap [sqlmap date]
-  (-> sqlmap
-      with-reservation-advance-days-sqlmap
-      (sql/merge-where [:>=
-                        (sql/call :- 
-                                  (sql/call :cast date :date)
-                                  (sql/raw "now()::date"))
-                        :workdays.reservation_advance_days])))
-
-(defn ready-for-take-back-sqlmap [sqlmap _]
-  sqlmap)
-
-(defn to-reserve-from-sqlmap [user-id start-date end-date]
-  (-> (accessible-to-user-sqlmap user-id)
-      (ready-for-hand-over-sqlmap start-date)
-      (ready-for-take-back-sqlmap end-date)))
 
 (defn to-reserve-from [tx user-id start-date end-date]
   (->> {:user-id user-id, :start-date start-date, :end-date end-date}
@@ -65,7 +48,7 @@
 
 (defn get-by-id [tx id]
   (-> base-sqlmap
-      with-reservation-advance-days-sqlmap
+      with-workdays-sqlmap
       (sql/merge-where [:= :inventory_pools.id id])
       sql/format
       (->> (jdbc/query tx))

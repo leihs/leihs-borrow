@@ -3,6 +3,7 @@ require 'config/constants'
 require 'config/database'
 require 'config/factories'
 require 'config/metadata_extractor'
+require 'config/hash'
 require 'base32/crockford'
 require 'uuidtools'
 
