@@ -17,7 +17,7 @@
 (def dispatch-fetch-index-handler
   (fn [_ _]
     {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/client/features/categories/getCategories.gql")
+                (rc/inline "leihs/borrow/client/features/categories/getRootCategories.gql")
                 {} #_{:count how-many}
                 [::on-fetched-categories-index]]}) )
 

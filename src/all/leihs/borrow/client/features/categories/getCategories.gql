@@ -1,9 +1,0 @@
-query getCategories($count: Int) {
-  categories: categories(rootOnly: true, limit: $count) {
-    id
-    name
-    images {
-      imageUrl
-    }
-  }
-}

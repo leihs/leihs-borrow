@@ -163,7 +163,7 @@
                 (seq inventory-pool-ids)
                 (filter #((set inventory-pool-ids) (:id %))))]
     (if (empty? pools)
-      (throw (ex-info "Not possible to reserve from any pool under given conditions."))
+      (throw (ex-info "Not possible to reserve from any pool under given conditions." {}))
       (let [pool-avails (->> (availability/get-available-quantities
                              context
                              {:inventory-pool-ids (map :id pools)

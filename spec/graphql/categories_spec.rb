@@ -97,7 +97,7 @@ describe 'categories' do
 
     q = <<-GRAPHQL
       query Catalog($idAsc: [ModelsOrderByInput]!) {
-        categories(rootOnly: true) {
+        rootCategories {
           id
           ...directModelsField
           ...modelsField
@@ -153,7 +153,7 @@ describe 'categories' do
     result = query(q, user.id, vars)
     expect_graphql_result(result,
       {
-        categories: [
+        rootCategories: [
           {
             id: '9a1dc177-a2b2-4a16-8fbf-6552b5313f38',
             images: [

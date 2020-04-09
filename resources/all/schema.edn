@@ -249,14 +249,8 @@
                       :resolve :category
                       :type :Category}
            :rootCategories {:resolve :root-categories
-                            :type (list (non-null :Category))}
-           :categories {:args {:limit {:type Int}
-                               :offset {:type Int}
-                               :ids {:type (list (non-null :UUID))}
-                               :rootOnly {:type Boolean}}
-                        :description "This query probably does not return correct results!"
-                        :resolve :categories
-                        :type (list :Category)}}
+                            :args {:limit {:type Int}}
+                            :type (list (non-null :Category))}}
 
  :mutations {:createReservation {:args {:startDate {:type (non-null :Date)}
                                         :endDate {:type (non-null :Date)}

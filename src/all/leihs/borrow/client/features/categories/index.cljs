@@ -13,9 +13,6 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.features.categories.core :as categories]))
 
-(def query
-  (rc/inline "leihs/borrow/client/features/categories/getCategories.gql"))
-
 ; is kicked off from router when this view is loaded
 (rf/reg-event-fx ::routes/categories-index
                  categories/dispatch-fetch-index-handler)

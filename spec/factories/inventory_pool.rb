@@ -1,6 +1,8 @@
 class InventoryPool < Sequel::Model
   def after_create
-    Workday.create(inventory_pool_id: self.id)
+    Workday.create(inventory_pool_id: self.id,
+                   saturday: true,
+                   sunday: true)
     super
   end
 end

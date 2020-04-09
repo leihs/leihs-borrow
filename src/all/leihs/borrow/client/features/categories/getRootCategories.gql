@@ -1,0 +1,9 @@
+query getRootCategories($count: Int) {
+  categories: rootCategories(limit: $count) {
+    id
+    name
+    images {
+      imageUrl
+    }
+  }
+}

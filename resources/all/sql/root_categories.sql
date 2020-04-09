@@ -71,4 +71,5 @@ AND ARRAY(
 ARRAY(
   SELECT id from all_borrowable_categories
 )
+:sql:limit
 ORDER BY name ASC
