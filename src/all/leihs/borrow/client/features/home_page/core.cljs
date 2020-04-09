@@ -1,4 +1,5 @@
 (ns leihs.borrow.client.features.home-page.core
+  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
    #_[reagent.core :as r]
    [re-frame.core :as rf]
@@ -13,10 +14,11 @@
 ; is kicked off from router when this view is loaded
 (rf/reg-event-fx
  ::routes/home
- (fn [_ [_ _]] 
-   {:dispatch-n (list 
-                 [::filters/init]
-                 [::categories/fetch-index 4])}))
+ (fn [_ [_ {:keys [query-params]}]] 
+   {:dispatch-n (-> (list [::categories/fetch-index 4])
+                    (cond-> (seq query-params)
+                      (conj [::filters/set-all query-params]))
+                    (conj [::filters/init]))}))
 
 (defn view []
   (fn []

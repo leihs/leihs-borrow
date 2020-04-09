@@ -59,17 +59,17 @@
 
 (ls/reg-sub-ls
   ::term
-  (fn [ls _] (get-in ls (conj current-path ::term))))
+  (fn [ls _] (get-in ls (conj current-path :term))))
 
 (ls/reg-sub-ls
   ::start-date
-  (fn [ls _] (get-in ls (conj current-path ::start-date))))
+  (fn [ls _] (get-in ls (conj current-path :start-date))))
 
 (ls/reg-sub-ls
   ::end-date
-  (fn [ls _] (get-in ls (conj current-path ::end-date))))
+  (fn [ls _] (get-in ls (conj current-path :end-date))))
 
 (defn current [db] (ls/get-in db current-path nil))
-(defn term [db] (ls/get-in db (conj current-path ::term)))
-(defn start-date [db] (ls/get-in db (conj current-path ::start-date)))
-(defn end-date [db] (ls/get-in db (conj current-path ::end-date)))
+(defn term [db] (ls/get-in db (conj current-path :term)))
+(defn start-date [db] (ls/get-in db (conj current-path :start-date)))
+(defn end-date [db] (ls/get-in db (conj current-path :end-date)))

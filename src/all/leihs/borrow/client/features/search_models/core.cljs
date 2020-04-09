@@ -20,8 +20,10 @@
 
 ;-; EVENTS 
 (rf/reg-event-fx
- ::routes/search
- (fn [_ _] {:dispatch [::get-models]}))
+  ::routes/search
+  (fn [_ [_ {:keys [query-params]}]]
+    {:dispatch-n (list [::filters/set-all query-params]
+                       [::get-models])}))
 
 (ls/reg-event-fx-ls
  ::get-models
@@ -30,11 +32,11 @@
                      :startDate (filters/start-date db)
                      :endDate (filters/end-date db)}]
       ; NOTE: no caching yet, clear results before new search  
-     {:db (assoc-in db [::results] nil)
-      :dispatch [::re-graph/query
-                 query-gql
-                 (spy query-vars)
-                 [::on-fetched-models]]})))
+      {:db (assoc-in db [::results] nil)
+       :dispatch [::re-graph/query
+                  query-gql
+                  query-vars
+                  [::on-fetched-models]]})))
 
 (rf/reg-event-fx
  ::on-fetched-models
@@ -88,28 +90,26 @@
          :on-submit
          (fn [event]
            (.preventDefault event)
-           (if on-search-view?
-             (rf/dispatch [::get-models])
-             (rf/dispatch [:routing/navigate [::routes/search]])))}
+           (rf/dispatch [:routing/navigate [::routes/search {:query-params filters}]]))}
         [:fieldset {:style {:display :table}}
          [:legend.sr-only "Suche"]
          [form-line :search-term "Suche"
           {:type :text
            :value term
-           :on-change #(rf/dispatch [::filters/set-one ::filters/term (-> % .-target .-value)])}]
+           :on-change #(rf/dispatch [::filters/set-one :term (-> % .-target .-value)])}]
 
          [form-line :start-date "Start-datum"
           {:type :date
            :required true
            :value start-date
-           :on-change #(rf/dispatch [::filters/set-one ::filters/start-date (-> % .-target .-value)])}]
+           :on-change #(rf/dispatch [::filters/set-one :start-date (-> % .-target .-value)])}]
 
          [form-line :end-date "End-datum"
           {:type :date
            :required true
            :min end-date
            :value end-date
-           :on-change #(rf/dispatch [::filters/set-one ::filters/end-date (-> % .-target .-value)])}]
+           :on-change #(rf/dispatch [::filters/set-one :end-date (-> % .-target .-value)])}]
 
          (let [active? (boolean (and start-date end-date))]
            [:button.btn.btn-success.dont-invert.rounded-pill

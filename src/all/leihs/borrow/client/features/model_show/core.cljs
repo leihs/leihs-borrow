@@ -15,13 +15,13 @@
     [leihs.borrow.client.features.favorite-models.events :as favs]))
 
 ; is kicked off from router when this view is loaded
-(rf/reg-event-fx
+(ls/reg-event-fx-ls
   ::routes/models-show
   (fn [{:keys [db]} [_ args]]
     (let [id (get-in args [:route-params :model-id])
           filters (filters/current db)
-          start-date (::filters/start-date filters)
-          end-date (::filters/end-date filters)]
+          start-date (:start-date filters)
+          end-date (:end-date filters)]
       {:dispatch [::fetch id start-date end-date]})))
 
 (rf/reg-event-fx
@@ -91,8 +91,8 @@
 
 (defn order-panel [model filters]
   (let [state (reagent/atom {:quantity 1
-                             :start-date (::filters/start-date filters)
-                             :end-date (::filters/end-date filters)})]
+                             :start-date (:start-date filters)
+                             :end-date (:end-date filters)})]
     (fn [{:keys [id] :as model} _]
       (swap! state assoc :max-quantity (:availableQuantityInDateRange model))
       (let [on-submit #(rf/dispatch [::model-create-reservation
