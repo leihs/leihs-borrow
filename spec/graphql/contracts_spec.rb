@@ -22,7 +22,7 @@ describe 'contracts' do
   end
 
   before(:example) do
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool,
                       user: user)
   end

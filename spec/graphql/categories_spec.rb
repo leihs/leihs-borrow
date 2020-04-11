@@ -7,7 +7,7 @@ describe 'categories' do
                                        id: '93c17c42-50d6-4af9-aa3b-96a0aafb8011')
     user = FactoryBot.create(:user,
                              id: '3867c467-6dfc-4fb2-83ed-993aa774d762')
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool,
                       user: user)
 

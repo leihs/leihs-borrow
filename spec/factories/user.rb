@@ -1,5 +1,5 @@
 class User < Sequel::Model
-  one_to_many(:access_rights)
+  one_to_many(:direct_access_rights)
   many_to_one(:delegator_user, class: self)
   many_to_many(:delegation_users,
                left_key: :delegation_id,
@@ -25,7 +25,7 @@ FactoryBot.define do
 
     after(:create) do |user, trans|
       trans.access_rights.each do |access_right|
-        user.add_access_right(access_right)
+        user.add_direct_access_right(access_right)
       end
     end
 
@@ -33,7 +33,7 @@ FactoryBot.define do
       firstname { Faker::Team.name }
       delegator_user { create(:user) }
 
-      transient do 
+      transient do
         delegated_users { [] }
       end
 
@@ -58,7 +58,7 @@ FactoryBot.define do
           .first[:pw_hash]
 
         database[:authentication_systems_users].insert(
-          user_id: user.id, 
+          user_id: user.id,
           authentication_system_id: 'password',
           data: pw_hash
         )

@@ -17,7 +17,7 @@ describe 'models connection' do
       :inventory_pool,
       id: '8f613f14-3b6d-4d5c-9804-913e2da1109e'
     )
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: @inventory_pool,
                       user: @user)
 
@@ -667,7 +667,7 @@ describe 'models connection' do
                              id: '4dc6adb4-ed7c-46cb-8573-8e585f70f4de')
     inventory_pool = FactoryBot.create(:inventory_pool,
                                        id: '232547a5-5f43-450c-896a-b692275a04ea')
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool,
                       user: user)
 

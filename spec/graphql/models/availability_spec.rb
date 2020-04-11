@@ -11,7 +11,7 @@ describe 'models connection' do
       :inventory_pool,
       id: 'ab61cf01-08ce-4d9b-97d3-8dcd8360605a'
     )
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: @inventory_pool,
                       user: @user)
 
@@ -42,7 +42,7 @@ describe 'models connection' do
       :inventory_pool,
       id: '6ce92dd1-cf47-4942-97a1-6bc5b495b425'
     )
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool,
                       user: @user)
 
@@ -280,7 +280,7 @@ describe 'models connection' do
         })
       end
     end
-    
+
     it 'priorities' do
       @model = FactoryBot.create(
         :leihs_model,

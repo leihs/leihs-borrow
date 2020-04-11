@@ -29,16 +29,16 @@ describe 'currentUser' do
       :user,
       id: '0567f6b0-540c-4619-9251-9ea099a5d50d',
       access_rights: [
-        FactoryBot.create(:access_right,
+        FactoryBot.create(:direct_access_right,
                           role: :customer,
                           inventory_pool_id: '07bcbc06-89ae-44c6-bf7a-ceb5cd8a853a'),
-        FactoryBot.create(:access_right,
+        FactoryBot.create(:direct_access_right,
                           role: :customer,
                           inventory_pool_id: 'b94b417c-2b7e-45de-af9e-9ce6718ac84d'),
-        FactoryBot.create(:access_right,
+        FactoryBot.create(:direct_access_right,
                           role: :lending_manager,
                           inventory_pool_id: 'de1ab6c2-5c85-45fb-aebf-527b6096411c'),
-        FactoryBot.create(:access_right,
+        FactoryBot.create(:direct_access_right,
                           role: :customer,
                           inventory_pool_id: 'c52b6ec9-f213-42e6-8273-b2efa71360c0')
       ]

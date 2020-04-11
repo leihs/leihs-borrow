@@ -44,11 +44,11 @@ describe 'orders' do
   end
 
   before(:example) do
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool_1,
                       user: user)
 
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool_2,
                       user: user)
   end
@@ -182,7 +182,7 @@ describe 'orders' do
       sleep(2)
 
       user_2 = FactoryBot.create(:user)
-      FactoryBot.create(:access_right,
+      FactoryBot.create(:direct_access_right,
                         inventory_pool: inventory_pool_1,
                         user: user_2)
 
@@ -235,7 +235,7 @@ describe 'orders' do
     database.transaction do
       order = FactoryBot.create(:order,
                                 id: '84391a0b-2a55-43f9-bf6d-bb144a2aaf96',
-                                user: user, 
+                                user: user,
                                 purpose: purpose)
 
       pool_order_1 = FactoryBot.create(:pool_order,
@@ -345,7 +345,7 @@ describe 'orders' do
     database.transaction do
       order = FactoryBot.create(:order,
                                 id: 'bfc6a513-1e84-48df-b321-fe1b2eec9070',
-                                user: user, 
+                                user: user,
                                 purpose: purpose)
 
       pool_order_1 = FactoryBot.create(:pool_order,
@@ -382,7 +382,7 @@ describe 'orders' do
     database.transaction do
       order = FactoryBot.create(:order,
                                 id: '84391a0b-2a55-43f9-bf6d-bb144a2aaf96',
-                                user: user, 
+                                user: user,
                                 purpose: purpose)
 
       pool_order_1 = FactoryBot.create(:pool_order,

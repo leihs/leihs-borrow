@@ -39,10 +39,10 @@ describe 'reservations' do
   end
 
   before(:example) do
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool_1,
                       user: user)
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool_2,
                       user: user)
   end
@@ -72,7 +72,7 @@ describe 'reservations' do
 
     context 'within one pool' do
       it 'with implicit inventory pool ids' do
-        2.times do 
+        2.times do
           model_1.add_item(
             FactoryBot.create(:item,
                               is_borrowable: true,
@@ -173,7 +173,7 @@ describe 'reservations' do
         end
 
         it 'quantity not available' do
-          2.times do 
+          2.times do
             model_1.add_item(
               FactoryBot.create(:item,
                                 is_borrowable: true,
@@ -198,7 +198,7 @@ describe 'reservations' do
 
     context 'within 2 pools' do
       it 'works' do
-        2.times do 
+        2.times do
           model_2.add_item(
             FactoryBot.create(:item,
                               is_borrowable: true,

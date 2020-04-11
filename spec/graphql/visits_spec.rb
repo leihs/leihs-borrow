@@ -60,11 +60,11 @@ describe 'visits' do
   end
 
   before(:example) do
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool_1,
                       user: user)
 
-    FactoryBot.create(:access_right,
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool_2,
                       user: user)
   end
@@ -74,7 +74,7 @@ describe 'visits' do
 
     database.transaction do
       order = FactoryBot.create(:order,
-                                user: user, 
+                                user: user,
                                 purpose: purpose)
 
       pool_order_1 = FactoryBot.create(:pool_order,
@@ -151,7 +151,7 @@ describe 'visits' do
 
     database.transaction do
       order = FactoryBot.create(:order,
-                                user: user, 
+                                user: user,
                                 purpose: purpose)
 
       pool_order_1 = FactoryBot.create(:pool_order,
