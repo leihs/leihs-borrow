@@ -16,12 +16,12 @@
   "devDependencies": {
     "@eins78/graphql-cli": "4.0.1",
     "@eins78/graphql-schema-diff": "0.7.0",
-    "@prettier/plugin-ruby": "^0.15.1",
-    "prettier": "^1.18.2",
+    "@prettier/plugin-ruby": "^0.18.1",
+    "prettier": "^2.0.4",
     "shadow-cljs": "^2.8.69"
   },
   "prettier": {
-    "printWidth": 80,
+    "printWidth": 120,
     "singleQuote": true,
     "semi": false,
     "trailingComma": "none",
