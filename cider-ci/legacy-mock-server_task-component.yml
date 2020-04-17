@@ -1,5 +1,4 @@
 scripts:
-
   run_legacy-mock-server:
     start_when:
       bundled:
@@ -13,7 +12,7 @@ scripts:
       #!/usr/bin/env bash
       set -eux
       export PATH=~/.rubies/$RUBY/bin:$PATH
-      bundle exec ruby scripts/legacy-mock-server.rb -p ${LEGACY_MOCK_SERVER_PORT}
+      bundle exec ruby bin/legacy-mock-server.rb -p ${LEGACY_MOCK_SERVER_PORT}
 
   legacy-mock-server_is-serving:
     timeout: 30 seconds

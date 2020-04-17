@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# NOTE: we need  legacy webapp to fetch availabilty data from old API!
+
+source ./scripts/_test-env.sh
+bundle exec ruby ./bin/legacy-mock-server.rb -p $LEIHS_LEGACY_PORT

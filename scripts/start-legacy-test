@@ -2,7 +2,7 @@
 
 # NOTE: we need  legacy webapp to fetch availabilty data from old API!
 
-source ./scripts/_dev-env.sh
+source ./scripts/_test-env.sh
 
 cd ../legacy || {
     echo "ERROR: could not find `leihs/legacy`. Run this from inside superproject (`leihs/borrow`)!"

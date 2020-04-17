@@ -1,7 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-. ./scripts/_dev-env.sh
+source ./scripts/_dev-env.sh
 
-git submodule update --init --recursive
 npm i
 npm run -s shadow-cljs -- watch app

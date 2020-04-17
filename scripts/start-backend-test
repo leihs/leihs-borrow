@@ -1,5 +1,5 @@
 #!/bin/bash
 
-source ./scripts/_dev-env.sh
+source ./scripts/_test-env.sh
 
 bin/boot --offline focus

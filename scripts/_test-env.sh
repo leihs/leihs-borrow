@@ -1,3 +1,5 @@
+export LEIHS_BORROW_HTTP_BASE_URL="http://localhost:3250"
+
 export DATABASE_URL="postgresql://localhost:5432/leihs_test?max-pool-size=5" # for rails/DB
 export LEIHS_DATABASE_URL="jdbc:${DATABASE_URL}"                             # for clj/server
 
