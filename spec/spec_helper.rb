@@ -4,6 +4,7 @@ require 'config/database'
 require 'config/factories'
 require 'config/metadata_extractor'
 require 'config/hash'
+require 'config/fake_time'
 require 'base32/crockford'
 require 'uuidtools'
 

@@ -77,7 +77,11 @@ npm run storybook
 
 ### update API data examples
 
-same setup as in [TEST](#test)!
+Same setup as in [TEST](#test), but first do:
+
+```bash
+export LEIHS_SPEC_FAKE_TIME='2021-04-20T10:39:34.539Z'
+```
 
 ```bash
 rm -rf tmp

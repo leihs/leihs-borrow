@@ -2,6 +2,12 @@ require 'active_support/all'
 require 'json'
 require 'pry'
 require 'sinatra'
+require 'timecop'
+
+if fake_time_env = ENV['LEIHS_SPEC_FAKE_TIME']
+  Timecop.freeze(Time.parse(fake_time_env))
+  puts 'FAKE TIME set to: ' + fake_time_env
+end
 
 set :show_exceptions, false
 
