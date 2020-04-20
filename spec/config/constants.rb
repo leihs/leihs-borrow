@@ -7,4 +7,6 @@ module Constants
 
   raise 'LEIHS_DATABASE_URL not set!' unless LEIHS_DATABASE_URL
   raise 'LEIHS_BORROW_HTTP_BASE_URL not set!' unless LEIHS_BORROW_HTTP_BASE_URL
+
+  ARTEFACTS_PATH = File.expand_path(__dir__ + '/../../tmp/spec_artefacts')
 end
