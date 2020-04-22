@@ -127,7 +127,6 @@
            (map :id))))
 
 (defn distribute [pool-avails quantity]
-  ; TODO: `reservation_advance_days` !!!
   (if (> quantity
          (->> pool-avails (map :quantity) (apply +)))
     (throw (ex-info "The desired quantity is not available." {}))
@@ -150,7 +149,10 @@
 
 (defn create
   [{{:keys [tx authenticated-entity]} :request :as context}
-   {:keys [model-id start-date end-date quantity inventory-pool-ids] :as args}
+   {:keys [model-id start-date end-date quantity inventory-pool-ids]
+    exclude-reservation-ids :exclude-reservation-ids 
+    :or {exclude-reservation-ids []}
+    :as args}
    value]
   (if-not (models/reservable? context args {:id model-id})
     (throw
@@ -169,7 +171,8 @@
                              {:inventory-pool-ids (map :id pools)
                               :model-ids [model-id]
                               :start-date start-date
-                              :end-date end-date}
+                              :end-date end-date
+                              :exclude-reservation-ids exclude-reservation-ids}
                              nil)
                            (map (fn [el]
                                   (assoc el
@@ -178,25 +181,25 @@
                                               (filter #(= (:id el) (:id %)))
                                               first
                                               :name)))))]
-      (->> quantity
-           (distribute pool-avails)
-           (map (fn [{:keys [quantity] :as attrs}]
-                  (let [row (-> attrs
-                                (select-keys [:inventory_pool_id :model_id :quantity])
-                                (assoc :start_date (sql/call :cast start-date :date))
-                                (assoc :end_date (sql/call :cast end-date :date))
-                                (assoc :quantity 1
-                                       :user_id (:id authenticated-entity)
-                                       :status (sql/call :cast
-                                                         "unsubmitted"
-                                                         :reservation_status)
-                                       :created_at (time/now tx)
-                                       :updated_at (time/now tx)))]
-                    (-> (sql/insert-into :reservations)
-                        (sql/values (->> row
-                                         repeat
-                                         (take quantity)))
-                        (assoc :returning (columns tx))
-                        sql/format
-                        (query tx)))))
-           flatten)))))
+        (->> quantity
+             (distribute pool-avails)
+             (map (fn [{:keys [quantity] :as attrs}]
+                    (let [row (-> attrs
+                                  (select-keys [:inventory_pool_id :model_id :quantity])
+                                  (assoc :start_date (sql/call :cast start-date :date))
+                                  (assoc :end_date (sql/call :cast end-date :date))
+                                  (assoc :quantity 1
+                                         :user_id (:id authenticated-entity)
+                                         :status (sql/call :cast
+                                                           "unsubmitted"
+                                                           :reservation_status)
+                                         :created_at (time/now tx)
+                                         :updated_at (time/now tx)))]
+                      (-> (sql/insert-into :reservations)
+                          (sql/values (->> row
+                                           repeat
+                                           (take quantity)))
+                          (assoc :returning (columns tx))
+                          sql/format
+                          (query tx)))))
+             flatten)))))

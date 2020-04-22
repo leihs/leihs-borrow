@@ -1,0 +1,33 @@
+mutation updateReservations(
+  $ids: [UUID!]
+  $modelId: UUID!
+  $endDate: Date!
+  $startDate: Date!
+  $quantity: Int!
+) {
+  deleteReservationLines(ids: $ids)
+  createReservation(
+    modelId: $modelId
+    endDate: $endDate
+    startDate: $startDate
+    quantity: $quantity
+    excludeReservationIds: $ids
+  ) {
+    id
+    inventoryPool {
+      id
+      name
+    }
+    model {
+      id
+      name
+      images {
+        id
+        imageUrl
+      }
+    }
+    startDate
+    endDate
+    status
+  }
+}

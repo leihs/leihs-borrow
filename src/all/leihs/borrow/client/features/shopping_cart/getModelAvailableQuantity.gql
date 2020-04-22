@@ -1,0 +1,14 @@
+query getModelAvailableQuantity(
+  $modelId: UUID!,
+  $startDate: Date,
+  $endDate: Date,
+  $excludeReservationIds: [UUID!]
+) {
+  model(id: $modelId) {
+    availableQuantityInDateRange(
+      startDate: $startDate,
+      endDate: $endDate,
+      excludeReservationIds: $excludeReservationIds
+    )
+  }
+}

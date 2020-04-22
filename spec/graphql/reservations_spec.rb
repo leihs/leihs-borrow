@@ -264,7 +264,7 @@ describe 'reservations' do
 
     q = <<-GRAPHQL
       mutation($ids: [UUID!]) {
-        deleteReservations(
+        deleteReservationLines(
           ids: $ids
         )
       }
@@ -273,7 +273,7 @@ describe 'reservations' do
     vars = { ids: [r1.id, r2.id, r3.id] }
 
     result = query(q, user.id, vars).deep_symbolize_keys
-    expect(result[:data][:deleteReservations].to_set).to eq(Set[r1.id, r2.id])
+    expect(result[:data][:deleteReservationLines].to_set).to eq(Set[r1.id, r2.id])
     expect(result[:errors]).to be_nil
   end
 end

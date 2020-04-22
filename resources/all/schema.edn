@@ -75,7 +75,8 @@
                                            :resolve :model-availability}
                             :availableQuantityInDateRange {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
                                                                   :startDate {:type (non-null :Date)}
-                                                                  :endDate {:type (non-null :Date)}}
+                                                                  :endDate {:type (non-null :Date)}
+                                                                  :excludeReservationIds {:type (list (non-null :UUID))}}
                                                            :type (non-null Int)
                                                            :resolve :available-quantity-in-date-range}
                             :images {:type (list :Image)
@@ -257,12 +258,13 @@
                                         :modelId {:type (non-null :UUID)}
                                         :inventoryPoolIds {:type (list (non-null :UUID))
                                                            :description "If it is not used, then the individual reservations are distributed among all inventory pools, where the user has access to and the available quantity within the pool is greater than zero."}
-                                        :quantity {:type (non-null Int)}}
+                                        :quantity {:type (non-null Int)}
+                                        :excludeReservationIds {:type (list (non-null :UUID))}}
                                  :resolve :create-reservation
                                  :type (list :Reservation)}
-             :deleteReservations {:args {:ids {:type (list (non-null :UUID))}}
-                                  :resolve :delete-reservations
-                                  :type (list (non-null :UUID))}
+             :deleteReservationLines {:args {:ids {:type (list (non-null :UUID))}}
+                                      :resolve :delete-reservations
+                                      :type (list (non-null :UUID))}
              :submitOrder {:args {:purpose {:type (non-null String)}}
                            :resolve :submit-order
                            :type (non-null :Order)}

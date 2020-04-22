@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Apr 09 2020 15:51:41 GMT+0200 (Central European Summer Time)
+# timestamp: Thu Apr 16 2020 16:30:48 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -123,7 +123,7 @@ input InventoryPoolsOrderByInput {
 type Model {
   attachments: [Attachment]
   availability(endDate: Date!, inventoryPoolIds: [UUID!], startDate: Date!): [ModelInventoryPoolAvailability]
-  availableQuantityInDateRange(endDate: Date!, inventoryPoolIds: [UUID!], startDate: Date!): Int!
+  availableQuantityInDateRange(endDate: Date!, excludeReservationIds: [UUID!], inventoryPoolIds: [UUID!], startDate: Date!): Int!
   description: String
   id: UUID!
   images: [Image]
@@ -167,6 +167,7 @@ input ModelsOrderByInput {
 type MutationRoot {
   createReservation(
     endDate: Date!
+    excludeReservationIds: [UUID!]
 
     """
     If it is not used, then the individual reservations are distributed among
@@ -178,7 +179,7 @@ type MutationRoot {
     quantity: Int!
     startDate: Date!
   ): [Reservation]
-  deleteReservations(ids: [UUID!]): [UUID!]
+  deleteReservationLines(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
   refreshTimeout: RefreshTimeoutResult
   submitOrder(purpose: String!): Order!

@@ -105,10 +105,10 @@
                                   (let [val (.-value (.-target e))]
                                     (swap! state assoc date-key val)
                                     (when (and (:start-date @state) (:end-date @state))
-                                      (rf/dispatch  [::reset-availability-and-fetch
-                                                     id
-                                                     (:start-date @state)
-                                                     (:end-date @state)])))))]
+                                      (rf/dispatch [::reset-availability-and-fetch
+                                                    id
+                                                    (:start-date @state)
+                                                    (:end-date @state)])))))]
         [:div.border-b-2.border-gray-300.mt-4.pb-4
          [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
          [:div.d-flex.mx-n2

@@ -1,3 +1,0 @@
-mutation deleteReservations($ids: [UUID!]) {
-  deleteReservations(ids: $ids)
-}
