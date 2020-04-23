@@ -16,6 +16,7 @@
             [leihs.borrow.routes :as routes]
             [logbug.catcher :as catcher]
             [signal.handler]
+            [java-time :as time]
             ))
 
 (defn- main-usage
@@ -39,17 +40,19 @@
 (defn- run
   [options]
   (catcher/snatch {:return-fn (fn [e] (System/exit -1))}
-    (log/info "Invoking run with options: " options)
+    (time/with-clock (time/mock-clock 1586774374539)
+     (log/info "Invoking run with options: " options)
+     (log/info "TIME: " (time/instant))
     ; (settings/init options)
-    (shutdown/init options)
-    (legacy/init options)
-    (graphql/init options)
-    (let [status (status/init)]
-      (ds/init (:database-url options)
-               (:health-check-registry status)))
-    (let [app-handler (routes/init)]
-      (http-server/start (:http-base-url options) app-handler))
-    nil))
+     (shutdown/init options)
+     (legacy/init options)
+     (graphql/init options)
+     (let [status (status/init)]
+       (ds/init (:database-url options)
+                (:health-check-registry status)))
+     (let [app-handler (routes/init)]
+       (http-server/start (:http-base-url options) app-handler))
+     nil)))
 
 (defn -main
   [& args]
