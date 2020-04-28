@@ -15,7 +15,7 @@
     [leihs.borrow.client.features.favorite-models.events :as favs]))
 
 ; is kicked off from router when this view is loaded
-(ls/reg-event-fx-ls
+(ls/reg-event-fx
   ::routes/models-show
   (fn [{:keys [db]} [_ args]]
     (let [id (get-in args [:route-params :model-id])
@@ -35,7 +35,7 @@
                  :bothDatesGiven (and (boolean start-date) (boolean end-date))}
                 [::on-fetched-data id]]}))
 
-(ls/reg-event-fx-ls
+(ls/reg-event-fx
   ::reset-availability-and-fetch
   (fn [{:keys [db]} [_ model-id start-date end-date]]
     {:db (update-in db
@@ -44,31 +44,31 @@
                     :availableQuantityInDateRange)
      :dispatch [::fetch model-id start-date end-date]}))
 
-(ls/reg-event-ls
+(ls/reg-event-db
   ::on-fetched-data
-  [(path ::models)]
-  (fn [ls [_ model-id {:keys [data errors]}]]
-    (-> ls
+  [(path :ls ::models)]
+  (fn [ms [_ model-id {:keys [data errors]}]]
+    (-> ms
         (update model-id (fnil identity {}))
         (assoc-in [model-id :errors] errors)
         (assoc-in [model-id :data] data))))
 
-(ls/reg-event-fx-ls
+(ls/reg-event-fx
   ::favorite-model
   (fn [{:keys [db]} [_ model-id]]
     {:db (assoc-in db [:ls ::models model-id :data :model :isFavorited] true)
      :dispatch [::favs/favorite-model model-id]}))
 
-(ls/reg-event-fx-ls
+(ls/reg-event-fx
   ::unfavorite-model
   (fn [{:keys [db]} [_ model-id]]
     {:db (assoc-in db [:ls ::models model-id :data :model :isFavorited] false)
      :dispatch [::favs/unfavorite-model model-id]}))
 
-(ls/reg-sub-ls
+(rf/reg-sub
   ::model-data
-  (fn [ls [_ id]]
-    (get-in ls [::models id])))
+  (fn [db [_ id]]
+    (get-in db [:ls ::models id])))
 
 (rf/reg-event-fx
   ::model-create-reservation

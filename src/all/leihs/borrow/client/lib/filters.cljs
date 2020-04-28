@@ -17,7 +17,7 @@
 (def filters-gql
   (rc/inline "leihs/borrow/client/lib/getFilters.gql"))
 
-(def current-path [::filters ::current])
+(def current-path [:ls ::filters ::current])
 
 (rf/reg-event-fx
   ::init
@@ -27,49 +27,49 @@
                 {}
                 [::on-fetched]]}))
 
-(ls/reg-event-fx-ls
+(ls/reg-event-fx
   ::on-fetched
   (fn [{:keys [db]} [_ {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
       {:db (assoc-in db [:ls ::filters ::available] data)})))
 
-(ls/reg-event-ls
+(ls/reg-event-db
   ::set-all
   [(path current-path)]
   (fn [_ [_ filters]] filters))
 
-(ls/reg-event-ls
+(ls/reg-event-db
   ::set-one
-  (fn [ls [_ key value]]
-    (assoc-in ls (conj current-path key) value)))
+  (fn [db [_ key value]]
+    (assoc-in db (conj current-path key) value)))
 
-(ls/reg-event-ls
+(ls/reg-event-db
   ::clear-current
   [(path current-path)]
   (fn [_ _] nil))
 
-(ls/reg-sub-ls
+(rf/reg-sub
   ::available
-  (fn [ls _] (get-in ls [::filters ::available] nil)))
+  (fn [db _] (get-in db [:ls ::filters ::available] nil)))
 
-(ls/reg-sub-ls
+(rf/reg-sub
   ::current
-  (fn [ls _] (get-in ls current-path nil)))
+  (fn [db _] (get-in db current-path nil)))
 
-(ls/reg-sub-ls
+(rf/reg-sub
   ::term
-  (fn [ls _] (get-in ls (conj current-path :term))))
+  (fn [db _] (get-in db (conj current-path :term))))
 
-(ls/reg-sub-ls
+(rf/reg-sub
   ::start-date
-  (fn [ls _] (get-in ls (conj current-path :start-date))))
+  (fn [db _] (get-in db (conj current-path :start-date))))
 
-(ls/reg-sub-ls
+(rf/reg-sub
   ::end-date
-  (fn [ls _] (get-in ls (conj current-path :end-date))))
+  (fn [db _] (get-in db (conj current-path :end-date))))
 
-(defn current [db] (ls/get-in db current-path nil))
-(defn term [db] (ls/get-in db (conj current-path :term)))
-(defn start-date [db] (ls/get-in db (conj current-path :start-date)))
-(defn end-date [db] (ls/get-in db (conj current-path :end-date)))
+(defn current [db] (get-in db current-path nil))
+(defn term [db] (get-in db (conj current-path :term)))
+(defn start-date [db] (get-in db (conj current-path :start-date)))
+(defn end-date [db] (get-in db (conj current-path :end-date)))

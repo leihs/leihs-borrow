@@ -25,7 +25,7 @@
     {:dispatch-n (list [::filters/set-all query-params]
                        [::get-models])}))
 
-(ls/reg-event-fx-ls
+(ls/reg-event-fx
  ::get-models
  (fn [{:keys [db]} _]
    (let [query-vars {:searchTerm (filters/term db)

@@ -24,14 +24,14 @@
                nil
                [::on-fetched-models-favorites]]}))
 
-(ls/reg-event-fx-ls
+(ls/reg-event-fx
  ::on-fetched-models-favorites
  (fn [{:keys [db]} [_ {:keys [data errors]}]]
    (if errors
      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
      {:db (assoc-in db [:ls ::models] (:models data))})))
 
-(ls/reg-sub-ls ::favorite-models (fn [ls] (::models ls)))
+(rf/reg-sub ::favorite-models (fn [db] (-> db :ls ::models)))
 
 (defn view []
   (let [models @(rf/subscribe [::favorite-models])]

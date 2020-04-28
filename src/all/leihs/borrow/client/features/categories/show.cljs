@@ -31,19 +31,18 @@
                    :parentId parent-id}
                   [::on-fetched-data category-id]]})))
 
-(ls/reg-event-ls
+(ls/reg-event-db
   ::on-fetched-data
-  [(path ::categories :index)]
-  (fn [ls [_ category-id {:keys [data errors]}]]
-    (-> ls
+  [(path :ls ::categories :index)]
+  (fn [cs [_ category-id {:keys [data errors]}]]
+    (-> cs
         (update category-id (fnil identity {}))
         (assoc-in [category-id :errors] errors)
         (assoc-in [category-id :data] data))))
 
-(ls/reg-sub-ls
- ::category-data
- (fn [ls [_ id]] (get-in ls [::categories :index id])))
-
+(rf/reg-sub
+  ::category-data
+  (fn [db [_ id]] (get-in db [:ls ::categories :index id])))
 
 (defn view []
   (let [routing @(rf/subscribe [:routing/routing])

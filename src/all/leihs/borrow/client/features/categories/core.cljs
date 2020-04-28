@@ -23,16 +23,16 @@
 
 (rf/reg-event-fx ::fetch-index dispatch-fetch-index-handler)
 
-(ls/reg-event-fx-ls
+(ls/reg-event-fx
  ::on-fetched-categories-index
  (fn [{:keys [db]} [_ {:keys [data errors]}]]
    (if errors
      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
      {:db (assoc-in db [:ls ::categories :index] (get-in data [:categories]))})))
 
-(ls/reg-sub-ls
- ::categories-index
- (fn [ls] (get-in ls [::categories :index])))
+(rf/reg-sub
+  ::categories-index
+  (fn [db] (get-in db [:ls ::categories :index])))
 
 (defn categories-list [categories]
   (let [list

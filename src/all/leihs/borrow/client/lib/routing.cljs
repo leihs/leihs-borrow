@@ -48,7 +48,7 @@
     :routing/init-routing routes}))
 
 ; adds `:ls` to `app-db` necessary for initial rendering of the view
-(ls/reg-event-fx-ls
+(ls/reg-event-fx
  :routing/change-view
  (fn [{:keys [db]} [_ token]]
    (let [{:keys [routes]} (:routing/routing db)
