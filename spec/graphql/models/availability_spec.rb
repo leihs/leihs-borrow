@@ -79,7 +79,7 @@ describe 'models connection' do
     })
   end
 
-  context 'available quantity of 0' do
+  context 'implicit available quantity of 0' do
     it 'for start date in the past' do
       model = FactoryBot.create(
         :leihs_model,
@@ -188,7 +188,7 @@ describe 'models connection' do
     end
   end
 
-  context 'start/end date restrictions' do
+  context 'NOT for start/end date restrictions' do
     let(:q) do
       @start ||= Date.today
       @end ||= Date.tomorrow
