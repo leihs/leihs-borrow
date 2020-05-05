@@ -79,7 +79,7 @@ describe 'models connection' do
     })
   end
 
-  context 'implicit available quantity of 0' do
+  context 'NO implicit available quantity of 0 [can be removed after fix?]' do
     it 'for start date in the past' do
       model = FactoryBot.create(
         :leihs_model,
@@ -123,11 +123,11 @@ describe 'models connection' do
         models: {
           edges: [
             { node: { id: '948ee4ef-b576-4256-996f-38f25030f151',
-                      availableQuantityInDateRange: 0,
+                      availableQuantityInDateRange: 1,
                       availability: [
                         { dates: [
                           { date: "#{Date.yesterday}",
-                            quantity: 0 },
+                            quantity: 1 },
                           { date: "#{Date.today}",
                             quantity: 1 },
                           { date: "#{Date.tomorrow}",
@@ -179,16 +179,16 @@ describe 'models connection' do
                       availability: [ {
                         dates: [
                           { date: "#{Date.today}",
-                            quantity: 0 },
+                            quantity: 1 },
                           { date: "#{Date.today + 1.day}",
-                            quantity: 0 },
+                            quantity: 1 },
                           { date: "#{Date.today + 2.days}",
                             quantity: 1 } ] } ] } } ] }
       })
     end
   end
 
-  context 'NOT for start/end date restrictions' do
+  context 'for start/end date restrictions' do
     let(:q) do
       @start ||= Date.today
       @end ||= Date.tomorrow
@@ -317,7 +317,7 @@ describe 'models connection' do
                       availability: [ {
                         dates: [
                           { date: "#{Date.today}",
-                            quantity: 0, # because of reservation_advance_days
+                            quantity: 1,
                             startDateRestriction: "CLOSE_TIME",
                             endDateRestriction: "CLOSE_TIME" } ] } ] } } ] }
       })
@@ -333,7 +333,7 @@ describe 'models connection' do
                       availability: [ {
                         dates: [
                           { date: "#{Date.today}",
-                            quantity: 0, # because of reservation_advance_days
+                            quantity: 1,
                             startDateRestriction: "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE",
                             endDateRestriction: "VISITS_CAPACITY_REACHED" } ] } ] } } ] }
       })
@@ -349,7 +349,7 @@ describe 'models connection' do
                       availability: [ {
                         dates: [
                           { date: "#{Date.today}",
-                            quantity: 1, # because of reservation_advance_days
+                            quantity: 1,
                             startDateRestriction: "VISITS_CAPACITY_REACHED",
                             endDateRestriction: "VISITS_CAPACITY_REACHED" } ] } ] } } ] }
       })
