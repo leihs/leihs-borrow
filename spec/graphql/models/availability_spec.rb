@@ -79,115 +79,6 @@ describe 'models connection' do
     })
   end
 
-  context 'available quantity of 0' do
-    it 'for start date in the past' do
-      model = FactoryBot.create(
-        :leihs_model,
-        id: '948ee4ef-b576-4256-996f-38f25030f151'
-      )
-      FactoryBot.create(:item,
-                        leihs_model: model,
-                        responsible: @inventory_pool,
-                        is_borrowable: true)
-
-      q = <<-GRAPHQL
-        {
-          models(
-            ids: ["948ee4ef-b576-4256-996f-38f25030f151"]
-          ) {
-            edges {
-              node {
-                id
-                availableQuantityInDateRange(
-                  startDate: "#{Date.yesterday}",
-                  endDate: "#{Date.tomorrow}"
-                )
-                availability(
-                  startDate: "#{Date.yesterday}",
-                  endDate: "#{Date.tomorrow}",
-                  inventoryPoolIds: ["#{@inventory_pool.id}"]
-                ) {
-                  dates {
-                    date
-                    quantity
-                  }
-                }
-              }
-            }
-          }
-        }
-      GRAPHQL
-
-      result = query(q, @user.id)
-      expect_graphql_result(result, {
-        models: {
-          edges: [
-            { node: { id: '948ee4ef-b576-4256-996f-38f25030f151',
-                      availableQuantityInDateRange: 0,
-                      availability: [
-                        { dates: [
-                          { date: "#{Date.yesterday}",
-                            quantity: 0 },
-                          { date: "#{Date.today}",
-                            quantity: 1 },
-                          { date: "#{Date.tomorrow}",
-                            quantity: 1 } ] } ] } } ] }
-      })
-    end
-
-    it 'for dates before earliest possible pick up date' do
-      model = FactoryBot.create(
-        :leihs_model,
-        id: 'a95259db-b3bc-4324-907f-c4a5811cf049'
-      )
-      FactoryBot.create(:item,
-                        leihs_model: model,
-                        responsible: @inventory_pool,
-                        is_borrowable: true)
-
-      Workday.find(inventory_pool_id: @inventory_pool.id).update(reservation_advance_days: 2)
-
-      q = <<-GRAPHQL
-        {
-          models(
-            ids: ["a95259db-b3bc-4324-907f-c4a5811cf049"]
-          ) {
-            edges {
-              node {
-                id
-                availability(
-                  startDate: "#{Date.today}",
-                  endDate: "#{Date.today + 2.days}",
-                  inventoryPoolIds: ["#{@inventory_pool.id}"]
-                ) {
-                  dates {
-                    date
-                    quantity
-                  }
-                }
-              }
-            }
-          }
-        }
-      GRAPHQL
-
-      result = query(q, @user.id)
-      expect_graphql_result(result, {
-        models: {
-          edges: [
-            { node: { id: 'a95259db-b3bc-4324-907f-c4a5811cf049',
-                      availability: [ {
-                        dates: [
-                          { date: "#{Date.today}",
-                            quantity: 0 },
-                          { date: "#{Date.today + 1.day}",
-                            quantity: 0 },
-                          { date: "#{Date.today + 2.days}",
-                            quantity: 1 } ] } ] } } ] }
-      })
-    end
-  end
-
   context 'start/end date restrictions' do
     let(:q) do
       @start ||= Date.today
@@ -317,7 +208,7 @@ describe 'models connection' do
                       availability: [ {
                         dates: [
                           { date: "#{Date.today}",
-                            quantity: 0, # because of reservation_advance_days
+                            quantity: 1,
                             startDateRestriction: "CLOSE_TIME",
                             endDateRestriction: "CLOSE_TIME" } ] } ] } } ] }
       })
@@ -333,7 +224,7 @@ describe 'models connection' do
                       availability: [ {
                         dates: [
                           { date: "#{Date.today}",
-                            quantity: 0, # because of reservation_advance_days
+                            quantity: 1,
                             startDateRestriction: "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE",
                             endDateRestriction: "VISITS_CAPACITY_REACHED" } ] } ] } } ] }
       })
@@ -349,7 +240,7 @@ describe 'models connection' do
                       availability: [ {
                         dates: [
                           { date: "#{Date.today}",
-                            quantity: 1, # because of reservation_advance_days
+                            quantity: 1,
                             startDateRestriction: "VISITS_CAPACITY_REACHED",
                             endDateRestriction: "VISITS_CAPACITY_REACHED" } ] } ] } } ] }
       })

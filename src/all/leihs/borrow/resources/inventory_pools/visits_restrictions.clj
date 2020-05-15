@@ -66,13 +66,8 @@
 (def past-date? #(before? (local-date %) (local-date)))
 
 (defn validate-date-with-avail [tx date-with-avail pool]
-  (-> date-with-avail
-      (#(assoc % 
-               :start-date-restriction 
-               (start-date-restriction tx % pool)
-               :end-date-restriction 
-               (end-date-restriction tx % pool)))
-      (#(cond-> %
-          (or (past-date? (:date %))
-              (before-earliest-possible-pick-up-date? (:date %) pool))
-          (assoc :quantity 0)))))
+  (assoc date-with-avail 
+         :start-date-restriction 
+         (start-date-restriction tx date-with-avail pool)
+         :end-date-restriction 
+         (end-date-restriction tx date-with-avail pool)))
