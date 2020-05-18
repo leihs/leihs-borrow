@@ -114,7 +114,10 @@ html {
   background: rgba(0, 0, 0, 0.67);
 }
 body {
+  background: transparent;
+}
+#app {
   max-width: 40rem;
-  margin: 0 auto;
   background: white;
+  min-height: 100%;
 }
