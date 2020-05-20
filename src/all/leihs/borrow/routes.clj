@@ -39,13 +39,13 @@
 
 (def handler-resolve-table
   (merge core-routes/resolve-table
-         {:graphql graphql/handler,
-          :home html/html-handler,
-          :image images/handler-one,
-          :attachment attachments/handler-one,
-          :attachment-with-filename attachments/handler-one,
-          :not-found html/not-found-handler,
-          :status (status/routes "/app/borrow/status")}))
+         {:graphql {:handler graphql/handler},
+          :home {:handler html/html-handler},
+          :image {:handler graphql/handler},
+          :attachment {:handler attachments/handler-one},
+          :attachment-with-filename {:handler attachments/handler-one},
+          :not-found {:handler html/not-found-handler},
+          :status {:handler (status/routes "/app/borrow/status")}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -88,7 +88,7 @@
                       presence))
          {route-params :route-params, handler-key :handler}
          (match-pair-with-fallback path)
-         backend-handler-fn (handler-resolver handler-key)]
+         backend-handler-fn (-> handler-key handler-resolver :handler)]
      (let [handler-fn
            (if (= (namespace handler-key) (namespace ::client-routes/routes))
              html/html-handler
@@ -152,4 +152,4 @@
 ; (logging-config/set-logger! :level :debug)
 ; (logging-config/set-logger! :level :info)
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
-; (debug/debug-ns *ns*)
+(debug/debug-ns *ns*)
