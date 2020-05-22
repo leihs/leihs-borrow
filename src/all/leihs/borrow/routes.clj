@@ -34,13 +34,15 @@
     [ring.middleware.reload :refer [wrap-reload]]
     [ring.util.response :refer [redirect status]]
     [clojure.tools.logging :as logging]
+    [clj-logging-config.log4j :as logging-config]
     [logbug.debug :as debug :refer [I>]]
     [logbug.ring :refer [wrap-handler-with-logging]]))
 
-(def handler-resolve-table
+(def resolve-table
   (merge core-routes/resolve-table
          {:graphql graphql/handler,
           :home html/html-handler,
+          ::client-routes/home html/html-handler,
           :image images/handler-one,
           :attachment attachments/handler-one,
           :attachment-with-filename attachments/handler-one,
@@ -48,14 +50,6 @@
           :status (status/routes "/app/borrow/status")}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn redirect-to-root-handler
-  [request]
-  (redirect (path :root)))
-
-(defn handler-resolver
-  [handler-key]
-  (get handler-resolve-table handler-key nil))
 
 (defn dispatch-to-handler
   [request]
@@ -68,42 +62,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- match-pair-with-fallback
-  [path]
-  (let [matched-pair (bidi/match-pair paths {:remainder path, :route paths})]
-    (if (-> matched-pair
-            :handler
-            (= :not-found))
-      (bidi/match-pair paths {:remainder path, :route paths})
-      matched-pair)))
-
-(defn wrap-resolve-handler
-  ([handler] (fn [request] (wrap-resolve-handler handler request)))
-  ([handler request]
-   (let [path (or (-> request
-                      :path-info
-                      presence)
-                  (-> request
-                      :uri
-                      presence))
-         {route-params :route-params, handler-key :handler}
-         (match-pair-with-fallback path)
-         backend-handler-fn (handler-resolver handler-key)]
-     (let [handler-fn
-           (if (= (namespace handler-key) (namespace ::client-routes/routes))
-             html/html-handler
-             backend-handler-fn)]
-       (handler (assoc request
-                       :route-params route-params
-                       :handler-key handler-key
-                       :handler handler-fn))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn wrap-empty
-  [handler]
-  (fn [request] (or (handler request) {:status 404})))
-
 (defn wrap-accept
   [handler]
   (ring.middleware.accept/wrap-accept
@@ -115,8 +73,13 @@
             "text/css" :qs 1 :as :css
             "text/html" :qs 1 :as :html]}))
 
-(defn init
-  []
+(defn wrap-empty [handler]
+  (fn [request]
+    (or (handler request)
+        {:status 404})))
+
+(defn init []
+  (core-routing/init paths resolve-table)
   (-> ;wrap-handler-with-logging
       dispatch-to-handler
       ; anti-csrf/wrap
@@ -144,7 +107,7 @@
                       :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
                                            #".+_[0-9a-f]{40}\..+"]
                       :enabled? true})
-      wrap-resolve-handler
+      core-routing/wrap-resolve-handler
       wrap-accept
       ring-exception/wrap))
 
