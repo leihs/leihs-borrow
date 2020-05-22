@@ -1,4 +1,4 @@
-{:source-paths ["src/all" "src/dev" "leihs-ui/dist"]
+{:source-paths ["src/all" "src/dev" "leihs-ui/dist" "leihs-ui/src"]
  :dependencies [[binaryage/devtools "0.9.10"]
                 [camel-snake-kebab "0.4.1"]
                 [cider/cider-nrepl "0.22.4"]

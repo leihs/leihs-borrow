@@ -8,8 +8,8 @@
    #_[leihs.borrow.client.features.search-models.core :as search-models]
    [leihs.borrow.client.lib.localstorage :as ls]
    [leihs.borrow.client.lib.routing :as routing]
-   [leihs.borrow.client.lib.pagination :as pagination]
-   [leihs.borrow.client.components :as ui]
+   #_[leihs.borrow.client.lib.pagination :as pagination]
+   #_[leihs.borrow.client.components :as ui]
    [leihs.borrow.client.routes :as routes]
    ["/leihs-ui-client-side" :as UI]
    #_[leihs.borrow.client.components :as ui]))

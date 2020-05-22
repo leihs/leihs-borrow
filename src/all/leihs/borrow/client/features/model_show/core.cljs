@@ -1,93 +1,98 @@
 (ns leihs.borrow.client.features.model-show.core
-  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
+  #_(:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:refer-clojure :exclude [val])
   (:require
-    [reagent.core :as reagent]
-    [re-frame.core :as rf]
-    [re-frame.std-interceptors :refer [path]]
-    [re-graph.core :as re-graph]
-    [shadow.resource :as rc]
-    [leihs.borrow.client.lib.localstorage :as ls]
-    [leihs.borrow.client.components :as ui]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.client.ui.icons :as icons]
-    [leihs.borrow.client.lib.filters :as filters]
-    [leihs.borrow.client.features.favorite-models.events :as favs]))
+   [reagent.core :as reagent]
+   [re-frame.core :as rf]
+   [re-frame.std-interceptors :refer [path]]
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]
+   [leihs.borrow.client.lib.localstorage :as ls]
+   [leihs.borrow.client.components :as ui]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.client.ui.icons :as icons]
+   [leihs.borrow.client.lib.filters :as filters]
+   ["/leihs-ui-client-side" :as UI]
+   #_["/client-side" :as UI]
+   ["date-fns" :as df]
+   [leihs.borrow.client.features.favorite-models.events :as favs]))
 
 ; is kicked off from router when this view is loaded
 (ls/reg-event-fx
-  ::routes/models-show
-  (fn [{:keys [db]} [_ args]]
-    (let [id (get-in args [:route-params :model-id])
-          filters (filters/current db)
-          start-date (:start-date filters)
-          end-date (:end-date filters)]
-      {:dispatch [::fetch id start-date end-date]})))
+ ::routes/models-show
+ (fn [{:keys [db]} [_ args]]
+   (let [id (get-in args [:route-params :model-id])
+         filters (filters/current db)
+         date-now (df/format (js/Date.) "yyyy-MM-dd")
+         date-in-3-months (df/format (df/addMonths (df/endOfMonth (js/Date.)) 3) "yyyy-MM-dd")
+         start-date (or (:start-date filters) date-now)
+         end-date (or (:end-date filters) date-in-3-months)]
+     {:dispatch [::fetch id start-date end-date]})))
 
 (rf/reg-event-fx
-  ::fetch
-  (fn [_ [_ id start-date end-date]]
-    {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/client/features/model_show/getModelShow.gql")
-                {:modelId id
-                 :startDate start-date
-                 :endDate end-date
-                 :bothDatesGiven (and (boolean start-date) (boolean end-date))}
-                [::on-fetched-data id]]}))
+ ::fetch
+ (fn [_ [_ id start-date end-date]]
+   {:dispatch [::re-graph/query
+               (rc/inline "leihs/borrow/client/features/model_show/getModelShow.gql")
+               {:modelId id
+                :startDate start-date
+                :endDate end-date
+                :bothDatesGiven (and (boolean start-date) (boolean end-date))}
+               [::on-fetched-data id]]}))
 
 (ls/reg-event-fx
-  ::reset-availability-and-fetch
-  (fn [{:keys [db]} [_ model-id start-date end-date]]
-    {:db (update-in db
-                    [:ls ::models model-id :data :model] 
-                    dissoc 
-                    :availableQuantityInDateRange)
-     :dispatch [::fetch model-id start-date end-date]}))
+ ::reset-availability-and-fetch
+ (fn [{:keys [db]} [_ model-id start-date end-date]]
+   {:db (update-in db
+                   [:ls ::models model-id :data :model]
+                   dissoc
+                   :availableQuantityInDateRange)
+    :dispatch [::fetch model-id start-date end-date]}))
 
 (ls/reg-event-db
-  ::on-fetched-data
-  [(path :ls ::models)]
-  (fn [ms [_ model-id {:keys [data errors]}]]
-    (-> ms
-        (update model-id (fnil identity {}))
-        (assoc-in [model-id :errors] errors)
-        (assoc-in [model-id :data] data))))
+ ::on-fetched-data
+ [(path :ls ::models)]
+ (fn [ms [_ model-id {:keys [data errors]}]]
+   (-> ms
+       (update model-id (fnil identity {}))
+       (assoc-in [model-id :errors] errors)
+       (assoc-in [model-id :data] data))))
 
 (ls/reg-event-fx
-  ::favorite-model
-  (fn [{:keys [db]} [_ model-id]]
-    {:db (assoc-in db [:ls ::models model-id :data :model :isFavorited] true)
-     :dispatch [::favs/favorite-model model-id]}))
+ ::favorite-model
+ (fn [{:keys [db]} [_ model-id]]
+   {:db (assoc-in db [:ls ::models model-id :data :model :isFavorited] true)
+    :dispatch [::favs/favorite-model model-id]}))
 
 (ls/reg-event-fx
-  ::unfavorite-model
-  (fn [{:keys [db]} [_ model-id]]
-    {:db (assoc-in db [:ls ::models model-id :data :model :isFavorited] false)
-     :dispatch [::favs/unfavorite-model model-id]}))
+ ::unfavorite-model
+ (fn [{:keys [db]} [_ model-id]]
+   {:db (assoc-in db [:ls ::models model-id :data :model :isFavorited] false)
+    :dispatch [::favs/unfavorite-model model-id]}))
 
 (rf/reg-sub
-  ::model-data
-  (fn [db [_ id]]
-    (get-in db [:ls ::models id])))
+ ::model-data
+ (fn [db [_ id]]
+   (get-in db [:ls ::models id])))
 
 (rf/reg-event-fx
-  ::model-create-reservation
-  (fn [_ [_ args]]
-    {:dispatch [::re-graph/mutate
-                (rc/inline "leihs/borrow/client/features/model_show/createReservationMutation.gql")
-                args
-                [::on-mutation-result args]]}))
+ ::model-create-reservation
+ (fn [_ [_ args]]
+   {:dispatch [::re-graph/mutate
+               (rc/inline "leihs/borrow/client/features/model_show/createReservationMutation.gql")
+               args
+               [::on-mutation-result args]]}))
 
 (rf/reg-event-fx
-  ::on-mutation-result
-  (fn [{:keys [_db]} [_ args {:keys [data errors]}]]
-    (if errors
-      {:alert (str "FAIL! " (pr-str errors))}
-      {:alert (str "OK! " (pr-str data))
-       :dispatch [::reset-availability-and-fetch
-                  (:modelId args)
-                  (:startDate args)
-                  (:endDate args)]})))
+ ::on-mutation-result
+ (fn [{:keys [_db]} [_ args {:keys [data errors]}]]
+   (if errors
+     {:alert (str "FAIL! " (pr-str errors))}
+     {:alert (str "OK! " (pr-str data))
+      :dispatch [::reset-availability-and-fetch
+                 (:modelId args)
+                 (:startDate args)
+                 (:endDate args)]})))
 
 (defn order-panel [model filters]
   (let [state (reagent/atom {:quantity 1
@@ -111,6 +116,7 @@
                                                     (:end-date @state)])))))]
         [:div.border-b-2.border-gray-300.mt-4.pb-4
          [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
+
          [:div.d-flex.mx-n2
           [:label.px-2.w-1_2
            [:span.text-color-muted "from "]
@@ -124,26 +130,44 @@
                     :name :end-date
                     :value (:end-date @state)
                     :on-change (on-change-date-fn :end-date)}]]]
+
+         (let [now (js/Date.) fakeEndDate (df/addMonths (df/endOfMonth (js/Date.)) 3)]
+           [:hr]
+           (if-not (:availability model)
+             [:span "Loading…"]
+                ;else
+             (let [calendar-props {:modelData model
+                                   :minDateTotal now
+                                   :minDateLoaded now
+                                   :maxDateLoaded fakeEndDate
+                                   :isLoadingFuture false}]
+               [:> UI/Components.DebugProps calendar-props]
+               [:> UI/Components.BookingCalendar calendar-props])))
+
+
          (when (and (:start-date @state) (:end-date @state))
            [:div.d-flex.items-end.mt-2
-            [:div.w-1_2
-             [:div.d-flex.flex-wrap.align-items-end
-              [:div.w-1_2
-               [:label.d-block.mb-0
-                [:span.d-block.text-color-muted "quantity "]
-                [:input.w-full
-                 {:type :number
-                  :name :quantity
-                  :max (:max-quantity @state)
-                  :value (:quantity @state)
-                  :disabled (or (nil? (:max-quantity @state))
-                                (> (:quantity @state) (:max-quantity @state)))
-                  :on-change (fn [e]
-                               (let [val (.-value (.-target e))]
-                                 (swap! state assoc :quantity (int val))))}]]]
-              [:div.flex-1.w-1_2 [:span.no-underline.text-color-muted 
-                                  {:aria-label (str "maximum available quantity is " (:max-quantity @state))} 
-                                  "/" ui/thin-space (or (:max-quantity @state) [ui/spinner-clock]) ui/thin-space "max."]]]]
+            #_[:div.w-1_2
+               [:div.d-flex.flex-wrap.align-items-end
+                [:div.w-1_2
+                 [:label.d-block.mb-0
+                  [:span.d-block.text-color-muted "quantity "]
+                  [:input.w-full
+                   {:type :number
+                    :name :quantity
+                    :max (:max-quantity @state)
+                    :value (:quantity @state)
+                    :disabled (or (nil? (:max-quantity @state))
+                                  (> (:quantity @state) (:max-quantity @state)))
+                    :on-change (fn [e]
+                                 (let [val (.-value (.-target e))]
+                                   (swap! state assoc :quantity (int val))))}]]]
+                [:div.flex-1.w-1_2 [:span.no-underline.text-color-muted
+                                    {:aria-label (str "maximum available quantity is " (:max-quantity @state))}
+                                    "/" ui/thin-space (or (:max-quantity @state) [ui/spinner-clock]) ui/thin-space "max."]]]]
+
+
+
 
             [:div.flex-auto.w-1_2
              [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg
@@ -172,7 +196,7 @@
           (:name model)
           " "
           [:small.font-normal.text-gray-600.leading-none (:manufacturer model)]]
-         [:span.text-4xl.ml-2.pr-2 
+         [:span.text-4xl.ml-2.pr-2
           [:button {:on-click #(rf/dispatch [(if (:isFavorited model)
                                                ::unfavorite-model
                                                ::favorite-model)
@@ -193,39 +217,39 @@
           [:<>
            [:ul.list-inside.list-disc.text-blue-600
             (doall
-              (for [a attachments]
-                [:<> {:key (:id a)}
-                 [:li.border-b-2.border-gray-300.py-2
-                  [:a.text-blue-500 {:href (:url a)} (:filename a)]
-                  [:small.text-gray-600 (str " (" (ui/decorate-file-size (:size a)) ")")]]]))]])
+             (for [a attachments]
+               [:<> {:key (:id a)}
+                [:li.border-b-2.border-gray-300.py-2
+                 [:a.text-blue-500 {:href (:url a)} (:filename a)]
+                 [:small.text-gray-600 (str " (" (ui/decorate-file-size (:size a)) ")")]]]))]])
 
         (if-let [fields (not-empty (map vector (:properties model)))]
           [:dl.pb-4.mb-4.mt-4.border-b-2.border-gray-300
            (doall
-             (for [[field] fields]
-               [:<> {:key (:id field)}
-                [:dt.font-bold (:key field)]
-                [:dd.pl-6 (:value field)]]))])
+            (for [[field] fields]
+              [:<> {:key (:id field)}
+               [:dt.font-bold (:key field)]
+               [:dd.pl-6 (:value field)]]))])
 
         (if-let [recommends (-> model :recommends :edges not-empty)]
           [:div.mt-4
            [:h2.text-xl.font-bold "Ergänzende Modelle"]
            [:div.d-flex.flex-wrap.-mx-2
             (doall
-              (for [edge recommends]
-                (let
-                  [rec (:node edge)
-                   href (str "/app/borrow/models/" (:id rec))]
-                  [:div {:key (:id rec) :class "w-1/2"}
-                   [:div.p-2
+             (for [edge recommends]
+               (let
+                [rec (:node edge)
+                 href (str "/app/borrow/models/" (:id rec))]
+                 [:div {:key (:id rec) :class "w-1/2"}
+                  [:div.p-2
                     ; FIXME: use path helper!
-                    [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
-                     [:a {:href href}
-                      (if-let [img (get-in rec [:images 0 :imageUrl])]
-                        [:img.absolute.object-contain.object-center.h-full.w-full.p-1 {:src img}]
-                        [:div.absolute.h-full.w-full.bg-gray-400 " "])]]
+                   [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
+                    [:a {:href href}
+                     (if-let [img (get-in rec [:images 0 :imageUrl])]
+                       [:img.absolute.object-contain.object-center.h-full.w-full.p-1 {:src img}]
+                       [:div.absolute.h-full.w-full.bg-gray-400 " "])]]
 
-                    [:a.text-gray-700.font-semibold {:href href}
-                     (:name rec)]]])))]])
+                   [:a.text-gray-700.font-semibold {:href href}
+                    (:name rec)]]])))]])
 
         #_[:p.debug (pr-str model)]])]))

@@ -121,3 +121,8 @@ body {
   background: white;
   min-height: 100%;
 }
+
+/* tmp calendar */
+.rdrDayDisabled:not(.rdrDayDisabledStart):not(.rdrDayDisabledEnd) .rdrDayNumber span {
+  color: #b24040;
+}
