@@ -107,7 +107,7 @@
                       :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
                                            #".+_[0-9a-f]{40}\..+"]
                       :enabled? true})
-      core-routing/wrap-resolve-handler
+      (core-routing/wrap-resolve-handler html/html-handler)
       wrap-accept
       ring-exception/wrap))
 
