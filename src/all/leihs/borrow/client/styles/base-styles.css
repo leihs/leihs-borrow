@@ -1,7 +1,6 @@
 body {
   margin: 0;
   padding: 0;
-  height: initial; /* bootstrap override */
   min-height: 100vh;
 }
 
