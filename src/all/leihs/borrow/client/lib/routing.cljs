@@ -9,6 +9,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (ns leihs.borrow.client.lib.routing
+  (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require [bidi.bidi :as bidi]
             [pushy.core :as pushy]
             [cemerick.url]
@@ -58,18 +59,6 @@
                         [::scroll-to-top true]
                         [(:handler bidi-match) bidi-match])})))
 
-(rf/reg-fx
- :routing/navigate
- (fn [[route-key bidi-args query-params]]
-   (let [{:keys [pushy-instance routes]} (:routing/routing @db/app-db)
-         bidi-path (bidi/path-for routes route-key bidi-args)
-         query-string (when-not (empty? query-params) 
-                        (str "?" (cemerick.url/map->query query-params)))
-         path (str bidi-path query-string)]
-     (if path
-       (pushy/set-token! pushy-instance path)
-       (js/console.error "No matching route for" bidi-args)))))
-
 (rf/reg-event-fx
  :routing/navigate
  (fn [_ [_ [route-key route-args]]]
@@ -77,6 +66,21 @@
     [bidi-args (dissoc route-args :query-params)
      query-params (get route-args :query-params)]
      {:routing/navigate [route-key bidi-args query-params]})))
+
+(rf/reg-fx
+  :routing/navigate
+  (fn [[route-key bidi-args query-params]]
+    (let [{:keys [pushy-instance routes]} (:routing/routing @db/app-db)
+          bidi-path (->> bidi-args
+                         seq
+                         flatten
+                         (apply bidi/path-for routes route-key))
+          query-string (when-not (empty? query-params) 
+                         (str "?" (cemerick.url/map->query query-params)))
+          path (str bidi-path query-string)]
+      (if path
+        (pushy/set-token! pushy-instance path)
+        (js/console.error "No matching route for" bidi-args)))))
 
 (rf/reg-fx
  :routing/navigate-raw

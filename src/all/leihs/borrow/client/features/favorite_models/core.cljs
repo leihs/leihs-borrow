@@ -6,52 +6,36 @@
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
    #_[leihs.borrow.client.lib.routing :as routing]
+   [leihs.borrow.client.lib.filters :as filters]
    [leihs.borrow.client.lib.localstorage :as ls]
    [leihs.borrow.client.lib.pagination :as pagination]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.components :as ui] 
-   [leihs.borrow.client.features.search-models.core :as search-models]))
+   [leihs.borrow.client.features.models.core :as models]))
 
-(def query
-  (rc/inline "leihs/borrow/client/features/favorite_models/getFavoriteModels.gql"))
+(def EXTRA-PARAMS {:isFavorited true})
 
 ;-; EVENTS 
 (rf/reg-event-fx
- ::routes/models-favorites
- (fn [_ _]
-   {:dispatch [::re-graph/query
-               query
-               nil
-               [::on-fetched-models-favorites]]}))
+  ::routes/models-favorites
+  (fn [_ _]
+    {:dispatch [::models/get-models EXTRA-PARAMS]}))
 
-(ls/reg-event-fx
- ::on-fetched-models-favorites
- (fn [{:keys [db]} [_ {:keys [data errors]}]]
-   (if errors
-     {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-     {:db (assoc-in db [:ls ::models] (:models data))})))
-
-(rf/reg-sub ::favorite-models (fn [db] (-> db :ls ::models)))
+(rf/reg-event-fx
+  ::clear
+  (fn [_ _]
+    {:dispatch-n (list [::filters/clear-current]
+                       [::clear-results]
+                       [:routing/navigate [::routes/models-favorites]])}))
 
 (defn view []
-  (let [models @(rf/subscribe [::favorite-models])]
+  (let [models @(rf/subscribe [::models/results])]
     [:<>
      [:header.mx-3.my-4
       [:h1.text-3xl.font-extrabold.leading-none
        "Favorites"]]
-     #_[:p (pr-str models)]
-     (cond
-       (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
-       (empty? models) [:p.p-6.w-full.text-center "nothing found!"]
-       :else
-       [:<>
-        (search-models/models-list (:edges models))
-        [:hr]
-        [:div.p-3.text-center
-         [:button.border.border-black.p-2.rounded
-          {:on-click #(rf/dispatch [::pagination/get-more
-                                    query
-                                    {}
-                                    [::models]
-                                    [:models]])}
-          "LOAD MORE"]]])]))
+     [models/search-and-list
+      #(rf/dispatch [:routing/navigate
+                     [::routes/models-favorites {:query-params %}]])
+      #(rf/dispatch [::clear])
+      EXTRA-PARAMS]]))

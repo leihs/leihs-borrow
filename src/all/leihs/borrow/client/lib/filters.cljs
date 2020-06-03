@@ -14,6 +14,14 @@
     [leihs.borrow.client.components :as ui]
     [leihs.borrow.client.features.favorite-models.events :as favs]))
 
+(def BOOLEANS #{:available-between?})
+
+(defn massage-values [fs]
+  (->> fs
+       (map (fn [[k v]]
+              [k (cond-> v (BOOLEANS k) js/JSON.parse)]))
+       (into {})))
+
 (def filters-gql
   (rc/inline "leihs/borrow/client/lib/getFilters.gql"))
 
@@ -32,12 +40,13 @@
   (fn [{:keys [db]} [_ {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-      {:db (assoc-in db [:ls ::filters ::available] data)})))
+      {:db (assoc-in db [:ls ::filters] {::available data
+                                         ::current {:quantity 1}})})))
 
 (ls/reg-event-db
-  ::set-all
+  ::set-multiple
   [(path current-path)]
-  (fn [_ [_ filters]] filters))
+  (fn [old [_ filters]] (merge old (massage-values filters))))
 
 (ls/reg-event-db
   ::set-one
@@ -49,25 +58,36 @@
   [(path current-path)]
   (fn [_ _] nil))
 
+(defn get-from-current [db k]
+  (get-in db (conj current-path k)))
+
 (rf/reg-sub
   ::available
-  (fn [db _] (get-in db [:ls ::filters ::available] nil)))
+  (fn [db _] (get-in db [:ls ::filters ::available])))
 
 (rf/reg-sub
   ::current
-  (fn [db _] (get-in db current-path nil)))
+  (fn [db _] (get-in db current-path)))
 
 (rf/reg-sub
   ::term
-  (fn [db _] (get-in db (conj current-path :term))))
+  (fn [db _] (get-from-current db :term)))
 
 (rf/reg-sub
   ::start-date
-  (fn [db _] (get-in db (conj current-path :start-date))))
+  (fn [db _] (get-from-current db :start-date)))
 
 (rf/reg-sub
   ::end-date
-  (fn [db _] (get-in db (conj current-path :end-date))))
+  (fn [db _] (get-from-current db :end-date)))
+
+(rf/reg-sub
+  ::available-between?
+  (fn [db _] (boolean (get-from-current db :available-between?))))
+
+(rf/reg-sub
+  ::quantity
+  (fn [db _] (get-from-current db :quantity)))
 
 (defn current [db] (get-in db current-path nil))
 (defn term [db] (get-in db (conj current-path :term)))

@@ -13,7 +13,8 @@
   {:LEIHS_BORROW_HTTP_BASE_URL "http://localhost:3250"
    :LEIHS_DATABASE_URL "jdbc:postgresql://leihs:leihs@localhost:5432/leihs?min-pool-size=1&max-pool-size=5"
    :LEIHS_LEGACY_HTTP_BASE_URL "http://localhost:3210"
-   :LEIHS_BORROW_LACINIA_ENABLE_TIMING false}) 
+   :LEIHS_BORROW_LACINIA_ENABLE_TIMING false
+   :LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT 50}) 
 
 (defn- get-from-env
   [kw]
@@ -68,7 +69,14 @@
     (->> :LEIHS_BORROW_LACINIA_ENABLE_TIMING
          env-or-default
          boolean)
-    :parse-fn boolean]])
+    :parse-fn boolean]
+   ["-p" "--special-per-page-default LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT"
+    (str "default: " (:LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT defaults))
+    :default
+    (->> :LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT
+         env-or-default
+         Integer.)
+    :parse-fn #(Integer. %)]])
 
 (defn parse
   [args]

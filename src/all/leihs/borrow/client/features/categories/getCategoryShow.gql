@@ -6,33 +6,9 @@ query getCategoryShow(
   category(id: $categoryId, parentId: $parentId) {
     id
     name
-    models(first: 20, after: $afterCursor) {
-      edges {
-        node {
-          ...modelListProps
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
     children {
       id
       name
     }
   }
-}
-
-fragment modelListProps on Model {
-  id
-  name
-  description
-  manufacturer
-  images {
-    id
-    imageUrl
-    # thumbnails { id size imageUrl }
-  }
-  # availableQuantityInDateRange(startDate: $startDate, endDate: $endDate)
 }

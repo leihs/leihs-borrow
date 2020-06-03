@@ -8,11 +8,12 @@
    [re-frame.std-interceptors :refer [path]]
    [clojure.string :refer [join split #_replace-first]]
    [leihs.borrow.client.lib.localstorage :as ls]
+   [leihs.borrow.client.lib.filters :as filters]
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.lib.pagination :as pagination]
    [leihs.borrow.client.components :as ui]
    [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.client.features.search-models.core :as search-models]))
+   [leihs.borrow.client.features.models.core :as models]))
 
 (def query
   (rc/inline "leihs/borrow/client/features/categories/getCategoryShow.gql"))
@@ -25,14 +26,15 @@
           categories (split categories-path #"/")
           category-id (last categories)
           parent-id (last (butlast categories))]
-      {:dispatch [::re-graph/query
-                  query
-                  {:categoryId category-id
-                   :parentId parent-id}
-                  [::on-fetched-data category-id]]})))
+      {:dispatch-n (list [::re-graph/query
+                          query
+                          {:categoryId category-id
+                           :parentId parent-id}
+                          [::on-fetched-category-data category-id]]
+                         [::models/get-models {:categoryId category-id}])})))
 
 (ls/reg-event-db
-  ::on-fetched-data
+  ::on-fetched-category-data
   [(path :ls ::categories :index)]
   (fn [cs [_ category-id {:keys [data errors]}]]
     (-> cs
@@ -40,22 +42,30 @@
         (assoc-in [category-id :errors] errors)
         (assoc-in [category-id :data] data))))
 
+(rf/reg-event-fx
+  ::clear
+  (fn [_ [_ nav-args]]
+    {:dispatch-n (list [::filters/clear-current]
+                       [::models/clear-results]
+                       [:routing/navigate [::routes/categories-show nav-args]])}))
+
 (rf/reg-sub
   ::category-data
   (fn [db [_ id]] (get-in db [:ls ::categories :index id])))
 
 (defn view []
   (let [routing @(rf/subscribe [:routing/routing])
-        cat-ids (-> routing
-                    (get-in [:bidi-match :route-params :categories-path])
-                    (split #"/"))
+        categories-path (get-in routing [:bidi-match :route-params :categories-path])
+        cat-ids (split categories-path #"/")
         category-id (last cat-ids)
         prev-ids (butlast cat-ids)
         parent-id (first prev-ids)
         fetched @(rf/subscribe [::category-data category-id])
-        {:keys [children] {models :edges} :models :as category} (get-in fetched [:data :category])
+        {:keys [children] :as category} (get-in fetched [:data :category])
+        models @(rf/subscribe [::models/results])
         errors (:errors fetched)
-        is-loading? (not category)]
+        is-loading? (not category)
+        extra-args {:categoryId category-id}]
 
     [:<>
      (cond
@@ -70,25 +80,21 @@
          (when parent-id
            [:span.mt-2.text-color-muted.text-sm
             [:a.text-color-content-link {:href (str (routing/path-for ::routes/categories-show
-                                              :categories-path (join "/" prev-ids)))} "← back"]])]
+                                                                      :categories-path (join "/" prev-ids)))} "← back"]])]
 
         [:ul.font-semibold.mx-3.mb-4
          (doall
-          (for [{:keys [id] :as child} children]
-            [:<> {:key id}
+           (for [{:keys [id] :as child} children]
+             [:<> {:key id}
               [:li.d-inline-block.mb-2.mr-1
-              [:a.text-color-content.border.rounded.py-1.px-2.mb-1
+               [:a.text-color-content.border.rounded.py-1.px-2.mb-1
                 {:class "text-gray-800 bg-content border-gray-800 hover:bg-gray-200"
-                :href (-> js/window .-location .-pathname (str "/" id))}
+                 :href (-> js/window .-location .-pathname (str "/" id))}
                 (:name child)]]]))]
 
-        [search-models/models-list models]
-        [:hr]
-        [:div.p-3.text-center.mx-3
-         [:button.border.border-black.p-2.rounded
-          {:on-click #(rf/dispatch [::pagination/get-more
-                                    query
-                                    {:categoryId category-id :parentId parent-id}
-                                    [:categories category-id :data :category :models]
-                                    [:category :models]])}
-          "LOAD MORE"]]])]))
+        [models/search-and-list
+         #(rf/dispatch [:routing/navigate
+                        [::routes/categories-show 
+                         {:categories-path categories-path :query-params %}]])
+         #(rf/dispatch [::clear {:categories-path categories-path}])
+         extra-args]])]))

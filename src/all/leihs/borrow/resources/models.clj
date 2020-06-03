@@ -9,7 +9,7 @@
             [java-time :refer [interval local-date before?] :as jt]
             [logbug.debug :as debug]
             [leihs.core.sql :as sql]
-            [leihs.borrow.connections :refer [row-cursor cursored-sqlmap] :as connections]
+            [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
@@ -19,11 +19,9 @@
   (:import (java.time.format DateTimeFormatter)))
 
 (def base-sqlmap
-  (-> (sql/select :models.*
-                  [(sql/call :concat_ws
-                             " "
-                             :models.product
-                             :models.version)
+  (-> (sql/select
+        :models.*
+        [(sql/raw "trim(both ' ' from concat_ws(' ', models.product, models.version))")
                    :name])
       (sql/modifiers :distinct)
       (sql/from :models)
@@ -87,13 +85,12 @@
                         :model_links.model_group_id
                         category-ids])))
 
-(defn get-category-ids [tx value direct-only]
-  (if-let [value-id (:id value)]
-    (if direct-only
-      [value-id]
-      (as-> value-id <>
-        (descendents/descendent-ids tx <>)
-        (conj <> value-id)))))
+(defn get-category-ids [tx category-id direct-only]
+  (if direct-only
+    [category-id]
+    (as-> category-id <>
+      (descendents/descendent-ids tx <>)
+      (conj <> category-id))))
 
 (defn available-quantity-in-date-range
   "If the available quantity was already computed through the enclosing
@@ -197,8 +194,8 @@
                         :models_compatibles.model_id
                         (:id value)])))
 
-(defn merge-categories-conditions [sqlmap tx value direct-only]
-  (let [category-ids (get-category-ids tx value direct-only)]
+(defn merge-categories-conditions [sqlmap tx category-id direct-only]
+  (let [category-ids (get-category-ids tx category-id direct-only)]
     (cond-> sqlmap
       (seq category-ids)
       (merge-category-ids-conditions category-ids))))
@@ -206,6 +203,7 @@
 (defn get-multiple-sqlmap
   [{{:keys [tx authenticated-entity]} :request :as context}
    {:keys [ids
+           category-id
            limit
            offset
            direct-only
@@ -217,8 +215,8 @@
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
         (from-compatibles value (:id authenticated-entity) unscope-reservable))
-      (cond-> (= (::lacinia/container-type-name context) :Category)
-        (merge-categories-conditions tx value direct-only))
+      (cond-> (or category-id (= (::lacinia/container-type-name context) :Category))
+        (merge-categories-conditions tx (or category-id (:id value)) direct-only))
       (cond-> (not unscope-reservable)
         (merge-reservable-conditions (:id authenticated-entity)))
       (cond-> (seq ids)
@@ -268,29 +266,40 @@
       :exists))
 
 (defn merge-availability-if-selects-fields
-  [models context args value]
-  (cond-> models
-    (executor/selects-field? context :Model/availableQuantityInDateRange)
-    (merge-available-quantities
-      context
-      (->> context
-           executor/selections-seq2
-           (filter #(= (:name %) :Model/availableQuantityInDateRange))
-           first
-           :args
-           (transform-keys csk/->kebab-case))
-      value)))
-
+  [models context {:keys [only-available] :as args} value]
+  (let [field-args (some->> context
+                            executor/selections-seq2
+                            (filter #(= (:name %) :Model/availableQuantityInDateRange))
+                            first
+                            :args
+                            (transform-keys csk/->kebab-case))]
+    (cond-> models
+      (and (executor/selects-field? context :Model/availableQuantityInDateRange) 
+           (:start-date field-args) ; checking this because `selects-field?` does not respect @include directive
+           (:end-date field-args)) ; checking this because `selects-field?` does not respect @include directive
+      (merge-available-quantities context field-args value))))
 
 (defn post-process [models context args value]
   (merge-availability-if-selects-fields models context args value))
 
-(defn get-connection [context args value]
-  (connections/wrap get-multiple-sqlmap
-                    context
-                    args
-                    value
-                    #(post-process % context args value)))
+(defn get-connection
+  [context {:keys [only-available quantity] limit :first :as args} value]
+  (let [conn-fn (fn [ext-args]
+                  (connections/wrap get-multiple-sqlmap
+                                    context
+                                    (merge args ext-args)
+                                    value
+                                    #(post-process % context args value)))]
+    (if only-available
+      (connections/intervene conn-fn
+                             (fn [edges]
+                               (remove #(-> %
+                                            :node
+                                            :available-quantity-in-date-range
+                                            (<= (or (some-> quantity (- 1)) 0)))
+                                       edges))
+                             limit)
+      (conn-fn {}))))
 
 (defn get-favorites-connection [context args value]
   (connections/wrap get-favorites-sqlmap
@@ -308,7 +317,7 @@
 
 (defn get-one [{{:keys [tx]} :request} {:keys [id]} value]
   (-> base-sqlmap
-    (sql/where [:= :id (or id (:model-id value))])
+      (sql/where [:= :id (or id (:model-id value))])
       sql/format
       (->> (jdbc/query tx))
       first))

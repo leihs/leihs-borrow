@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Apr 16 2020 16:30:48 GMT+0200 (Central European Summer Time)
+# timestamp: Tue May 12 2020 11:43:05 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -150,7 +150,7 @@ type ModelInventoryPoolAvailability {
 type ModelsConnection {
   edges: [ModelEdge]
   pageInfo: PageInfo!
-  totalCount: Int!
+  totalCount: Int
 }
 
 enum ModelsOrderByAttributeEnum {
@@ -225,7 +225,7 @@ input OrdersOrderByInput {
 
 type PageInfo {
   endCursor: String
-  hasNextPage: Boolean!
+  hasNextPage: Boolean
 }
 
 type PoolOrder {
@@ -267,7 +267,7 @@ type QueryRoot {
   currentUser: CurrentUser!
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   model(id: UUID!): Model!
-  models(after: String, categoryIds: [UUID!], first: Int, ids: [UUID!], isFavorited: Boolean, orderBy: [ModelsOrderByInput], searchTerm: String): ModelsConnection
+  models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], quantity: Int, searchTerm: String): ModelsConnection
   order(id: UUID!): Order!
   orders(
     after: String

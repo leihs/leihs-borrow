@@ -1,10 +1,23 @@
-query searchModels(
+query getModels(
   $searchTerm: String
   $startDate: Date!
   $endDate: Date!
   $afterCursor: String
+  $bothDatesGiven: Boolean!
+  $onlyAvailable: Boolean
+  $categoryId: UUID
+  $isFavorited: Boolean
+  $quantity: Int
 ) {
-  models(searchTerm: $searchTerm, first: 20, after: $afterCursor) {
+  models(
+    searchTerm: $searchTerm
+    first: 20
+    after: $afterCursor
+    onlyAvailable: $onlyAvailable
+    quantity: $quantity
+    categoryId: $categoryId
+    isFavorited: $isFavorited
+  ) {
     edges {
       node {
         ...modelListProps
@@ -28,4 +41,5 @@ fragment modelListProps on Model {
     # thumbnails { id size imageUrl }
   }
   availableQuantityInDateRange(startDate: $startDate, endDate: $endDate)
+    @include(if: $bothDatesGiven)
 }

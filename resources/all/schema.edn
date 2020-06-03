@@ -89,7 +89,7 @@
                                          :args {:first {:type Int}} 
                                          :type :ModelsConnection
                                          :resolve :models-connection}}}
-           :ModelsConnection {:fields {:totalCount {:type (non-null Int)}
+           :ModelsConnection {:fields {:totalCount {:type Int}
                                        :edges {:type (list :ModelEdge)}
                                        :pageInfo {:type (non-null :PageInfo)}}}
            :OrdersConnection {:fields {:totalCount {:type (non-null Int)}
@@ -105,7 +105,7 @@
            :OrderEdge {:fields {:node {:type (non-null :Order)}
                                 :cursor {:type (non-null String)}}}
            :PageInfo {:fields {:endCursor {:type String}
-                               :hasNextPage {:type (non-null Boolean)}}}
+                               :hasNextPage {:type Boolean}}}
            :Property {:fields {:id {:type (non-null :UUID)}
                                :key {:type (non-null String)}
                                :value {:type (non-null String)}}}
@@ -233,13 +233,15 @@
            :model {:args {:id {:type (non-null :UUID)}}
                    :resolve :model
                    :type (non-null :Model)}
-           :models {:args {:categoryIds {:type (list (non-null :UUID))}
+           :models {:args {:categoryId {:type :UUID}
                            :ids {:type (list (non-null :UUID))}
                            :orderBy {:type (list :ModelsOrderByInput)}
                            :searchTerm {:type String}
                            :first {:type Int}
                            :after {:type String}
-                           :isFavorited {:type Boolean}}
+                           :isFavorited {:type Boolean}
+                           :onlyAvailable {:type Boolean}
+                           :quantity {:type :Int}}
                     :type :ModelsConnection
                     :resolve :models-connection}
            :inventoryPools {:resolve :inventory-pools

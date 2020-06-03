@@ -8,7 +8,7 @@
             [clojure.tools.logging :as log]
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.resolve :as resolve]
-            [leihs.borrow.connections :refer [row-cursor cursored-sqlmap] :as connections]
+            [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.mails :as mails]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.settings :as settings]

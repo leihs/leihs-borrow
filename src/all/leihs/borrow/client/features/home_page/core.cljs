@@ -8,7 +8,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.client.lib.filters :as filters]
    [leihs.borrow.client.lib.routing :as routing]
-   [leihs.borrow.client.features.search-models.core :as search-models]
+   [leihs.borrow.client.features.models.core :as models]
    [leihs.borrow.client.features.categories.core :as categories]))
 
 ; is kicked off from router when this view is loaded
@@ -17,7 +17,7 @@
  (fn [_ [_ {:keys [query-params]}]] 
    {:dispatch-n (-> (list [::categories/fetch-index 4])
                     (cond-> (seq query-params)
-                      (conj [::filters/set-all query-params]))
+                      (conj [::filters/set-multiple query-params]))
                     (conj [::filters/init]))}))
 
 (defn view []
@@ -25,7 +25,7 @@
     (let [cats @(rf/subscribe [::categories/categories-index])]
       [:<>
        
-       [search-models/search-panel]
+       [models/search-panel #(rf/dispatch [:routing/navigate [::routes/models {:query-params %}]])]
        [:hr]
        
        [:div

@@ -155,6 +155,7 @@ jobs:
           - cider-ci/legacy-mock-server_task-component.yml
         environment_variables:
           LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
+          LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT: '2'
         traits:
           JDK 8: true
           Leiningen 2: true

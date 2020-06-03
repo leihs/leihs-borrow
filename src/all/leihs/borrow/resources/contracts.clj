@@ -4,7 +4,7 @@
             [clojure.string :refer [lower-case]]
             [leihs.core.sql :as sql]
             [leihs.borrow.resources.helpers :as helpers]
-            [leihs.borrow.connections :refer [row-cursor cursored-sqlmap] :as connections]))
+            [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]))
 
 (defn get-connection-sql-map
   [_ {:keys [states order-by]} value]

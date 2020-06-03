@@ -5,7 +5,7 @@
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
-   #_[leihs.borrow.client.features.search-models.core :as search-models]
+   #_[leihs.borrow.client.features.models.core :as models]
    [leihs.borrow.client.lib.localstorage :as ls]
    [leihs.borrow.client.lib.routing :as routing]
    [leihs.borrow.client.lib.pagination :as pagination]

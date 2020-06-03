@@ -1,8 +1,13 @@
-(ns leihs.borrow.connections
+(ns leihs.borrow.graphql.connections
   (:refer-clojure :exclude [first])
   (:require [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]))
+
+(def intervene-per-page-default (atom nil))
+
+(defn init [{pp :special_per_page_default}]
+  (reset! intervene-per-page-default pp))
 
 (defn row-cursor [column]
   (as-> column <>
@@ -102,3 +107,27 @@
                               sqlmap
                               first
                               (-> rows last :row_cursor))))))))
+
+(defn intervene
+  "Offers additional intervene possibilities for edges. It calls (paginates via) 
+  the connection function (`conn-fn`) and adjusts the edges repeatedly (via
+  `intervene-fn`) until the per-page `limit` is reached (or no further page is
+  available). The internal per-page limit is controlled via `batch-size`."
+  ([conn-fn intervene-fn limit]
+   (intervene conn-fn intervene-fn @intervene-per-page-default limit))
+  ([conn-fn intervene-fn batch-size limit]
+   (loop [{:keys [page-info edges] :as conn} (conn-fn {:first batch-size})
+          result-edges []]
+     (let [avail-edges (intervene-fn edges)
+           result-edges* (concat result-edges avail-edges)]
+       (if (or (>= (count result-edges*) limit) (not (:has-next-page page-info)))
+         (-> conn
+             (assoc :edges (take limit result-edges*))
+             (as-> <> (assoc-in <>
+                                [:page-info :end-cursor]
+                                (-> <> :edges last :cursor)))
+             (assoc-in [:page-info :has-next-page]
+                       (> (count result-edges*) limit)) ; FIXME: in negative case there is NO GUARANTEE...?
+             (assoc :total-count nil))
+         (recur (conn-fn {:first batch-size :after (:end-cursor page-info)})
+                result-edges*))))))

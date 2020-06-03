@@ -12,7 +12,7 @@
 
    [leihs.borrow.client.features.home-page.core :as home-page]
    [leihs.borrow.client.features.about-page.core :as about-page]
-   [leihs.borrow.client.features.search-models.core :as search-models]
+   [leihs.borrow.client.features.models.core :as models]
    [leihs.borrow.client.features.shopping-cart.core :as shopping-cart]
    [leihs.borrow.client.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.client.features.categories.show :as category-show]
@@ -71,11 +71,10 @@
 
 ;-; CORE APP
 (def views {::routes/home home-page/view
-            ::routes/search search-models/view
             ::routes/about-page about-page/view
             ::routes/categories-index category-index/view
             ::routes/categories-show category-show/view
-            ::routes/models-index wip-models-index-view
+            ::routes/models models/view
             ::routes/models-show model-show/view
             ::routes/models-favorites favorite-models/view
             ::routes/shopping-cart shopping-cart/view

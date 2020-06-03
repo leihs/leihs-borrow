@@ -3,6 +3,8 @@ require 'json'
 require 'pry'
 require 'sinatra'
 
+require_relative 'spec/models/filter_available.rb'
+
 set :show_exceptions, false
 
 get '/status' do
@@ -90,7 +92,8 @@ get '/borrow/models/availability' do
        inventory_pool_id: '8e484119-76a4-4251-b37b-64847df99e9b',
        quantity: 2 }]
   else
-    raise "Unknown model IDs: #{params[:model_ids]}"
+    Mock::Spec::FilterAvailable.availability(params) or
+      raise("Unknown model IDs: #{params[:model_ids]}")
   end.to_json
 end
 
@@ -160,7 +163,7 @@ get '/borrow/booking_calendar_availability' do
       ]
     }
   else
-    raise "Unknown model ID: #{params[:model_id]}"
+    raise("Unknown model ID: #{params[:model_id]}")
   end.to_json
 end
 

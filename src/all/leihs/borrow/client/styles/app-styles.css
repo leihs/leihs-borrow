@@ -121,3 +121,7 @@ body {
   background: white;
   min-height: 100%;
 }
+
+input[type="date"]:disabled {
+  background: #dddddd;
+}
