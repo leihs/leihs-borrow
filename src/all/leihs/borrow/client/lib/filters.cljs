@@ -40,8 +40,9 @@
   (fn [{:keys [db]} [_ {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-      {:db (assoc-in db [:ls ::filters] {::available data
-                                         ::current {:quantity 1}})})))
+      {:db (-> db
+               (assoc-in , [:ls ::filters ::available] data)
+               (update-in , [:ls ::filters ::current] (fnil merge {}) {:quantity 1}))})))
 
 (ls/reg-event-db
   ::set-multiple
