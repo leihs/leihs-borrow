@@ -45,6 +45,11 @@ get '/borrow/models/availability' do
     [{ model_id: '98d398e7-08b3-49d4-807c-42a3eac07de9',
        inventory_pool_id: '4e2f1362-0891-4df7-b760-16a2a8d3373f',
        quantity: 1 }]
+  elsif params[:model_ids] == ['3c83f2b8-259d-4aa6-99f7-c29c81f31b54'] and
+    params[:inventory_pool_ids] == ['de1ab6c2-5c85-45fb-aebf-527b6096411c']
+    [{ model_id: '3c83f2b8-259d-4aa6-99f7-c29c81f31b54',
+       inventory_pool_id: 'de1ab6c2-5c85-45fb-aebf-527b6096411c',
+       quantity: 1 }]
   elsif params[:model_ids] == ['fd3cef3d-578c-4409-b814-eb20a46da21d'] and
     params[:inventory_pool_ids] == ['8633ce17-37da-4802-a377-66ca78291d0a']
     [{ model_id: 'fd3cef3d-578c-4409-b814-eb20a46da21d',

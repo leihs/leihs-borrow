@@ -5,6 +5,7 @@
             [leihs.borrow.resources.inventory-pools :as pools]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.helpers :as helpers]
+            [leihs.borrow.resources.settings :as settings]
             [leihs.core.database.helpers :as database]
             [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]
@@ -70,7 +71,7 @@
       sql/format
       (->> (jdbc/query tx))))
 
-(defn available-in-respective-pools? [context reservations]
+(defn with-invalid-availability [context reservations]
   (->> reservations
        (map #(spec/assert ::reservation %))
        (group-by #(-> %
@@ -79,7 +80,8 @@
                                     :start_date
                                     :end_date])
                       vals))
-       (every? (fn [[[model-id pool-id start-date end-date] rs]]
+       (reduce (fn [invalid-rs
+                    [[model-id pool-id start-date end-date] rs]]
                  (let [available-quantity
                        (models/available-quantity-in-date-range
                          context
@@ -88,7 +90,41 @@
                           :end-date end-date
                           :exclude-reservation-ids (map :id reservations)}
                          {:id model-id})]
-                   (>= available-quantity (clojure.core/count rs)))))))
+                   (cond-> invalid-rs
+                     (< available-quantity (clojure.core/count rs))
+                     (into rs))))
+               [])))
+
+(defn unsubmitted-with-invalid-availability?
+  [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}]
+  (->> user-id
+       (for-customer-order tx)
+       (with-invalid-availability context)
+       empty?
+       not))
+
+(defn valid-until-sql [tx]
+  [(sql/call :to_char
+             (sql/raw
+               (str "updated_at + interval '"
+                    (:timeout_minutes (settings/get tx))
+                    " minutes'"))
+             helpers/date-time-format)
+   :updated_at])
+
+(defn touch-unsubmitted! [tx user-id]
+  (-> (sql/update :reservations)
+      (sql/set {:updated_at (time/now tx)})
+      (sql/where [:and
+                  [:= :status (sql/call :cast
+                                        "unsubmitted"
+                                        :reservation_status)]
+                  [:= :user_id user-id]])
+      (sql/returning (valid-until-sql tx))
+      sql/format
+      (->> (jdbc/query tx))
+      first
+      :updated_at))
 
 (defn get-multiple
   [{{:keys [tx] user :authenticated-entity} :request :as context}
@@ -154,7 +190,7 @@
     :or {exclude-reservation-ids []}
     :as args}
    value]
-  (if-not (models/reservable? context args {:id model-id})
+  (when-not (models/reservable? context args {:id model-id})
     (throw
       (ex-info
         "Model either does not exist or is not reservable by the user." {})))

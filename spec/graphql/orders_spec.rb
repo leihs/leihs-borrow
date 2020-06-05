@@ -179,20 +179,6 @@ describe 'orders' do
                           user: user)
       end
 
-      sleep(2)
-
-      user_2 = FactoryBot.create(:user)
-      FactoryBot.create(:direct_access_right,
-                        inventory_pool: inventory_pool_1,
-                        user: user_2)
-
-      FactoryBot.create(:reservation,
-                        leihs_model: model_1,
-                        inventory_pool: inventory_pool_1,
-                        start_date: Date.tomorrow + 1.day,
-                        end_date: Date.tomorrow + 2.days,
-                        user: user_2)
-
       q = <<-GRAPHQL
         mutation(
           $purpose: String!

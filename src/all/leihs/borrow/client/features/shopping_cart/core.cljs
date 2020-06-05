@@ -2,6 +2,8 @@
   (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
    [clojure.string :as string]
+   [cljs-time.core :as tc]
+   [cljs-time.format :as tf]
    [reagent.core :as reagent]
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
@@ -207,6 +209,15 @@
                :earliest-start-date (-> (map :startDate rs) sort first)
                :latest-end-date (-> (map :endDate rs) sort last)}))
 
+(rf/reg-sub ::timed-out?
+            :<- [::current-order]
+            (fn [co _]
+              (boolean (some->> co
+                                :data
+                                :valid-until
+                                tf/parse
+                                (tc/after? (tc/now))))))
+
 (defn edit-reservation [res-lines]
   (let [edit-mode-data @(rf/subscribe [::edit-mode-data])
         model (:model edit-mode-data)
@@ -287,7 +298,7 @@
         "Update"]]]]))
 
 ;_; VIEWS
-(defn reservation [res-lines]
+(defn reservation [res-lines invalid-res-ids]
   (let [exemplar (first res-lines)
         model (:model exemplar)
         img (get-in model [:images 0])
@@ -296,19 +307,21 @@
         pool-names (->> res-lines
                         (map (comp :name :inventoryPool))
                         distinct
-                        (clojure.string/join ", "))]
+                        (clojure.string/join ", "))
+        invalid? (every? invalid-res-ids (map :id res-lines))]
+    (js/console.log invalid?)
     [:div.flex.flex-row.border-b.mb-2.pb-2.-mx-1
      [:div.px-1.flex-none {:class "w-1/4"} [ui/image-square-thumb img]]
-     (if #_true edit-mode?
+     (if edit-mode?
        [edit-reservation res-lines]
        [:div
-        [:div.px-1.flex-1
+        [:div.px-1.flex-1 (if invalid? {:style {:color "red"}})
          [:div.font-semibold (:name model)]
          [:div.text-sm
           (ui/format-date :short (get-in exemplar [:startDate]))
           (str ui/thin-space "–" ui/thin-space)
           (ui/format-date :short (get-in exemplar [:endDate]))]
-         [:div.text-sm.text-color-muted
+         [:div.text-sm.text-color-muted (if invalid? {:style {:color "red"}})
           [:span quantity " Items"]
           [:span " • "]
           [:span pool-names]]]
@@ -324,6 +337,7 @@
   (let [state (reagent/atom {:purpose ""})]
     (fn []
       (let [data @(rf/subscribe [::data])
+            invalid-res-ids (set (:invalid-reservation-ids data))
             errors @(rf/subscribe [::errors])
             reservations @(rf/subscribe [::reservations])
             grouped-reservations @(rf/subscribe [::reservations-grouped])
@@ -358,7 +372,7 @@
              (doall
                (for [[grouped-key res-lines] grouped-reservations]
                  [:<> {:key grouped-key}
-                  [reservation res-lines]]))
+                  [reservation res-lines invalid-res-ids]]))
 
              [:div.mt-4.text-sm.text-color-muted
               [:p
@@ -377,7 +391,8 @@
 
              [:div
               [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
-               {:disabled (empty? (:purpose @state))
+               {:disabled (or (empty? (:purpose @state))
+                              (not (empty? invalid-res-ids)))
                 :on-click #(rf/dispatch [::submit-order @state])}
                "Confirm order"]
               [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl

@@ -10,6 +10,7 @@
             [com.walmartlabs.lacinia.resolve :as resolve]
             [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.mails :as mails]
+            [leihs.borrow.time :as time]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.settings :as settings]
             [leihs.borrow.resources.reservations :as reservations]))
@@ -104,18 +105,9 @@
                       <>
                       {:row-fn pool-order-row})))))
 
-(defn valid-until-sql [tx]
-  [(sql/call :to_char
-             (sql/raw
-               (str "updated_at + interval '"
-                    (:timeout_minutes (settings/get tx))
-                    "minutes'"))
-             helpers/date-time-format)
-   :updated_at])
-
 (defn valid-until [tx user-id]
   (-> (reservations/unsubmitted-sqlmap tx user-id)
-      (sql/select (valid-until-sql tx))
+      (sql/select (reservations/valid-until-sql tx))
       (sql/order-by [:updated_at :asc])
       (sql/limit 1)
       sql/format
@@ -124,11 +116,15 @@
       :updated_at))
 
 (defn get-unsubmitted
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request} _ _]
-  {:valid-until (valid-until tx user-id)
-   :reservations (-> (reservations/unsubmitted-sqlmap tx user-id)
-                     sql/format
-                     (reservations/query tx))})
+  [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context} _ _]
+  (let [rs  (-> (reservations/unsubmitted-sqlmap tx user-id)
+                sql/format
+                (reservations/query tx))]
+    {:valid-until (valid-until tx user-id)
+     :reservations rs
+     :invalidReservationIds (->> rs
+                                 (reservations/with-invalid-availability context)
+                                 (map :id))}))
 
 (defn submit
   [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}
@@ -137,7 +133,7 @@
   (let [reservations (reservations/for-customer-order tx user-id)]
     (if (empty? reservations)
       (throw (ex-info "User does not have any unsubmitted reservations." {})))
-    (if-not (reservations/available-in-respective-pools? context reservations)
+    (if-not (empty? (reservations/with-invalid-availability context reservations))
       (throw (ex-info "Some reserved quantities are not available anymore." {})))
     (let [customer-order (-> (sql/insert-into :customer_orders)
                              (sql/values [{:purpose purpose
@@ -203,19 +199,6 @@
    args
    value]
   (if (or (not (timeout? tx user-id))
-          (->> user-id
-               (reservations/for-customer-order tx)
-               (reservations/available-in-respective-pools? context)))
-    (-> (sql/update :reservations)
-        (sql/set {:updated_at (sql/call :now)})
-        (sql/where [:and
-                    [:= :status (sql/call :cast
-                                          "unsubmitted"
-                                          :reservation_status)]
-                    [:= :user_id user-id]])
-        (sql/returning (valid-until-sql tx))
-        (sql/format)
-        (->> (jdbc/query tx))
-        first
-        :updated_at))
+          (not (reservations/unsubmitted-with-invalid-availability? context)))
+    (reservations/touch-unsubmitted! tx user-id))
   {:unsubmitted-order (get-unsubmitted context args value)})

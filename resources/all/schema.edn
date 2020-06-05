@@ -38,7 +38,8 @@
                            :contracts {:type :ContractsConnection
                                        :resolve :contracts-connection}}}
            :UnsubmittedOrder {:fields {:validUntil {:type :DateTime}
-                                       :reservations {:type (list :Reservation)}}}
+                                       :reservations {:type (list :Reservation)}
+                                       :invalidReservationIds {:type (list (non-null :UUID))}}}
            :CurrentUser {:fields {:user {:type :User}
                                   :inventoryPools {:args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
                                                    :type (list :InventoryPool)

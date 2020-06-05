@@ -44,13 +44,17 @@ describe 'currentUser' do
       ]
     )
 
-    FactoryBot.create(:reservation,
-                      id: '770632c4-f268-4ed6-bcc0-c8bc032bc9b5',
-                      status: 'unsubmitted',
-                      user: user,
-                      inventory_pool: pool_A,
-                      start_date: Date.tomorrow,
-                      end_date: Date.tomorrow + 5.days)
+    res_model = FactoryBot.create(:leihs_model,
+                                  id: '3c83f2b8-259d-4aa6-99f7-c29c81f31b54',
+                                  product: 'Model A')
+    res = FactoryBot.create(:reservation,
+                            id: '770632c4-f268-4ed6-bcc0-c8bc032bc9b5',
+                            leihs_model: res_model,
+                            status: 'unsubmitted',
+                            user: user,
+                            inventory_pool: pool_A,
+                            start_date: Date.tomorrow,
+                            end_date: Date.tomorrow + 5.days)
 
     model_1 = FactoryBot.create(:leihs_model, product: 'Model A')
     model_2 = FactoryBot.create(:leihs_model, product: 'Model B')
@@ -92,7 +96,7 @@ describe 'currentUser' do
     GRAPHQL
 
 
-    result = query(q, '0567f6b0-540c-4619-9251-9ea099a5d50d')
+    result = query(q, user.id)
     timestamp = \
       result
       .dig(:data, :currentUser, :unsubmittedOrder, :reservations)
@@ -105,7 +109,7 @@ describe 'currentUser' do
     expect_graphql_result(result, {
       currentUser: {
         user: {
-          id: '0567f6b0-540c-4619-9251-9ea099a5d50d'
+          id: user.id,
         },
         inventoryPools: [
           { name: 'Pool A (customer)' },
