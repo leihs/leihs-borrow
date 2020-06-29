@@ -6,7 +6,7 @@
 
 (def intervene-per-page-default (atom nil))
 
-(defn init [{pp :special_per_page_default}]
+(defn init [{pp :special-per-page-default}]
   (reset! intervene-per-page-default pp))
 
 (defn row-cursor [column]

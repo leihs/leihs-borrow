@@ -298,6 +298,7 @@
                                             :available-quantity-in-date-range
                                             (<= (or (some-> quantity (- 1)) 0)))
                                        edges))
+                             150
                              limit)
       (conn-fn {}))))
 
