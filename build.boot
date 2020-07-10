@@ -56,8 +56,7 @@
   []
   (with-pass-thru _
     (set-env! :source-paths #(conj % "src/dev")
-              :resource-paths #(conj % "resources/dev")
-              :dependencies #(conj % '[org.clojure/tools.namespace "0.3.1"]))
+              :resource-paths #(conj % "resources/dev"))
     (require 'app '[clojure.tools.namespace.repl :as ctnr])
     (apply (resolve 'ctnr/set-refresh-dirs) (get-env :directories))))
 

@@ -2,6 +2,7 @@
   (:require-macros [leihs.borrow.client.lib.macros :refer [spy]])
   (:require
     [akiroz.re-frame.storage :refer [persist-db]]
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [re-frame.core :as rf]
     [re-frame.std-interceptors :refer [path enrich]]))
 
@@ -26,4 +27,6 @@
      (concat [interceptor] interceptors)
      handler)))
 
-(reg-event-db ::clear (constantly {}))
+(reg-event-db ::clear
+              [(path :ls)]
+              (fn-traced [ls _] {}))

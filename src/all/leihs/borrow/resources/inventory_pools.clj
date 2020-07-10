@@ -3,6 +3,7 @@
             [clojure.java.jdbc :as jdbc]
             [hugsql.core :as hugsql]
             [leihs.borrow.resources.helpers :as helpers]
+            [leihs.core.settings :refer [settings!]]
             [leihs.core.sql :as sql]))
 
 (hugsql/def-sqlvec-fns "sql/pools_to_reserve_from.sql")
@@ -54,9 +55,24 @@
       (->> (jdbc/query tx))
       first))
 
-(defn get-one [context _ value]
+(defn get-one [context {:keys [id]} value]
   (get-by-id (-> context :request :tx)
-             (:inventory-pool-id value)))
+             (or id (:inventory-pool-id value))))
+
+(defn has-reservable-items? [{{:keys [tx]} :request} _ {:keys [id]}]
+  (-> (sql/select :*)
+      (sql/from :items)
+      (sql/where [:and
+                  [:= :inventory_pool_id id]
+                  :is_borrowable
+                  [:is :parent_id nil]])
+      sql/format
+      (->> (jdbc/query tx))
+      empty?
+      not))
+
+(defn maximum-reservation-time [{{:keys [tx]} :request} _ _]
+  (-> tx settings! :maximum_reservation_time))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

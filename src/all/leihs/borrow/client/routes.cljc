@@ -17,6 +17,9 @@
    "order" ::shopping-cart
    "orders" {"/" ::orders-index
              ["/" :order-id] ::orders-show}
+   "pools" {"" ::pools-index
+            "/" ::pools-index
+            ["/" :pool-id] ::pools-show}
    :else ::not-found})
 
 (def routes-map

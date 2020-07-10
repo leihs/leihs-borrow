@@ -27,8 +27,19 @@
                                :purpose {:type (non-null String)}
                                :note {:type String}}}
            :InventoryPool {:fields {:id {:type (non-null :UUID)}
+                                    :description {:type String}
+                                    :email {:type (non-null String)}
                                     :name {:type (non-null String)}
-                                    :email {:type (non-null String)}}}
+                                    :shortname {:type (non-null String)}
+                                    :hasReservableItems {:type (non-null Boolean)
+                                                         :resolve :has-reservable-items}
+                                    :maximumReservationTime {:type Int
+                                                             :resolve :maximum-reservation-time}}}
+           :Suspension {:fields {:id {:type (non-null :UUID)}
+                                 :inventoryPool {:type (non-null :InventoryPool)
+                                                 :resolve :inventory-pool}
+                                 :suspendedUntil {:type (non-null :Date)}
+                                 :suspendedReason {:type String}}}
            :User {:description "A `User` represents a human agent that can log into and use the system."
                   :fields {:email {:type String}
                            :firstname {:type String}
@@ -54,7 +65,9 @@
                                                           :first {:type Int}
                                                           :after {:type String}}
                                                    :type :ModelsConnection
-                                                   :resolve :favorite-models-connection}}}
+                                                   :resolve :favorite-models-connection}
+                                  :suspensions {:type (list :Suspension)
+                                                :resolve :suspensions}}}
            :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null :Date)}
                               :quantity {:type (non-null Int)}
@@ -245,6 +258,9 @@
                            :quantity {:type :Int}}
                     :type :ModelsConnection
                     :resolve :models-connection}
+           :inventoryPool {:resolve :inventory-pool
+                           :args {:id {:type (non-null :UUID)}}
+                           :type :InventoryPool}
            :inventoryPools {:resolve :inventory-pools
                             :args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
                             :type (list :InventoryPool)}

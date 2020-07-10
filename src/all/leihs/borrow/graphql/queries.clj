@@ -10,6 +10,7 @@
     [leihs.borrow.resources.orders :as orders]
     [leihs.borrow.resources.properties :as properties]
     [leihs.borrow.resources.reservations :as reservations]
+    [leihs.borrow.resources.suspensions :as suspensions]
     [leihs.borrow.resources.users :as users]
     [leihs.borrow.resources.visits :as visits]
     ))
@@ -22,11 +23,13 @@
    :current-user users/get-current
    :child-categories categories/get-children
    :favorite-models-connection models/get-favorites-connection
+   :has-reservable-items inventory-pools/has-reservable-items?
    :images images/get-multiple
    :inventory-pool inventory-pools/get-one
    :inventory-pools inventory-pools/get-multiple
    :is-favorited-model models/favorited?
    :is-reservable-model models/reservable?
+   :maximum-reservation-time inventory-pools/maximum-reservation-time
    :model models/get-one
    :model-availability models/get-availability
    :models-connection models/get-connection
@@ -36,6 +39,7 @@
    :properties properties/get-multiple
    :reservations reservations/get-multiple
    :root-categories categories/get-roots
+   :suspensions suspensions/get-multiple
    :thumbnails images/get-multiple-thumbnails
    :unsubmitted-order orders/get-unsubmitted
    :users users/get-multiple

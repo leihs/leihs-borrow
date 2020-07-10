@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [key])
   (:require
     [akiroz.re-frame.storage :refer [persist-db]]
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [reagent.core :as reagent]
     [re-frame.core :as rf]
     [re-frame.std-interceptors :refer [path]]
@@ -25,11 +26,11 @@
 (def filters-gql
   (rc/inline "leihs/borrow/client/lib/getFilters.gql"))
 
-(def current-path [:ls ::filters ::current])
+(def current-path [:ls ::filters :current])
 
 (rf/reg-event-fx
   ::init
-  (fn [_ _]
+  (fn-traced [_ _]
     {:dispatch [::re-graph/query
                 filters-gql
                 {}
@@ -37,12 +38,13 @@
 
 (ls/reg-event-fx
   ::on-fetched
-  (fn [{:keys [db]} [_ {:keys [data errors]}]]
+  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-      {:db (-> db
-               (assoc-in , [:ls ::filters ::available] data)
-               (update-in , [:ls ::filters ::current] (fnil merge {}) {:quantity 1}))})))
+      {:db (update-in db
+                      [:ls ::filters :current] 
+                      (fnil merge {}) 
+                      {:quantity 1})})))
 
 (ls/reg-event-db
   ::set-multiple
@@ -64,7 +66,7 @@
 
 (rf/reg-sub
   ::available
-  (fn [db _] (get-in db [:ls ::filters ::available])))
+  (fn [db _] (get-in db [:ls ::filters :available])))
 
 (rf/reg-sub
   ::current

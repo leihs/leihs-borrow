@@ -1,0 +1,16 @@
+query getCurrentUser {
+  currentUser {
+    inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
+      id
+      name
+      maximumReservationTime
+      hasReservableItems
+    }
+    suspensions {
+      inventoryPool {
+        id
+      }
+    }
+  }
+}
+
