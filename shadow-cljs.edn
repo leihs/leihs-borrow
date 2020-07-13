@@ -1,4 +1,4 @@
-{:source-paths ["src/all" "src/dev" "leihs-ui/dist"]
+{:source-paths ["src/client" "src/common" "leihs-ui/dist"]
  :dependencies [[binaryage/devtools "0.9.10"]
                 [better-cond "2.1.0"]
                 [camel-snake-kebab "0.4.1"]
@@ -19,9 +19,9 @@
                 :asset-path "js"
                 :target :browser
                 ; NOTE: comment out and adjust in order for re-frame-10x to work
-                ; :main leihs.borrow.client.app/main
+                ; :main leihs.borrow.app/main
                 :devtools {:preloads [day8.re-frame-10x.preload]}
-                :modules {:app {:entries [leihs.borrow.client.app]}}
+                :modules {:app {:entries [leihs.borrow.app]}}
                 :dev {:closure-defines {"re_frame.trace.trace_enabled_QMARK_" true
                                         "day8.re_frame.tracing.trace_enabled_QMARK_" true}}
                 :release {:build-options

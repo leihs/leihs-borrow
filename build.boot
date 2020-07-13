@@ -1,7 +1,7 @@
 (load-file "shared-clj/deps.clj")
 
 (set-env!
-  :source-paths #{"src/all" "shared-clj/src"}
+  :source-paths #{"src/server" "src/common" "shared-clj/src"}
   :resource-paths #{"resources/all"}
   :project 'leihs-borrow
   :version "0.1.0-SNAPSHOT"

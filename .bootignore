@@ -1,6 +1,3 @@
-# ignore client except shared code
-leihs/borrow/client/.*\.clj[^c]$
-
 # FIXME: we want to also exclude the compiled js of the client, 
 #        but only for *watching* (server should not restart if it changes)
 #        the following ignores it *also for serving the resource* (so the client breaks)
