@@ -81,5 +81,5 @@
   []
   (comp (dev)
         (boot.task.built-in/repl "-s")
-        (watch)
+        (watch :exclude #{#"public/app/borrow/js"})
         (reset)))
