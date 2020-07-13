@@ -39,36 +39,41 @@
   ::reset-availability-and-fetch
   (fn [{:keys [db]} [_ model-id start-date end-date]]
     {:db (update-in db
-                    [:ls ::models model-id :data :model] 
+                    [:ls ::data model-id] 
                     dissoc 
                     :availableQuantityInDateRange)
      :dispatch [::fetch model-id start-date end-date]}))
 
 (ls/reg-event-db
   ::on-fetched-data
-  [(path :ls ::models)]
-  (fn [ms [_ model-id {:keys [data errors]}]]
-    (-> ms
-        (update model-id (fnil identity {}))
-        (assoc-in [model-id :errors] errors)
-        (assoc-in [model-id :data] data))))
+  [(path :ls)]
+  (fn [ls [_ model-id {:keys [data errors]}]]
+    (-> ls
+        (update-in [::data model-id] (fnil identity {}))
+        (cond-> errors (assoc-in [::errors model-id] errors))
+        (assoc-in [::data model-id] (:model data)))))
 
 (ls/reg-event-fx
   ::favorite-model
   (fn [{:keys [db]} [_ model-id]]
-    {:db (assoc-in db [:ls ::models model-id :data :model :isFavorited] true)
+    {:db (assoc-in db [:ls ::data model-id :model :isFavorited] true)
      :dispatch [::favs/favorite-model model-id]}))
 
 (ls/reg-event-fx
   ::unfavorite-model
   (fn [{:keys [db]} [_ model-id]]
-    {:db (assoc-in db [:ls ::models model-id :data :model :isFavorited] false)
+    {:db (assoc-in db [:ls ::data model-id :model :isFavorited] false)
      :dispatch [::favs/unfavorite-model model-id]}))
 
 (rf/reg-sub
   ::model-data
   (fn [db [_ id]]
-    (get-in db [:ls ::models id])))
+    (get-in db [:ls ::data id])))
+
+(rf/reg-sub
+  ::errors
+  (fn [db [_ id]]
+    (get-in db [:ls ::errors id])))
 
 (rf/reg-event-fx
   ::model-create-reservation
@@ -156,9 +161,8 @@
   (let [routing @(rf/subscribe [:routing/routing])
         model-id (get-in routing [:bidi-match :route-params :model-id])
         filters @(rf/subscribe [::filters/current])
-        fetched @(rf/subscribe [::model-data model-id])
-        model (get-in fetched [:data :model])
-        errors (:errors fetched)
+        model @(rf/subscribe [::model-data model-id])
+        errors @(rf/subscribe [::errors model-id])
         is-loading? (not (or model errors))]
 
     [:section.mx-3.my-4

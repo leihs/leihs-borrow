@@ -27,20 +27,19 @@
 
 (rf/reg-event-db
   ::on-fetched-data
-  [(path ::current-order)]
-  (fn [co [_ {:keys [data errors]}]]
-    (assoc co
-           :errors errors
-           :data (help/kebabize-keys
-                   (get-in data
-                           [:currentUser :unsubmittedOrder]))
-           :edit-mode nil)))
+  (fn [db [_ {:keys [data errors]}]]
+    (-> db
+        (assoc ::data (help/kebabize-keys
+                        (get-in data
+                                [:currentUser :unsubmittedOrder])))
+        (assoc-in [::data :edit-mode] nil)
+        (cond-> errors (assoc ::errors errors)))))
 
 (rf/reg-event-fx
   ::reset-availability-and-fetch
   (fn [{:keys [db]} [_ args]]
     {:db (update-in db
-                    [::current-order :edit-mode] 
+                    [::data :edit-mode] 
                     dissoc 
                     :max-quantity)
      :dispatch [::fetch-available-quantity args]}))
@@ -55,7 +54,7 @@
 
 (rf/reg-event-db
   ::on-fetched-available-quantity
-  [(path ::current-order :edit-mode)]
+  [(path ::data :edit-mode)]
   (fn [em [_ {:keys [data errors]}]]
     (assoc em
            :max-quantity (-> data :model :availableQuantityInDateRange))))
@@ -74,7 +73,7 @@
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
       (update-in db
-                 [::current-order :data :reservations]
+                 [::data :reservations]
                  (partial filter #(->> %
                                        :id
                                        ((set ids))
@@ -89,7 +88,7 @@
           end-date (:endDate exemplar)
           quantity (count res-lines)]
       {:db (assoc-in db
-                     [::current-order :edit-mode]
+                     [::data :edit-mode]
                      {:reservation-lines res-lines
                       :start-date start-date
                       :end-date end-date
@@ -135,42 +134,40 @@
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
       {:db (update-in db
-                      [::current-order :data :reservations]
+                      [::data :reservations]
                       (fn [rs]
                         (as-> rs <>
                           (filter #(->> % :id ((set del-ids)) not) <>)
                           (into <> new-res-lines))))})))
 
 (rf/reg-event-db ::update-start-date
-                 [(path ::current-order :edit-mode :start-date)]
+                 [(path ::data :edit-mode :start-date)]
                  (fn [_ [_ v]] v))
 
 (rf/reg-event-db ::update-end-date
-                 [(path ::current-order :edit-mode :end-date)]
+                 [(path ::data :edit-mode :end-date)]
                  (fn [_ [_ v]] v))
 
 (rf/reg-event-db ::update-quantity
-                 [(path ::current-order :edit-mode :quantity)]
+                 [(path ::data :edit-mode :quantity)]
                  (fn [_ [_ v]] v))
 
 (rf/reg-event-db ::cancel-edit
-                 [(path ::current-order)]
+                 [(path ::data)]
                  (fn [co _] (assoc co :edit-mode nil)))
 
-(rf/reg-sub ::current-order
-            (fn [db _] (::current-order db)))
+(rf/reg-sub ::data
+            (fn [db _] (::data db)))
 
 (rf/reg-sub ::errors
-            :<- [::current-order]
-            (fn [co _] (:errors co)))
+            (fn [db _] (::errors db)))
 
 (rf/reg-sub ::data
-            :<- [::current-order]
-            (fn [co _] (:data co)))
+            (fn [co _] (::data co)))
 
 (rf/reg-sub ::edit-mode-data
-            :<- [::current-order]
-            (fn [co _] (:edit-mode co)))
+            :<- [::data]
+            (fn [data _] (:edit-mode data)))
 
 (rf/reg-sub ::max-quantity
             :<- [::edit-mode-data]
@@ -210,10 +207,9 @@
                :latest-end-date (-> (map :endDate rs) sort last)}))
 
 (rf/reg-sub ::timed-out?
-            :<- [::current-order]
+            :<- [::data]
             (fn [co _]
               (boolean (some->> co
-                                :data
                                 :valid-until
                                 tf/parse
                                 (tc/after? (tc/now))))))

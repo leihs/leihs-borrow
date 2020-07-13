@@ -23,10 +23,10 @@
   (fn [db [_ {:keys [data errors]}]]
      (if errors
        (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)
-       (assoc-in db [:ls ::core] (:currentUser data)))))
+       (assoc-in db [:ls ::data] (:currentUser data)))))
 
 (rf/reg-sub ::data
-            (fn [db _] (get-in db [:ls ::core])))
+            (fn [db _] (get-in db [:ls ::data])))
 
 (rf/reg-sub ::pools
             :<- [::data]

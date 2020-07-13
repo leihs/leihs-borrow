@@ -24,20 +24,25 @@
   ::on-fetched-data
   (fn [db [_ pool-id {:keys [data errors]}]]
     (-> db
-        (update-in , [:ls ::pools pool-id ] (fnil identity {}))
-        (assoc-in , [:ls ::pools pool-id :errors] errors)
-        (assoc-in , [:ls ::pools pool-id :data] (:inventoryPool data)))))
+        (update-in [:ls ::data pool-id ] (fnil identity {}))
+        (cond->
+          errors
+          (assoc-in [:ls ::errors pool-id] errors))
+        (assoc-in [:ls ::data pool-id] (:inventoryPool data)))))
 
 (rf/reg-sub ::pool
             (fn [db [_ id]]
-              (get-in db [:ls ::pools id])))
+              (get-in db [:ls ::data id])))
+
+(rf/reg-sub ::errors
+            (fn [db [_ id]]
+              (get-in db [:ls ::errors id])))
 
 (defn view []
   (let [routing @(rf/subscribe [:routing/routing])
         pool-id (get-in routing [:bidi-match :route-params :pool-id])
-        fetched @(rf/subscribe [::pool pool-id])
-        pool (:data fetched)
-        errors (:errors fetched)
+        pool @(rf/subscribe [::pool pool-id])
+        errors @(rf/subscribe [::errors pool-id])
         is-loading? (not (or pool errors))]
     [:section.mx-3.my-4
      (cond

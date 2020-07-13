@@ -35,12 +35,14 @@
 
 (ls/reg-event-db
   ::on-fetched-category-data
-  [(path :ls ::categories :index)]
-  (fn [cs [_ category-id {:keys [data errors]}]]
-    (-> cs
-        (update category-id (fnil identity {}))
-        (assoc-in [category-id :errors] errors)
-        (assoc-in [category-id :data] data))))
+  [(path :ls)]
+  (fn [ls [_ category-id {:keys [data errors]}]]
+    (-> ls
+        (update-in [::data category-id] (fnil identity {}))
+        (cond->
+          errors
+          (assoc-in [::errors category-id] errors))
+        (assoc-in [::data category-id] data))))
 
 (rf/reg-event-fx
   ::clear
@@ -51,7 +53,11 @@
 
 (rf/reg-sub
   ::category-data
-  (fn [db [_ id]] (get-in db [:ls ::categories :index id])))
+  (fn [db [_ id]] (get-in db [:ls ::data id])))
+
+(rf/reg-sub
+  ::errors
+  (fn [db [_ id]] (get-in db [:ls ::errors id])))
 
 (defn view []
   (let [routing @(rf/subscribe [:routing/routing])
@@ -61,9 +67,8 @@
         prev-ids (butlast cat-ids)
         parent-id (first prev-ids)
         fetched @(rf/subscribe [::category-data category-id])
-        {:keys [children] :as category} (get-in fetched [:data :category])
-        models @(rf/subscribe [::models/results])
-        errors (:errors fetched)
+        {:keys [children] :as category} (:category fetched)
+        errors @(rf/subscribe [::errors category-id])
         is-loading? (not category)
         extra-args {:categoryId category-id}]
 

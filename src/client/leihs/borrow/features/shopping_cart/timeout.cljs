@@ -26,5 +26,5 @@
       (js/console.log "timeout refresh errors: " errors)
       (do (js/console.log "timeout refresh success")
           (assoc-in db
-                    [::cart/current-order :data :valid-until]
+                    [::cart/data :valid-until]
                     (-> data :refreshTimeout :unsubmittedOrder :validUntil))))))

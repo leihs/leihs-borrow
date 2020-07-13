@@ -26,7 +26,7 @@
 (def filters-gql
   (rc/inline "leihs/borrow/lib/getFilters.gql"))
 
-(def current-path [:ls ::filters :current])
+(def current-path [:ls ::data :current])
 
 (rf/reg-event-fx
   ::init
@@ -42,7 +42,7 @@
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
       {:db (update-in db
-                      [:ls ::filters :current] 
+                      current-path
                       (fnil merge {}) 
                       {:quantity 1})})))
 

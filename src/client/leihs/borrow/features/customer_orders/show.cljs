@@ -24,11 +24,15 @@
  ::on-fetched-data
  (fn [db [_ order-id {:keys [data errors]}]]
    (-> db
-       (update-in , [:orders order-id ] (fnil identity {}))
-       (assoc-in , [:orders order-id :errors] errors)
-       (assoc-in , [:orders order-id :data] data))))
+       (update-in , [::data order-id ] (fnil identity {}))
+       (cond-> errors (assoc-in , [::errors order-id] errors))
+       (assoc-in , [::data order-id] (:order data)))))
 
-(rf/reg-sub ::order (fn [db [_ id]] (get-in db [:orders id])))
+(rf/reg-sub ::data
+            (fn [db [_ id]] (get-in db [::data id])))
+
+(rf/reg-sub ::errors
+            (fn [db _] (::errors db)))
 
 (defn reservation-line [quantity line]
   (let
@@ -53,39 +57,36 @@
        ui/trash-icon]]]))
 
 (defn view []
-  (fn []
-    (let
-      [routing @(rf/subscribe [:routing/routing])
-       order-id (get-in routing [:bidi-match :route-params :order-id])
-       fetched @(rf/subscribe [::order order-id])
-       order (get-in fetched [:data :order])
-       errors (:errors fetched)
-       is-loading? (not (or order errors))]
+  (let [routing @(rf/subscribe [:routing/routing])
+        order-id (get-in routing [:bidi-match :route-params :order-id])
+        order @(rf/subscribe [::data order-id])
+        errors @(rf/subscribe [::errors order-id])
+        is-loading? (not (or order errors))]
 
-      [:section.mx-3.my-4
-       (cond
-         is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
-         errors [ui/error-view errors]
-         :else
-         [:<>
-          [:header.mb-3
-           [:h1.text-3xl.font-extrabold.leading-tight 
-            "Order “" (:purpose order) "”"]
-           [:p "from: " (ui/format-date :short (:createdAt order))]
-           [:p.mt-2.text-color-muted.text-sm [:a {:href (routing/path-for ::routes/orders-index)} "← all Orders"]]]
+    [:section.mx-3.my-4
+     (cond
+       is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
+       errors [ui/error-view errors]
+       :else
+       [:<>
+        [:header.mb-3
+         [:h1.text-3xl.font-extrabold.leading-tight 
+          "Order “" (:purpose order) "”"]
+         [:p "from: " (ui/format-date :short (:createdAt order))]
+         [:p.mt-2.text-color-muted.text-sm [:a {:href (routing/path-for ::routes/orders-index)} "← all Orders"]]]
 
-          #_[:pre "?" (get-in order [:subOrdersByPool])]
+        #_[:pre "?" (get-in order [:subOrdersByPool])]
 
-          #_(doall
-             (for [suborder (get-in order [:subOrdersByPool])]
-               [:div "suborder"
-                [:p (pr-str suborder)]
-                (doall
+        #_(doall
+            (for [suborder (get-in order [:subOrdersByPool])]
+              [:div "suborder"
+               [:p (pr-str suborder)]
+               (doall
                  (for [r (:reservations suborder)]
                    [reservation-line r]))]))
-          
-          [:h2.font-bold.text-xl [:mark "Order Data"]]
 
-          [:pre.text-xs {:style {:white-space :pre-wrap}} (js/JSON.stringify (clj->js order) 0 2)]
+        [:h2.font-bold.text-xl [:mark "Order Data"]]
 
-          #_[:p]])])))
+        [:pre.text-xs {:style {:white-space :pre-wrap}} (js/JSON.stringify (clj->js order) 0 2)]
+
+        #_[:p]])]))

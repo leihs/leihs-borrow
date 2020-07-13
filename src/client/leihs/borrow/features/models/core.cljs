@@ -38,8 +38,8 @@
                             :onlyAvailable (when dates-valid? (:available-between? filters))
                             :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
                            extra-args)]
-      ; NOTE: no caching yet, clear results before new search  
-     {:db (assoc-in db [::results] nil)
+      ; NOTE: no caching yet, clear data before new search  
+     {:db (assoc-in db [::data] nil)
       :dispatch [::re-graph/query
                  query-gql
                  query-vars
@@ -50,29 +50,29 @@
  (fn [{:keys [db]} [_ {:keys [data errors]}]]
    (if errors
      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-     {:db (assoc-in db [::results] (get-in data [:models]))})))
+     {:db (assoc-in db [::data] (get-in data [:models]))})))
 
 (rf/reg-event-fx
  ::clear
  (fn [_ _]
    {:dispatch-n (list [::filters/clear-current]
-                      [::clear-results]
+                      [::clear-data]
                       [:routing/navigate [::routes/home]])}))
 
 (rf/reg-event-db
- ::clear-results
- (fn [db _] (dissoc db ::results)))
+ ::clear-data
+ (fn [db _] (dissoc db ::data)))
 
 
 (rf/reg-sub ::fetching
-            (fn [db _] (get-in db [::results :fetching])))
+            (fn [db _] (get-in db [::data :fetching])))
 
 (rf/reg-sub ::has-next-page?
-            (fn [db _] (get-in db [::results :pageInfo :hasNextPage])))
+            (fn [db _] (get-in db [::data :pageInfo :hasNextPage])))
 
 (rf/reg-sub
- ::results
- (fn [db] (-> (get-in db [::results :edges]))))
+ ::data
+ (fn [db] (-> (get-in db [::data :edges]))))
 
 ;-; VIEWS
 (defn form-line [name label input-props]
@@ -94,7 +94,7 @@
 (defn search-panel [submit-fn clear-fn]
   (let [filters @(rf/subscribe [::filters/current])
         term @(rf/subscribe [::filters/term])
-        results @(rf/subscribe [::results])
+        data @(rf/subscribe [::data])
         start-date @(rf/subscribe [::filters/start-date])
         end-date @(rf/subscribe [::filters/end-date])
         available-between? @(rf/subscribe [::filters/available-between?])
@@ -161,7 +161,7 @@
 
       [:button.btn.btn-secondary.dont-invert.rounded-pill.mx-1
        {:type :button
-        :disabled (not (or (seq filters) (seq results)))
+        :disabled (not (or (seq filters) (seq data)))
         :on-click clear-fn
         :class :mt-2}
        "Clear"]]]))
@@ -183,7 +183,7 @@
                                                :model-id (:id model))})))]
     [:div.mx-1.mt-2
      [:> UI/Components.CategoryList {:list models-list}]
-     (when debug? [:p (pr-str @(rf/subscribe [::results]))])]))
+     (when debug? [:p (pr-str @(rf/subscribe [::data]))])]))
 
 (defn load-more [extra-args]
   (let [fetching-more? @(rf/subscribe [::fetching])
@@ -209,12 +209,12 @@
                                              :onlyAvailable only-available?
                                              :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
                                             extra-args)
-                                     [::results]
+                                     [::data]
                                      [:models]])}
            "LOAD MORE"]]))]))
 
 (defn search-and-list [submit-fn clear-fn extra-params]
-  (let [models @(rf/subscribe [::results])]
+  (let [models @(rf/subscribe [::data])]
     [:<>
      [search-panel submit-fn clear-fn]
      (cond

@@ -28,11 +28,11 @@
  (fn [{:keys [db]} [_ {:keys [data errors]}]]
    (if errors
      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-     {:db (assoc-in db [:ls ::categories :index] (get-in data [:categories]))})))
+     {:db (assoc-in db [:ls ::data] (get-in data [:categories]))})))
 
 (rf/reg-sub
   ::categories-index
-  (fn [db] (get-in db [:ls ::categories :index])))
+  (fn [db] (get-in db [:ls ::data])))
 
 (defn categories-list [categories]
   (let [list

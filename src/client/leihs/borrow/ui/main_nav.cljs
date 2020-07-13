@@ -12,7 +12,7 @@
    [leihs.borrow.ui.icons :as icons]))
 
 (defn navbar []
-  (let [current-order @(rf/subscribe [:leihs.borrow.features.shopping-cart.core/current-order])
+  (let [cart-data @(rf/subscribe [:leihs.borrow.features.shopping-cart.core/data])
 
         style {:top 0 :z-index 1000
                :border-bottom-color "rgba(0,0,0, 0.08)"
@@ -27,7 +27,7 @@
         valid-until [:span (if @(rf/subscribe [::cart/timed-out?])
                              {:style {:color "red"}}
                              {:class "text-color-info"})
-                      (some->> current-order :data :valid-until)]
+                     (:valid-until cart-data)]
         cart [:a.nav-item.nav-link.px-0 {:href (routing/path-for ::routes/shopping-cart)}
               icons/shopping-cart-icon]]
 
