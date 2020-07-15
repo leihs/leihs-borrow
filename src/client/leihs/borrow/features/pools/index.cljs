@@ -8,13 +8,19 @@
     [leihs.borrow.components :as ui]
     [leihs.borrow.features.current-user.core :as current-user]
     [leihs.borrow.features.pools.core :refer [badge]]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.client.routes :as routes]))
 
 ; is kicked off from router when this view is loaded
-(rf/reg-event-fx ::routes/pools-index
-                 (fn [_ _]
-                   {:dispatch [::current-user/fetch]}))
+(reg-event-fx ::routes/pools-index
+              (fn [_ _]
+                {:dispatch [::current-user/fetch]}))
 
 (defn pool-line [pool]
   [:<> (:name pool) [badge pool]])
@@ -29,7 +35,7 @@
         [pool-line pool]]))])
 
 (defn view []
-  (let [pools @(rf/subscribe [::current-user/pools])
+  (let [pools @(subscribe [::current-user/pools])
         is-loading? (not pools)]
     [:section.mx-3.my-4
      (cond

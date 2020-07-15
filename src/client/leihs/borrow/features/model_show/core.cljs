@@ -7,6 +7,12 @@
     [re-frame.std-interceptors :refer [path]]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
@@ -15,7 +21,7 @@
     [leihs.borrow.features.favorite-models.events :as favs]))
 
 ; is kicked off from router when this view is loaded
-(ls/reg-event-fx
+(reg-event-fx
   ::routes/models-show
   (fn [{:keys [db]} [_ args]]
     (let [id (get-in args [:route-params :model-id])
@@ -24,7 +30,7 @@
           end-date (:end-date filters)]
       {:dispatch [::fetch id start-date end-date]})))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::fetch
   (fn [_ [_ id start-date end-date]]
     {:dispatch [::re-graph/query
@@ -35,16 +41,16 @@
                  :bothDatesGiven (and (boolean start-date) (boolean end-date))}
                 [::on-fetched-data id]]}))
 
-(ls/reg-event-fx
+(reg-event-fx
   ::reset-availability-and-fetch
   (fn [{:keys [db]} [_ model-id start-date end-date]]
     {:db (update-in db
                     [:ls ::data model-id] 
                     dissoc 
-                    :availableQuantityInDateRange)
+                    :available-quantity-in-date-range)
      :dispatch [::fetch model-id start-date end-date]}))
 
-(ls/reg-event-db
+(reg-event-db
   ::on-fetched-data
   [(path :ls)]
   (fn [ls [_ model-id {:keys [data errors]}]]
@@ -53,29 +59,29 @@
         (cond-> errors (assoc-in [::errors model-id] errors))
         (assoc-in [::data model-id] (:model data)))))
 
-(ls/reg-event-fx
+(reg-event-fx
   ::favorite-model
   (fn [{:keys [db]} [_ model-id]]
-    {:db (assoc-in db [:ls ::data model-id :model :isFavorited] true)
+    {:db (assoc-in db [:ls ::data model-id :model :is-favorited] true)
      :dispatch [::favs/favorite-model model-id]}))
 
-(ls/reg-event-fx
+(reg-event-fx
   ::unfavorite-model
   (fn [{:keys [db]} [_ model-id]]
-    {:db (assoc-in db [:ls ::data model-id :model :isFavorited] false)
+    {:db (assoc-in db [:ls ::data model-id :model :is-favorited] false)
      :dispatch [::favs/unfavorite-model model-id]}))
 
-(rf/reg-sub
+(reg-sub
   ::model-data
   (fn [db [_ id]]
     (get-in db [:ls ::data id])))
 
-(rf/reg-sub
+(reg-sub
   ::errors
   (fn [db [_ id]]
     (get-in db [:ls ::errors id])))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::model-create-reservation
   (fn [_ [_ args]]
     {:dispatch [::re-graph/mutate
@@ -83,7 +89,7 @@
                 args
                 [::on-mutation-result args]]}))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::on-mutation-result
   (fn [{:keys [_db]} [_ args {:keys [data errors]}]]
     (if errors
@@ -99,21 +105,21 @@
                              :start-date (:start-date filters)
                              :end-date (:end-date filters)})]
     (fn [{:keys [id] :as model} _]
-      (swap! state assoc :max-quantity (:availableQuantityInDateRange model))
-      (let [on-submit #(rf/dispatch [::model-create-reservation
-                                     {:modelId id
-                                      :startDate (:start-date @state)
-                                      :endDate (:end-date @state)
-                                      :quantity (:quantity @state)}])
+      (swap! state assoc :max-quantity (:available-quantity-in-date-range model))
+      (let [on-submit #(dispatch [::model-create-reservation
+                                  {:modelId id
+                                   :startDate (:start-date @state)
+                                   :endDate (:end-date @state)
+                                   :quantity (:quantity @state)}])
             on-change-date-fn (fn [date-key]
                                 (fn [e]
                                   (let [val (.-value (.-target e))]
                                     (swap! state assoc date-key val)
                                     (when (and (:start-date @state) (:end-date @state))
-                                      (rf/dispatch [::reset-availability-and-fetch
-                                                    id
-                                                    (:start-date @state)
-                                                    (:end-date @state)])))))]
+                                      (dispatch [::reset-availability-and-fetch
+                                                 id
+                                                 (:start-date @state)
+                                                 (:end-date @state)])))))]
         [:div.border-b-2.border-gray-300.mt-4.pb-4
          [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
          [:div.d-flex.mx-n2
@@ -158,11 +164,11 @@
               "Order"]]])]))))
 
 (defn view []
-  (let [routing @(rf/subscribe [:routing/routing])
+  (let [routing @(subscribe [:routing/routing])
         model-id (get-in routing [:bidi-match :route-params :model-id])
-        filters @(rf/subscribe [::filters/current])
-        model @(rf/subscribe [::model-data model-id])
-        errors @(rf/subscribe [::errors model-id])
+        filters @(subscribe [::filters/current])
+        model @(subscribe [::model-data model-id])
+        errors @(subscribe [::errors model-id])
         is-loading? (not (or model errors))]
 
     [:section.mx-3.my-4
@@ -177,16 +183,16 @@
           " "
           [:small.font-normal.text-gray-600.leading-none (:manufacturer model)]]
          [:span.text-4xl.ml-2.pr-2 
-          [:button {:on-click #(rf/dispatch [(if (:isFavorited model)
-                                               ::unfavorite-model
-                                               ::favorite-model)
-                                             (:id model)])}
-           (if (:isFavorited model) icons/favorite-yes-icon icons/favorite-no-icon)]]]
+          [:button {:on-click #(dispatch [(if (:is-favorited model)
+                                            ::unfavorite-model
+                                            ::favorite-model)
+                                          (:id model)])}
+           (if (:is-favorited model) icons/favorite-yes-icon icons/favorite-no-icon)]]]
 
         ; FIXME: show all images not just the first one
         (if-let [first-image (first (:images model))]
           [:div.flex.justify-center.py-4.mt-4.border-b-2.border-gray-300
-           [:div [:img {:src (:imageUrl first-image)}]]])
+           [:div [:img {:src (:image-url first-image)}]]])
 
         [order-panel model filters]
 
@@ -225,7 +231,7 @@
                     ; FIXME: use path helper!
                     [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
                      [:a {:href href}
-                      (if-let [img (get-in rec [:images 0 :imageUrl])]
+                      (if-let [img (get-in rec [:images 0 :image-url])]
                         [:img.absolute.object-contain.object-center.h-full.w-full.p-1 {:src img}]
                         [:div.absolute.h-full.w-full.bg-gray-400 " "])]]
 

@@ -5,13 +5,19 @@
             [re-graph.core :as re-graph]
             [shadow.resource :as rc]
             [leihs.borrow.components :as ui]
+            [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                               reg-event-db
+                                               reg-sub
+                                               reg-fx
+                                               subscribe
+                                               dispatch]]
             [leihs.borrow.lib.localstorage :as ls]
             [leihs.borrow.lib.routing :as routing]
             [leihs.borrow.features.pools.core :refer [badge]]
             [leihs.borrow.client.routes :as routes]))
 
 ; is kicked off from router when this view is loaded
-(rf/reg-event-fx
+(reg-event-fx
   ::routes/pools-show
   (fn [_ [_ args]]
     (let [pool-id (get-in args [:route-params :pool-id])]
@@ -20,7 +26,7 @@
                   {:id pool-id}
                   [::on-fetched-data pool-id]]})))
 
-(ls/reg-event-db
+(reg-event-db
   ::on-fetched-data
   (fn [db [_ pool-id {:keys [data errors]}]]
     (-> db
@@ -28,21 +34,21 @@
         (cond->
           errors
           (assoc-in [:ls ::errors pool-id] errors))
-        (assoc-in [:ls ::data pool-id] (:inventoryPool data)))))
+        (assoc-in [:ls ::data pool-id] (:inventory-pool data)))))
 
-(rf/reg-sub ::pool
-            (fn [db [_ id]]
-              (get-in db [:ls ::data id])))
+(reg-sub ::pool
+         (fn [db [_ id]]
+           (get-in db [:ls ::data id])))
 
-(rf/reg-sub ::errors
-            (fn [db [_ id]]
-              (get-in db [:ls ::errors id])))
+(reg-sub ::errors
+         (fn [db [_ id]]
+           (get-in db [:ls ::errors id])))
 
 (defn view []
-  (let [routing @(rf/subscribe [:routing/routing])
+  (let [routing @(subscribe [:routing/routing])
         pool-id (get-in routing [:bidi-match :route-params :pool-id])
-        pool @(rf/subscribe [::pool pool-id])
-        errors @(rf/subscribe [::errors pool-id])
+        pool @(subscribe [::pool pool-id])
+        errors @(subscribe [::errors pool-id])
         is-loading? (not (or pool errors))]
     [:section.mx-3.my-4
      (cond

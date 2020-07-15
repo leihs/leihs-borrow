@@ -6,13 +6,19 @@
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
     [leihs.borrow.components :as ui]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.client.routes :as routes]
     #_[leihs.borrow.components :as ui]))
 
 
 ; is kicked off from router when this view is loaded
-(rf/reg-event-fx
+(reg-event-fx
   ::routes/orders-index
   (fn [_ [_ _]]
     {:dispatch [::re-graph/query
@@ -20,38 +26,38 @@
                 {}
                 [::on-fetched-data]]}))
 
-(rf/reg-event-db
+(reg-event-db
   ::on-fetched-data
   (fn [db [_ {:keys [data errors]}]]
     (-> db
         (cond-> errors (assoc ::errors errors))
         (assoc ::data data))))
 
-(rf/reg-sub ::data (fn [db _] (::data db)))
+(reg-sub ::data (fn [db _] (::data db)))
 
-(rf/reg-sub ::errors (fn [db _] (::errors db)))
+(reg-sub ::errors (fn [db _] (::errors db)))
 
-(rf/reg-sub 
+(reg-sub 
   ::submitted-orders 
   :<- [::data]
   (fn [data _]
-    (->> (get-in data [:submittedOrders :edges])
+    (->> (get-in data [:submitted-orders :edges])
          (map :node) 
          not-empty)))
 
-(rf/reg-sub 
+(reg-sub 
   ::rejected-orders 
   :<- [::data]
   (fn [data _]
-    (->> (get-in data [:rejectedOrders :edges])
+    (->> (get-in data [:rejected-orders :edges])
          (map :node)
          not-empty)))
 
-(rf/reg-sub 
+(reg-sub 
   ::approved-orders 
   :<- [::data]
   (fn [data _]
-    (->> (get-in data [:approvedOrders :edges])
+    (->> (get-in data [:approved-orders :edges])
          (map :node)
          not-empty)))
 
@@ -62,18 +68,18 @@
     [:<>
      [:a {:href href} 
       label " "
-      [:span.text-color-muted (ui/format-date :short (:createdAt order))]]]))
+      [:span.text-color-muted (ui/format-date :short (:created-at order))]]]))
 
 (defn orders-list [orders]
   [:ul (doall (for [order orders] [:li {:key (:id order)} [order-line order]]))])
 
 (defn view []
-  (let [data @(rf/subscribe [::data])
-        errors @(rf/subscribe [::errors])
+  (let [data @(subscribe [::data])
+        errors @(subscribe [::errors])
         is-loading? (not (or data errors))
-        submitted-orders @(rf/subscribe [::submitted-orders])
-        rejected-orders @(rf/subscribe [::rejected-orders])
-        approved-orders @(rf/subscribe [::approved-orders])]
+        submitted-orders @(subscribe [::submitted-orders])
+        rejected-orders @(subscribe [::rejected-orders])
+        approved-orders @(subscribe [::approved-orders])]
 
     [:section.mx-3.my-4
      (cond

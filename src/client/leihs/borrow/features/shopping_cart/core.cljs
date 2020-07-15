@@ -1,23 +1,29 @@
 (ns leihs.borrow.features.shopping-cart.core
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
-   [clojure.string :as string]
-   [cljs-time.core :as tc]
-   [cljs-time.format :as tf]
-   [reagent.core :as reagent]
-   [re-frame.core :as rf]
-   [re-graph.core :as re-graph]
-   [re-frame.std-interceptors :refer [path]]
-   [shadow.resource :as rc]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.helpers :as help]
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.components :as ui]
-   [leihs.borrow.ui.icons :as icons]))
+    [clojure.string :as string]
+    [cljs-time.core :as tc]
+    [cljs-time.format :as tf]
+    [reagent.core :as reagent]
+    [re-frame.core :as rf]
+    [re-graph.core :as re-graph]
+    [re-frame.std-interceptors :refer [path]]
+    [shadow.resource :as rc]
+    [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
+    [leihs.borrow.lib.helpers :as help]
+    [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.components :as ui]
+    [leihs.borrow.ui.icons :as icons]))
 
 
 ; is kicked off from router when this view is loaded
-(rf/reg-event-fx
+(reg-event-fx
  ::routes/shopping-cart
  (fn [_ [_ _]]
    {:dispatch [::re-graph/query
@@ -25,17 +31,17 @@
                {}
                [::on-fetched-data]]}))
 
-(rf/reg-event-db
+(reg-event-db
   ::on-fetched-data
   (fn [db [_ {:keys [data errors]}]]
     (-> db
         (assoc ::data (help/kebabize-keys
                         (get-in data
-                                [:currentUser :unsubmittedOrder])))
+                                [:current-user :unsubmitted-order])))
         (assoc-in [::data :edit-mode] nil)
         (cond-> errors (assoc ::errors errors)))))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::reset-availability-and-fetch
   (fn [{:keys [db]} [_ args]]
     {:db (update-in db
@@ -44,7 +50,7 @@
                     :max-quantity)
      :dispatch [::fetch-available-quantity args]}))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::fetch-available-quantity
   (fn [_ [_ args]]
     {:dispatch [::re-graph/query
@@ -52,14 +58,14 @@
                 args
                 [::on-fetched-available-quantity]]}))
 
-(rf/reg-event-db
+(reg-event-db
   ::on-fetched-available-quantity
   [(path ::data :edit-mode)]
   (fn [em [_ {:keys [data errors]}]]
     (assoc em
-           :max-quantity (-> data :model :availableQuantityInDateRange))))
+           :max-quantity (-> data :model :available-quantity-in-date-range))))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::delete-reservations
   (fn [_ [_ ids]]
     {:dispatch [::re-graph/mutate
@@ -67,9 +73,9 @@
                 {:ids ids}
                 [::on-delete-reservations]]}))
 
-(rf/reg-event-db
+(reg-event-db
   ::on-delete-reservations
-  (fn [db [_ {{ids :deleteReservationLines} :data errors :errors}]]
+  (fn [db [_ {{ids :delete-reservation-lines} :data errors :errors}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
       (update-in db
@@ -79,13 +85,13 @@
                                        ((set ids))
                                        not))))))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::edit-reservation
   (fn [{:keys [db]} [_ res-lines]]
     (let [exemplar (first res-lines)
           model (:model exemplar)
-          start-date (:startDate exemplar)
-          end-date (:endDate exemplar)
+          start-date (:start-date exemplar)
+          end-date (:end-date exemplar)
           quantity (count res-lines)]
       {:db (assoc-in db
                      [::data :edit-mode]
@@ -94,14 +100,14 @@
                       :end-date end-date
                       :quantity quantity
                       :model model
-                      :inventory-pools (map :inventoryPool res-lines)})
+                      :inventory-pools (map :inventory-pool res-lines)})
        :dispatch [::fetch-available-quantity
                   {:modelId (:id model)
                    :startDate start-date 
                    :endDate end-date
                    :excludeReservationIds (map :id res-lines)}]})))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::submit-order
   (fn [_ [_ args]]
     {:dispatch [::re-graph/mutate
@@ -109,7 +115,7 @@
                 args
                 [::on-submit-order-result]]}))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::on-submit-order-result
   (fn [{:keys [_db]} [_ {:keys [data errors]}]]
     (if errors
@@ -117,7 +123,7 @@
       {:alert (str "OK! " (pr-str data))
        :routing/refresh-page "yes"})))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::update-reservations
   (fn [_ [_ args]]
     {:dispatch
@@ -126,11 +132,11 @@
       args
       [::on-update-reservations-result]]}))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::on-update-reservations-result
   (fn [{:keys [db]}
-       [_ {:keys [errors] {del-ids :deleteReservationLines
-                           new-res-lines :createReservation} :data}]]
+       [_ {:keys [errors] {del-ids :delete-reservation-lines
+                           new-res-lines :create-reservation} :data}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
       {:db (update-in db
@@ -140,40 +146,37 @@
                           (filter #(->> % :id ((set del-ids)) not) <>)
                           (into <> new-res-lines))))})))
 
-(rf/reg-event-db ::update-start-date
+(reg-event-db ::update-start-date
                  [(path ::data :edit-mode :start-date)]
                  (fn [_ [_ v]] v))
 
-(rf/reg-event-db ::update-end-date
+(reg-event-db ::update-end-date
                  [(path ::data :edit-mode :end-date)]
                  (fn [_ [_ v]] v))
 
-(rf/reg-event-db ::update-quantity
+(reg-event-db ::update-quantity
                  [(path ::data :edit-mode :quantity)]
                  (fn [_ [_ v]] v))
 
-(rf/reg-event-db ::cancel-edit
+(reg-event-db ::cancel-edit
                  [(path ::data)]
                  (fn [co _] (assoc co :edit-mode nil)))
 
-(rf/reg-sub ::data
+(reg-sub ::data
             (fn [db _] (::data db)))
 
-(rf/reg-sub ::errors
+(reg-sub ::errors
             (fn [db _] (::errors db)))
 
-(rf/reg-sub ::data
-            (fn [co _] (::data co)))
-
-(rf/reg-sub ::edit-mode-data
+(reg-sub ::edit-mode-data
             :<- [::data]
             (fn [data _] (:edit-mode data)))
 
-(rf/reg-sub ::max-quantity
+(reg-sub ::max-quantity
             :<- [::edit-mode-data]
             (fn [emd _] (:max-quantity emd)))
 
-(rf/reg-sub ::edit-mode?
+(reg-sub ::edit-mode?
             :<- [::edit-mode-data]
             (fn [em [_ res-lines]]
               (boolean
@@ -183,30 +186,30 @@
                          set
                          (= (->> res-lines (map :id) set))))))
 
-(rf/reg-sub ::reservations
+(reg-sub ::reservations
             :<- [::data]
             (fn [co _] (:reservations co)))
 
-(rf/reg-sub ::reservations-grouped
+(reg-sub ::reservations-grouped
             :<- [::reservations]
             (fn [lines _]
               (->> lines
                    (group-by
                      (fn [line]
                        [(get-in line [:model :id])
-                        (get-in line [:startDate])
-                        (get-in line [:endDate])])))))
+                        (get-in line [:start-date])
+                        (get-in line [:end-date])])))))
 
-(rf/reg-sub ::order-summary
+(reg-sub ::order-summary
             :<- [::reservations]
             (fn [rs _]
-              {:pools (-> (map :inventoryPool rs) distinct)
+              {:pools (-> (map :inventory-pool rs) distinct)
                :total-models (-> (map :model rs) distinct count)
                :total-items (-> (map :model rs) count)
-               :earliest-start-date (-> (map :startDate rs) sort first)
-               :latest-end-date (-> (map :endDate rs) sort last)}))
+               :earliest-start-date (-> (map :start-date rs) sort first)
+               :latest-end-date (-> (map :end-date rs) sort last)}))
 
-(rf/reg-sub ::timed-out?
+(reg-sub ::timed-out?
             :<- [::data]
             (fn [co _]
               (boolean (some->> co
@@ -215,22 +218,22 @@
                                 (tc/after? (tc/now))))))
 
 (defn edit-reservation [res-lines]
-  (let [edit-mode-data @(rf/subscribe [::edit-mode-data])
+  (let [edit-mode-data @(subscribe [::edit-mode-data])
         model (:model edit-mode-data)
         start-date (:start-date edit-mode-data)
         end-date (:end-date edit-mode-data)
         quantity (:quantity edit-mode-data)
-        max-quantity @(rf/subscribe [::max-quantity])
+        max-quantity @(subscribe [::max-quantity])
         on-change-date-fn (fn [reset-fn]
                             (fn [e]
                               (let [v (.-value (.-target e))]
                                 (reset-fn v)
                                 (when (and @start-date @end-date)
-                                  (rf/dispatch [::reset-availability-and-fetch
+                                  (dispatch [::reset-availability-and-fetch
                                                 (:id model)
                                                 start-date
                                                 end-date])))))
-        on-update #(rf/dispatch [::update-reservations
+        on-update #(dispatch [::update-reservations
                                  {:ids (map :id res-lines)
                                   :modelId (:id model)
                                   :startDate start-date
@@ -246,8 +249,8 @@
                 :value start-date
                 :on-change (fn [e]
                              (let [new-start-date (-> e .-target .-value)]
-                               (rf/dispatch [::update-start-date new-start-date])
-                               (rf/dispatch [::reset-availability-and-fetch
+                               (dispatch [::update-start-date new-start-date])
+                               (dispatch [::reset-availability-and-fetch
                                              {:modelId (:id model)
                                               :startDate new-start-date 
                                               :endDate end-date
@@ -259,8 +262,8 @@
                 :value end-date
                 :on-change (fn [e]
                              (let [new-end-date (-> e .-target .-value)]
-                               (rf/dispatch [::update-end-date new-end-date])
-                               (rf/dispatch [::reset-availability-and-fetch
+                               (dispatch [::update-end-date new-end-date])
+                               (dispatch [::reset-availability-and-fetch
                                              {:modelId (:id model)
                                               :startDate start-date
                                               :endDate new-end-date
@@ -279,13 +282,13 @@
             :disabled (or (nil? max-quantity) (> quantity max-quantity))
             :on-change (fn [e]
                          (let [new-quantity (-> e .-target .-value js/parseInt)]
-                           (rf/dispatch [::update-quantity new-quantity])))}]]]
+                           (dispatch [::update-quantity new-quantity])))}]]]
         [:div.flex-1.w-1_2 [:span.no-underline.text-color-muted 
                             {:aria-label (str "maximum available quantity is " max-quantity)} 
                             "/" ui/thin-space (or max-quantity [ui/spinner-clock]) ui/thin-space "max."]]]]
       [:div.flex-auto.w-1_2
        [:button.px-4.py-2.w-100.rounded-lg.font-semibold.text-lg
-        {:on-click #(rf/dispatch [::cancel-edit])}
+        {:on-click #(dispatch [::cancel-edit])}
         "Cancel"]
        [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg
         (cond-> {:on-click on-update}
@@ -299,9 +302,9 @@
         model (:model exemplar)
         img (get-in model [:images 0])
         quantity (count res-lines)
-        edit-mode? @(rf/subscribe [::edit-mode? res-lines])
+        edit-mode? @(subscribe [::edit-mode? res-lines])
         pool-names (->> res-lines
-                        (map (comp :name :inventoryPool))
+                        (map (comp :name :inventory-pool))
                         distinct
                         (clojure.string/join ", "))
         invalid? (every? invalid-res-ids (map :id res-lines))]
@@ -314,30 +317,30 @@
         [:div.px-1.flex-1 (if invalid? {:style {:color "red"}})
          [:div.font-semibold (:name model)]
          [:div.text-sm
-          (ui/format-date :short (get-in exemplar [:startDate]))
+          (ui/format-date :short (get-in exemplar [:start-date]))
           (str ui/thin-space "–" ui/thin-space)
-          (ui/format-date :short (get-in exemplar [:endDate]))]
+          (ui/format-date :short (get-in exemplar [:end-date]))]
          [:div.text-sm.text-color-muted (if invalid? {:style {:color "red"}})
           [:span quantity " Items"]
           [:span " • "]
           [:span pool-names]]]
         [:div.px-1.self-center.flex-none
          [:button.text-sm
-          {:on-click #(rf/dispatch [::delete-reservations (map :id res-lines)])}
+          {:on-click #(dispatch [::delete-reservations (map :id res-lines)])}
           icons/trash-icon]
          [:button.rounded.border.border-gray-600.px-2.text-color-muted
-          {:on-click #(rf/dispatch [::edit-reservation res-lines])}
+          {:on-click #(dispatch [::edit-reservation res-lines])}
           "Edit"]]])]))
 
 (defn view []
   (let [state (reagent/atom {:purpose ""})]
     (fn []
-      (let [data @(rf/subscribe [::data])
+      (let [data @(subscribe [::data])
             invalid-res-ids (set (:invalid-reservation-ids data))
-            errors @(rf/subscribe [::errors])
-            reservations @(rf/subscribe [::reservations])
-            grouped-reservations @(rf/subscribe [::reservations-grouped])
-            summary @(rf/subscribe [::order-summary])
+            errors @(subscribe [::errors])
+            reservations @(subscribe [::reservations])
+            grouped-reservations @(subscribe [::reservations-grouped])
+            summary @(subscribe [::order-summary])
             is-loading? (not (or data errors))]
         [:div.p-2
          [:h1.mt-3.font-bold.text-3xl "Order Overview"]
@@ -389,8 +392,8 @@
               [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
                {:disabled (or (empty? (:purpose @state))
                               (not (empty? invalid-res-ids)))
-                :on-click #(rf/dispatch [::submit-order @state])}
+                :on-click #(dispatch [::submit-order @state])}
                "Confirm order"]
               [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl
-               {:on-click #(rf/dispatch [::delete-reservations (map :id reservations)])}
+               {:on-click #(dispatch [::delete-reservations (map :id reservations)])}
                "Delete order"]]]])]))))

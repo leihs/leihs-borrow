@@ -9,6 +9,12 @@
     [re-frame.std-interceptors :refer [path]]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
@@ -28,35 +34,35 @@
 
 (def current-path [:ls ::data :current])
 
-(rf/reg-event-fx
+(reg-event-fx
   ::init
   (fn-traced [_ _]
-    {:dispatch [::re-graph/query
-                filters-gql
-                {}
-                [::on-fetched]]}))
+             {:dispatch [::re-graph/query
+                         filters-gql
+                         {}
+                         [::on-fetched]]}))
 
-(ls/reg-event-fx
+(reg-event-fx
   ::on-fetched
   (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
-    (if errors
-      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-      {:db (update-in db
-                      current-path
-                      (fnil merge {}) 
-                      {:quantity 1})})))
+             (if errors
+               {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
+               {:db (update-in db
+                               current-path
+                               (fnil merge {}) 
+                               {:quantity 1})})))
 
-(ls/reg-event-db
+(reg-event-db
   ::set-multiple
   [(path current-path)]
   (fn [old [_ filters]] (merge old (massage-values filters))))
 
-(ls/reg-event-db
+(reg-event-db
   ::set-one
   (fn [db [_ key value]]
     (assoc-in db (conj current-path key) value)))
 
-(ls/reg-event-db
+(reg-event-db
   ::clear-current
   [(path current-path)]
   (fn [_ _] nil))
@@ -64,31 +70,31 @@
 (defn get-from-current [db k]
   (get-in db (conj current-path k)))
 
-(rf/reg-sub
+(reg-sub
   ::available
   (fn [db _] (get-in db [:ls ::filters :available])))
 
-(rf/reg-sub
+(reg-sub
   ::current
   (fn [db _] (get-in db current-path)))
 
-(rf/reg-sub
+(reg-sub
   ::term
   (fn [db _] (get-from-current db :term)))
 
-(rf/reg-sub
+(reg-sub
   ::start-date
   (fn [db _] (get-from-current db :start-date)))
 
-(rf/reg-sub
+(reg-sub
   ::end-date
   (fn [db _] (get-from-current db :end-date)))
 
-(rf/reg-sub
+(reg-sub
   ::available-between?
   (fn [db _] (boolean (get-from-current db :available-between?))))
 
-(rf/reg-sub
+(reg-sub
   ::quantity
   (fn [db _] (get-from-current db :quantity)))
 

@@ -1,55 +1,62 @@
 (ns leihs.borrow.app
   (:require
-   [reagent.core :as r]
-   [re-frame.core :as rf]
-   [re-graph.core :as re-graph]
-   #_[shadow.resource :as rc]
-   [leihs.borrow.components :as ui]
-   [leihs.borrow.ui.main-nav :as main-nav]
+    [reagent.core :as r]
+    [re-frame.core :as rf]
+    [re-graph.core :as re-graph]
+    #_[shadow.resource :as rc]
+    [leihs.borrow.components :as ui]
+    [leihs.borrow.ui.main-nav :as main-nav]
 
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
+    [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.client.routes :as routes]
 
-   [leihs.borrow.features.home-page.core :as home-page]
-   [leihs.borrow.features.about-page.core :as about-page]
-   [leihs.borrow.features.models.core :as models]
-   [leihs.borrow.features.shopping-cart.core :as shopping-cart]
-   [leihs.borrow.features.shopping-cart.timeout :as timeout]
-   [leihs.borrow.features.categories.show :as category-show]
-   [leihs.borrow.features.categories.index :as category-index]
-   [leihs.borrow.features.model-show.core :as model-show]
-   [leihs.borrow.features.favorite-models.core :as favorite-models]
-   [leihs.borrow.features.customer-orders.index :as customer-orders-index]
-   [leihs.borrow.features.customer-orders.show :as customer-orders-show]
-   [leihs.borrow.features.pools.index :as pools-index]
-   [leihs.borrow.features.pools.show :as pools-show]))
+    [leihs.borrow.features.home-page.core :as home-page]
+    [leihs.borrow.features.about-page.core :as about-page]
+    [leihs.borrow.features.models.core :as models]
+    [leihs.borrow.features.shopping-cart.core :as shopping-cart]
+    [leihs.borrow.features.shopping-cart.timeout :as timeout]
+    [leihs.borrow.features.categories.show :as category-show]
+    [leihs.borrow.features.categories.index :as category-index]
+    [leihs.borrow.features.model-show.core :as model-show]
+    [leihs.borrow.features.favorite-models.core :as favorite-models]
+    [leihs.borrow.features.customer-orders.index :as customer-orders-index]
+    [leihs.borrow.features.customer-orders.show :as customer-orders-show]
+    [leihs.borrow.features.pools.index :as pools-index]
+    [leihs.borrow.features.pools.show :as pools-show]
+    ))
 
 (def re-graph-config {:ws-url nil :http-url "/app/borrow/graphql" :http-parameters {:with-credentials? true}})
 
 ;-; INIT APP & DB
-(rf/reg-event-fx
- ::load-app
- (fn [{:keys [db]}]
-   {:db (-> db
-            ; NOTE: clear the routing instance on (re-)load,
-            ; otherwise the event wont re-run when hot reloading!
-            (dissoc , :routing/routing)
-            (assoc , :meta {:app {:debug false}}))}))
+(reg-event-fx
+  ::load-app
+  (fn [{:keys [db]}]
+    {:db (-> db
+             ; NOTE: clear the routing instance on (re-)load,
+             ; otherwise the event wont re-run when hot reloading!
+             (dissoc , :routing/routing)
+             (assoc , :meta {:app {:debug false}}))}))
 
 ;-; EVENTS
-(rf/reg-event-db :set-debug (fn [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
+(reg-event-db :set-debug (fn [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
 
 
 ;-; SUBSCRIPTIONS
-(rf/reg-sub :app/fatal-errors (fn [db] (get-in db [:meta :app :fatal-errors])))
+(reg-sub :app/fatal-errors (fn [db] (get-in db [:meta :app :fatal-errors])))
 
-(rf/reg-sub :is-debug? (fn [db] (get-in db [:meta :app :debug] false)))
+(reg-sub :is-debug? (fn [db] (get-in db [:meta :app :debug] false)))
 
 
 ;-; VIEWS
 
 (defn main-view [views]
-  (let [errors @(rf/subscribe [:app/fatal-errors])]
+  (let [errors @(subscribe [:app/fatal-errors])]
     [:main
      [main-nav/navbar]
      (when errors [ui/fatal-error-screen errors])
@@ -93,11 +100,11 @@
 
 ; when going to '/' instead of '/borrow', do a redirect.
 ; this is only ever going to happen in development mode.
-(rf/reg-event-fx
- ::routes/absolute-root
- (fn [_ _] {:routing/navigate [::routes/home]}))
+(reg-event-fx
+  ::routes/absolute-root
+  (fn [_ _] {:routing/navigate [::routes/home]}))
 
-(rf/reg-fx :alert (fn [msg] (js/alert msg)))
+(reg-fx :alert (fn [msg] (js/alert msg)))
 
 (defn mount-root []
   (rf/clear-subscription-cache!)
@@ -106,12 +113,11 @@
 
 (defn ^:export main []
   ; start the app framework; NOTE: order is important!
-  (rf/dispatch [::re-graph/init re-graph-config])
-  (rf/dispatch [::load-app])
-  (rf/dispatch [:routing/init-routing routes/routes-map])
+  (dispatch [::re-graph/init re-graph-config])
+  (dispatch [::load-app])
+  (dispatch [:routing/init-routing routes/routes-map])
 
   ; start the ui
   (mount-root))
-
 
 (main)

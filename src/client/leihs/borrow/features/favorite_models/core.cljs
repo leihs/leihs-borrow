@@ -1,27 +1,33 @@
 (ns leihs.borrow.features.favorite-models.core
   #_(:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
-   #_[reagent.core :as r]
-   [re-frame.core :as rf]
-   [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   #_[leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.filters :as filters]
-   [leihs.borrow.lib.localstorage :as ls]
-   [leihs.borrow.lib.pagination :as pagination]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.components :as ui] 
-   [leihs.borrow.features.models.core :as models]))
+    #_[reagent.core :as r]
+    [re-frame.core :as rf]
+    [re-graph.core :as re-graph]
+    [shadow.resource :as rc]
+    #_[leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
+    [leihs.borrow.lib.filters :as filters]
+    [leihs.borrow.lib.localstorage :as ls]
+    [leihs.borrow.lib.pagination :as pagination]
+    [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.components :as ui] 
+    [leihs.borrow.features.models.core :as models]))
 
 (def EXTRA-PARAMS {:isFavorited true})
 
 ;-; EVENTS 
-(rf/reg-event-fx
+(reg-event-fx
   ::routes/models-favorites
   (fn [_ _]
     {:dispatch [::models/get-models EXTRA-PARAMS]}))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::clear
   (fn [_ _]
     {:dispatch-n (list [::filters/clear-current]
@@ -29,13 +35,13 @@
                        [:routing/navigate [::routes/models-favorites]])}))
 
 (defn view []
-  (let [models @(rf/subscribe [::models/results])]
+  (let [models @(subscribe [::models/results])]
     [:<>
      [:header.mx-3.my-4
       [:h1.text-3xl.font-extrabold.leading-none
        "Favorites"]]
      [models/search-and-list
-      #(rf/dispatch [:routing/navigate
-                     [::routes/models-favorites {:query-params %}]])
-      #(rf/dispatch [::clear])
+      #(dispatch [:routing/navigate
+                  [::routes/models-favorites {:query-params %}]])
+      #(dispatch [::clear])
       EXTRA-PARAMS]]))

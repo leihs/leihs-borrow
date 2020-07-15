@@ -1,6 +1,6 @@
 (ns leihs.borrow.ui.icons
   (:require
-   #_[reagent.core :as reagent]))
+    #_[reagent.core :as reagent]))
 
 (def menu-icon [:span.ui-icon.ui-menu-icon "☰"])
 (def trash-icon [:span.ui-icon.ui-icon-colored.ui-trash-icon "🗑️"])

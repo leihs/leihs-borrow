@@ -4,9 +4,15 @@
     #_[reagent.core :as r]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
     [shadow.resource :as rc]))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::favorite-model
   (fn [_ [_ model-id]]
     {:dispatch
@@ -15,7 +21,7 @@
       {:modelId model-id :isFav true}
       [::on-mutation-result]]}))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::unfavorite-model
   (fn [_ [_ model-id]]
     {:dispatch
@@ -24,7 +30,7 @@
       {:modelId model-id :isFav false}
       [::on-mutation-result]]}))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::on-mutation-result
   (fn [{:keys [_db]} [_ {:keys [_data errors]}]]
     (when errors

@@ -1,25 +1,31 @@
 (ns leihs.borrow.features.categories.show
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
-   #_[reagent.core :as reagent]
-   [re-frame.core :as rf]
-   [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   [re-frame.std-interceptors :refer [path]]
-   [clojure.string :refer [join split #_replace-first]]
-   [leihs.borrow.lib.localstorage :as ls]
-   [leihs.borrow.lib.filters :as filters]
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.pagination :as pagination]
-   [leihs.borrow.components :as ui]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.features.models.core :as models]))
+    #_[reagent.core :as reagent]
+    [re-frame.core :as rf]
+    [re-graph.core :as re-graph]
+    [shadow.resource :as rc]
+    [re-frame.std-interceptors :refer [path]]
+    [clojure.string :refer [join split #_replace-first]]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
+    [leihs.borrow.lib.localstorage :as ls]
+    [leihs.borrow.lib.filters :as filters]
+    [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.pagination :as pagination]
+    [leihs.borrow.components :as ui]
+    [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.features.models.core :as models]))
 
 (def query
   (rc/inline "leihs/borrow/features/categories/getCategoryShow.gql"))
 
 ; is kicked off from router when this view is loaded
-(rf/reg-event-fx
+(reg-event-fx
   ::routes/categories-show
   (fn [_ [_ args]]
     (let [categories-path (get-in args [:route-params :categories-path])
@@ -33,7 +39,7 @@
                           [::on-fetched-category-data category-id]]
                          [::models/get-models {:categoryId category-id}])})))
 
-(ls/reg-event-db
+(reg-event-db
   ::on-fetched-category-data
   [(path :ls)]
   (fn [ls [_ category-id {:keys [data errors]}]]
@@ -44,31 +50,31 @@
           (assoc-in [::errors category-id] errors))
         (assoc-in [::data category-id] data))))
 
-(rf/reg-event-fx
+(reg-event-fx
   ::clear
   (fn [_ [_ nav-args]]
     {:dispatch-n (list [::filters/clear-current]
                        [::models/clear-results]
                        [:routing/navigate [::routes/categories-show nav-args]])}))
 
-(rf/reg-sub
+(reg-sub
   ::category-data
   (fn [db [_ id]] (get-in db [:ls ::data id])))
 
-(rf/reg-sub
+(reg-sub
   ::errors
   (fn [db [_ id]] (get-in db [:ls ::errors id])))
 
 (defn view []
-  (let [routing @(rf/subscribe [:routing/routing])
+  (let [routing @(subscribe [:routing/routing])
         categories-path (get-in routing [:bidi-match :route-params :categories-path])
         cat-ids (split categories-path #"/")
         category-id (last cat-ids)
         prev-ids (butlast cat-ids)
         parent-id (first prev-ids)
-        fetched @(rf/subscribe [::category-data category-id])
+        fetched @(subscribe [::category-data category-id])
         {:keys [children] :as category} (:category fetched)
-        errors @(rf/subscribe [::errors category-id])
+        errors @(subscribe [::errors category-id])
         is-loading? (not category)
         extra-args {:categoryId category-id}]
 
@@ -98,8 +104,8 @@
                 (:name child)]]]))]
 
         [models/search-and-list
-         #(rf/dispatch [:routing/navigate
-                        [::routes/categories-show 
-                         {:categories-path categories-path :query-params %}]])
-         #(rf/dispatch [::clear {:categories-path categories-path}])
+         #(dispatch [:routing/navigate
+                     [::routes/categories-show 
+                      {:categories-path categories-path :query-params %}]])
+         #(dispatch [::clear {:categories-path categories-path}])
          extra-args]])]))

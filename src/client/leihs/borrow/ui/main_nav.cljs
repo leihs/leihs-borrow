@@ -1,18 +1,19 @@
 (ns leihs.borrow.ui.main-nav
   (:require
-   [re-frame.core :as rf]
-   #_[shadow.resource :as rc]
-   ["date-fns" :as datefn]
+    [re-frame.core :as rf]
+    #_[shadow.resource :as rc]
+    ["date-fns" :as datefn]
 
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.lib.re-frame :refer [subscribe]]
+    [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.client.routes :as routes]
 
-   [leihs.borrow.features.shopping-cart.core :as cart]
+    [leihs.borrow.features.shopping-cart.core :as cart]
 
-   [leihs.borrow.ui.icons :as icons]))
+    [leihs.borrow.ui.icons :as icons]))
 
 (defn navbar []
-  (let [cart-data @(rf/subscribe [:leihs.borrow.features.shopping-cart.core/data])
+  (let [cart-data @(subscribe [:leihs.borrow.features.shopping-cart.core/data])
 
         style {:top 0 :z-index 1000
                :border-bottom-color "rgba(0,0,0, 0.08)"
@@ -24,7 +25,7 @@
                  icons/menu-icon]
         brand [:a.navbar-brand.m-0.font-black.text-xl {:href (routing/path-for ::routes/home)}
                (str " " "LEIHS" " ")]
-        valid-until [:span (if @(rf/subscribe [::cart/timed-out?])
+        valid-until [:span (if @(subscribe [::cart/timed-out?])
                              {:style {:color "red"}}
                              {:class "text-color-info"})
                      (:valid-until cart-data)]
