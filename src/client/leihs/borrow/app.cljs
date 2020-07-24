@@ -16,19 +16,20 @@
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.client.routes :as routes]
 
-    [leihs.borrow.features.home-page.core :as home-page]
     [leihs.borrow.features.about-page.core :as about-page]
-    [leihs.borrow.features.models.core :as models]
-    [leihs.borrow.features.shopping-cart.core :as shopping-cart]
-    [leihs.borrow.features.shopping-cart.timeout :as timeout]
-    [leihs.borrow.features.categories.show :as category-show]
     [leihs.borrow.features.categories.index :as category-index]
-    [leihs.borrow.features.model-show.core :as model-show]
-    [leihs.borrow.features.favorite-models.core :as favorite-models]
+    [leihs.borrow.features.categories.show :as category-show]
+    [leihs.borrow.features.current-user.show :as current-user-show]
     [leihs.borrow.features.customer-orders.index :as customer-orders-index]
     [leihs.borrow.features.customer-orders.show :as customer-orders-show]
+    [leihs.borrow.features.favorite-models.core :as favorite-models]
+    [leihs.borrow.features.home-page.core :as home-page]
+    [leihs.borrow.features.model-show.core :as model-show]
+    [leihs.borrow.features.models.core :as models]
     [leihs.borrow.features.pools.index :as pools-index]
     [leihs.borrow.features.pools.show :as pools-show]
+    [leihs.borrow.features.shopping-cart.core :as shopping-cart]
+    [leihs.borrow.features.shopping-cart.timeout :as timeout]
     ))
 
 (def re-graph-config {:ws-url nil :http-url "/app/borrow/graphql" :http-parameters {:with-credentials? true}})
@@ -83,6 +84,7 @@
             ::routes/about-page about-page/view
             ::routes/categories-index category-index/view
             ::routes/categories-show category-show/view
+            ::routes/current-user-show current-user-show/view
             ::routes/models models/view
             ::routes/models-show model-show/view
             ::routes/models-favorites favorite-models/view

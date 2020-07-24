@@ -10,6 +10,7 @@
    "categories" {"" ::categories-index
                  "/" ::categories-index
                  ["/" [#".+" :categories-path]] ::categories-show}
+   "current-user" ::current-user-show
    "models" {"" ::models
              "/" ::models
              "/favorites" ::models-favorites

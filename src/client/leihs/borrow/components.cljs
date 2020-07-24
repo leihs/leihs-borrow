@@ -59,13 +59,14 @@
       [:nav.border.border-black.m-3.p-2
        [:b "NAVIGATION MENU"]
 
-       [:p [:a {:href (routing/path-for ::routes/home)} "Home"]]
-       [:p [:a {:href (routing/path-for ::routes/pools-index)} "Pools"]]
-       [:p [:a {:href (routing/path-for ::routes/categories-index)} "Categories"]]
+       [:p [:a {:href (routing/path-for ::routes/about-page)} "About"]]
        [:p [:a {:href (routing/path-for ::routes/shopping-cart)} "Cart"]]
+       [:p [:a {:href (routing/path-for ::routes/categories-index)} "Categories"]]
+       [:p [:a {:href (routing/path-for ::routes/current-user-show)} "Current User"]]
+       [:p [:a {:href (routing/path-for ::routes/home)} "Home"]]
        [:p [:a {:href (routing/path-for ::routes/models-favorites)} "Favorites"]]
        [:p [:a {:href (routing/path-for ::routes/orders-index)} "Orders"]]
-       [:p [:a {:href (routing/path-for ::routes/about-page)} "About"]]
+       [:p [:a {:href (routing/path-for ::routes/pools-index)} "Pools"]]
        [:form {:action "/sign-out" :method "POST"}
         [:button {:type "submit"}
          "Logout"]]])
