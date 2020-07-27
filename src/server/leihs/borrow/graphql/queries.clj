@@ -4,6 +4,7 @@
     [leihs.borrow.resources.availability :as availability]
     [leihs.borrow.resources.categories :as categories]
     [leihs.borrow.resources.contracts :as contracts]
+    [leihs.borrow.resources.delegations :as delegations]
     [leihs.borrow.resources.images :as images]
     [leihs.borrow.resources.inventory-pools :as inventory-pools]
     [leihs.borrow.resources.models :as models]
@@ -22,6 +23,8 @@
    :contracts-connection contracts/get-connection
    :current-user users/get-current
    :child-categories categories/get-children
+   :delegation delegations/get-one
+   :delegations delegations/get-multiple
    :favorite-models-connection models/get-favorites-connection
    :has-reservable-items inventory-pools/has-reservable-items?
    :images images/get-multiple
@@ -30,6 +33,7 @@
    :is-favorited-model models/favorited?
    :is-reservable-model models/reservable?
    :maximum-reservation-time inventory-pools/maximum-reservation-time
+   :members delegations/get-members
    :model models/get-one
    :model-availability models/get-availability
    :models-connection models/get-connection
@@ -38,6 +42,7 @@
    :pool-orders orders/get-multiple-by-pool
    :properties properties/get-multiple
    :reservations reservations/get-multiple
+   :responsible delegations/responsible
    :root-categories categories/get-roots
    :suspensions suspensions/get-multiple
    :thumbnails images/get-multiple-thumbnails

@@ -1,0 +1,14 @@
+query getCurrentUser {
+  currentUser {
+    delegations {
+      id
+      name
+      responsible {
+        id
+        firstname
+        lastname
+        email
+      }
+    }
+  }
+}

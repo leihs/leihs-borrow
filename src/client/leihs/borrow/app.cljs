@@ -22,6 +22,8 @@
     [leihs.borrow.features.current-user.show :as current-user-show]
     [leihs.borrow.features.customer-orders.index :as customer-orders-index]
     [leihs.borrow.features.customer-orders.show :as customer-orders-show]
+    [leihs.borrow.features.delegations.index :as delegations-index]
+    [leihs.borrow.features.delegations.show :as delegations-show]
     [leihs.borrow.features.favorite-models.core :as favorite-models]
     [leihs.borrow.features.home-page.core :as home-page]
     [leihs.borrow.features.model-show.core :as model-show]
@@ -85,6 +87,8 @@
             ::routes/categories-index category-index/view
             ::routes/categories-show category-show/view
             ::routes/current-user-show current-user-show/view
+            ::routes/delegations-index delegations-index/view
+            ::routes/delegations-show delegations-show/view
             ::routes/models models/view
             ::routes/models-show model-show/view
             ::routes/models-favorites favorite-models/view

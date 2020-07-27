@@ -63,6 +63,7 @@
        [:p [:a {:href (routing/path-for ::routes/shopping-cart)} "Cart"]]
        [:p [:a {:href (routing/path-for ::routes/categories-index)} "Categories"]]
        [:p [:a {:href (routing/path-for ::routes/current-user-show)} "Current User"]]
+       [:p [:a {:href (routing/path-for ::routes/delegations-index)} "Delegations"]]
        [:p [:a {:href (routing/path-for ::routes/home)} "Home"]]
        [:p [:a {:href (routing/path-for ::routes/models-favorites)} "Favorites"]]
        [:p [:a {:href (routing/path-for ::routes/orders-index)} "Orders"]]

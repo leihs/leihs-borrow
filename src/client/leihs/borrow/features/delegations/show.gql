@@ -1,0 +1,17 @@
+query getDelegation($id: UUID!) {
+  delegation(id: $id) {
+    id
+    name
+    responsible {
+      id
+      firstname
+      lastname
+      email
+    }
+    members {
+      id
+      firstname
+      lastname
+    }
+  }
+}

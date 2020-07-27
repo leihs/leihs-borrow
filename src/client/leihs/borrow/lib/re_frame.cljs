@@ -21,7 +21,7 @@
     :id :kebab-case-data-and-errors
     :before
     (fn [ctx]
-      (let [event (rf/get-coeffect (spy ctx) :event)]
+      (let [event (rf/get-coeffect ctx :event)]
         (rf/assoc-coeffect ctx
                            :event
                            (map #(-> %
@@ -29,7 +29,7 @@
                                        (update :errors kebab-case-keys))
                                      (cond-> (-> % :data map?)
                                        (update :data kebab-case-keys)))
-                                (spy event)))))))
+                                event))))))
 
 (def base-interceptors [localstorage-interceptor
                         kebab-case-data-and-errors-interceptor])

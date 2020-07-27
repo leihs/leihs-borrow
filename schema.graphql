@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Jul 10 2020 12:04:53 GMT+0200 (Central European Summer Time)
+# timestamp: Mon Jul 27 2020 15:35:49 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -73,6 +73,7 @@ enum ContractStateEnum {
 }
 
 type CurrentUser {
+  delegations: [Delegation!]
   favoriteModels(after: String, endDate: Date, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: Date): ModelsConnection
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   suspensions: [Suspension]
@@ -89,6 +90,13 @@ type DayData {
   endDateRestriction: endDateRestrictionEnum
   quantity: Int!
   startDateRestriction: startDateRestrictionEnum
+}
+
+type Delegation {
+  id: UUID!
+  members: [User!]
+  name: String!
+  responsible: User!
 }
 
 enum endDateRestrictionEnum {
@@ -270,6 +278,7 @@ type QueryRoot {
   category(id: UUID!, parentId: UUID): Category
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   currentUser: CurrentUser!
+  delegation(id: UUID!): Delegation!
   inventoryPool(id: UUID!): InventoryPool
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   model(id: UUID!): Model!

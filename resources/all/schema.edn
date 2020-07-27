@@ -40,6 +40,12 @@
                                                  :resolve :inventory-pool}
                                  :suspendedUntil {:type (non-null :Date)}
                                  :suspendedReason {:type String}}}
+           :Delegation {:fields {:id {:type (non-null :UUID)}
+                                 :name {:type (non-null String)}
+                                 :responsible {:type (non-null :User)
+                                               :resolve :responsible}
+                                 :members {:type (list (non-null :User))
+                                           :resolve :members}}}
            :User {:description "A `User` represents a human agent that can log into and use the system."
                   :fields {:email {:type String}
                            :firstname {:type String}
@@ -66,6 +72,8 @@
                                                           :after {:type String}}
                                                    :type :ModelsConnection
                                                    :resolve :favorite-models-connection}
+                                  :delegations {:type (list (non-null :Delegation))
+                                                :resolve :delegations}
                                   :suspensions {:type (list :Suspension)
                                                 :resolve :suspensions}}}
            :Availability {:fields {:dates {:type (list :DayData)}}}
@@ -230,6 +238,9 @@
                               :states {:type (list :ContractStateEnum)}
                               :orderBy {:type (list :ContractsOrderByInput)}}
                        :type :ContractsConnection}
+           :delegation {:args {:id {:type (non-null :UUID)}}
+                        :resolve :delegation
+                        :type (non-null :Delegation)}
            :order {:args {:id {:type (non-null :UUID)}}
                    :resolve :order
                    :type (non-null :Order)}

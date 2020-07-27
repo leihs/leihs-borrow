@@ -11,6 +11,9 @@
                  "/" ::categories-index
                  ["/" [#".+" :categories-path]] ::categories-show}
    "current-user" ::current-user-show
+   "delegations" {"" ::delegations-index
+                  "/" ::delegations-index
+                  ["/" :delegation-id] ::delegations-show}
    "models" {"" ::models
              "/" ::models
              "/favorites" ::models-favorites
