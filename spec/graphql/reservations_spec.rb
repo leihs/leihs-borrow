@@ -55,12 +55,14 @@ describe 'reservations' do
           $startDate: Date!,
           $endDate: Date!,
           $quantity: Int!,
+          $userId: UUID!
         ) {
           createReservation(
             modelId: $modelId,
             startDate: $startDate,
             endDate: $endDate,
-            quantity: $quantity
+            quantity: $quantity,
+            userId: $userId
           ) {
             id
             createdAt
@@ -84,7 +86,8 @@ describe 'reservations' do
           modelId: model_1.id,
           startDate: Date.tomorrow.strftime,
           endDate: (Date.tomorrow + 1.day).strftime,
-          quantity: 2
+          quantity: 2,
+          userId: user.id
         }
 
         result = query(q, user.id, vars).deep_symbolize_keys
@@ -121,14 +124,16 @@ describe 'reservations' do
             $startDate: Date!,
             $endDate: Date!,
             $quantity: Int!,
-            $inventoryPoolIds: [UUID!]
+            $inventoryPoolIds: [UUID!],
+            $userId: UUID!
           ) {
             createReservation(
               modelId: $modelId,
               startDate: $startDate,
               endDate: $endDate,
               quantity: $quantity,
-              inventoryPoolIds: $inventoryPoolIds
+              inventoryPoolIds: $inventoryPoolIds,
+              userId: $userId
             ) {
               id
               createdAt
@@ -148,7 +153,8 @@ describe 'reservations' do
           startDate: Date.tomorrow.strftime,
           endDate: (Date.tomorrow + 1.day).strftime,
           quantity: 1,
-          inventoryPoolIds: [inventory_pool_1.id]
+          inventoryPoolIds: [inventory_pool_1.id],
+          userId: user.id
         }
 
         result = query(q, user.id, vars).deep_symbolize_keys
@@ -163,7 +169,8 @@ describe 'reservations' do
             modelId: model_1.id,
             startDate: Date.tomorrow.strftime,
             endDate: (Date.tomorrow + 1.day).strftime,
-            quantity: 1
+            quantity: 1,
+            userId: user.id
           }
 
           result = query(q, user.id, vars).deep_symbolize_keys
@@ -185,7 +192,8 @@ describe 'reservations' do
             modelId: model_1.id,
             startDate: Date.tomorrow.strftime,
             endDate: (Date.tomorrow + 1.day).strftime,
-            quantity: 3
+            quantity: 3,
+            userId: user.id
           }
 
           result = query(q, user.id, vars).deep_symbolize_keys
@@ -216,7 +224,8 @@ describe 'reservations' do
           modelId: model_2.id,
           startDate: Date.tomorrow.strftime,
           endDate: (Date.tomorrow + 1.day).strftime,
-          quantity: 3
+          quantity: 3,
+          userId: user.id
         }
 
         result = query(q, user.id, vars).deep_symbolize_keys
@@ -242,7 +251,8 @@ describe 'reservations' do
             modelId: model_3.id,
             startDate: Date.tomorrow.strftime,
             endDate: (Date.tomorrow + 1.day).strftime,
-            quantity: 3
+            quantity: 3,
+            userId: user.id
           }
 
           result = query(q, user.id, vars).deep_symbolize_keys

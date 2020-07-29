@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.current-user.core
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
     [re-frame.std-interceptors :refer [path]]
@@ -18,7 +19,7 @@
 
 (reg-event-fx
   ::fetch
-  (fn [_ [_ _]]
+  (fn-traced [_ [_ _]]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/current_user/core.gql")
                 {}
@@ -26,13 +27,13 @@
 
 (reg-event-db
   ::on-fetched-data
-  (fn [db [_ {:keys [data errors]}]]
+  (fn-traced [db [_ {:keys [data errors]}]]
     (if errors
       (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)
-      (assoc-in db [:ls ::data] (:current-user data)))))
+      (assoc-in db [::data] (:current-user data)))))
 
 (reg-sub ::data
-         (fn [db _] (get-in db [:ls ::data])))
+         (fn [db _] (get-in db [::data])))
 
 (reg-sub ::pools
          :<- [::data]

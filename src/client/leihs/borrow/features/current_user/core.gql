@@ -1,5 +1,14 @@
 query getCurrentUser {
   currentUser {
+    user {
+      id
+      firstname
+      lastname
+    }
+    delegations {
+      id
+      name
+    }
     inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
       id
       name

@@ -31,18 +31,21 @@
             (sql/limit limit))
         sql/format)))
 
-(defn get-one [tx id]
+(defn get-by-id [tx id]
   (-> base-sqlmap
       (sql/merge-where [:= :id id])
       sql/format
       (->> (jdbc/query tx))
       first))
 
+(defn get-one [{{:keys [tx]} :request} _ {:keys [user-id]}]
+  (get-by-id tx user-id))
+
 (defn get-current
   [{request :request} _ _]
   (let [tx (:tx request)
         user-id (-> request :authenticated-entity :user_id)]
-    {:user (get-one tx user-id)}))
+    {:user (get-by-id tx user-id)}))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

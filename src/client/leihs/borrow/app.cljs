@@ -1,5 +1,6 @@
 (ns leihs.borrow.app
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [reagent.core :as r]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
@@ -39,7 +40,7 @@
 ;-; INIT APP & DB
 (reg-event-fx
   ::load-app
-  (fn [{:keys [db]}]
+  (fn-traced [{:keys [db]}]
     {:db (-> db
              ; NOTE: clear the routing instance on (re-)load,
              ; otherwise the event wont re-run when hot reloading!
@@ -47,7 +48,7 @@
              (assoc , :meta {:app {:debug false}}))}))
 
 ;-; EVENTS
-(reg-event-db :set-debug (fn [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
+(reg-event-db :set-debug (fn-traced [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
 
 
 ;-; SUBSCRIPTIONS
@@ -108,7 +109,7 @@
 ; this is only ever going to happen in development mode.
 (reg-event-fx
   ::routes/absolute-root
-  (fn [_ _] {:routing/navigate [::routes/home]}))
+  (fn-traced [_ _] {:routing/navigate [::routes/home]}))
 
 (reg-fx :alert (fn [msg] (js/alert msg)))
 

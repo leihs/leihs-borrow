@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.customer-orders.index
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as reagent]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
@@ -20,7 +21,7 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/orders-index
-  (fn [_ [_ _]]
+  (fn-traced [_ [_ _]]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
                 {}
@@ -28,7 +29,7 @@
 
 (reg-event-db
   ::on-fetched-data
-  (fn [db [_ {:keys [data errors]}]]
+  (fn-traced [db [_ {:keys [data errors]}]]
     (-> db
         (cond-> errors (assoc ::errors errors))
         (assoc ::data data))))

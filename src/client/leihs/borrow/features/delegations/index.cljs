@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.delegations.index
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
     [re-frame.std-interceptors :refer [path]]
@@ -18,15 +19,14 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/delegations-index
-  (fn [_ _]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/delegations/index.gql")
                 {}
-                [::on-fetched-data]]}))
+                [::on-fetched-data]]})
 
 (reg-event-db
   ::on-fetched-data
-  (fn [db [_ {:keys [data errors]}]]
+  (fn-traced [db [_ {:keys [data errors]}]]
     (-> db
         (cond-> errors (assoc ::errors errors))
         (assoc ::data (-> data :current-user :delegations)))))

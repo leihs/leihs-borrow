@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.favorite-models.core
   #_(:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as r]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
@@ -24,18 +25,18 @@
 ;-; EVENTS 
 (reg-event-fx
   ::routes/models-favorites
-  (fn [_ _]
+  (fn-traced [_ _]
     {:dispatch [::models/get-models EXTRA-PARAMS]}))
 
 (reg-event-fx
   ::clear
-  (fn [_ _]
+  (fn-traced [_ _]
     {:dispatch-n (list [::filters/clear-current]
                        [::clear-results]
                        [:routing/navigate [::routes/models-favorites]])}))
 
 (defn view []
-  (let [models @(subscribe [::models/results])]
+  (let [models @(subscribe [::models/data])]
     [:<>
      [:header.mx-3.my-4
       [:h1.text-3xl.font-extrabold.leading-none

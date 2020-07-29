@@ -2,6 +2,7 @@
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require ["autolinker" :as autolinker]
             [re-frame.core :as rf]
+            [day8.re-frame.tracing :refer-macros [fn-traced]]
             [re-graph.core :as re-graph]
             [shadow.resource :as rc]
             [leihs.borrow.components :as ui]
@@ -19,7 +20,7 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/pools-show
-  (fn [_ [_ args]]
+  (fn-traced [_ [_ args]]
     (let [pool-id (get-in args [:route-params :pool-id])]
       {:dispatch [::re-graph/query
                   (rc/inline "leihs/borrow/features/pools/show.gql")
@@ -28,7 +29,7 @@
 
 (reg-event-db
   ::on-fetched-data
-  (fn [db [_ pool-id {:keys [data errors]}]]
+  (fn-traced [db [_ pool-id {:keys [data errors]}]]
     (-> db
         (update-in [:ls ::data pool-id ] (fnil identity {}))
         (cond->

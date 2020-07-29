@@ -2,6 +2,7 @@
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:refer-clojure :exclude [val])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [reagent.core :as reagent]
     [re-frame.core :as rf]
     [re-frame.std-interceptors :refer [path]]
@@ -18,12 +19,13 @@
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.ui.icons :as icons]
     [leihs.borrow.lib.filters :as filters]
-    [leihs.borrow.features.favorite-models.events :as favs]))
+    [leihs.borrow.features.favorite-models.events :as favs]
+    [leihs.borrow.features.current-user.core :as current-user]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/models-show
-  (fn [{:keys [db]} [_ args]]
+  (fn-traced [{:keys [db]} [_ args]]
     (let [id (get-in args [:route-params :model-id])
           filters (filters/current db)
           start-date (:start-date filters)
@@ -32,7 +34,7 @@
 
 (reg-event-fx
   ::fetch
-  (fn [_ [_ id start-date end-date]]
+  (fn-traced [_ [_ id start-date end-date]]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/model_show/getModelShow.gql")
                 {:modelId id
@@ -43,7 +45,7 @@
 
 (reg-event-fx
   ::reset-availability-and-fetch
-  (fn [{:keys [db]} [_ model-id start-date end-date]]
+  (fn-traced [{:keys [db]} [_ model-id start-date end-date]]
     {:db (update-in db
                     [:ls ::data model-id] 
                     dissoc 
@@ -53,7 +55,7 @@
 (reg-event-db
   ::on-fetched-data
   [(path :ls)]
-  (fn [ls [_ model-id {:keys [data errors]}]]
+  (fn-traced [ls [_ model-id {:keys [data errors]}]]
     (-> ls
         (update-in [::data model-id] (fnil identity {}))
         (cond-> errors (assoc-in [::errors model-id] errors))
@@ -61,14 +63,14 @@
 
 (reg-event-fx
   ::favorite-model
-  (fn [{:keys [db]} [_ model-id]]
-    {:db (assoc-in db [:ls ::data model-id :model :is-favorited] true)
+  (fn-traced [{:keys [db]} [_ model-id]]
+    {:db (assoc-in db [:ls ::data model-id :is-favorited] true)
      :dispatch [::favs/favorite-model model-id]}))
 
 (reg-event-fx
   ::unfavorite-model
-  (fn [{:keys [db]} [_ model-id]]
-    {:db (assoc-in db [:ls ::data model-id :model :is-favorited] false)
+  (fn-traced [{:keys [db]} [_ model-id]]
+    {:db (assoc-in db [:ls ::data model-id :is-favorited] false)
      :dispatch [::favs/unfavorite-model model-id]}))
 
 (reg-sub
@@ -83,7 +85,7 @@
 
 (reg-event-fx
   ::model-create-reservation
-  (fn [_ [_ args]]
+  (fn-traced [_ [_ args]]
     {:dispatch [::re-graph/mutate
                 (rc/inline "leihs/borrow/features/model_show/createReservationMutation.gql")
                 args
@@ -91,7 +93,7 @@
 
 (reg-event-fx
   ::on-mutation-result
-  (fn [{:keys [_db]} [_ args {:keys [data errors]}]]
+  (fn-traced [{:keys [_db]} [_ args {:keys [data errors]}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
       {:alert (str "OK! " (pr-str data))
@@ -103,14 +105,17 @@
 (defn order-panel [model filters]
   (let [state (reagent/atom {:quantity 1
                              :start-date (:start-date filters)
-                             :end-date (:end-date filters)})]
+                             :end-date (:end-date filters)
+                             :user-id (:user-id filters)})]
     (fn [{:keys [id] :as model} _]
       (swap! state assoc :max-quantity (:available-quantity-in-date-range model))
-      (let [on-submit #(dispatch [::model-create-reservation
+      (let [current-user @(subscribe [::current-user/data])
+            on-submit #(dispatch [::model-create-reservation
                                   {:modelId id
                                    :startDate (:start-date @state)
                                    :endDate (:end-date @state)
-                                   :quantity (:quantity @state)}])
+                                   :quantity (:quantity @state)
+                                   :userId (:user-id @state)}])
             on-change-date-fn (fn [date-key]
                                 (fn [e]
                                   (let [val (.-value (.-target e))]
@@ -155,6 +160,19 @@
               [:div.flex-1.w-1_2 [:span.no-underline.text-color-muted 
                                   {:aria-label (str "maximum available quantity is " (:max-quantity @state))} 
                                   "/" ui/thin-space (or (:max-quantity @state) [ui/spinner-clock]) ui/thin-space "max."]]]]
+            [:label.d-block.mb-0.mr-3
+             [:span.d-block.text-color-muted "for "]
+             [:select {:name :user-id
+                       :on-change (fn [e]
+                                    (let [val (.-value (.-target e))]
+                                      (swap! state assoc :user-id val)))}
+              (doall
+                (for [user (cons (:user current-user) (:delegations current-user))]
+                  [:option {:value (:id user)
+                            :selected (= (:user-id @state) (:id user))}
+                   (if (= (:user-id @state) (:id user))
+                    "me"
+                    (:name user))]))]]
 
             [:div.flex-auto.w-1_2
              [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg

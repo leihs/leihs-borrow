@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.models.core
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [reagent.core :as r]
     [akiroz.re-frame.storage :refer [persist-db]]
     [re-frame.core :as rf]
@@ -27,13 +28,13 @@
 ;-; EVENTS 
 (reg-event-fx
   ::routes/models
-  (fn [_ [_ {:keys [query-params]}]]
+  (fn-traced [_ [_ {:keys [query-params]}]]
     {:dispatch-n (list [::filters/set-multiple query-params]
                        [::get-models])}))
 
 (reg-event-fx
   ::get-models
-  (fn [{:keys [db]} [_ extra-args]]
+  (fn-traced [{:keys [db]} [_ extra-args]]
     (let [filters (filters/current db)
           start-date (:start-date filters)
           end-date (:end-date filters)
@@ -53,21 +54,21 @@
 
 (reg-event-fx
   ::on-fetched-models
-  (fn [{:keys [db]} [_ {:keys [data errors]}]]
+  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
       {:db (assoc-in db [::data] (get-in data [:models]))})))
 
 (reg-event-fx
   ::clear
-  (fn [_ _]
+  (fn-traced [_ _]
     {:dispatch-n (list [::filters/clear-current]
                        [::clear-data]
                        [:routing/navigate [::routes/home]])}))
 
 (reg-event-db
   ::clear-data
-  (fn [db _] (dissoc db ::data)))
+  (fn-traced [db _] (dissoc db ::data)))
 
 
 (reg-sub ::fetching
@@ -119,6 +120,12 @@
         {:type :text
          :value term
          :on-change #(dispatch [::filters/set-one :term (-> % .-target .-value)])}]]
+
+      [:div.form-group
+       [form-line :user-id "Für"
+        {:type :text
+         :disabled true
+         :value (or (:user-id filters) "")}]]
 
       [:div.form-group
        [:div.row

@@ -19,6 +19,9 @@ query getShoppingCart {
         }
         startDate
         status
+        user {
+          id
+        }
         # createdAt
         # updatedAt
       }

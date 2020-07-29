@@ -3,6 +3,7 @@
   (:require [leihs.borrow.time :as time]
             [leihs.borrow.resources.models :as models]
             [leihs.borrow.resources.inventory-pools :as pools]
+            [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.settings :as settings]
@@ -184,8 +185,8 @@
         (conj result (assoc pool-avail :quantity desired-quantity))))))
 
 (defn create
-  [{{:keys [tx authenticated-entity]} :request :as context}
-   {:keys [model-id start-date end-date quantity inventory-pool-ids]
+  [{{:keys [tx] {auth-user-id :id} :authenticated-entity} :request :as context}
+   {:keys [model-id start-date end-date quantity inventory-pool-ids user-id]
     exclude-reservation-ids :exclude-reservation-ids 
     :or {exclude-reservation-ids []}
     :as args}
@@ -194,8 +195,11 @@
     (throw
       (ex-info
         "Model either does not exist or is not reservable by the user." {})))
+  (when-not (or (= user-id auth-user-id)
+                (delegations/member? auth-user-id user-id))
+    (throw (ex-info "User is not member of the delegation." {})))
   (let [pools (cond->> (pools/to-reserve-from tx
-                                              (:id authenticated-entity)
+                                              user-id
                                               start-date
                                               end-date)
                 (seq inventory-pool-ids)
@@ -203,20 +207,20 @@
     (if (empty? pools)
       (throw (ex-info "Not possible to reserve from any pool under given conditions." {}))
       (let [pool-avails (->> (availability/get-available-quantities
-                             context
-                             {:inventory-pool-ids (map :id pools)
-                              :model-ids [model-id]
-                              :start-date start-date
-                              :end-date end-date
-                              :exclude-reservation-ids exclude-reservation-ids}
-                             nil)
-                           (map (fn [el]
-                                  (assoc el
-                                         :name
-                                         (->> pools
-                                              (filter #(= (:id el) (:id %)))
-                                              first
-                                              :name)))))]
+                               context
+                               {:inventory-pool-ids (map :id pools)
+                                :model-ids [model-id]
+                                :start-date start-date
+                                :end-date end-date
+                                :exclude-reservation-ids exclude-reservation-ids}
+                               nil)
+                             (map (fn [el]
+                                    (assoc el
+                                           :name
+                                           (->> pools
+                                                (filter #(= (:id el) (:id %)))
+                                                first
+                                                :name)))))]
         (->> quantity
              (distribute pool-avails)
              (map (fn [{:keys [quantity] :as attrs}]
@@ -225,7 +229,7 @@
                                   (assoc :start_date (sql/call :cast start-date :date))
                                   (assoc :end_date (sql/call :cast end-date :date))
                                   (assoc :quantity 1
-                                         :user_id (:id authenticated-entity)
+                                         :user_id user-id
                                          :status (sql/call :cast
                                                            "unsubmitted"
                                                            :reservation_status)

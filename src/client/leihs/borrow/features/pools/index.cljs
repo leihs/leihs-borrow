@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.pools.index
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
     [re-frame.std-interceptors :refer [path]]
@@ -19,7 +20,7 @@
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx ::routes/pools-index
-              (fn [_ _]
+              (fn-traced [_ _]
                 {:dispatch [::current-user/fetch]}))
 
 (defn pool-line [pool]

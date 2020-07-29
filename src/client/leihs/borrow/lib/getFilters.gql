@@ -10,4 +10,11 @@ query getFilters {
     id
     label: name
   }
+  currentUser {
+    user {
+      id
+      firstname
+      lastname
+    }
+  }
 }

@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.categories.show
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as reagent]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
@@ -27,7 +28,7 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/categories-show
-  (fn [_ [_ args]]
+  (fn-traced [_ [_ args]]
     (let [categories-path (get-in args [:route-params :categories-path])
           categories (split categories-path #"/")
           category-id (last categories)
@@ -42,7 +43,7 @@
 (reg-event-db
   ::on-fetched-category-data
   [(path :ls)]
-  (fn [ls [_ category-id {:keys [data errors]}]]
+  (fn-traced [ls [_ category-id {:keys [data errors]}]]
     (-> ls
         (update-in [::data category-id] (fnil identity {}))
         (cond->
@@ -52,7 +53,7 @@
 
 (reg-event-fx
   ::clear
-  (fn [_ [_ nav-args]]
+  (fn-traced [_ [_ nav-args]]
     {:dispatch-n (list [::filters/clear-current]
                        [::models/clear-results]
                        [:routing/navigate [::routes/categories-show nav-args]])}))

@@ -11,6 +11,7 @@
 (ns leihs.borrow.lib.routing
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require [bidi.bidi :as bidi]
+            [day8.re-frame.tracing :refer-macros [fn-traced]]
             [pushy.core :as pushy]
             [cemerick.url]
             [re-frame.core :as rf]
@@ -50,24 +51,23 @@
 
 (reg-event-fx
   :routing/init-routing
-  (fn [{:keys [db]} [_ routes]]
+  (fn-traced [{:keys [db]} [_ routes]]
     {:db (assoc-in db [:routing/routing :routes] routes)
      :routing/init-routing routes}))
 
 ; adds `:ls` to `app-db` necessary for initial rendering of the view
 (reg-event-fx
   :routing/change-view
-  (fn [{:keys [db]} [_ token]]
+  (fn-traced [{:keys [db]} [_ token]]
     (let [{:keys [routes]} (:routing/routing db)
           bidi-match (bidi-match-route-with-query-params routes token)]
       {:db (assoc-in db [:routing/routing :bidi-match] bidi-match)
-       :dispatch-n (list [::on-change-view]
-                         [::scroll-to-top true]
+       :dispatch-n (list [::scroll-to-top true]
                          [(:handler bidi-match) bidi-match])})))
 
 (reg-event-fx
   :routing/navigate
-  (fn [_ [_ [route-key route-args]]]
+  (fn-traced [_ [_ [route-key route-args]]]
     (let
       [bidi-args (dissoc route-args :query-params)
        query-params (get route-args :query-params)]
@@ -95,19 +95,19 @@
 
 (reg-event-fx
   :routing/navigate-raw
-  (fn [_ [_ url]]
+  (fn-traced [_ [_ url]]
     {:routing/navigate-raw url}))
 
 (reg-event-fx
   :routing/refresh-page
-  (fn [_] {:routing/refresh-page nil}))
+  (fn-traced [_] {:routing/refresh-page nil}))
 
 (reg-fx
   :routing/refresh-page
   (fn [_]
     (.reload (.-location js/window))))
 
-(reg-event-fx ::scroll-to-top (fn [_] {::scroll-to-top nil}))
+(reg-event-fx ::scroll-to-top (fn-traced [_] {::scroll-to-top nil}))
 (reg-fx ::scroll-to-top (fn [_] (js/window.scrollTo 0 0)))
 
 (reg-sub

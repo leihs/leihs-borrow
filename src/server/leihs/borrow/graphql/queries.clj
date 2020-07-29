@@ -47,6 +47,7 @@
    :suspensions suspensions/get-multiple
    :thumbnails images/get-multiple-thumbnails
    :unsubmitted-order orders/get-unsubmitted
+   :user users/get-one
    :users users/get-multiple
    :visits visits/get-multiple
    })

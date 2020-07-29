@@ -2,6 +2,7 @@
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require ["autolinker" :as autolinker]
             [re-frame.core :as rf]
+            [day8.re-frame.tracing :refer-macros [fn-traced]]
             [re-graph.core :as re-graph]
             [shadow.resource :as rc]
             [leihs.borrow.components :as ui]
@@ -18,7 +19,7 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/delegations-show
-  (fn [_ [_ args]]
+  (fn-traced [_ [_ args]]
     (let [delegation-id (get-in args [:route-params :delegation-id])]
       {:dispatch [::re-graph/query
                   (rc/inline "leihs/borrow/features/delegations/show.gql")
@@ -27,7 +28,7 @@
 
 (reg-event-db
   ::on-fetched-data
-  (fn [db [_ delegation-id {:keys [data errors]}]]
+  (fn-traced [db [_ delegation-id {:keys [data errors]}]]
     (-> db
         (update-in [::data delegation-id ] (fnil identity {}))
         (cond->

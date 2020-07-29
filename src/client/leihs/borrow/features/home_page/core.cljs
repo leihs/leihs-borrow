@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.home-page.core
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as r]
     [re-frame.core :as rf]
     #_[re-graph.core :as re-graph]
@@ -20,7 +21,7 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/home
-  (fn [_ [_ {:keys [query-params]}]] 
+  (fn-traced [_ [_ {:keys [query-params]}]] 
     {:dispatch-n (-> (list [::categories/fetch-index 4])
                      (cond-> (seq query-params)
                        (conj [::filters/set-multiple query-params]))
@@ -31,7 +32,9 @@
     (let [cats @(subscribe [::categories/categories-index])]
       [:<>
 
-       [models/search-panel #(dispatch [:routing/navigate [::routes/models {:query-params %}]])]
+       [models/search-panel
+        #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
+        #(dispatch [::models/clear])]
        [:hr]
 
        [:div

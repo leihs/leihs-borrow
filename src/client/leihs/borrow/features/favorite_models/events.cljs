@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.favorite-models.events
   #_(:require-macros [leihs.borrow.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as r]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
@@ -14,7 +15,7 @@
 
 (reg-event-fx
   ::favorite-model
-  (fn [_ [_ model-id]]
+  (fn-traced [_ [_ model-id]]
     {:dispatch
      [::re-graph/mutate
       (rc/inline "leihs/borrow/features/favorite_models/setModelFavorite.gql")
@@ -23,7 +24,7 @@
 
 (reg-event-fx
   ::unfavorite-model
-  (fn [_ [_ model-id]]
+  (fn-traced [_ [_ model-id]]
     {:dispatch
      [::re-graph/mutate
       (rc/inline "leihs/borrow/features/favorite_models/setModelFavorite.gql")
@@ -32,6 +33,6 @@
 
 (reg-event-fx
   ::on-mutation-result
-  (fn [{:keys [_db]} [_ {:keys [_data errors]}]]
+  (fn-traced [{:keys [_db]} [_ {:keys [_data errors]}]]
     (when errors
       {:alert (str "FAIL! " (pr-str errors))})))

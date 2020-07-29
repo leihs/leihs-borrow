@@ -1,5 +1,6 @@
 (ns leihs.borrow.features.about-page.core
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [clojure.string :as string]
     #_[reagent.core :as r]
     [re-frame.core :as rf]
@@ -20,7 +21,7 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/about-page
-  (fn [_ [_ _]] {}))
+  (fn-traced [_ [_ _]] {}))
 
 (defn matches-media-query? [media-query]
   (-> (js/window.matchMedia media-query) .-matches))

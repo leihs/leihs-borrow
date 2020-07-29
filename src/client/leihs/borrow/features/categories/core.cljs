@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.categories.core
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as reagent]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
@@ -21,7 +22,7 @@
     #_[leihs.borrow.components :as ui]))
 
 (def dispatch-fetch-index-handler
-  (fn [_ _]
+  (fn-traced [_ _]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/categories/getRootCategories.gql")
                 {} #_{:count how-many}
@@ -31,7 +32,7 @@
 
 (reg-event-fx
   ::on-fetched-categories-index
-  (fn [{:keys [db]} [_ {:keys [data errors]}]]
+  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
       {:db (assoc-in db [:ls ::data] (get-in data [:categories]))})))

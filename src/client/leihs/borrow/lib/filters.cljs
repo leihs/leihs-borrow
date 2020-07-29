@@ -2,6 +2,7 @@
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:refer-clojure :exclude [key])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [akiroz.re-frame.storage :refer [persist-db]]
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [reagent.core :as reagent]
@@ -19,7 +20,7 @@
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.components :as ui]
-    [leihs.borrow.features.favorite-models.events :as favs]))
+    [leihs.borrow.features.current-user.core :as current-user]))
 
 (def BOOLEANS #{:available-between?})
 
@@ -42,30 +43,31 @@
                          {}
                          [::on-fetched]]}))
 
-(reg-event-fx
+(reg-event-db
   ::on-fetched
-  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
+  (fn-traced [db [_ {:keys [data errors]}]]
              (if errors
-               {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-               {:db (update-in db
-                               current-path
-                               (fnil merge {}) 
-                               {:quantity 1})})))
+               (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)
+               (update-in db
+                          current-path
+                          (fnil merge {}) 
+                          {:quantity 1
+                           :user-id (-> data :current-user :user :id)}))))
 
 (reg-event-db
   ::set-multiple
   [(path current-path)]
-  (fn [old [_ filters]] (merge old (massage-values filters))))
+  (fn-traced [old [_ filters]] (merge old (massage-values filters))))
 
 (reg-event-db
   ::set-one
-  (fn [db [_ key value]]
+  (fn-traced [db [_ key value]]
     (assoc-in db (conj current-path key) value)))
 
 (reg-event-db
   ::clear-current
   [(path current-path)]
-  (fn [_ _] nil))
+  (fn-traced [_ _] nil))
 
 (defn get-from-current [db k]
   (get-in db (conj current-path k)))

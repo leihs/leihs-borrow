@@ -1,6 +1,7 @@
 (ns leihs.borrow.lib.re-frame
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [camel-snake-kebab.core :as csk]
     [clojure.walk :refer [postwalk]]
     [leihs.borrow.lib.localstorage :refer [localstorage-interceptor]]

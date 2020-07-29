@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Jul 27 2020 15:35:49 GMT+0200 (Central European Summer Time)
+# timestamp: Wed Jul 29 2020 14:00:36 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -191,6 +191,7 @@ type MutationRoot {
     modelId: UUID!
     quantity: Int!
     startDate: Date!
+    userId: UUID!
   ): [Reservation]
   deleteReservationLines(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
@@ -312,6 +313,7 @@ type Reservation {
   startDate: Date!
   status: ReservationStateEnum!
   updatedAt: DateTime!
+  user: User!
 }
 
 enum ReservationsOrderByAttributeEnum {

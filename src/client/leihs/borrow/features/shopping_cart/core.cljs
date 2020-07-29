@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.shopping-cart.core
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
     [clojure.string :as string]
     [cljs-time.core :as tc]
     [cljs-time.format :as tf]
@@ -25,7 +26,7 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
  ::routes/shopping-cart
- (fn [_ [_ _]]
+ (fn-traced [_ [_ _]]
    {:dispatch [::re-graph/query
                (rc/inline "leihs/borrow/features/shopping_cart/getShoppingCart.gql")
                {}
@@ -33,7 +34,7 @@
 
 (reg-event-db
   ::on-fetched-data
-  (fn [db [_ {:keys [data errors]}]]
+  (fn-traced [db [_ {:keys [data errors]}]]
     (-> db
         (assoc ::data (help/kebabize-keys
                         (get-in data
@@ -43,7 +44,7 @@
 
 (reg-event-fx
   ::reset-availability-and-fetch
-  (fn [{:keys [db]} [_ args]]
+  (fn-traced [{:keys [db]} [_ args]]
     {:db (update-in db
                     [::data :edit-mode] 
                     dissoc 
@@ -52,7 +53,7 @@
 
 (reg-event-fx
   ::fetch-available-quantity
-  (fn [_ [_ args]]
+  (fn-traced [_ [_ args]]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/shopping_cart/getModelAvailableQuantity.gql")
                 args
@@ -61,13 +62,13 @@
 (reg-event-db
   ::on-fetched-available-quantity
   [(path ::data :edit-mode)]
-  (fn [em [_ {:keys [data errors]}]]
+  (fn-traced [em [_ {:keys [data errors]}]]
     (assoc em
            :max-quantity (-> data :model :available-quantity-in-date-range))))
 
 (reg-event-fx
   ::delete-reservations
-  (fn [_ [_ ids]]
+  (fn-traced [_ [_ ids]]
     {:dispatch [::re-graph/mutate
                 (rc/inline "leihs/borrow/features/shopping_cart/deleteReservationLines.gql")
                 {:ids ids}
@@ -75,7 +76,7 @@
 
 (reg-event-db
   ::on-delete-reservations
-  (fn [db [_ {{ids :delete-reservation-lines} :data errors :errors}]]
+  (fn-traced [db [_ {{ids :delete-reservation-lines} :data errors :errors}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
       (update-in db
@@ -87,8 +88,9 @@
 
 (reg-event-fx
   ::edit-reservation
-  (fn [{:keys [db]} [_ res-lines]]
+  (fn-traced [{:keys [db]} [_ res-lines]]
     (let [exemplar (first res-lines)
+          user-id (-> exemplar :user :id)
           model (:model exemplar)
           start-date (:start-date exemplar)
           end-date (:end-date exemplar)
@@ -99,6 +101,7 @@
                       :start-date start-date
                       :end-date end-date
                       :quantity quantity
+                      :user-id user-id
                       :model model
                       :inventory-pools (map :inventory-pool res-lines)})
        :dispatch [::fetch-available-quantity
@@ -109,7 +112,7 @@
 
 (reg-event-fx
   ::submit-order
-  (fn [_ [_ args]]
+  (fn-traced [_ [_ args]]
     {:dispatch [::re-graph/mutate
                 (rc/inline "leihs/borrow/features/shopping_cart/submitOrderMutation.gql")
                 args
@@ -117,7 +120,7 @@
 
 (reg-event-fx
   ::on-submit-order-result
-  (fn [{:keys [_db]} [_ {:keys [data errors]}]]
+  (fn-traced [{:keys [_db]} [_ {:keys [data errors]}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
       {:alert (str "OK! " (pr-str data))
@@ -125,7 +128,7 @@
 
 (reg-event-fx
   ::update-reservations
-  (fn [_ [_ args]]
+  (fn-traced [_ [_ args]]
     {:dispatch
      [::re-graph/mutate
       (rc/inline "leihs/borrow/features/shopping_cart/updateReservations.gql")
@@ -134,7 +137,7 @@
 
 (reg-event-fx
   ::on-update-reservations-result
-  (fn [{:keys [db]}
+  (fn-traced [{:keys [db]}
        [_ {:keys [errors] {del-ids :delete-reservation-lines
                            new-res-lines :create-reservation} :data}]]
     (if errors
@@ -148,19 +151,19 @@
 
 (reg-event-db ::update-start-date
                  [(path ::data :edit-mode :start-date)]
-                 (fn [_ [_ v]] v))
+                 (fn-traced [_ [_ v]] v))
 
 (reg-event-db ::update-end-date
                  [(path ::data :edit-mode :end-date)]
-                 (fn [_ [_ v]] v))
+                 (fn-traced [_ [_ v]] v))
 
 (reg-event-db ::update-quantity
                  [(path ::data :edit-mode :quantity)]
-                 (fn [_ [_ v]] v))
+                 (fn-traced [_ [_ v]] v))
 
 (reg-event-db ::cancel-edit
                  [(path ::data)]
-                 (fn [co _] (assoc co :edit-mode nil)))
+                 (fn-traced [co _] (assoc co :edit-mode nil)))
 
 (reg-sub ::data
             (fn [db _] (::data db)))
@@ -219,6 +222,7 @@
 
 (defn edit-reservation [res-lines]
   (let [edit-mode-data @(subscribe [::edit-mode-data])
+        user-id (:user-id edit-mode-data)
         model (:model edit-mode-data)
         start-date (:start-date edit-mode-data)
         end-date (:end-date edit-mode-data)
@@ -238,6 +242,7 @@
                                   :modelId (:id model)
                                   :startDate start-date
                                   :endDate end-date
+                                  :userId user-id
                                   :quantity quantity}])]
     [:div.border-b-2.border-gray-300.mt-4.pb-4
      [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Change reservation"]
@@ -286,6 +291,13 @@
         [:div.flex-1.w-1_2 [:span.no-underline.text-color-muted 
                             {:aria-label (str "maximum available quantity is " max-quantity)} 
                             "/" ui/thin-space (or max-quantity [ui/spinner-clock]) ui/thin-space "max."]]]]
+      [:div.w-1_2
+       [:label.d-block.mb-0
+        [:span.d-block.text-color-muted "for"]
+        [:input.w-full {:type :text,
+                        :name :user-id,
+                        :disabled true,
+                        :value user-id}]]]
       [:div.flex-auto.w-1_2
        [:button.px-4.py-2.w-100.rounded-lg.font-semibold.text-lg
         {:on-click #(dispatch [::cancel-edit])}
@@ -308,7 +320,6 @@
                         distinct
                         (clojure.string/join ", "))
         invalid? (every? invalid-res-ids (map :id res-lines))]
-    (js/console.log invalid?)
     [:div.flex.flex-row.border-b.mb-2.pb-2.-mx-1
      [:div.px-1.flex-none {:class "w-1/4"} [ui/image-square-thumb img]]
      (if edit-mode?
@@ -324,6 +335,7 @@
           [:span quantity " Items"]
           [:span " • "]
           [:span pool-names]]]
+        [:div.text-sm.text-color-muted (str "For: " (-> exemplar :user :id))]
         [:div.px-1.self-center.flex-none
          [:button.text-sm
           {:on-click #(dispatch [::delete-reservations (map :id res-lines)])}
