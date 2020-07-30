@@ -1,10 +1,17 @@
-query getModelShow($modelId: UUID!, $startDate: Date, $endDate: Date, $bothDatesGiven: Boolean!) {
+query getModelShow(
+  $modelId: UUID!
+  $startDate: Date
+  $endDate: Date
+  $bothDatesGiven: Boolean!
+  $pools: [UUID!]!
+) {
   model(id: $modelId) {
     id
     name
     manufacturer
     description
-    availableQuantityInDateRange(startDate: $startDate, endDate: $endDate) @include(if: $bothDatesGiven)
+    availableQuantityInDateRange(startDate: $startDate, endDate: $endDate)
+      @include(if: $bothDatesGiven)
     isFavorited
     images {
       id
@@ -18,7 +25,9 @@ query getModelShow($modelId: UUID!, $startDate: Date, $endDate: Date, $bothDates
       # content_type # FIXME: include this field when API bug is fixed
     }
     properties {
-      id key value
+      id
+      key
+      value
     }
     recommends(first: 12) {
       edges {
@@ -33,6 +42,23 @@ query getModelShow($modelId: UUID!, $startDate: Date, $endDate: Date, $bothDates
         }
       }
     }
+
+    # FIXME: put in separate query
+    availability(
+      startDate: $startDate
+      endDate: $endDate
+      inventoryPoolIds: $pools
+    ) @include(if: $bothDatesGiven) {
+      inventoryPool {
+        id
+        name
+      }
+      dates {
+        date
+        quantity
+        startDateRestriction
+        endDateRestriction
+      }
+    }
   }
 }
-

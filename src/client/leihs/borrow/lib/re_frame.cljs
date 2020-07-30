@@ -17,6 +17,13 @@
                csk/->kebab-case)
             m))
 
+(defn camel-case-keys [m]
+  (postwalk #(cond-> %
+               (and (keyword? %)
+                    (not (qualified-keyword? %)))
+               csk/->camelCase)
+            m))
+
 (def kebab-case-data-and-errors-interceptor
   (rf/->interceptor
     :id :kebab-case-data-and-errors

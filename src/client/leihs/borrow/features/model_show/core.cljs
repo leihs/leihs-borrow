@@ -1,23 +1,25 @@
 (ns leihs.borrow.features.model-show.core
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
+  #_(:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:refer-clojure :exclude [val])
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [reagent.core :as reagent]
-    [re-frame.core :as rf]
+    #_[re-frame.core :as rf]
     [re-frame.std-interceptors :refer [path]]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
     [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                        reg-event-db
                                        reg-sub
-                                       reg-fx
+                                       #_reg-fx
                                        subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.localstorage :as ls]
+                                       dispatch 
+                                       camel-case-keys]]
+    #_[leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.ui.icons :as icons]
+    ["/leihs-ui-client-side" :as UI]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.features.favorite-models.events :as favs]
     [leihs.borrow.features.current-user.core :as current-user]))
@@ -38,9 +40,10 @@
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/model_show/getModelShow.gql")
                 {:modelId id
-                 :startDate start-date
-                 :endDate end-date
-                 :bothDatesGiven (and (boolean start-date) (boolean end-date))}
+                 :startDate (or start-date (.substring (.toISOString (js/Date.)) 0 10))
+                 :endDate (or end-date (.substring (.toISOString (js/Date.)) 0 10))
+                 :bothDatesGiven true #_(boolean (and (boolean start-date) (boolean end-date) (< start-date end-date)))
+                 :pools ["8bd16d45-056d-5590-bc7f-12849f034351"]}
                 [::on-fetched-data id]]}))
 
 (reg-event-fx
@@ -103,6 +106,44 @@
                   (:endDate args)]})))
 
 (defn order-panel [model filters]
+  (let [state (reagent/atom {:quantity 1
+                             :start-date (:start-date filters)
+                             :end-date (:end-date filters)
+                             :user-id (:user-id filters)})]
+    (fn [{:keys [id] :as model} _]
+      (swap! state assoc :max-quantity (:available-quantity-in-date-range model))
+      (let [current-user @(subscribe [::current-user/data])
+            availability? (boolean (:availability model))
+            on-submit #(dispatch [::model-create-reservation
+                                  {:modelId id
+                                   :startDate (:start-date @state)
+                                   :endDate (:end-date @state)
+                                   :quantity (:quantity @state)
+                                   :userId (:user-id @state)}])
+            on-change-date-fn (fn [date-key]
+                                (fn [e]
+                                  (let [val (.-value (.-target e))]
+                                    (swap! state assoc date-key val)
+                                    (when (and (:start-date @state) (:end-date @state))
+                                      (dispatch [::reset-availability-and-fetch
+                                                 id
+                                                 (:start-date @state)
+                                                 (:end-date @state)])))))]
+        (js/console.log "model" (clj->js model))
+        [:div.border-b-2.border-gray-300.mt-4.pb-4
+         [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
+         [:div.d-flex.mx-n2
+          (when #_false availability?
+            [:> UI/Components.BookingCalendar
+             {:initialOpen true
+              :initialQuantity 1
+              :onLoadMoreFuture #(js/alert "Load More!")
+              :onSubmit #(js/alert "Submit!")
+              :modelData (camel-case-keys model)}])
+          ]
+         ]))))
+
+(defn order-panel-1 [model filters]
   (let [state (reagent/atom {:quantity 1
                              :start-date (:start-date filters)
                              :end-date (:end-date filters)
@@ -213,6 +254,8 @@
            [:div [:img {:src (:image-url first-image)}]]])
 
         [order-panel model filters]
+        
+        [order-panel-1 model filters]
 
         (if-let [description (:description model)]
           [:p.py-4.border-b-2.border-gray-300.text-base.preserve-linebreaks description])
