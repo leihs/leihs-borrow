@@ -130,8 +130,8 @@
         on-submit (fn [jsargs]
                      (js/alert (str "Submiting!" (js/JSON.stringify jsargs)))
                     (let [args (js->clj jsargs :keywordize-keys true)]
-                    (js/console.log args)
-                    (js/console.log (:startDate args))
+                    (js/console.log current-user)
+                    (js/console.log (clj->js current-user))
                     
                     (dispatch [::model-create-reservation
                                {:modelId (:id model)
