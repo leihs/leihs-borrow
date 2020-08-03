@@ -2,7 +2,7 @@
   (:require
     [re-frame.core :as rf]
     #_[shadow.resource :as rc]
-    ["date-fns" :as datefn]
+    #_["date-fns" :as datefn]
 
     [leihs.borrow.lib.re-frame :refer [subscribe]]
     [leihs.borrow.lib.routing :as routing]

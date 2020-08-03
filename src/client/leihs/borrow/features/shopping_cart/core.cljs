@@ -17,7 +17,7 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
-    [leihs.borrow.lib.helpers :as help]
+    #_[leihs.borrow.lib.helpers :as h]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.components :as ui]
     [leihs.borrow.ui.icons :as icons]))
@@ -36,9 +36,9 @@
   ::on-fetched-data
   (fn-traced [db [_ {:keys [data errors]}]]
     (-> db
-        (assoc ::data (help/kebabize-keys
-                        (get-in data
-                                [:current-user :unsubmitted-order])))
+        (assoc ::data
+               (get-in data
+                       [:current-user :unsubmitted-order]))
         (assoc-in [::data :edit-mode] nil)
         (cond-> errors (assoc ::errors errors)))))
 

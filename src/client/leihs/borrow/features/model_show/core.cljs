@@ -20,6 +20,8 @@
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.ui.icons :as icons]
     ["/leihs-ui-client-side" :as UI]
+    ["date-fns" :as datefn]
+    [leihs.borrow.lib.helpers :as h]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.features.favorite-models.events :as favs]
     [leihs.borrow.features.current-user.core :as current-user]))
@@ -37,14 +39,24 @@
 (reg-event-fx
   ::fetch
   (fn-traced [_ [_ id start-date end-date]]
-    {:dispatch [::re-graph/query
+    (let [now (js/Date.)
+          start-date (datefn/startOfMonth (or start-date now))
+          end-date (datefn/endOfMonth (cond (and end-date (<= start-date end-date)) end-date :else (datefn/addMonths now 3)))
+          ]
+      {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/model_show/getModelShow.gql")
                 {:modelId id
-                 :startDate (or start-date (.substring (.toISOString (js/Date.)) 0 10))
-                 :endDate (or end-date (.substring (.toISOString (js/Date.)) 0 10))
-                 :bothDatesGiven true #_(boolean (and (boolean start-date) (boolean end-date) (< start-date end-date)))
-                 :pools ["8bd16d45-056d-5590-bc7f-12849f034351"]}
-                [::on-fetched-data id]]}))
+                 ; START DYNAMIC FETCHING PROPS
+                 :startDate (h/date-format-day start-date)
+                 :endDate (h/date-format-day end-date)
+                 :minDateLoaded start-date
+                 :maxDateLoaded end-date
+                 :isLoadingFuture false
+                 ; END DYNAMIC FETCHING PROPS
+                 :onSubmit #(js/console.log "Date submited!")
+                 :bothDatesGiven true ; we always set default values here…
+                 :pools ["8bd16d45-056d-5590-bc7f-12849f034351"]} ; FIXME: remove this filter (we want ALL pools)
+                [::on-fetched-data id]]})))
 
 (reg-event-fx
   ::reset-availability-and-fetch
@@ -106,42 +118,50 @@
                   (:endDate args)]})))
 
 (defn order-panel [model filters]
-  (let [state (reagent/atom {:quantity 1
-                             :start-date (:start-date filters)
-                             :end-date (:end-date filters)
-                             :user-id (:user-id filters)})]
-    (fn [{:keys [id] :as model} _]
-      (swap! state assoc :max-quantity (:available-quantity-in-date-range model))
-      (let [current-user @(subscribe [::current-user/data])
-            availability? (boolean (:availability model))
-            on-submit #(dispatch [::model-create-reservation
-                                  {:modelId id
-                                   :startDate (:start-date @state)
-                                   :endDate (:end-date @state)
-                                   :quantity (:quantity @state)
-                                   :userId (:user-id @state)}])
-            on-change-date-fn (fn [date-key]
-                                (fn [e]
-                                  (let [val (.-value (.-target e))]
-                                    (swap! state assoc date-key val)
-                                    (when (and (:start-date @state) (:end-date @state))
-                                      (dispatch [::reset-availability-and-fetch
-                                                 id
-                                                 (:start-date @state)
-                                                 (:end-date @state)])))))]
-        (js/console.log "model" (clj->js model))
-        [:div.border-b-2.border-gray-300.mt-4.pb-4
-         [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
-         [:div.d-flex.mx-n2
-          (when #_false availability?
+  (let [filter-start (:start-date filters)
+        filter-end (:end-date filters)
+        now (js/Date.)
+        start-date (datefn/startOfMonth (or filter-start now))
+        end-date (datefn/endOfMonth (cond (and filter-end (<= start-date filter-end)) filter-end :else (datefn/addMonths now 3)))
+
+        ; max-quantity (:available-quantity-in-date-range model)
+        current-user @(subscribe [::current-user/data])
+        has-availability? (boolean (:availability model))
+        on-submit (fn [jsargs]
+                     (js/alert (str "Submiting!" (js/JSON.stringify jsargs)))
+                    (let [args (js->clj jsargs :keywordize-keys true)]
+                    (js/console.log args)
+                    (js/console.log (:startDate args))
+                    
+                    (dispatch [::model-create-reservation
+                               {:modelId (:id model)
+                                :startDate (h/date-format-day (:startDate args))
+                                :endDate (h/date-format-day (:endDate args))
+                                :quantity (:quantity args)
+                                ; :poolId (:poolId args) ???
+                                ;:userId (:id current-user) ???
+                                }])))]
+
+    [:div.border-b-2.border-gray-300.mt-4.pb-4
+     [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
+     [:div.d-flex.mx-n2
+      (when has-availability?
             [:> UI/Components.BookingCalendar
              {:initialOpen true
               :initialQuantity 1
-              :onLoadMoreFuture #(js/alert "Load More!")
-              :onSubmit #(js/alert "Submit!")
-              :modelData (camel-case-keys model)}])
-          ]
-         ]))))
+
+              ; START DYNAMIC FETCHING PROPS
+              :startDate (h/date-format-day start-date)
+              :endDate (h/date-format-day end-date)
+              :minDateLoaded start-date
+              :maxDateLoaded end-date
+              :isLoadingFuture false
+              ; END DYNAMIC FETCHING PROPS
+
+              :onLoadMoreFuture #(js/alert (str "Load More!" (js/JSON.stringify %)))
+              :onSubmit on-submit
+
+              :modelData (camel-case-keys model)}])]]))
 
 (defn order-panel-1 [model filters]
   (let [state (reagent/atom {:quantity 1
@@ -255,7 +275,7 @@
 
         [order-panel model filters]
         
-        [order-panel-1 model filters]
+        #_[order-panel-1 model filters]
 
         (if-let [description (:description model)]
           [:p.py-4.border-b-2.border-gray-300.text-base.preserve-linebreaks description])

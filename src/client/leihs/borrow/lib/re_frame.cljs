@@ -10,19 +10,16 @@
     [re-frame.std-interceptors :refer [path]]
     [shadow.resource :as rc]))
 
-(defn- kebab-case-keys [m]
+(defn- tranform-map-keys [transformer map]
   (postwalk #(cond-> %
                (and (keyword? %)
                     (not (qualified-keyword? %)))
-               csk/->kebab-case)
-            m))
+               transformer)
+            map))
 
-(defn camel-case-keys [m]
-  (postwalk #(cond-> %
-               (and (keyword? %)
-                    (not (qualified-keyword? %)))
-               csk/->camelCase)
-            m))
+(defn- kebab-case-keys [m] (tranform-map-keys csk/->kebab-case m))
+
+(defn camel-case-keys [m] (tranform-map-keys csk/->camelCase m))
 
 (def kebab-case-data-and-errors-interceptor
   (rf/->interceptor
