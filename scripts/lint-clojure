@@ -1,0 +1,5 @@
+#!/bin/sh
+
+find src -name '*.clj' -or -name '*.cljs' -or -name '*.edn' \
+  | xargs -I % npx zprint-clj --hang -i % -o .
+  # | xargs -J % ls %

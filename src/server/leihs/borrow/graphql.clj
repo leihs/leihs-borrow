@@ -16,11 +16,10 @@
 
 (def lacinia-enable-timing (atom nil))
 
-(defn init [options]
-  (reset! lacinia-enable-timing
-          (:leihs-borrow-lacinia-enable-timing options))
-  (if @lacinia-enable-timing
-    (log/info (str "Lacinia timing is enabled."))))
+(defn init
+  [options]
+  (reset! lacinia-enable-timing (:leihs-borrow-lacinia-enable-timing options))
+  (if @lacinia-enable-timing (log/info (str "Lacinia timing is enabled."))))
 
 (defn load-schema
   []
@@ -45,27 +44,25 @@
                        :body
                        :variables)
                    (cond-> {:request request}
-                     @lacinia-enable-timing
-                     (assoc ::lacinia/enable-timing? true))))
+                     @lacinia-enable-timing (assoc ::lacinia/enable-timing?
+                                              true))))
 
 (def keys-order [:error :data :extensions])
 
-(defn rearrange-keys [m]
-  (into (sorted-map-by #(- (.indexOf keys-order %1)
-                           (.indexOf keys-order %2)))
+(defn rearrange-keys
+  [m]
+  (into (sorted-map-by #(- (.indexOf keys-order %1) (.indexOf keys-order %2)))
         m))
 
 (defn base-handler
   [{{query :query} :body, :as request}]
   (binding [ds/after-tx nil]
-    (let [result (-> query 
+    (let [result (-> query
                      (exec-query request)
-                     (cond->
-                       @lacinia-enable-timing
-                       helpers/attach-overall-timing)
+                     (cond-> @lacinia-enable-timing
+                               helpers/attach-overall-timing)
                      rearrange-keys)
-          resp {:body result
-                :after-tx ds/after-tx}]
+          resp {:body result, :after-tx ds/after-tx}]
       (if (:errors result)
         (do (log/debug result) (assoc resp :graphql-error true))
         resp))))
@@ -83,36 +80,39 @@
            (log/debug e)
            (helpers/error-as-graphql-object "API_ERROR" m)))))
 
-(defn schema? [query]
+(defn schema?
+  [query]
   (->> query
        (parse-query-with-exception-handling schema)
        graphql-parser/operations
        :operations
        (= #{:__schema})))
 
-(defn mutation? [query]
+(defn mutation?
+  [query]
   (->> query
        (parse-query-with-exception-handling schema)
        graphql-parser/operations
        :type
        (= :mutation)))
 
-(defn handler-with-operation-type-check [{{query :query} :body, :as request}]
+(defn handler-with-operation-type-check
+  [{{query :query} :body, :as request}]
   (if (mutation? query)
-      (jdbc/with-db-transaction
-        [tx (:tx request)]
-        (try (let [response (->> tx
-                                 (assoc request :tx)
-                                 base-handler)]
-               (when (:graphql-error response)
-                 (log/warn "Rolling back transaction because of graphql error")
-                 (jdbc/db-set-rollback-only! tx))
-               response)
-             (catch Throwable th
-               (log/warn "Rolling back transaction because of " th)
-               (jdbc/db-set-rollback-only! tx)
-               (throw th))))
-      (base-handler request)))
+    (jdbc/with-db-transaction
+      [tx (:tx request)]
+      (try (let [response (->> tx
+                               (assoc request :tx)
+                               base-handler)]
+             (when (:graphql-error response)
+               (log/warn "Rolling back transaction because of graphql error")
+               (jdbc/db-set-rollback-only! tx))
+             response)
+           (catch Throwable th
+             (log/warn "Rolling back transaction because of " th)
+             (jdbc/db-set-rollback-only! tx)
+             (throw th))))
+    (base-handler request)))
 
 (defn handler
   [{{query :query} :body, :as request}]

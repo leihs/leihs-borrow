@@ -10,11 +10,12 @@
             [leihs.core.url.jdbc :as jdbc-url]))
 
 (def defaults
-  {:LEIHS_BORROW_HTTP_BASE_URL "http://localhost:3250"
-   :LEIHS_DATABASE_URL "jdbc:postgresql://leihs:leihs@localhost:5432/leihs?min-pool-size=1&max-pool-size=5"
-   :LEIHS_LEGACY_HTTP_BASE_URL "http://localhost:3210"
-   :LEIHS_BORROW_LACINIA_ENABLE_TIMING false
-   :LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT 50}) 
+  {:LEIHS_BORROW_HTTP_BASE_URL "http://localhost:3250",
+   :LEIHS_DATABASE_URL
+     "jdbc:postgresql://leihs:leihs@localhost:5432/leihs?min-pool-size=1&max-pool-size=5",
+   :LEIHS_LEGACY_HTTP_BASE_URL "http://localhost:3210",
+   :LEIHS_BORROW_LACINIA_ENABLE_TIMING false,
+   :LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT 50})
 
 (defn- get-from-env
   [kw]
@@ -22,9 +23,7 @@
       (get (str kw) nil)
       presence))
 
-(defn env-or-default
-  [kw]
-  (or (get-from-env kw) (get defaults kw nil)))
+(defn env-or-default [kw] (or (get-from-env kw) (get defaults kw nil)))
 
 (defn extend-pg-params
   [params]
@@ -34,50 +33,39 @@
     :port (or (:port params) (System/getenv "PGPORT"))))
 
 (def cli-options
-  [["-h" "--help"],
+  [["-h" "--help"]
    ["-b" "--http-base-url LEIHS_BORROW_HTTP_BASE_URL"
     (->> defaults
          :LEIHS_BORROW_HTTP_BASE_URL
-         (str "default: "))
-    :default (-> :LEIHS_BORROW_HTTP_BASE_URL
-                 env-or-default
-                 http-url/parse-base-url)
-    :parse-fn http-url/parse-base-url]
+         (str "default: ")) :default
+    (-> :LEIHS_BORROW_HTTP_BASE_URL
+        env-or-default
+        http-url/parse-base-url) :parse-fn http-url/parse-base-url]
    ["-l" "--legacy-http-base-url LEIHS_LEGACY_HTTP_BASE_URL"
     (->> defaults
          :LEIHS_LEGACY_HTTP_BASE_URL
-         (str "default: "))
-    :default (-> :LEIHS_LEGACY_HTTP_BASE_URL
-                 env-or-default
-                 http-url/parse-base-url)
-    :parse-fn http-url/parse-base-url]
+         (str "default: ")) :default
+    (-> :LEIHS_LEGACY_HTTP_BASE_URL
+        env-or-default
+        http-url/parse-base-url) :parse-fn http-url/parse-base-url]
    ["-d" "--database-url LEIHS_DATABASE_URL"
-    (str "default: " (:LEIHS_DATABASE_URL defaults))
-    :default
+    (str "default: " (:LEIHS_DATABASE_URL defaults)) :default
     (->> :LEIHS_DATABASE_URL
          env-or-default
          jdbc-url/dissect
-         extend-pg-params)
-    :parse-fn
+         extend-pg-params) :parse-fn
     #(-> %
          jdbc-url/dissect
-         extend-pg-params)]
-   shutdown/pid-file-option
+         extend-pg-params)] shutdown/pid-file-option
    ["-t" "--lacinia-enable-timing LEIHS_BORROW_LACINIA_ENABLE_TIMING"
-    (str "default: " (:LEIHS_BORROW_LACINIA_ENABLE_TIMING defaults))
-    :default
+    (str "default: " (:LEIHS_BORROW_LACINIA_ENABLE_TIMING defaults)) :default
     (->> :LEIHS_BORROW_LACINIA_ENABLE_TIMING
          env-or-default
-         boolean)
-    :parse-fn boolean]
+         boolean) :parse-fn boolean]
    ["-p" "--special-per-page-default LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT"
-    (str "default: " (:LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT defaults))
-    :default
+    (str "default: " (:LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT defaults)) :default
     (->> :LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT
          env-or-default
-         Integer.)
-    :parse-fn #(Integer. %)]])
+         Integer.) :parse-fn #(Integer. %)]])
 
-(defn parse
-  [args]
-  (cli/parse-opts args cli-options :in-order true))
+(defn parse [args] (cli/parse-opts args cli-options :in-order true))

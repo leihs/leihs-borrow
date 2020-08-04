@@ -6,32 +6,29 @@
             [shadow.resource :as rc]
             [leihs.borrow.features.shopping-cart.core :as cart]
             [leihs.borrow.features.current-user.core :as current-user]
-            [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                               reg-event-db
-                                               reg-sub
-                                               reg-fx
-                                               subscribe
-                                               dispatch]]
+            [leihs.borrow.lib.re-frame :refer
+             [reg-event-fx reg-event-db reg-sub reg-fx subscribe dispatch]]
             [leihs.borrow.lib.routing :as routing]))
 
-(reg-event-fx
-  ::routing/on-change-view
-  (fn-traced [_ _]
-    {:dispatch [::refresh]}))
+(reg-event-fx ::routing/on-change-view
+              (fn-traced [_ _] {:dispatch [::refresh]}))
 
 (reg-event-fx
   ::refresh
-  (fn-traced [_ _]
+  (fn-traced
+    [_ _]
     {:dispatch [::re-graph/mutate
-                (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql")
-                nil
+                (rc/inline
+                  "leihs/borrow/features/shopping_cart/refreshTimeout.gql") nil
                 [::on-refresh]]}))
 
-(reg-event-db
-  ::on-refresh
-  (fn-traced [db [_ {:keys [data errors]}]]
-    (if errors
-      (js/console.log "timeout refresh errors: " errors)
-      (assoc-in db
-                [::cart/data :valid-until]
-                (-> data :refresh-timeout :unsubmitted-order :valid-until)))))
+(reg-event-db ::on-refresh
+              (fn-traced [db [_ {:keys [data errors]}]]
+                         (if errors
+                           (js/console.log "timeout refresh errors: " errors)
+                           (assoc-in db
+                             [::cart/data :valid-until]
+                             (-> data
+                                 :refresh-timeout
+                                 :unsubmitted-order
+                                 :valid-until)))))

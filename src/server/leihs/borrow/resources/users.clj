@@ -17,34 +17,37 @@
       (sql/from :users)
       sql-order-users))
 
-(defn get-multiple [context {:keys [offset limit order-by search-term]} _]
+(defn get-multiple
+  [context {:keys [offset limit order-by search-term]} _]
   (jdbc/query
-    (-> context :request :tx)
-    (-> (cond-> base-sqlmap 
-          search-term
-            (merge-search-term-where-clause search-term)
-          (seq order-by)
-            (-> (sql/order-by (helpers/treat-order-arg order-by)))
-          offset
-            (sql/offset offset)
-          limit
-            (sql/limit limit))
+    (-> context
+        :request
+        :tx)
+    (-> (cond-> base-sqlmap search-term
+                (merge-search-term-where-clause search-term) (seq order-by)
+                (-> (sql/order-by (helpers/treat-order-arg order-by))) offset
+                (sql/offset offset) limit
+                (sql/limit limit))
         sql/format)))
 
-(defn get-by-id [tx id]
+(defn get-by-id
+  [tx id]
   (-> base-sqlmap
       (sql/merge-where [:= :id id])
       sql/format
       (->> (jdbc/query tx))
       first))
 
-(defn get-one [{{:keys [tx]} :request} _ {:keys [user-id]}]
+(defn get-one
+  [{{:keys [tx]} :request} _ {:keys [user-id]}]
   (get-by-id tx user-id))
 
 (defn get-current
   [{request :request} _ _]
   (let [tx (:tx request)
-        user-id (-> request :authenticated-entity :user_id)]
+        user-id (-> request
+                    :authenticated-entity
+                    :user_id)]
     {:user (get-by-id tx user-id)}))
 
 ;#### debug ###################################################################

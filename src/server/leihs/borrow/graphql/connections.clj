@@ -6,32 +6,34 @@
 
 (def intervene-per-page-default (atom nil))
 
-(defn init [{pp :special-per-page-default}]
+(defn init
+  [{pp :special-per-page-default}]
   (reset! intervene-per-page-default pp))
 
-(defn row-cursor [column]
+(defn row-cursor
+  [column]
   (as-> column <>
     (sql/call :cast <> :text)
     (sql/call :replace <> "-" "")
     (sql/call :decode <> "hex")
     (sql/call :encode <> "base64")))
 
-(defn with-cursored-result [sqlmap after]
+(defn with-cursored-result
+  [sqlmap after]
   (-> [[:primary_result sqlmap]
        [:cursored_result
-        (-> (sql/select
-              :primary_result.*
-              [(row-cursor :primary_result.id) :row_cursor]
-              [(sql/raw "row_number(*) over ()") :row_number])
+        (-> (sql/select :primary_result.*
+                        [(row-cursor :primary_result.id) :row_cursor]
+                        [(sql/raw "row_number(*) over ()") :row_number])
             (sql/from :primary_result))]]
-      (cond-> after
-        (conj [:cursor_row
-               (-> (sql/select :*)
-                   (sql/from :cursored_result)
-                   (sql/where [:= :row_cursor after]))]))
+      (cond-> after (conj [:cursor_row
+                           (-> (sql/select :*)
+                               (sql/from :cursored_result)
+                               (sql/where [:= :row_cursor after]))]))
       (->> (apply sql/with))))
 
-(defn after-cursor-row-exists? [tx sqlmap after]
+(defn after-cursor-row-exists?
+  [tx sqlmap after]
   (-> sqlmap
       (with-cursored-result after)
       (sql/select :*)
@@ -41,57 +43,51 @@
       empty?
       not))
 
-(defn cursored-sqlmap [sqlmap after limit]
+(defn cursored-sqlmap
+  [sqlmap after limit]
   (-> (with-cursored-result sqlmap after)
       (sql/select :cursored_result.*)
       (sql/from :cursored_result)
-      (cond-> after
-        (-> (sql/merge-from :cursor_row)
-            (sql/merge-where [:>
-                              :cursored_result.row_number
-                              :cursor_row.row_number])))
+      (cond-> after (-> (sql/merge-from :cursor_row)
+                        (sql/merge-where [:> :cursored_result.row_number
+                                          :cursor_row.row_number])))
       (cond-> limit (sql/limit limit))))
 
-(defn assoc-total-count [result-map tx sqlmap]
+(defn assoc-total-count
+  [result-map tx sqlmap]
   (assoc result-map
-         :total-count
-         (-> (sql/select [(sql/call :count :*) :row_count])
-             (sql/from [(-> sqlmap
-                            (dissoc :modifiers :order-by)
-                            (update :modifiers conj :distinct))
-                        :tmp])
-             sql/format
-             (->> (jdbc/query tx))
-             clojure.core/first
-             :row_count)))
+    :total-count (-> (sql/select [(sql/call :count :*) :row_count])
+                     (sql/from [(-> sqlmap
+                                    (dissoc :modifiers :order-by)
+                                    (update :modifiers conj :distinct)) :tmp])
+                     sql/format
+                     (->> (jdbc/query tx))
+                     clojure.core/first
+                     :row_count)))
 
-(defn assoc-page-info [result-map tx sqlmap first end-cursor]
+(defn assoc-page-info
+  [result-map tx sqlmap first end-cursor]
   (assoc result-map
-         :page-info
-         {:end-cursor end-cursor 
-          :has-next-page (if (or (not first) (not end-cursor))
-                           false
-                           (-> sqlmap
-                               (cursored-sqlmap end-cursor 1)
-                               sql/format
-                               (->> (jdbc/query tx))
-                               empty?
-                               not))}))
+    :page-info {:end-cursor end-cursor,
+                :has-next-page (if (or (not first) (not end-cursor))
+                                 false
+                                 (-> sqlmap
+                                     (cursored-sqlmap end-cursor 1)
+                                     sql/format
+                                     (->> (jdbc/query tx))
+                                     empty?
+                                     not))}))
 
-(defn wrap-in-nodes-and-edges [rows]
+(defn wrap-in-nodes-and-edges
+  [rows]
   (->> rows
-       (map #(hash-map :node %
-                       :cursor (:row_cursor %)))
+       (map #(hash-map :node % :cursor (:row_cursor %)))
        (hash-map :edges)))
 
 (defn wrap
-  ([sqlmap-fn context args value]
-   (wrap sqlmap-fn context args value nil))
-  ([sqlmap-fn
-    {{:keys [tx]} :request :as context}
-    {:keys [after first] :as args}
-    value
-    post-process]
+  ([sqlmap-fn context args value] (wrap sqlmap-fn context args value nil))
+  ([sqlmap-fn {{:keys [tx]} :request, :as context}
+    {:keys [after first], :as args} value post-process]
    (let [sqlmap (sqlmap-fn context args value)]
      (if (and after (not (after-cursor-row-exists? tx sqlmap after)))
        (throw (ex-info "After cursor row does not exist!" {}))
@@ -106,7 +102,9 @@
              (assoc-page-info tx
                               sqlmap
                               first
-                              (-> rows last :row_cursor))))))))
+                              (-> rows
+                                  last
+                                  :row_cursor))))))))
 
 (defn intervene
   "Offers additional intervene possibilities for edges. It calls (paginates via) 
@@ -116,18 +114,25 @@
   ([conn-fn intervene-fn limit]
    (intervene conn-fn intervene-fn @intervene-per-page-default limit))
   ([conn-fn intervene-fn batch-size limit]
-   (loop [{:keys [page-info edges] :as conn} (conn-fn {:first batch-size})
+   (loop [{:keys [page-info edges], :as conn} (conn-fn {:first batch-size})
           result-edges []]
      (let [avail-edges (intervene-fn edges)
            result-edges* (concat result-edges avail-edges)]
-       (if (or (>= (count result-edges*) limit) (not (:has-next-page page-info)))
+       (if (or (>= (count result-edges*) limit)
+               (not (:has-next-page page-info)))
          (-> conn
              (assoc :edges (take limit result-edges*))
-             (as-> <> (assoc-in <>
-                                [:page-info :end-cursor]
-                                (-> <> :edges last :cursor)))
+             (as-> <>
+               (assoc-in <>
+                 [:page-info :end-cursor]
+                 (-> <>
+                     :edges
+                     last
+                     :cursor)))
              (assoc-in [:page-info :has-next-page]
-                       (> (count result-edges*) limit)) ; FIXME: in negative case there is NO GUARANTEE...?
+                       (> (count result-edges*) limit)) ; FIXME: in negative
+                                                        ; case there is NO
+                                                        ; GUARANTEE...?
              (assoc :total-count nil))
-         (recur (conn-fn {:first batch-size :after (:end-cursor page-info)})
+         (recur (conn-fn {:first batch-size, :after (:end-cursor page-info)})
                 result-edges*))))))

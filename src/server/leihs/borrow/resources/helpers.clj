@@ -2,27 +2,23 @@
   (:require [clojure.string :as string]
             [leihs.core.sql :as sql]))
 
-(defn treat-order-arg [order]
+(defn treat-order-arg
+  [order]
   (map #(as-> % <>
           (into (sorted-map) <>)
-          (update <> 
-                  :attribute
-                  (comp keyword string/lower-case name))
+          (update <> :attribute (comp keyword string/lower-case name))
           (vals <>))
-       order))
+    order))
 
 (def date-format "YYYY-MM-DD")
 (def date-time-format "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"")
 
-(defmacro def-attribute-override-fn [fn-name attr format-str]
+(defmacro def-attribute-override-fn
+  [fn-name attr format-str]
   `(defn ~fn-name
      ([] (~fn-name nil))
      ([q#]
-      [(sql/call :to_char
-                 (if q#
-                   (sql/qualify q# ~attr)
-                   ~attr)
-                 ~format-str)
+      [(sql/call :to_char (if q# (sql/qualify q# ~attr) ~attr) ~format-str)
        ~attr])))
 
 (def-attribute-override-fn date-start-date :start_date date-format)

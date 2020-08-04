@@ -10,28 +10,32 @@
   (-> (sql/select :images.*)
       (sql/from :images)))
 
-(defn get-one [tx id]
+(defn get-one
+  [tx id]
   (-> image-base-query
       (sql/where [:= :images.id id])
       sql/format
       (->> (jdbc/query tx))
       first))
 
-(defn merge-image-url [image]
+(defn merge-image-url
+  [image]
   (->> image
        :id
        (hash-map :image-id)
        (path :image)
        (assoc image :image-url)))
 
-(defn get-multiple [{{:keys [tx]} :request} _ value]
+(defn get-multiple
+  [{{:keys [tx]} :request} _ value]
   (-> image-base-query
       (sql/merge-where [:= :images.target_id (:id value)])
       (sql/merge-where [:= :images.parent_id nil])
       sql/format
       (as-> <> (jdbc/query tx <> {:row-fn merge-image-url}))))
 
-(defn get-multiple-thumbnails [{{:keys [tx]} :request} _ value]
+(defn get-multiple-thumbnails
+  [{{:keys [tx]} :request} _ value]
   (-> image-base-query
       (sql/merge-where [:= :images.parent_id (:id value)])
       sql/format

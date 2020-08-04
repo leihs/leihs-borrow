@@ -66,50 +66,46 @@
   [handler]
   (ring.middleware.accept/wrap-accept
     handler
-    {:mime ["application/json" :qs 1 :as :json
-            "application/javascript" :qs 1 :as :javascript
-            "image/apng" :qs 1 :as :apng
-            "image/*" :qs 1 :as :image
-            "text/css" :qs 1 :as :css
-            "text/html" :qs 1 :as :html]}))
+    {:mime ["application/json" :qs 1 :as :json "application/javascript" :qs 1
+            :as :javascript "image/apng" :qs 1 :as :apng "image/*" :qs 1 :as
+            :image "text/css" :qs 1 :as :css "text/html" :qs 1 :as :html]}))
 
-(defn wrap-empty [handler]
-  (fn [request]
-    (or (handler request)
-        {:status 404})))
+(defn wrap-empty [handler] (fn [request] (or (handler request) {:status 404})))
 
-(defn init []
+(defn init
+  []
   (core-routing/init paths resolve-table)
   (-> ;wrap-handler-with-logging
-      dispatch-to-handler
-      ; anti-csrf/wrap
-      ; locale/wrap
-      authenticate/wrap
-      session/wrap-authenticate
-      wrap-cookies
-      settings/wrap
-      wrap-json-response
-      (wrap-json-body {:keywords? true})
-      wrap-empty
-      datasource/wrap-tx
-      datasource/wrap-after-tx
-      (wrap-graphiql {:path "/app/borrow/graphiql",
-                      :endpoint "/app/borrow/graphql"})
-      core-routing/wrap-canonicalize-params-maps
-      wrap-params
-      wrap-multipart-params
-      wrap-content-type
-      (wrap-resource "public"
-                     {:allow-symlinks? true
-                      :cache-bust-paths ["/app/borrow/css/site.css"
-                                         "/app/borrow/css/site.min.css"
-                                         "/app/borrow/js/app.js"]
-                      :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
-                                           #".+_[0-9a-f]{40}\..+"]
-                      :enabled? true})
-      (core-routing/wrap-resolve-handler html/html-handler)
-      wrap-accept
-      ring-exception/wrap))
+    dispatch-to-handler
+    ; anti-csrf/wrap
+    ; locale/wrap
+    authenticate/wrap
+    session/wrap-authenticate
+    wrap-cookies
+    settings/wrap
+    wrap-json-response
+    (wrap-json-body {:keywords? true})
+    wrap-empty
+    datasource/wrap-tx
+    datasource/wrap-after-tx
+    (wrap-graphiql {:path "/app/borrow/graphiql",
+                    :endpoint "/app/borrow/graphql"})
+    core-routing/wrap-canonicalize-params-maps
+    wrap-params
+    wrap-multipart-params
+    wrap-content-type
+    (wrap-resource
+      "public"
+      {:allow-symlinks? true,
+       :cache-bust-paths ["/app/borrow/css/site.css"
+                          "/app/borrow/css/site.min.css"
+                          "/app/borrow/js/app.js"],
+       :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
+                            #".+_[0-9a-f]{40}\..+"],
+       :enabled? true})
+    (core-routing/wrap-resolve-handler html/html-handler)
+    wrap-accept
+    ring-exception/wrap))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

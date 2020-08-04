@@ -3,7 +3,8 @@
   (:require [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]))
 
-(defn get [tx]
+(defn get
+  [tx]
   (-> (sql/select :*)
       (sql/from :settings)
       sql/format

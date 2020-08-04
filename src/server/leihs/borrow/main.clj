@@ -16,20 +16,14 @@
             [leihs.borrow.legacy :as legacy]
             [leihs.borrow.routes :as routes]
             [logbug.catcher :as catcher]
-            [signal.handler]
-            ))
+            [signal.handler]))
 
 (defn- main-usage
   [options-summary & more]
   (->>
-    ["Leihs Borrow"
-     ""
-     "usage: leihs-borrow [<opts>] SCOPE [<scope-opts>] [<args>]"
-     ""
-     "Options:"
-     options-summary
-     ""
-     ""
+    ["Leihs Borrow" ""
+     "usage: leihs-borrow [<opts>] SCOPE [<scope-opts>] [<args>]" "" "Options:"
+     options-summary "" ""
      (when more
        ["-------------------------------------------------------------------"
         (with-out-str (pprint more))
@@ -40,18 +34,18 @@
 (defn- run
   [options]
   (catcher/snatch {:return-fn (fn [e] (System/exit -1))}
-    (log/info "Invoking run with options: " options)
-    ; (settings/init options)
-    (shutdown/init options)
-    (legacy/init options)
-    (graphql/init options)
-    (graphql-connections/init options)
-    (let [status (status/init)]
-      (ds/init (:database-url options)
-               (:health-check-registry status)))
-    (let [app-handler (routes/init)]
-      (http-server/start (:http-base-url options) app-handler))
-    nil))
+                  (log/info "Invoking run with options: " options)
+                  ; (settings/init options)
+                  (shutdown/init options)
+                  (legacy/init options)
+                  (graphql/init options)
+                  (graphql-connections/init options)
+                  (let [status (status/init)]
+                    (ds/init (:database-url options)
+                             (:health-check-registry status)))
+                  (let [app-handler (routes/init)]
+                    (http-server/start (:http-base-url options) app-handler))
+                  nil))
 
 (defn -main
   [& args]
@@ -61,7 +55,6 @@
   (require 'leihs.borrow.ssr)
   ; ---------------------------------------------------
   (spec/check-asserts true)
-
   (let [{:keys [options summary]} (cli/parse (rest args))]
     (letfn [(print-main-usage-summary
               []

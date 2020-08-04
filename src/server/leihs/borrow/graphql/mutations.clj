@@ -4,9 +4,9 @@
             [leihs.borrow.resources.orders :as orders]))
 
 (def resolvers
-  {:create-reservation reservations/create
-   :favorite-model favorites/create
-   :delete-reservations reservations/delete
-   :refresh-timeout orders/refresh-timeout
-   :submit-order orders/submit
+  {:create-reservation reservations/create,
+   :favorite-model favorites/create,
+   :delete-reservations reservations/delete,
+   :refresh-timeout orders/refresh-timeout,
+   :submit-order orders/submit,
    :unfavorite-model favorites/delete})

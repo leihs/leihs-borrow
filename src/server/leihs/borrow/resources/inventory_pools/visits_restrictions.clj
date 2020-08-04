@@ -4,8 +4,9 @@
             [java-time :refer [local-date before?] :as jt]
             [leihs.core.sql :as sql]))
 
-(defn holiday? [tx date pool]
-  (let [date* (sql/call :cast date :date)] 
+(defn holiday?
+  [tx date pool]
+  (let [date* (sql/call :cast date :date)]
     (-> (sql/select true)
         (sql/from :holidays)
         (sql/where [:= :inventory_pool_id (:id pool)])
@@ -16,7 +17,8 @@
         empty?
         not)))
 
-(defn not-a-working-day? [date pool]
+(defn not-a-working-day?
+  [date pool]
   (let [day-of-week (-> date
                         local-date
                         .getDayOfWeek
@@ -25,18 +27,18 @@
                         keyword)]
     (not (day-of-week pool))))
 
-(defn close-time? [tx date pool]
-  (or (not-a-working-day? date pool)
-      (holiday? tx date pool)))
+(defn close-time?
+  [tx date pool]
+  (or (not-a-working-day? date pool) (holiday? tx date pool)))
 
-(defn before-earliest-possible-pick-up-date? [date pool]
+(defn before-earliest-possible-pick-up-date?
+  [date pool]
   (and (:reservation_advance_days pool)
-       (< (jt/time-between (local-date)
-                           (local-date date)
-                           :days)
+       (< (jt/time-between (local-date) (local-date date) :days)
           (:reservation_advance_days pool))))
 
-(defn visits-capacity-reached? [date-with-avail pool]
+(defn visits-capacity-reached?
+  [date-with-avail pool]
   (let [index (-> date-with-avail
                   :date
                   local-date
@@ -45,29 +47,30 @@
                   (- 1)
                   str
                   keyword)
-        max_visits (some-> pool :max_visits index Integer.)]
-    (and max_visits
-         (>= (:visits_count date-with-avail) max_visits))))
+        max_visits (some-> pool
+                           :max_visits
+                           index
+                           Integer.)]
+    (and max_visits (>= (:visits_count date-with-avail) max_visits))))
 
-(defn start-date-restriction [tx date-with-avail pool]
-  (cond (close-time? tx (:date date-with-avail) pool)
-        :CLOSE_TIME
+(defn start-date-restriction
+  [tx date-with-avail pool]
+  (cond (close-time? tx (:date date-with-avail) pool) :CLOSE_TIME
         (before-earliest-possible-pick-up-date? (:date date-with-avail) pool)
-        :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE
+          :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE
         (visits-capacity-reached? date-with-avail pool)
-        :VISITS_CAPACITY_REACHED))
+          :VISITS_CAPACITY_REACHED))
 
-(defn end-date-restriction [tx date-with-avail pool]
-  (cond (close-time? tx (:date date-with-avail) pool)
-        :CLOSE_TIME
+(defn end-date-restriction
+  [tx date-with-avail pool]
+  (cond (close-time? tx (:date date-with-avail) pool) :CLOSE_TIME
         (visits-capacity-reached? date-with-avail pool)
-        :VISITS_CAPACITY_REACHED))
+          :VISITS_CAPACITY_REACHED))
 
 (def past-date? #(before? (local-date %) (local-date)))
 
-(defn validate-date-with-avail [tx date-with-avail pool]
-  (assoc date-with-avail 
-         :start-date-restriction 
-         (start-date-restriction tx date-with-avail pool)
-         :end-date-restriction 
-         (end-date-restriction tx date-with-avail pool)))
+(defn validate-date-with-avail
+  [tx date-with-avail pool]
+  (assoc date-with-avail
+    :start-date-restriction (start-date-restriction tx date-with-avail pool)
+    :end-date-restriction (end-date-restriction tx date-with-avail pool)))

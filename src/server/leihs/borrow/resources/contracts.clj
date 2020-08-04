@@ -4,27 +4,25 @@
             [clojure.string :refer [lower-case]]
             [leihs.core.sql :as sql]
             [leihs.borrow.resources.helpers :as helpers]
-            [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]))
+            [leihs.borrow.graphql.connections :refer
+             [row-cursor cursored-sqlmap] :as connections]))
 
 (defn get-connection-sql-map
   [_ {:keys [states order-by]} value]
   (-> (sql/select :*)
       (sql/from :contracts)
-      (cond-> value
-        (sql/merge-where [:= :user_id (:id value)]))
-      (cond-> states
-        (sql/merge-where
-          [:in
-           :state
-           (map #(-> % name lower-case) states)]))
-      (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by)))))
+      (cond-> value (sql/merge-where [:= :user_id (:id value)]))
+      (cond-> states (sql/merge-where [:in :state
+                                       (map #(-> %
+                                                 name
+                                                 lower-case)
+                                         states)]))
+      (cond-> (seq order-by) (sql/order-by (helpers/treat-order-arg
+                                             order-by)))))
 
-(defn get-connection [context args value]
-  (connections/wrap get-connection-sql-map
-                    context
-                    args
-                    value)) 
+(defn get-connection
+  [context args value]
+  (connections/wrap get-connection-sql-map context args value))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

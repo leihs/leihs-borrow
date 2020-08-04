@@ -7,33 +7,40 @@
 
 (def base-url (atom nil))
 
-(defn init [options]
-  (reset! base-url (-> options :legacy-http-base-url :url))
+(defn init
+  [options]
+  (reset! base-url
+          (-> options
+              :legacy-http-base-url
+              :url))
   (-> "Legacy base URL set to: "
       (str @base-url)
       log/info))
 
-(defn session-cookie-value [context]
+(defn session-cookie-value
+  [context]
   (or (get-in context [:request :cookies "leihs-user-session" :value])
       (throw (ex-info "Not authenticated!" {}))))
 
-(defn fetch [url context query-params]
-  (-> (client/get
-        (str @base-url url)
-        {:accept :json
-         :content-type :json
-         :cookies {"leihs-user-session" {:value (session-cookie-value context)}}
-         :multi-param-style :array
-         :query-params query-params})
+(defn fetch
+  [url context query-params]
+  (-> (client/get (str @base-url url)
+                  {:accept :json,
+                   :content-type :json,
+                   :cookies {"leihs-user-session" {:value (session-cookie-value
+                                                            context)}},
+                   :multi-param-style :array,
+                   :query-params query-params})
       :body
       json/parse-string
       walk/keywordize-keys))
 
-(defn post [url context form-params]
+(defn post
+  [url context form-params]
   (client/post (str @base-url url)
-               {:cookies {"leihs-user-session"
-                          {:value (session-cookie-value context)}}
-                :form-params form-params
+               {:cookies {"leihs-user-session" {:value (session-cookie-value
+                                                         context)}},
+                :form-params form-params,
                 :content-type :json}))
 
 ;#### debug ###################################################################
@@ -42,4 +49,3 @@
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
 ; (debug/debug-ns *ns*)
 ; (debug/undebug-ns *ns*)
-

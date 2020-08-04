@@ -10,14 +10,16 @@
   (-> (sql/select :attachments.*)
       (sql/from :attachments)))
 
-(defn get-one [tx id]
+(defn get-one
+  [tx id]
   (-> attachment-base-query
       (sql/where [:= :attachments.id id])
       sql/format
       (->> (jdbc/query tx))
       first))
 
-(defn merge-attachment-url [{:keys [filename] :as attachment}]
+(defn merge-attachment-url
+  [{:keys [filename], :as attachment}]
   (as-> attachment <>
     (:id <>)
     (hash-map :attachment-id <>)
@@ -25,7 +27,8 @@
     (str <> "/" (:filename attachment))
     (assoc attachment :url <>)))
 
-(defn get-multiple [{{:keys [tx]} :request} _ value]
+(defn get-multiple
+  [{{:keys [tx]} :request} _ value]
   (-> attachment-base-query
       (sql/merge-where [:= :attachments.model_id (:id value)])
       sql/format

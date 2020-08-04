@@ -1,5 +1,5 @@
-(ns leihs.borrow.features.model-show.core
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
+(ns leihs.borrow.features.booking-calendar.core
+  #_(:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:refer-clojure :exclude [val])
   (:require [day8.re-frame.tracing :refer-macros [fn-traced]]
             [reagent.core :as reagent]
@@ -17,26 +17,34 @@
             [leihs.borrow.features.favorite-models.events :as favs]
             [leihs.borrow.features.current-user.core :as current-user]))
 
-; is kicked off from router when this view is loaded
-(reg-event-fx ::routes/models-show
-              (fn-traced [{:keys [db]} [_ args]]
-                         (let [id (get-in args [:route-params :model-id])
-                               filters (filters/current db)
-                               start-date (:start-date filters)
-                               end-date (:end-date filters)]
-                           {:dispatch [::fetch id start-date end-date]})))
+(fn-traced foo [bar baz] (let [x 3 y 4] (+ (* x x) (* y y))))
 
 (reg-event-fx
   ::fetch
   (fn-traced
     [_ [_ id start-date end-date]]
-    {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/features/model_show/getModelShow.gql")
-                {:modelId id,
-                 :startDate start-date,
-                 :endDate end-date,
-                 :bothDatesGiven (and (boolean start-date) (boolean end-date))}
-                [::on-fetched-data id]]}))
+    (let [id (get-in args [:route-params :model-id])
+          filters (filters/current db)
+          start-date (:start-date filters)
+          end-date (:end-date filters)]
+      {:dispatch
+         [::re-graph/query
+          (rc/inline
+            "leihs/borrow/features/booking_calendar/getModelBookingCalendar.gql")
+          {:modelId id,
+           ; START DYNAMIC FETCHING PROPS
+           :startDate (h/date-format-day start-date),
+           :endDate (h/date-format-day end-date),
+           :minDateLoaded start-date,
+           :maxDateLoaded end-date,
+           :isLoadingFuture false,
+           ; END DYNAMIC FETCHING PROPS
+           :onSubmit #(js/console.log "Date submited!"),
+           :bothDatesGiven true, ; we always set default values here…
+           :pools ["8bd16d45-056d-5590-bc7f-12849f034351"]} ; FIXME: remove this
+                                                            ; filter (we want
+                                                            ; ALL pools)
+          [::on-fetched-data id]]})))
 
 (reg-event-fx ::reset-availability-and-fetch
               (fn-traced [{:keys [db]} [_ model-id start-date end-date]]

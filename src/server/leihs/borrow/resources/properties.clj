@@ -8,7 +8,8 @@
   (-> (sql/select :properties.*)
       (sql/from :properties)))
 
-(defn get-multiple [{{:keys [tx]} :request} _ value]
+(defn get-multiple
+  [{{:keys [tx]} :request} _ value]
   (-> base-sqlmap
       (sql/merge-where [:= :properties.model_id (:id value)])
       sql/format

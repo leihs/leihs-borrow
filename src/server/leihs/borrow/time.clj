@@ -2,7 +2,8 @@
   (:require [leihs.borrow.resources.settings :as settings]
             java-time))
 
-(defn now [tx]
+(defn now
+  [tx]
   (let [time-zone (-> tx
                       settings/get
                       :time_zone

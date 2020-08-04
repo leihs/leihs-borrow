@@ -6,11 +6,11 @@
             [camel-snake-kebab.core :as csk]
             [wharf.core :refer [transform-keys]]))
 
-(defn get-available-quantities [context args _value]
-  (legacy/fetch
-    "/borrow/models/availability"
-    context
-    (transform-keys csk/->snake_case args)))
+(defn get-available-quantities
+  [context args _value]
+  (legacy/fetch "/borrow/models/availability"
+                context
+                (transform-keys csk/->snake_case args)))
 
 (spec/def ::date string?)
 (spec/def ::quantity (comp #(>= % 0) integer?))
@@ -19,13 +19,13 @@
 (spec/def ::calendar-date
   (spec/keys :req-un #{::date ::quantity ::visits_count}))
 
-(defn get [context args _value]
-  (->> (legacy/fetch
-         "/borrow/booking_calendar_availability"
-         context
-         (->> [:model-id :inventory-pool-id :start-date :end-date]
-              (select-keys args)
-              (transform-keys csk/->snake_case)))
+(defn get
+  [context args _value]
+  (->> (legacy/fetch "/borrow/booking_calendar_availability"
+                     context
+                     (->> [:model-id :inventory-pool-id :start-date :end-date]
+                          (select-keys args)
+                          (transform-keys csk/->snake_case)))
        :list
        (map (fn [d]
               (->> (clojure.set/rename-keys d {:d :date})

@@ -6,7 +6,6 @@
 (def all-sql
   "NOTE: As long as legacy lives, taken literally from:
      https://github.com/leihs/leihs_legacy/blob/master/app/models/entitlement.rb#L53"
-
   "
   SELECT model_id,
          entitlement_groups.inventory_pool_id,
@@ -39,5 +38,5 @@
            i.model_id
   ")
 
-(comment 
-  (->> [all-sql] (jdbc/query (leihs.core.ds/get-ds))))
+(comment (->> [all-sql]
+              (jdbc/query (leihs.core.ds/get-ds))))

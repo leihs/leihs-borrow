@@ -3,8 +3,7 @@
             #_[leihs.borrow.features.customer-orders.orders-show :as show]))
 
 
-; NOTE: re-exporting confuses hot-reloading (we want `alias` but does not exist in cljs)
+; NOTE: re-exporting confuses hot-reloading (we want `alias` but does not exist
+; in cljs)
 ; (def index-view index/view)
 ; (def show-view show/view)
-
-

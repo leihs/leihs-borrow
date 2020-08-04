@@ -24,11 +24,6 @@
 (defn refresh
   "Refresh the actual app."
   []
-  (if-let [ex (ctnr/refresh :after 'app-setup/run)]
-    (repl/pst ex)) )
+  (if-let [ex (ctnr/refresh :after 'app-setup/run)] (repl/pst ex)))
 
-(defn reset []
-  (stop)
-  (refresh)
-  (scratch)
-  nil)
+(defn reset [] (stop) (refresh) (scratch) nil)

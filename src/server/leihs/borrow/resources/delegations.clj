@@ -17,20 +17,18 @@
   [{{tx :tx} :request} _ {:keys [id]}]
   (-> (sql/select :*)
       (sql/from :users)
-      (sql/join [:delegations_users :du]
-                [:= :du.user_id :users.id])
+      (sql/join [:delegations_users :du] [:= :du.user_id :users.id])
       (sql/where [:= :du.delegation_id id])
       sql/format
       (->> (jdbc/query tx))))
 
-(defn member? [tx user-id delegation-id]
+(defn member?
+  [tx user-id delegation-id]
   (-> (sql/select
-        {:exists
-         (-> (sql/select true)
-             (sql/from [:delegations_users :du])
-             (sql/where [:and
-                         [:= :du.delegation_id delegation-id]
-                         [:= :du.user_id user-id]]))})
+        {:exists (-> (sql/select true)
+                     (sql/from [:delegations_users :du])
+                     (sql/where [:and [:= :du.delegation_id delegation-id]
+                                 [:= :du.user_id user-id]]))})
       sql/format
       (->> (jdbc/query tx))
       first
@@ -46,11 +44,10 @@
       first))
 
 (defn get-multiple
-  [{{tx :tx {user-id :id} :authenticated-entity} :request} _ _]
+  [{{tx :tx, {user-id :id} :authenticated-entity} :request} _ _]
   (-> (sql/select :id [:firstname :name] :delegator_user_id)
       (sql/from :users)
-      (sql/join [:delegations_users :du]
-                [:= :du.delegation_id :users.id])
+      (sql/join [:delegations_users :du] [:= :du.delegation_id :users.id])
       (sql/where [:= :du.user_id user-id])
       (sql/order-by [:name :asc])
       sql/format
