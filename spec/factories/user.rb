@@ -30,16 +30,20 @@ FactoryBot.define do
     end
 
     factory :delegation do
-      firstname { Faker::Team.name }
-      delegator_user { create(:user) }
-
       transient do
-        delegated_users { [] }
+        name { Faker::Team.name }
+        responsible { create(:user) }
+        members { [] }
+      end
+
+      after(:build) do |user, trans|
+        user.firstname = trans.name
+        user.delegator_user = trans.responsible
       end
 
       after(:create) do |user, trans|
-        trans.delegated_users.each do |delegated_user|
-          user.add_delegated_user(delegated_user)
+        trans.members.each do |member|
+          user.add_delegation_user(member)
         end
       end
     end

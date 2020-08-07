@@ -9,11 +9,11 @@
   (-> (sql/select :*)
       (sql/from :visits)))
 
-(defn get-multiple [{{:keys [tx authenticated-entity]} :request}
+(defn get-multiple [{{:keys [tx] user-id :target-user-id} :request}
                     {:keys [limit order-by]}
                     _]
   (-> base-sqlmap
-      (sql/merge-where [:= :user_id (:id authenticated-entity)])
+      (sql/merge-where [:= :user_id user-id])
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by)))
       (cond-> limit (-> (sql/limit limit)))

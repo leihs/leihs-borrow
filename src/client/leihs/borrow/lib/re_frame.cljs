@@ -3,19 +3,12 @@
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [camel-snake-kebab.core :as csk]
-    [clojure.walk :refer [postwalk]]
     [leihs.borrow.lib.localstorage :refer [localstorage-interceptor]]
+    [leihs.borrow.lib.helpers :as help]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
     [re-frame.std-interceptors :refer [path]]
     [shadow.resource :as rc]))
-
-(defn- kebab-case-keys [m]
-  (postwalk #(cond-> %
-               (and (keyword? %)
-                    (not (qualified-keyword? %)))
-               csk/->kebab-case)
-            m))
 
 (def kebab-case-data-and-errors-interceptor
   (rf/->interceptor
@@ -27,9 +20,9 @@
                            :event
                            (map #(-> %
                                      (cond-> (-> % :errors map?)
-                                       (update :errors kebab-case-keys))
+                                       (update :errors help/kebab-case-keys))
                                      (cond-> (-> % :data map?)
-                                       (update :data kebab-case-keys)))
+                                       (update :data help/kebab-case-keys)))
                                 event))))))
 
 (def base-interceptors [localstorage-interceptor
@@ -55,7 +48,18 @@
                     (concat base-interceptors interceptors)
                     event-handler)))
 
+(defn reg-event-ctx
+  ([event-id event-handler]
+   (rf/reg-event-ctx event-id
+                     base-interceptors
+                     event-handler))
+  ([event-id interceptors event-handler]
+   (rf/reg-event-ctx event-id
+                     (concat base-interceptors interceptors)
+                     event-handler)))
+
 (def reg-sub rf/reg-sub)
 (def reg-fx rf/reg-fx)
 (def subscribe rf/subscribe)
 (def dispatch rf/dispatch)
+(def dispatch-sync rf/dispatch-sync)

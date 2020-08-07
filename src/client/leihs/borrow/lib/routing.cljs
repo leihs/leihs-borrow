@@ -23,6 +23,7 @@
                                                subscribe
                                                dispatch]]
             [leihs.borrow.lib.localstorage :as ls]
+            [leihs.borrow.features.current-user.core :as current-user]
             [leihs.borrow.client.routes :as routes]))
 
 ; from <https://github.com/juxt/bidi/issues/51#issuecomment-344101759>
@@ -39,7 +40,9 @@
   (fn [routes]
     (let [pushy-instance (get-in @db/app-db [:routing/routing :pushy-instance])]
       (if-not pushy-instance
-        (let [dispatch-fn #(dispatch [:routing/change-view %])
+        (let [dispatch-fn (fn [arg]
+                            (current-user/fetch-and-save
+                              #(dispatch [:routing/change-view arg])))
               match-fn (fn [path] 
                          (let [is-routed? (:handler (bidi/match-route routes path))]
                            (if is-routed? path false)))]
@@ -55,7 +58,6 @@
     {:db (assoc-in db [:routing/routing :routes] routes)
      :routing/init-routing routes}))
 
-; adds `:ls` to `app-db` necessary for initial rendering of the view
 (reg-event-fx
   :routing/change-view
   (fn-traced [{:keys [db]} [_ token]]

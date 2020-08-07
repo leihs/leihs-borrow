@@ -20,7 +20,7 @@
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.components :as ui]
     ["/leihs-ui-client-side" :as UI]
-    #_[leihs.borrow.features.shopping-cart.core :as cart]))
+    [leihs.borrow.features.current-user.core :as current-user]))
 
 (def query-gql
   (rc/inline "leihs/borrow/features/models/getModels.gql"))
@@ -38,11 +38,13 @@
     (let [filters (filters/current db)
           start-date (:start-date filters)
           end-date (:end-date filters)
+          user-id (or (:user-id filters) (-> db ::current-user/data :user :id))
           dates-valid? (<= start-date end-date) ; if somehow end is before start, ignore it instead of error
           query-vars (merge {:searchTerm (:term filters)
                              :startDate (when dates-valid? start-date)
                              :endDate (when dates-valid? end-date)
                              :onlyAvailable (when dates-valid? (:available-between? filters))
+                             :userId user-id
                              :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
                             extra-args)]
       ; NOTE: no caching yet, clear data before new search  
@@ -81,6 +83,19 @@
   ::data
   (fn [db] (-> (get-in db [::data :edges]))))
 
+(reg-sub ::target-users
+         :<- [::current-user/data]
+         (fn [cu]
+           (let [user (:user cu)
+                 delegations (:delegations cu)]
+             (concat [user] delegations))))
+
+(reg-sub ::user-id
+         :<- [::current-user/data]
+         :<- [::filters/user-id]
+         (fn [[co user-id]]
+           (or user-id (-> co :user :id))))
+
 ;-; VIEWS
 (defn form-line [name label input-props]
   [:label.row
@@ -100,12 +115,14 @@
 
 (defn search-panel [submit-fn clear-fn]
   (let [filters @(subscribe [::filters/current])
+        target-users @(subscribe [::target-users])
         term @(subscribe [::filters/term])
         data @(subscribe [::data])
         start-date @(subscribe [::filters/start-date])
         end-date @(subscribe [::filters/end-date])
         available-between? @(subscribe [::filters/available-between?])
         quantity @(subscribe [::filters/quantity])
+        user-id @(subscribe [::user-id])
         routing @(subscribe [:routing/routing])
         on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
 
@@ -121,11 +138,17 @@
          :value term
          :on-change #(dispatch [::filters/set-one :term (-> % .-target .-value)])}]]
 
-      [:div.form-group
-       [form-line :user-id "Für"
-        {:type :text
-         :disabled true
-         :value (or (:user-id filters) "")}]]
+      [:label.row
+       [:span.text-xs.col-3.col-form-label "Für "]
+       [:div.col-9
+        [:select {:class "form-control"
+                  :default-value user-id
+                  :name :user-id
+                  :on-change #(dispatch [::filters/set-one :user-id (-> % .-target .-value)])}
+         (doall
+           (for [user target-users]
+             [:option {:value (:id user) :key (:id user)}
+              (:name user)]))]]]
 
       [:div.form-group
        [:div.row
@@ -205,6 +228,7 @@
         term (:term filters)
         start-date (:start-date filters)
         end-date (:end-date filters)
+        user-id (:user-id filters)
         dates-valid? (<= start-date end-date) ; if somehow end is before start, ignore it instead of error
         only-available? (:only-available? filters)]
     [:div
@@ -220,6 +244,7 @@
                                           :startDate start-date
                                           :endDate end-date
                                           :onlyAvailable only-available?
+                                          :userId user-id
                                           :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
                                          extra-args)
                                   [::data]

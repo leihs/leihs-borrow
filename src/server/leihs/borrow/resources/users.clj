@@ -13,7 +13,9 @@
     (sql/call :concat :users.firstname :users.lastname :users.login :users.id)))
 
 (def base-sqlmap
-  (-> (sql/select :users.*)
+  (-> (sql/select
+        :users.*
+        [(sql/raw "users.firstname || ' ' || users.lastname") :name])
       (sql/from :users)
       sql-order-users))
 
@@ -42,10 +44,9 @@
   (get-by-id tx user-id))
 
 (defn get-current
-  [{request :request} _ _]
-  (let [tx (:tx request)
-        user-id (-> request :authenticated-entity :user_id)]
-    {:user (get-by-id tx user-id)}))
+  [{{tx :tx user-id :target-user-id} :request} args _]
+  {:id user-id
+   :user (get-by-id tx user-id)})
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

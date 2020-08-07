@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Wed Jul 29 2020 14:00:36 GMT+0200 (Central European Summer Time)
+# timestamp: Fri Aug 07 2020 13:06:17 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -19,7 +19,7 @@ type Availability {
 }
 
 type Category {
-  children: [Category]
+  children(userId: UUID): [Category]
   id: UUID!
   images: [Image]
 
@@ -75,6 +75,9 @@ enum ContractStateEnum {
 type CurrentUser {
   delegations: [Delegation!]
   favoriteModels(after: String, endDate: Date, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: Date): ModelsConnection
+
+  """Same as user ID"""
+  id: UUID!
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   suspensions: [Suspension]
   unsubmittedOrder: UnsubmittedOrder
@@ -136,7 +139,7 @@ input InventoryPoolsOrderByInput {
 type Model {
   attachments: [Attachment]
   availability(endDate: Date!, inventoryPoolIds: [UUID!], startDate: Date!): [ModelInventoryPoolAvailability]
-  availableQuantityInDateRange(endDate: Date!, excludeReservationIds: [UUID!], inventoryPoolIds: [UUID!], startDate: Date!): Int!
+  availableQuantityInDateRange(endDate: Date!, excludeReservationIds: [UUID!], inventoryPoolIds: [UUID!], startDate: Date!, userId: UUID): Int!
   description: String
   id: UUID!
   images: [Image]
@@ -191,12 +194,12 @@ type MutationRoot {
     modelId: UUID!
     quantity: Int!
     startDate: Date!
-    userId: UUID!
+    userId: UUID
   ): [Reservation]
   deleteReservationLines(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
   refreshTimeout: RefreshTimeoutResult
-  submitOrder(purpose: String!): Order!
+  submitOrder(purpose: String!, userId: UUID): Order!
   unfavoriteModel(id: UUID!): Model!
 }
 
@@ -278,12 +281,12 @@ type Property {
 type QueryRoot {
   category(id: UUID!, parentId: UUID): Category
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
-  currentUser: CurrentUser!
+  currentUser(userId: UUID): CurrentUser!
   delegation(id: UUID!): Delegation!
   inventoryPool(id: UUID!): InventoryPool
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   model(id: UUID!): Model!
-  models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], quantity: Int, searchTerm: String): ModelsConnection
+  models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], quantity: Int, searchTerm: String, userId: UUID): ModelsConnection
   order(id: UUID!): Order!
   orders(
     after: String
@@ -294,8 +297,9 @@ type QueryRoot {
     Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument.
     """
     states: [PoolOrderStateEnum]
+    userId: UUID
   ): OrdersConnection
-  rootCategories(limit: Int): [Category!]
+  rootCategories(limit: Int, userId: UUID): [Category!]
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
   visits(limit: Int, orderBy: [VisitsOrderByInput]): [Visit]
 }
@@ -371,6 +375,7 @@ type User {
   id: UUID!
   lastname: String
   login: String
+  name: String
 }
 
 enum UsersOrderByAttributeEnum {

@@ -46,7 +46,7 @@
       first))
 
 (defn get-multiple
-  [{{tx :tx {user-id :id} :authenticated-entity} :request} _ _]
+  [{{tx :tx user-id :target-user-id} :request} _ _]
   (-> (sql/select :id [:firstname :name] :delegator_user_id)
       (sql/from :users)
       (sql/join [:delegations_users :du]

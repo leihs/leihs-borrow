@@ -778,4 +778,25 @@ describe 'models connection' do
       }
     )
   end
+
+  it 'raises error if auth user not part of delegation' do
+    @delegation = FactoryBot.create(:delegation)
+
+    q = <<-GRAPHQL
+      {
+        models(
+          first: 1,
+          userId: "#{@delegation.id}"
+        ) {
+          totalCount
+        }
+      }
+    GRAPHQL
+
+    @result = query(q, @user.id).deep_symbolize_keys
+
+    expect(@result.dig(:data, :models)).to be_nil
+    expect(@result[:errors].first[:message])
+      .to eq "User ID not authorized!"
+  end
 end

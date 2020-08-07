@@ -18,27 +18,27 @@
                                        subscribe
                                        dispatch]]
     [leihs.borrow.lib.helpers :as help]
+    [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.components :as ui]
-    [leihs.borrow.ui.icons :as icons]))
-
+    [leihs.borrow.ui.icons :as icons]
+    [leihs.borrow.features.current-user.core :as current-user]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
- ::routes/shopping-cart
- (fn-traced [_ [_ _]]
-   {:dispatch [::re-graph/query
-               (rc/inline "leihs/borrow/features/shopping_cart/getShoppingCart.gql")
-               {}
-               [::on-fetched-data]]}))
+  ::routes/shopping-cart
+  (fn-traced [{:keys [db]} [_ _]]
+    {:dispatch [::re-graph/query
+                (rc/inline "leihs/borrow/features/shopping_cart/getShoppingCart.gql")
+                {:userId (filters/user-id db)}
+                [::on-fetched-data]]}))
 
 (reg-event-db
   ::on-fetched-data
   (fn-traced [db [_ {:keys [data errors]}]]
     (-> db
-        (assoc ::data (help/kebabize-keys
-                        (get-in data
-                                [:current-user :unsubmitted-order])))
+        (assoc ::data (get-in data
+                              [:current-user :unsubmitted-order]))
         (assoc-in [::data :edit-mode] nil)
         (cond-> errors (assoc ::errors errors)))))
 
@@ -112,10 +112,10 @@
 
 (reg-event-fx
   ::submit-order
-  (fn-traced [_ [_ args]]
+  (fn-traced [{:keys [db]} [_ args]]
     {:dispatch [::re-graph/mutate
                 (rc/inline "leihs/borrow/features/shopping_cart/submitOrderMutation.gql")
-                args
+                (merge args {:userId (filters/user-id db)})
                 [::on-submit-order-result]]}))
 
 (reg-event-fx
@@ -147,7 +147,8 @@
                       (fn [rs]
                         (as-> rs <>
                           (filter #(->> % :id ((set del-ids)) not) <>)
-                          (into <> new-res-lines))))})))
+                          (into <> new-res-lines))))
+       :dispatch [::routes/shopping-cart]})))
 
 (reg-event-db ::update-start-date
                  [(path ::data :edit-mode :start-date)]
@@ -156,6 +157,10 @@
 (reg-event-db ::update-end-date
                  [(path ::data :edit-mode :end-date)]
                  (fn-traced [_ [_ v]] v))
+
+(reg-event-db ::update-user-id
+              [(path ::data :edit-mode :user-id)]
+              (fn-traced [_ [_ v]] v))
 
 (reg-event-db ::update-quantity
                  [(path ::data :edit-mode :quantity)]
@@ -222,6 +227,7 @@
 
 (defn edit-reservation [res-lines]
   (let [edit-mode-data @(subscribe [::edit-mode-data])
+        current-user @(subscribe [::current-user/data])
         user-id (:user-id edit-mode-data)
         model (:model edit-mode-data)
         start-date (:start-date edit-mode-data)
@@ -234,16 +240,17 @@
                                 (reset-fn v)
                                 (when (and @start-date @end-date)
                                   (dispatch [::reset-availability-and-fetch
-                                                (:id model)
-                                                start-date
-                                                end-date])))))
+                                             (:id model)
+                                             user-id
+                                             start-date
+                                             end-date])))))
         on-update #(dispatch [::update-reservations
-                                 {:ids (map :id res-lines)
-                                  :modelId (:id model)
-                                  :startDate start-date
-                                  :endDate end-date
-                                  :userId user-id
-                                  :quantity quantity}])]
+                              {:ids (map :id res-lines)
+                               :modelId (:id model)
+                               :startDate start-date
+                               :endDate end-date
+                               :userId user-id
+                               :quantity quantity}])]
     [:div.border-b-2.border-gray-300.mt-4.pb-4
      [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Change reservation"]
      [:div.d-flex.mx-n2
@@ -257,6 +264,7 @@
                                (dispatch [::update-start-date new-start-date])
                                (dispatch [::reset-availability-and-fetch
                                              {:modelId (:id model)
+                                              :userId user-id
                                               :startDate new-start-date 
                                               :endDate end-date
                                               :excludeReservationIds (map :id res-lines)}])))}]]
@@ -269,10 +277,11 @@
                              (let [new-end-date (-> e .-target .-value)]
                                (dispatch [::update-end-date new-end-date])
                                (dispatch [::reset-availability-and-fetch
-                                             {:modelId (:id model)
-                                              :startDate start-date
-                                              :endDate new-end-date
-                                              :excludeReservationIds (map :id res-lines)}])))}]]]
+                                          {:modelId (:id model)
+                                           :userId user-id
+                                           :startDate start-date
+                                           :endDate new-end-date
+                                           :excludeReservationIds (map :id res-lines)}])))}]]]
      [:div.d-flex.items-end.mt-2
       [:div.w-1_2
        [:div.d-flex.flex-wrap.align-items-end
@@ -294,10 +303,21 @@
       [:div.w-1_2
        [:label.d-block.mb-0
         [:span.d-block.text-color-muted "for"]
-        [:input.w-full {:type :text,
-                        :name :user-id,
-                        :disabled true,
-                        :value user-id}]]]
+        [:select {:name :user-id
+                  :value user-id
+                  :on-change  (fn [e]
+                                (let [new-user-id (-> e .-target .-value)]
+                                  (dispatch [::update-user-id new-user-id])
+                                  (dispatch [::reset-availability-and-fetch
+                                             {:modelId (:id model)
+                                              :userId user-id
+                                              :startDate start-date
+                                              :endDate end-date
+                                              :excludeReservationIds (map :id res-lines)}])))}
+         (doall
+           (for [user (cons (:user current-user) (:delegations current-user))]
+             [:option {:value (:id user) :key (:id user)}
+              (:name user)]))]]]
       [:div.flex-auto.w-1_2
        [:button.px-4.py-2.w-100.rounded-lg.font-semibold.text-lg
         {:on-click #(dispatch [::cancel-edit])}
@@ -335,7 +355,6 @@
           [:span quantity " Items"]
           [:span " • "]
           [:span pool-names]]]
-        [:div.text-sm.text-color-muted (str "For: " (-> exemplar :user :id))]
         [:div.px-1.self-center.flex-none
          [:button.text-sm
           {:on-click #(dispatch [::delete-reservations (map :id res-lines)])}
@@ -343,6 +362,41 @@
          [:button.rounded.border.border-gray-600.px-2.text-color-muted
           {:on-click #(dispatch [::edit-reservation res-lines])}
           "Edit"]]])]))
+
+(reg-sub ::target-users
+         :<- [::current-user/data]
+         (fn [cu]
+             (let [user (:user cu)
+                   delegations (:delegations cu)]
+               (concat [user] delegations))))
+
+(reg-sub ::user-id
+         :<- [::current-user/data]
+         :<- [::filters/user-id]
+         (fn [[co user-id]]
+             (or user-id (-> co :user :id))))
+
+(defn search-panel []
+  (let [user-id @(subscribe [::user-id])
+        target-users @(subscribe [::target-users])]
+    [:div.px-3.py-4.bg-light {:class "mb-4"
+                              :style {:box-shadow "0 0rem 2rem rgba(0, 0, 0, 0.15) inset"}}
+     [:div.form.form-compact
+      [:label.row
+       [:span.text-xs.col-3.col-form-label "Für "]
+       [:div.col-9
+        [:select {:class "form-control"
+                  :default-value user-id
+                  :name :user-id
+                  :on-change (fn [ev]
+                               (dispatch [::filters/set-one
+                                          :user-id
+                                          (-> ev .-target .-value)])
+                               (dispatch [::routes/shopping-cart]))}
+         (doall
+           (for [user target-users]
+             [:option {:value (:id user) :key (:id user)}
+              (:name user)]))]]]]]))
 
 (defn view []
   (let [state (reagent/atom {:purpose ""})]
@@ -355,6 +409,7 @@
             summary @(subscribe [::order-summary])
             is-loading? (not (or data errors))]
         [:div.p-2
+         [search-panel]
          [:h1.mt-3.font-bold.text-3xl "Order Overview"]
 
          (cond

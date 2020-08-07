@@ -20,7 +20,7 @@
        all-reservable-child-categories-sqlvec
        (jdbc/query (ds/get-ds))))
 
-(defn get-roots [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+(defn get-roots [{{:keys [tx] user-id :target-user-id} :request}
                  {:keys [limit]}
                  _]
   (-> {:user-id user-id
@@ -28,7 +28,7 @@
       all-reservable-root-categories-sqlvec
       (->> (jdbc/query tx))))
 
-(defn get-children [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+(defn get-children [{{:keys [tx] user-id :target-user-id} :request}
                     _
                     value]
   (->> {:user-id user-id :category-id (:id value)}

@@ -4,6 +4,7 @@ query getCurrentUser {
       id
       firstname
       lastname
+      name
     }
     delegations {
       id

@@ -97,7 +97,7 @@
                [])))
 
 (defn unsubmitted-with-invalid-availability?
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}]
+  [{{:keys [tx] user-id :target-user-id} :request :as context}]
   (->> user-id
        (for-customer-order tx)
        (with-invalid-availability context)
@@ -128,7 +128,7 @@
       :updated_at))
 
 (defn get-multiple
-  [{{:keys [tx] user :authenticated-entity} :request :as context}
+  [{{:keys [tx] user-id :target-user-id} :request :as context}
    {:keys [order-by]}
    value]
   (-> (apply sql/select (columns tx))
@@ -140,13 +140,13 @@
                                  [:= :status (sql/call :cast
                                                        "unsubmitted"
                                                        :reservation_status)]
-                                 [:= :user_id (:id user)]]))
+                                 [:= :user_id user-id]]))
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by)))
       sql/format
       (query tx)))
 
-(defn delete [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+(defn delete [{{:keys [tx] user-id :target-user-id} :request}
               {:keys [ids]}
               _]
   (-> (sql/delete-from [:reservations :r])
@@ -185,8 +185,8 @@
         (conj result (assoc pool-avail :quantity desired-quantity))))))
 
 (defn create
-  [{{:keys [tx] {auth-user-id :id} :authenticated-entity} :request :as context}
-   {:keys [model-id start-date end-date quantity inventory-pool-ids user-id]
+  [{{:keys [tx] user-id :target-user-id} :request :as context}
+   {:keys [model-id start-date end-date quantity inventory-pool-ids]
     exclude-reservation-ids :exclude-reservation-ids 
     :or {exclude-reservation-ids []}
     :as args}
@@ -195,9 +195,6 @@
     (throw
       (ex-info
         "Model either does not exist or is not reservable by the user." {})))
-  (when-not (or (= user-id auth-user-id)
-                (delegations/member? auth-user-id user-id))
-    (throw (ex-info "User is not member of the delegation." {})))
   (let [pools (cond->> (pools/to-reserve-from tx
                                               user-id
                                               start-date
@@ -212,6 +209,7 @@
                                 :model-ids [model-id]
                                 :start-date start-date
                                 :end-date end-date
+                                :user-id user-id
                                 :exclude-reservation-ids exclude-reservation-ids}
                                nil)
                              (map (fn [el]

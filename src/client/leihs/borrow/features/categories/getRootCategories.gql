@@ -1,5 +1,5 @@
-query getRootCategories($count: Int) {
-  categories: rootCategories(limit: $count) {
+query getRootCategories($count: Int, $userId: UUID) {
+  categories: rootCategories(limit: $count, userId: $userId) {
     id
     name
     images {

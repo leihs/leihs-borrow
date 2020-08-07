@@ -23,7 +23,7 @@
   (->> (legacy/fetch
          "/borrow/booking_calendar_availability"
          context
-         (->> [:model-id :inventory-pool-id :start-date :end-date]
+         (->> [:model-id :inventory-pool-id :start-date :end-date :user-id]
               (select-keys args)
               (transform-keys csk/->snake_case)))
        :list

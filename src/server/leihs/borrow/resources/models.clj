@@ -54,7 +54,7 @@
       (sql/merge-where [:= :items.parent_id nil])))
 
 (defn reservable?
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}
+  [{{:keys [tx] user-id :target-user-id} :request :as context}
    _
    value]
   (-> base-sqlmap
@@ -95,67 +95,71 @@
 (defn available-quantity-in-date-range
   "If the available quantity was already computed through the enclosing
   resolver, then just return it. Otherwise fetch from legacy and compute."
-  [{{tx :tx {user-id :id} :authenticated-entity} :request :as context}
+  [{{tx :tx user-id :target-user-id} :request :as context}
    {:keys [inventory-pool-ids start-date end-date exclude-reservation-ids] :as args}
    value]
   (or (:available-quantity-in-date-range value)
-      (if (before?
-            (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
-            (local-date))
-        0
-        (let [pool-ids (or (not-empty inventory-pool-ids)
-                           (map :id (pools/to-reserve-from tx
-                                                           user-id
-                                                           start-date
-                                                           end-date)))
-              legacy-response (availability/get-available-quantities
-                                context
-                                {:model-ids [(:id value)]
-                                 :inventory-pool-ids pool-ids
-                                 :start-date start-date
-                                 :end-date end-date
-                                 :exclude-reservation-ids exclude-reservation-ids}
-                                nil)]
-          (->> legacy-response
-               (map :quantity)
-               (apply +)
-               (#(if (< % 0) 0 %)))))))
+      (let [pool-ids (or (not-empty inventory-pool-ids)
+                         (map :id (pools/to-reserve-from tx
+                                                         user-id
+                                                         start-date
+                                                         end-date)))]
+        (if (or (before?
+                  (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
+                  (local-date))
+                (empty? pool-ids))
+          0
+          (let [legacy-response (availability/get-available-quantities
+                                  context
+                                  {:model-ids [(:id value)]
+                                   :inventory-pool-ids pool-ids
+                                   :start-date start-date
+                                   :end-date end-date
+                                   :user-id user-id
+                                   :exclude-reservation-ids exclude-reservation-ids}
+                                  nil)]
+            (->> legacy-response
+                 (map :quantity)
+                 (apply +)
+                 (#(if (< % 0) 0 %))))))))
 
 (defn merge-available-quantities
   [models
-   {{tx :tx {user-id :id} :authenticated-entity} :request :as context}
+   {{tx :tx user-id :target-user-id} :request :as context}
    {:keys [start-date end-date]}
    value]
-  (map (if (before?
-             (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
-             (local-date))
-         #(assoc % :available-quantity-in-date-range 0)
-         (let [pool-ids (map :id (pools/to-reserve-from tx
-                                                        user-id
-                                                        start-date
-                                                        end-date))
-               legacy-response (availability/get-available-quantities
-                                 context
-                                 {:model-ids (map :id models)
-                                  :inventory-pool-ids pool-ids
-                                  :start-date start-date
-                                  :end-date end-date}
-                                 nil)
-               model-quantitites (->> legacy-response
-                                      (group-by :model_id)
-                                      (map (fn [[model-id pool-quantities]]
-                                             [model-id (->> pool-quantities
-                                                            (map :quantity)
-                                                            (apply +)
-                                                            (#(if (< % 0) 0 %)))]))
-                                      (into {}))]
-           #(assoc %
-                   :available-quantity-in-date-range
-                   (-> % :id str model-quantitites))))
-       models))
+  (let [pool-ids (map :id (pools/to-reserve-from tx
+                                                 user-id
+                                                 start-date
+                                                 end-date))]
+    (map (if (or (before?
+                   (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
+                   (local-date))
+                 (empty? pool-ids))
+           #(assoc % :available-quantity-in-date-range 0)
+           (let [legacy-response (availability/get-available-quantities
+                                   context
+                                   {:model-ids (map :id models)
+                                    :inventory-pool-ids pool-ids
+                                    :start-date start-date
+                                    :end-date end-date
+                                    :user-id user-id}
+                                   nil)
+                 model-quantitites (->> legacy-response
+                                        (group-by :model_id)
+                                        (map (fn [[model-id pool-quantities]]
+                                               [model-id (->> pool-quantities
+                                                              (map :quantity)
+                                                              (apply +)
+                                                              (#(if (< % 0) 0 %)))]))
+                                        (into {}))]
+             #(assoc %
+                     :available-quantity-in-date-range
+                     (-> % :id str model-quantitites))))
+         models)))
 
 (defn get-availability
-  [{{tx :tx {user-id :id} :authenticated-entity} :request :as context}
+  [{{tx :tx user-id :target-user-id} :request :as context}
    {:keys [start-date end-date inventory-pool-ids]}
    value]
   (let [pool-ids (or inventory-pool-ids
@@ -172,6 +176,7 @@
                          {:start-date start-date
                           :end-date end-date
                           :inventory-pool-id pool-id
+                          :user-id user-id
                           :model-id (:id value)}
                          nil)]
              (-> avail
@@ -201,7 +206,7 @@
       (merge-category-ids-conditions category-ids))))
 
 (defn get-multiple-sqlmap
-  [{{:keys [tx authenticated-entity]} :request :as context}
+  [{{:keys [tx] user-id :target-user-id} :request :as context}
    {:keys [ids
            category-id
            limit
@@ -214,11 +219,11 @@
    value]
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
-        (from-compatibles value (:id authenticated-entity) unscope-reservable))
+        (from-compatibles value user-id unscope-reservable))
       (cond-> (or category-id (= (::lacinia/container-type-name context) :Category))
         (merge-categories-conditions tx (or category-id (:id value)) direct-only))
       (cond-> (not unscope-reservable)
-        (merge-reservable-conditions (:id authenticated-entity)))
+        (merge-reservable-conditions user-id))
       (cond-> (seq ids)
         (sql/merge-where [:in :models.id ids]))
       (cond-> search-term
@@ -238,7 +243,7 @@
         (sql/offset offset))))
 
 (defn get-favorites-sqlmap
-  [{{{user-id :id} :authenticated-entity} :request :as context}
+  [{{user-id :target-user-id} :request :as context}
    args
    value]
   (-> (get-multiple-sqlmap context
@@ -250,7 +255,7 @@
                        [:= :favorite_models.user_id user-id]])))
 
 (defn favorited?
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+  [{{:keys [tx] user-id :target-user-id} :request}
    _
    value]
   (-> (sql/select

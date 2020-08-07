@@ -1,10 +1,16 @@
-query getModelShow($modelId: UUID!, $startDate: Date, $endDate: Date, $bothDatesGiven: Boolean!) {
+query getModelShow(
+  $modelId: UUID!, 
+  $startDate: Date, 
+  $endDate: Date, 
+  $userId: UUID,
+  $bothDatesGiven: Boolean!
+) {
   model(id: $modelId) {
     id
     name
     manufacturer
     description
-    availableQuantityInDateRange(startDate: $startDate, endDate: $endDate) @include(if: $bothDatesGiven)
+    availableQuantityInDateRange(startDate: $startDate, endDate: $endDate, userId: $userId) @include(if: $bothDatesGiven)
     isFavorited
     images {
       id

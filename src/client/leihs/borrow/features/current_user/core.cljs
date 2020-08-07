@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.current-user.core
   (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
+    [ajax.core :refer [GET POST]]
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
@@ -11,19 +12,28 @@
                                        reg-sub
                                        reg-fx
                                        subscribe
-                                       dispatch]]
+                                       dispatch
+                                       dispatch-sync]]
     [leihs.borrow.lib.localstorage :as ls]
-    [leihs.borrow.components :as ui]
-    [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.helpers :as help]
+    leihs.borrow.lib.re-graph
     [leihs.borrow.client.routes :as routes]))
+
+(def query (rc/inline "leihs/borrow/features/current_user/core.gql"))
+
+(defn fetch-and-save [callback]
+  (POST (str js/window.location.origin
+             (:http-url leihs.borrow.lib.re-graph/config))
+        {:params {:query query}
+         :format :json
+         :handler #(do 
+                     (dispatch-sync [::on-fetched-data (help/keywordize-keys %)])
+                     (callback))}))
 
 (reg-event-fx
   ::fetch
   (fn-traced [_ [_ _]]
-    {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/features/current_user/core.gql")
-                {}
-                [::on-fetched-data]]}))
+    {:dispatch [::re-graph/query query {} [::on-fetched-data]]}))
 
 (reg-event-db
   ::on-fetched-data

@@ -8,6 +8,7 @@ query getModels(
   $categoryId: UUID
   $isFavorited: Boolean
   $quantity: Int
+  $userId: UUID!
 ) {
   models(
     searchTerm: $searchTerm
@@ -15,6 +16,7 @@ query getModels(
     after: $afterCursor
     onlyAvailable: $onlyAvailable
     quantity: $quantity
+    userId: $userId
     categoryId: $categoryId
     isFavorited: $isFavorited
   ) {
@@ -40,6 +42,6 @@ fragment modelListProps on Model {
     imageUrl
     # thumbnails { id size imageUrl }
   }
-  availableQuantityInDateRange(startDate: $startDate, endDate: $endDate)
+  availableQuantityInDateRange(startDate: $startDate, endDate: $endDate, userId: $userId)
     @include(if: $bothDatesGiven)
 }

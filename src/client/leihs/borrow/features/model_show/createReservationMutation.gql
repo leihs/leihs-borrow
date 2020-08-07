@@ -3,7 +3,7 @@ mutation createReservationForModel(
   $endDate: Date!
   $startDate: Date!
   $quantity: Int!
-  $userId: UUID!
+  $userId: UUID
 ) {
   createReservation(
     modelId: $modelId

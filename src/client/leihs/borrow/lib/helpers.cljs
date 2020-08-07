@@ -1,9 +1,12 @@
 (ns leihs.borrow.lib.helpers
-  (:require [clojure.walk :refer [walk]]
+  (:require [clojure.walk :refer [postwalk walk] :as walk]
             [camel-snake-kebab.core :as csk]))
 
-(defn kebabize-keys [m]
-  (walk (fn [[k v]] [(csk/->kebab-case k) v]) identity m))
+(def keywordize-keys walk/keywordize-keys)
 
-(comment
-  (kebabize-keys {:foo 1 :barBaz 2}))
+(defn kebab-case-keys [m]
+  (postwalk #(cond-> %
+               (and (keyword? %)
+                    (not (qualified-keyword? %)))
+               csk/->kebab-case)
+            m))

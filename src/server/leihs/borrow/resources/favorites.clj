@@ -9,7 +9,7 @@
             [leihs.borrow.resources.models :as models]))
 
 (defn create
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+  [{{:keys [tx] user-id :target-user-id} :request}
    {model-id :id}
    _]
   (-> (sql/insert-into :favorite_models)
@@ -21,7 +21,7 @@
   (models/get-one-by-id tx model-id))
 
 (defn delete
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+  [{{:keys [tx] user-id :target-user-id} :request}
    {model-id :id}
    _]
   (-> (sql/delete-from :favorite_models)

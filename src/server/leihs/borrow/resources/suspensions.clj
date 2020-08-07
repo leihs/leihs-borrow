@@ -5,7 +5,7 @@
             [leihs.core.sql :as sql]))
 
 (defn get-multiple
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request} _ _]
+  [{{:keys [tx] user-id :target-user-id} :request} _ _]
   (-> (sql/select :*)
       (sql/from :suspensions)
       (sql/where [:= :user_id user-id])

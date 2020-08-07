@@ -19,10 +19,11 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/delegations-index
+  (fn-traced [_ _]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/delegations/index.gql")
                 {}
-                [::on-fetched-data]]})
+                [::on-fetched-data]]}))
 
 (reg-event-db
   ::on-fetched-data

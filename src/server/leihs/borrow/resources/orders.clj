@@ -47,7 +47,7 @@
   (update row :state upper-case))
 
 (defn get-one
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+  [{{:keys [tx] user-id :target-user-id} :request}
    {:keys [id]}
    _]
   (-> (sql/select :*)
@@ -61,7 +61,7 @@
   [:and ["@>" a1 a2] ["<@" a1 a2]])
 
 (defn get-connection-sql-map
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request}
+  [{{:keys [tx] user-id :target-user-id} :request}
    {:keys [order-by states]}
    value]
   (-> (multiple-base-sqlmap tx user-id)
@@ -116,7 +116,7 @@
       :updated_at))
 
 (defn get-unsubmitted
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context} _ _]
+  [{{:keys [tx] user-id :target-user-id} :request :as context} _ _]
   (let [rs  (-> (reservations/unsubmitted-sqlmap tx user-id)
                 sql/format
                 (reservations/query tx))]
@@ -127,7 +127,7 @@
                                  (map :id))}))
 
 (defn submit
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}
+  [{{:keys [tx] user-id :target-user-id} :request :as context}
    {:keys [purpose]}
    _]
   (let [reservations (reservations/for-customer-order tx user-id)]
@@ -195,7 +195,7 @@
 (defn refresh-timeout
   "Always returns the valid until date. If the unsubmitted order is not
   timed-out, then it will be updated as a side-effect."
-  [{{:keys [tx] {user-id :id} :authenticated-entity} :request :as context}
+  [{{:keys [tx] user-id :target-user-id} :request :as context}
    args
    value]
   (if (or (not (timeout? tx user-id))

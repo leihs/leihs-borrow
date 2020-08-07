@@ -3,7 +3,7 @@
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [reagent.core :as r]
     [re-frame.core :as rf]
-    [re-graph.core :as re-graph]
+    [leihs.borrow.lib.re-graph :as re-graph]
     #_[shadow.resource :as rc]
     [leihs.borrow.components :as ui]
     [leihs.borrow.ui.main-nav :as main-nav]
@@ -34,8 +34,6 @@
     [leihs.borrow.features.shopping-cart.core :as shopping-cart]
     [leihs.borrow.features.shopping-cart.timeout :as timeout]
     ))
-
-(def re-graph-config {:ws-url nil :http-url "/app/borrow/graphql" :http-parameters {:with-credentials? true}})
 
 ;-; INIT APP & DB
 (reg-event-fx
@@ -120,7 +118,7 @@
 
 (defn ^:export main []
   ; start the app framework; NOTE: order is important!
-  (dispatch [::re-graph/init re-graph-config])
+  (re-graph/init)
   (dispatch [::load-app])
   (dispatch [:routing/init-routing routes/routes-map])
 

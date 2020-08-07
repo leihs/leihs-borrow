@@ -27,17 +27,18 @@
   ::routes/models-show
   (fn-traced [{:keys [db]} [_ args]]
     (let [id (get-in args [:route-params :model-id])
-          filters (filters/current db)
-          start-date (:start-date filters)
-          end-date (:end-date filters)]
-      {:dispatch [::fetch id start-date end-date]})))
+          start-date (filters/start-date db)
+          end-date (filters/end-date db)
+          user-id (filters/user-id db)]
+      {:dispatch [::fetch id user-id start-date end-date]})))
 
 (reg-event-fx
   ::fetch
-  (fn-traced [_ [_ id start-date end-date]]
+  (fn-traced [_ [_ id user-id start-date end-date]]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/model_show/getModelShow.gql")
                 {:modelId id
+                 :userId user-id
                  :startDate start-date
                  :endDate end-date
                  :bothDatesGiven (and (boolean start-date) (boolean end-date))}
@@ -45,12 +46,12 @@
 
 (reg-event-fx
   ::reset-availability-and-fetch
-  (fn-traced [{:keys [db]} [_ model-id start-date end-date]]
+  (fn-traced [{:keys [db]} [_ model-id user-id start-date end-date]]
     {:db (update-in db
                     [:ls ::data model-id] 
                     dissoc 
                     :available-quantity-in-date-range)
-     :dispatch [::fetch model-id start-date end-date]}))
+     :dispatch [::fetch model-id user-id start-date end-date]}))
 
 (reg-event-db
   ::on-fetched-data
@@ -93,12 +94,13 @@
 
 (reg-event-fx
   ::on-mutation-result
-  (fn-traced [{:keys [_db]} [_ args {:keys [data errors]}]]
+  (fn-traced [{:keys [db]} [_ args {:keys [data errors]}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
       {:alert (str "OK! " (pr-str data))
        :dispatch [::reset-availability-and-fetch
                   (:modelId args)
+                  (:userId args)
                   (:startDate args)
                   (:endDate args)]})))
 
@@ -123,6 +125,7 @@
                                     (when (and (:start-date @state) (:end-date @state))
                                       (dispatch [::reset-availability-and-fetch
                                                  id
+                                                 (:user-id @state)
                                                  (:start-date @state)
                                                  (:end-date @state)])))))]
         [:div.border-b-2.border-gray-300.mt-4.pb-4
@@ -163,16 +166,13 @@
             [:label.d-block.mb-0.mr-3
              [:span.d-block.text-color-muted "for "]
              [:select {:name :user-id
-                       :on-change (fn [e]
-                                    (let [val (.-value (.-target e))]
-                                      (swap! state assoc :user-id val)))}
+                       :value (or (:user-id @state)
+                                  (-> current-user :user :id))
+                       :on-change (on-change-date-fn :user-id)}
               (doall
                 (for [user (cons (:user current-user) (:delegations current-user))]
-                  [:option {:value (:id user)
-                            :selected (= (:user-id @state) (:id user))}
-                   (if (= (:user-id @state) (:id user))
-                    "me"
-                    (:name user))]))]]
+                  [:option {:value (:id user) :key (:id user)}
+                   (:name user)]))]]
 
             [:div.flex-auto.w-1_2
              [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg

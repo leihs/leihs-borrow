@@ -11,6 +11,7 @@
     [leihs.borrow.features.pools.core :refer [badge]]
     [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                        reg-event-db
+                                       reg-event-ctx
                                        reg-sub
                                        reg-fx
                                        subscribe
@@ -19,9 +20,8 @@
     [leihs.borrow.client.routes :as routes]))
 
 ; is kicked off from router when this view is loaded
-(reg-event-fx ::routes/pools-index
-              (fn-traced [_ _]
-                {:dispatch [::current-user/fetch]}))
+(reg-event-ctx ::routes/pools-index
+              (fn-traced [ctx _] ctx))
 
 (defn pool-line [pool]
   [:<> (:name pool) [badge pool]])

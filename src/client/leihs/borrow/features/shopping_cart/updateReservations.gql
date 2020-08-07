@@ -4,7 +4,7 @@ mutation updateReservations(
   $endDate: Date!
   $startDate: Date!
   $quantity: Int!
-  $userId: UUID!
+  $userId: UUID
 ) {
   deleteReservationLines(ids: $ids)
   createReservation(

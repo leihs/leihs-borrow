@@ -35,7 +35,7 @@
        (jdbc/query tx)))
 
 (defn get-multiple
-  [{{tx :tx {user-id :id} :authenticated-entity} :request}
+  [{{tx :tx user-id :target-user-id} :request}
    {:keys [order-by ids]}
    _]
   (-> (accessible-to-user-sqlmap user-id)

@@ -1,11 +1,11 @@
-query customerOrdersIndex {
-  submittedOrders: orders(states: [SUBMITTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+query customerOrdersIndex($userId: UUID) {
+  submittedOrders: orders(userId: $userId states: [SUBMITTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
     ...OrderConProps
   }
-  rejectedOrders: orders(states: [REJECTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+  rejectedOrders: orders(userId: $userId states: [REJECTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
     ...OrderConProps
   }
-  approvedOrders: orders(states: [APPROVED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+  approvedOrders: orders(userId: $userId states: [APPROVED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
     ...OrderConProps
   }
 }

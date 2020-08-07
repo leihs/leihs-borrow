@@ -16,6 +16,7 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
+    [leihs.core.core :refer [flip]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
@@ -38,21 +39,21 @@
 (reg-event-fx
   ::init
   (fn-traced [_ _]
-             {:dispatch [::re-graph/query
-                         filters-gql
-                         {}
-                         [::on-fetched]]}))
+    {:dispatch [::re-graph/query
+                filters-gql
+                {}
+                [::on-fetched]]}))
 
 (reg-event-db
   ::on-fetched
   (fn-traced [db [_ {:keys [data errors]}]]
-             (if errors
-               (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)
-               (update-in db
-                          current-path
-                          (fnil merge {}) 
-                          {:quantity 1
-                           :user-id (-> data :current-user :user :id)}))))
+    (if errors
+      (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)
+      (update-in db
+                 current-path
+                 (flip merge) 
+                 {:quantity 1
+                  :user-id (-> data :current-user :user :id)}))))
 
 (reg-event-db
   ::set-multiple
@@ -66,8 +67,10 @@
 
 (reg-event-db
   ::clear-current
-  [(path current-path)]
-  (fn-traced [_ _] nil))
+  (fn-traced [db _]
+    (assoc-in db
+              current-path
+              {:user-id (-> db ::current-user/data :user :id)})))
 
 (defn get-from-current [db k]
   (get-in db (conj current-path k)))
@@ -100,7 +103,12 @@
   ::quantity
   (fn [db _] (get-from-current db :quantity)))
 
+(reg-sub
+  ::user-id
+  (fn [db _] (get-from-current db :user-id)))
+
 (defn current [db] (get-in db current-path nil))
 (defn term [db] (get-in db (conj current-path :term)))
 (defn start-date [db] (get-in db (conj current-path :start-date)))
 (defn end-date [db] (get-in db (conj current-path :end-date)))
+(defn user-id [db] (get-in db (conj current-path :user-id)))

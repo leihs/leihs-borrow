@@ -16,16 +16,17 @@
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.features.models.core :as models]
+    [leihs.borrow.features.current-user.core :as current-user]
     [leihs.borrow.features.categories.core :as categories]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/home
   (fn-traced [_ [_ {:keys [query-params]}]] 
-    {:dispatch-n (-> (list [::categories/fetch-index 4])
-                     (cond-> (seq query-params)
-                       (conj [::filters/set-multiple query-params]))
-                     (conj [::filters/init]))}))
+    {:dispatch-n (list [::filters/init]
+                       (when (seq query-params)
+                         [::filters/set-multiple query-params])
+                       [::categories/fetch-index 4])}))
 
 (defn view []
   (fn []

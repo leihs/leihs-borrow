@@ -1,5 +1,5 @@
-query getShoppingCart {
-  currentUser {
+query getShoppingCart($userId: UUID) {
+  currentUser(userId: $userId) {
     unsubmittedOrder {
       validUntil
       reservations {

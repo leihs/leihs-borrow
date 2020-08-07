@@ -16,16 +16,17 @@
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.pagination :as pagination]
+    [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
     ["/leihs-ui-client-side" :as UI]
     #_[leihs.borrow.components :as ui]))
 
 (def dispatch-fetch-index-handler
-  (fn-traced [_ _]
+  (fn-traced [{:keys [db]} _]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/categories/getRootCategories.gql")
-                {} #_{:count how-many}
+                {:userId (filters/user-id db)} #_{:count how-many}
                 [::on-fetched-categories-index]]}) )
 
 (reg-event-fx ::fetch-index dispatch-fetch-index-handler)
