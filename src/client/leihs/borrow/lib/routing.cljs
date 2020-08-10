@@ -104,6 +104,11 @@
   :routing/refresh-page
   (fn-traced [_] {:routing/refresh-page nil}))
 
+(reg-event-fx
+  :routing/navigate-back
+  (fn [_]
+    (js/window.history.back)))
+
 (reg-fx
   :routing/refresh-page
   (fn [_]

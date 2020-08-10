@@ -1,10 +1,10 @@
 (ns leihs.borrow.ui.main-nav
   (:require
-    [re-frame.core :as rf]
+    #_[re-frame.core :as rf]
     #_[shadow.resource :as rc]
-    ["date-fns" :as datefn]
+    #_["date-fns" :as datefn]
 
-    [leihs.borrow.lib.re-frame :refer [subscribe]]
+    [leihs.borrow.lib.re-frame :refer [subscribe dispatch]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.client.routes :as routes]
 
@@ -14,6 +14,8 @@
 
 (defn navbar []
   (let [cart-data @(subscribe [:leihs.borrow.features.shopping-cart.core/data])
+        routing @(subscribe [:routing/routing])
+        is-fake-menu-open? (= (get-in routing [:bidi-match :handler]) ::routes/about-page)
 
         style {:top 0 :z-index 1000
                :border-bottom-color "rgba(0,0,0, 0.08)"
@@ -21,8 +23,12 @@
                :background "rgba(255,255,255, 0.83)"}
 
         ; partials
-        toggler [:a.nav-item.nav-link.px-0 {:href (routing/path-for ::routes/about-page)}
-                 icons/menu-icon]
+        toggler-closed [:a.nav-item.nav-link.px-0 {:href (routing/path-for ::routes/about-page)}
+                        icons/menu-icon]
+        toggler-open   [:a.nav-item.nav-link.px-0 {:on-click #(dispatch [:routing/navigate-back])}
+                        icons/menu-icon-open]        
+        toggler (if is-fake-menu-open? toggler-open toggler-closed)
+        
         brand [:a.navbar-brand.m-0.font-black.text-xl {:href (routing/path-for ::routes/home)}
                (str " " "LEIHS" " ")]
         valid-until [:span (if @(subscribe [::cart/timed-out?])

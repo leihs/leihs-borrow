@@ -3,6 +3,8 @@
     #_[reagent.core :as reagent]))
 
 (def menu-icon [:span.ui-icon.ui-menu-icon "☰"])
+(def menu-icon-open [:span.ui-icon.ui-menu-icon "✖"])
+
 (def trash-icon [:span.ui-icon.ui-icon-colored.ui-trash-icon "🗑️"])
 (def shopping-cart-icon [:span.ui-icon.ui-icon-colored.ui-shopping-cart-icon "🛒"])
 
