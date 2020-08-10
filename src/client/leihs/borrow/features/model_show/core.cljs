@@ -201,7 +201,8 @@
           " "
           [:small.font-normal.text-gray-600.leading-none (:manufacturer model)]]
          [:span.text-4xl.ml-2.pr-2 
-          [:button {:on-click #(dispatch [(if (:is-favorited model)
+          [:button.btn-icon
+            {:on-click #(dispatch [(if (:is-favorited model)
                                             ::unfavorite-model
                                             ::favorite-model)
                                           (:id model)])}
