@@ -7,14 +7,14 @@ def database
       # trick Addressable to parse db urls
       http_uri = \
         Addressable::URI.parse(
-          Constants::LEIHS_DATABASE_URL.gsub(/^jdbc:postgresql/,'http').gsub(/^postgres/,'http')
+          ENV['LEIHS_DATABASE_URL'].gsub(/^jdbc:postgresql/,'http').gsub(/^postgres/,'http')
         )
       db_url = 'postgres://' \
         + (http_uri.user.presence || ENV['PGUSER'].presence || 'postgres') \
         + ((pw = (http_uri.password.presence || ENV['PGPASSWORD'].presence)) ? ":#{pw}" : "") \
         + '@' + (http_uri.host.presence || ENV['PGHOST'].presence || ENV['PGHOSTADDR'].presence || 'localhost') \
         + ':' + (http_uri.port.presence || ENV['PGPORT'].presence || 5432).to_s \
-        + '/' + ( http_uri.path.presence.try(:gsub,/^\//,'') || ENV['PGDATABASE'].presence || 'leihs') \
+        + '/' + ( http_uri.path.presence.try(:gsub,/^\//,'') || ENV['PGDATABASE'].presence || 'leihs_test') \
         + '?pool=5'
 
       Sequel.connect(db_url)

@@ -13,7 +13,7 @@ class GraphqlQuery
   end
 
   def perform
-    @response = Faraday.post("#{Constants::LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/graphql") do |req|
+    @response = Faraday.post("#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/graphql") do |req|
       req.headers['Accept'] = 'application/json'
       req.headers['Content-Type'] = 'application/json'
       req.headers['X-CSRF-Token'] = @cookies['leihs-anti-csrf-token']
@@ -37,10 +37,10 @@ class GraphqlQuery
 
   def get_cookies(user_id)
     resp = if user = User.find(id: user_id)
-             Faraday.post("#{Constants::LEIHS_BORROW_HTTP_BASE_URL}/sign-in",
+             Faraday.post("#{LEIHS_BORROW_HTTP_BASE_URL}/sign-in",
                           { user: user.email, password: 'password' })
            else
-             Faraday.post("#{Constants::LEIHS_BORROW_HTTP_BASE_URL}")
+             Faraday.post("#{LEIHS_BORROW_HTTP_BASE_URL}")
            end
 
     Rack::Utils.parse_cookies_header(resp.headers['set-cookie'])
