@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 eval_gemfile 'database/Gemfile'
 
+gem 'geckodriver-helper', '0.21.0'
 gem 'capybara', '~> 3.8'
 gem 'edn'
 gem 'faraday'
