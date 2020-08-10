@@ -19,56 +19,56 @@ jobs:
           include:
             - cider-ci/uberjar_task-component.yml
 
-  #feature-specs:
-  #  name: Feature specs
-  #  depends_on:
-  #    uberjar was built:
-  #      type: job
-  #      job_key: build-borrow-uberjar
-  #      states: [passed]
-  #  run_when:
-  #    any branch has been updated:
-  #      type: branch
-  #      include_match: ^.*$
-  #    uberjar was built:
-  #      type: job
-  #      job_key: build-borrow-uberjar
-  #      states: [passed]
-  #  context:
-  #    generate_tasks:
-  #      include_match: ^spec\/features\/(.*)\.feature$
-  #    task_defaults:
-  #      include:
-  #        - cider-ci/ruby-bundle_task-component.yml
-  #        - cider-ci/environment_variables.yml
-  #        - cider-ci/database_task-component.yml
-  #        - cider-ci/uberjar_task-component.yml
-  #        - cider-ci/service_task-component.yml
-  #      environment_variables:
-  #        LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
-  #      traits:
-  #        JDK 8: true
-  #        Leiningen 2: true
-  #        Firefox ESR 45: true
-  #      ports:
-  #        LEIHS_BORROW_HTTP_PORT:
-  #          min: 3200
-  #          max: 3299
-  #      git_options:
-  #        submodules:
-  #          include_match: ^.*$
-  #      scripts:
-  #        test:
-  #          start_when:
-  #            borrow service is running:
-  #              script_key: borrow-service-is-running
-  #              states: [passed]
-  #          body: |
-  #            #!/usr/bin/env bash
-  #            set -eux
-  #            export PATH=~/.rubies/$RUBY/bin:$PATH
-  #            mkdir -p log
-  #            xvfb-run -a -e log/xvfb.log bundle exec rspec $CIDER_CI_TASK_FILE
+  feature-specs:
+    name: Feature specs
+    depends_on:
+      uberjar was built:
+        type: job
+        job_key: build-borrow-uberjar
+        states: [passed]
+    run_when:
+      any branch has been updated:
+        type: branch
+        include_match: ^.*$
+      uberjar was built:
+        type: job
+        job_key: build-borrow-uberjar
+        states: [passed]
+    context:
+      generate_tasks:
+        include_match: ^spec\/features\/(.*)\.feature$
+      task_defaults:
+        include:
+          - cider-ci/ruby-bundle_task-component.yml
+          - cider-ci/environment_variables.yml
+          - cider-ci/database_task-component.yml
+          - cider-ci/uberjar_task-component.yml
+          - cider-ci/service_task-component.yml
+        environment_variables:
+          LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
+        traits:
+          JDK 8: true
+          Leiningen 2: true
+          Firefox ESR 45: true
+        ports:
+          LEIHS_BORROW_HTTP_PORT:
+            min: 3200
+            max: 3299
+        git_options:
+          submodules:
+            include_match: ^.*$
+        scripts:
+          test:
+            start_when:
+              borrow service is running:
+                script_key: borrow-service-is-running
+                states: [passed]
+            body: |
+              #!/usr/bin/env bash
+              set -eux
+              export PATH=~/.rubies/$RUBY/bin:$PATH
+              mkdir -p log
+              xvfb-run -a -e log/xvfb.log bundle exec rspec $CIDER_CI_TASK_FILE
 
   good-to-merge:
     name: Good To Merge
