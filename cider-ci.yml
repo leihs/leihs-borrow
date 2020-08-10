@@ -44,13 +44,18 @@ jobs:
           - cider-ci/database_task-component.yml
           - cider-ci/uberjar_task-component.yml
           - cider-ci/service_task-component.yml
+          - cider-ci/legacy_service-task_component.yml
         environment_variables:
           LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
+          LEIHS_LEGACY_DIR: "{{CIDER_CI_WORKING_DIR}}/spec/support/legacy-api"
         traits:
           JDK 8: true
           Leiningen 2: true
           Firefox ESR 45: true
         ports:
+          LEIHS_LEGACY_HTTP_PORT:
+            min: 3200
+            max: 3299
           LEIHS_BORROW_HTTP_PORT:
             min: 3200
             max: 3299
