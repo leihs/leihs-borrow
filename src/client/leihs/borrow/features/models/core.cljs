@@ -195,7 +195,7 @@
                         :href  (routing/path-for ::routes/models-show
                                                  :model-id (:id model))})))]
     [:div.mx-1.mt-2
-     [:> UI/Components.CategoryList {:list models-list}]
+     [:> UI/Components.ModelList {:list models-list}]
      (when debug? [:p (pr-str @(subscribe [::data]))])]))
 
 (defn load-more [extra-args]

@@ -41,3 +41,7 @@ cljs::cljs.user=>
 nil
 cljs::cljs.user=> 
 cljs::leihs.borrow.features.model-show.core=> 
+; Evaluating file: core.cljs
+nil
+cljs::leihs.borrow.features.booking-calendar.core=> 
+cljs::leihs.borrow.features.booking-calendar.core=> 
