@@ -52,6 +52,7 @@ jobs:
           JDK 8: true
           Leiningen 2: true
           Firefox ESR 45: true
+          ci-g2018-03: true
         ports:
           LEIHS_LEGACY_HTTP_PORT:
             min: 3200
