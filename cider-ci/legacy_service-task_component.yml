@@ -1,0 +1,58 @@
+scripts:
+
+  legacy-bundle-rspec-ruby:
+    exclusive_executor_resource: ruby-install_{{$RUBY}}
+    timeout: 5 Minutes
+    body: |
+      #!/usr/bin/env bash
+      set -eux
+
+      cd $LEIHS_LEGACY_DIR
+
+      export PATH=~/.rubies/$RUBY/bin:$PATH
+
+      if [ ! -d ~/.rubies/$RUBY ]; then
+      ruby-install --no-install-deps $RUBY_ENGINE $RUBY_VERSION
+      fi
+
+      if [ ! -f ~/.rubies/$RUBY/bin/bundle ]; then
+      gem install bundler
+      fi
+
+      bundle install
+
+  run-legacy-service:
+    body: |
+      set -euxo
+      cd $LEIHS_LEGACY_DIR
+      export PATH=~/.rubies/$RUBY/bin:$PATH
+      ruby -S \
+      bundle exec puma \
+      -e production \
+      -t 1:2 \
+      -w 2 \
+      -b tcp://localhost:${LEIHS_LEGACY_HTTP_PORT}
+    start_when:
+      database has been created:
+        script_key: create-database
+        states: [passed]
+      gems are bundled:
+        script_key: legacy-bundle-rspec-ruby
+        states: [passed]
+
+  stop-legacy-service:
+    timeout: 5 Seconds
+    body: |
+      set -eux
+      kill -INT $(lsof -t -wni tcp:${LEIHS_LEGACY_HTTP_PORT})
+      sleep 1
+    start_when:
+      test is in terminal state:
+        script_key: test
+        states: [aborted, defective, passed, failed, skipped]
+
+  test:
+    start_when:
+      legacy service is running:
+        script_key: run-legacy-service
+        states: [executing]

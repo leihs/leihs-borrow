@@ -7,3 +7,6 @@
 [submodule "database"]
 	path = database
 	url = https://github.com/leihs/leihs_database.git
+[submodule "spec/support/legacy-api"]
+	path = spec/support/legacy-api
+	url = https://github.com/leihs/leihs_legacy.git
