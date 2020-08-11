@@ -14,6 +14,8 @@ jobs:
         git_options:
           submodules:
             include_match: ^.*$
+        traits:
+          ci-g2018-03: true
       tasks:
         build-borrow-uberjar:
           include:
