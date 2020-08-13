@@ -3,7 +3,7 @@ step 'the borrow app is loaded' do
 end
 
 step 'I visit legacy borrow' do
-  visit("http://localhost:#{ENV['LEIHS_LEGACY_HTTP_PORT']}/borrow")
+  visit("http://localhost:#{LEIHS_LEGACY_HTTP_PORT}/borrow")
 end
 
 step 'legacy borrow is loaded' do

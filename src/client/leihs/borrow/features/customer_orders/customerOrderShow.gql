@@ -1,5 +1,5 @@
-query customerOrderShow($id: UUID!) {
-  order(id: $id) {
+query customerOrderShow($id: UUID!, $userId: UUID) {
+  order(id: $id, userId: $userId) {
     id
     purpose
     state

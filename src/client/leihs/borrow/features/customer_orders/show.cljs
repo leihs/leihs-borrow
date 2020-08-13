@@ -1,4 +1,5 @@
 (ns leihs.borrow.features.customer-orders.show
+  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as reagent]
@@ -13,6 +14,7 @@
                                        subscribe
                                        dispatch]]
     [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.client.routes :as routes]
     #_[leihs.borrow.components :as ui]))
 
@@ -20,11 +22,11 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/orders-show
-  (fn-traced [_ [_ args]]
-    (let [order-id (get-in args [:route-params :order-id])]
+  (fn-traced [{:keys [db]} [_ args]]
+    (let [order-id (spy (get-in args [:route-params :order-id]))]
       {:dispatch [::re-graph/query
                   (rc/inline "leihs/borrow/features/customer_orders/customerOrderShow.gql")
-                  {:id order-id}
+                  {:id order-id, :userId (filters/user-id db)}
                   [::on-fetched-data order-id]]})))
 
 (reg-event-db

@@ -4,6 +4,15 @@ step 'there is a user' do
   @user = FactoryBot.create(:user)
 end
 
+step 'there is a delegation :name' do |name|
+  @delegation = FactoryBot.create(:delegation, name: name)
+end
+
+step 'the user is member of delegation :name' do |name|
+  d = User.find(firstname: name)
+  d.add_delegation_user(@user)
+end
+
 step 'there is a user without password' do
   @user = FactoryBot.create(:user_without_password)
 end
@@ -62,12 +71,12 @@ step "there is a language :lang with locale name :l_name" do |lang, l_name|
 end
 
 step "the user is customer of some pool" do
-  FactoryBot.create(:access_right, user_id: @user.id, role: :customer)
+  FactoryBot.create(:direct_access_right, user_id: @user.id, role: :customer)
 end
 
 step "the user is inventory manager of some pool" do
   @pool = FactoryBot.create(:inventory_pool)
-  FactoryBot.create(:access_right,
+  FactoryBot.create(:direct_access_right,
                     user_id: @user.id,
                     inventory_pool_id: @pool.id,
                     role: :inventory_manager)
@@ -77,15 +86,25 @@ step "the user is inventory manager of pool :name" do |name|
   pool = InventoryPool.find(name: name) ||
     FactoryBot.create(:inventory_pool, name: name)
 
-  FactoryBot.create(:access_right,
+  FactoryBot.create(:direct_access_right,
                     user_id: @user.id,
                     inventory_pool_id: pool.id,
                     role: :inventory_manager)
 end
 
+step "the delegation :delegation is customer of pool :name" do |delegation, name|
+  pool = InventoryPool.find(name: name) ||
+    FactoryBot.create(:inventory_pool, name: name)
+
+  FactoryBot.create(:direct_access_right,
+                    user_id: @delegation.id,
+                    inventory_pool_id: pool.id,
+                    role: :customer)
+end
+
 step "the user is group manager of pool :name" do |name|
   pool = FactoryBot.create(:inventory_pool, name: name)
-  FactoryBot.create(:access_right,
+  FactoryBot.create(:direct_access_right,
                     user_id: @user.id,
                     inventory_pool_id: pool.id,
                     role: :group_manager)

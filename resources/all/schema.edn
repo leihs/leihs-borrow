@@ -249,7 +249,8 @@
            :delegation {:args {:id {:type (non-null :UUID)}}
                         :resolve :delegation
                         :type (non-null :Delegation)}
-           :order {:args {:id {:type (non-null :UUID)}}
+           :order {:args {:id {:type (non-null :UUID)}
+                          :userId {:type :UUID}}
                    :resolve :order
                    :type (non-null :Order)}
            :orders {:resolve :orders-connection
