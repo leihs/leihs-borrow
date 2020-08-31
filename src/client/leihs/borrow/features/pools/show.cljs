@@ -34,7 +34,7 @@
         (update-in [:ls ::data pool-id ] (fnil identity {}))
         (cond->
           errors
-          (assoc-in [:ls ::errors pool-id] errors))
+          (assoc-in [::errors pool-id] errors))
         (assoc-in [:ls ::data pool-id] (:inventory-pool data)))))
 
 (reg-sub ::pool
@@ -43,7 +43,7 @@
 
 (reg-sub ::errors
          (fn [db [_ id]]
-           (get-in db [:ls ::errors id])))
+           (get-in db [::errors id])))
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])

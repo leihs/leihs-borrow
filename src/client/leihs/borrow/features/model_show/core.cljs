@@ -55,12 +55,11 @@
 
 (reg-event-db
   ::on-fetched-data
-  [(path :ls)]
-  (fn-traced [ls [_ model-id {:keys [data errors]}]]
-    (-> ls
-        (update-in [::data model-id] (fnil identity {}))
+  (fn-traced [db [_ model-id {:keys [data errors]}]]
+    (-> db
+        (update-in [:ls ::data model-id] (fnil identity {}))
         (cond-> errors (assoc-in [::errors model-id] errors))
-        (assoc-in [::data model-id] (:model data)))))
+        (assoc-in [:ls ::data model-id] (:model data)))))
 
 (reg-event-fx
   ::favorite-model
@@ -82,7 +81,7 @@
 (reg-sub
   ::errors
   (fn [db [_ id]]
-    (get-in db [:ls ::errors id])))
+    (get-in db [::errors id])))
 
 (reg-event-fx
   ::model-create-reservation

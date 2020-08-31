@@ -44,14 +44,13 @@
 
 (reg-event-db
   ::on-fetched-category-data
-  [(path :ls)]
-  (fn-traced [ls [_ category-id {:keys [data errors]}]]
-    (-> ls
-        (update-in [::data category-id] (fnil identity {}))
+  (fn-traced [db [_ category-id {:keys [data errors]}]]
+    (-> db
+        (update-in [:ls ::data category-id] (fnil identity {}))
         (cond->
           errors
           (assoc-in [::errors category-id] errors))
-        (assoc-in [::data category-id] data))))
+        (assoc-in [:ls ::data category-id] data))))
 
 (reg-event-fx
   ::clear
@@ -66,7 +65,7 @@
 
 (reg-sub
   ::errors
-  (fn [db [_ id]] (get-in db [:ls ::errors id])))
+  (fn [db [_ id]] (get-in db [::errors id])))
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])
