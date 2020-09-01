@@ -135,11 +135,11 @@ describe 'models connection' do
               { node: { id: "#{@model.id}",
                         availability: [ {
                           dates: [
-                            { date: "#{Date.today}",
+                            { date: "#{Date.today}T00:00:00Z",
                               quantity: 1,
                               startDateRestriction: "CLOSE_TIME",
                               endDateRestriction: "CLOSE_TIME" },
-                            { date: "#{Date.tomorrow}",
+                            { date: "#{Date.tomorrow}T00:00:00Z",
                               quantity: 1,
                               startDateRestriction: nil,
                               endDateRestriction: nil } ] } ] } } ] }
@@ -160,11 +160,11 @@ describe 'models connection' do
               { node: { id: "#{@model.id}",
                         availability: [ {
                           dates: [
-                            { date: "#{Date.today}",
+                            { date: "#{Date.today}T00:00:00Z",
                               quantity: 1,
                               startDateRestriction: nil,
                               endDateRestriction: nil },
-                            { date: "#{Date.tomorrow}",
+                            { date: "#{Date.tomorrow}T00:00:00Z",
                               quantity: 1,
                               startDateRestriction: "CLOSE_TIME",
                               endDateRestriction: "CLOSE_TIME" } ] } ] } } ] }
@@ -207,7 +207,7 @@ describe 'models connection' do
             { node: { id: "#{@model.id}",
                       availability: [ {
                         dates: [
-                          { date: "#{Date.today}",
+                          { date: "#{Date.today}T00:00:00Z",
                             quantity: 1,
                             startDateRestriction: "CLOSE_TIME",
                             endDateRestriction: "CLOSE_TIME" } ] } ] } } ] }
@@ -223,7 +223,7 @@ describe 'models connection' do
             { node: { id: "#{@model.id}",
                       availability: [ {
                         dates: [
-                          { date: "#{Date.today}",
+                          { date: "#{Date.today}T00:00:00Z",
                             quantity: 1,
                             startDateRestriction: "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE",
                             endDateRestriction: "VISITS_CAPACITY_REACHED" } ] } ] } } ] }
@@ -239,7 +239,7 @@ describe 'models connection' do
             { node: { id: "#{@model.id}",
                       availability: [ {
                         dates: [
-                          { date: "#{Date.today}",
+                          { date: "#{Date.today}T00:00:00Z",
                             quantity: 1,
                             startDateRestriction: "VISITS_CAPACITY_REACHED",
                             endDateRestriction: "VISITS_CAPACITY_REACHED" } ] } ] } } ] }

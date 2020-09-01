@@ -25,6 +25,7 @@
                  ~format-str)
        ~attr])))
 
+(def-attribute-override-fn date :date date-format)
 (def-attribute-override-fn date-start-date :start_date date-format)
 (def-attribute-override-fn date-end-date :end_date date-format)
 (def-attribute-override-fn date-time-created-at :created_at date-time-format)

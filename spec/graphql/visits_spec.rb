@@ -193,20 +193,20 @@ describe 'visits' do
     result = query(q, user.id)
     expect_graphql_result(result, {
       :visits=> [
-        {:date => (Date.today + 1.day).to_s,
+        {:date => "#{(Date.today + 1.day).to_s}T00:00:00Z",
          :visitType => "PICKUP",
          :inventoryPool => {:id => "cfffa894-c0bd-42f3-b3d5-27603f00138d"},
          :quantity => 2,
          :isApproved => true,
          :reservations => [{:id => "4f92b4ef-ba21-4a7d-9d4d-622e7bddf688"},
                            {:id => "56b01674-26f0-4e5e-ac61-7625af86520d"}]},
-        {:date => (Date.today + 2.day).to_s,
+        {:date => "#{(Date.today + 2.day).to_s}T00:00:00Z",
          :visitType => "RETURN",
          :inventoryPool => {:id => "cfffa894-c0bd-42f3-b3d5-27603f00138d"},
          :quantity => 1,
          :isApproved => true,
          :reservations => [{:id => "9aab0840-d673-4255-970a-4b5b3136b5a4"}]},
-        {:date => (Date.today + 3.day).to_s,
+        {:date => "#{(Date.today + 3.day).to_s}T00:00:00Z",
          :visitType => "PICKUP",
          :inventoryPool => {:id => "9ad7032a-cfe2-45a3-885e-24fb70444de1"},
          :quantity => 1,
