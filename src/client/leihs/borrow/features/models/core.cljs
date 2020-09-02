@@ -38,7 +38,7 @@
     (let [filters (filters/current db)
           start-date (:start-date filters)
           end-date (:end-date filters)
-          user-id (or (:user-id filters) (-> db ::current-user/data :user :id))
+          user-id (or (:user-id filters) (-> db current-user/data :user :id))
           dates-valid? (<= start-date end-date) ; if somehow end is before start, ignore it instead of error
           query-vars (merge {:searchTerm (:term filters)
                              :startDate (when dates-valid? start-date)
@@ -86,9 +86,9 @@
 (reg-sub ::target-users
          :<- [::current-user/data]
          (fn [cu]
-           (let [user (:user cu)
-                 delegations (:delegations cu)]
-             (concat [user] delegations))))
+           (let [delegations (:delegations cu)]
+             (when (not-empty delegations)
+               (concat [(:user cu)] delegations)))))
 
 (reg-sub ::user-id
          :<- [::current-user/data]
@@ -138,17 +138,18 @@
          :value term
          :on-change #(dispatch [::filters/set-one :term (-> % .-target .-value)])}]]
 
-      [:label.row
-       [:span.text-xs.col-3.col-form-label "Für "]
-       [:div.col-9
-        [:select {:class "form-control"
-                  :default-value user-id
-                  :name :user-id
-                  :on-change #(dispatch [::filters/set-one :user-id (-> % .-target .-value)])}
-         (doall
-           (for [user target-users]
-             [:option {:value (:id user) :key (:id user)}
-              (:name user)]))]]]
+      (when-not (empty? target-users)
+        [:label.row
+         [:span.text-xs.col-3.col-form-label "Für "]
+         [:div.col-9
+          [:select {:class "form-control"
+                    :default-value user-id
+                    :name :user-id
+                    :on-change #(dispatch [::filters/set-one :user-id (-> % .-target .-value)])}
+           (doall
+             (for [user target-users]
+               [:option {:value (:id user) :key (:id user)}
+                (:name user)]))]]])
 
       [:div.form-group
        [:div.row

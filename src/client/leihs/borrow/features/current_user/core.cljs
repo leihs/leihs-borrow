@@ -45,6 +45,9 @@
       (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)
       (assoc-in db [:ls ::data] (:current-user data)))))
 
+(defn data [db]
+  (-> db :ls ::data))
+
 (reg-sub ::data
          (fn [db _] (get-in db [:ls ::data])))
 

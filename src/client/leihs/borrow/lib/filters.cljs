@@ -70,7 +70,7 @@
   (fn-traced [db _]
     (assoc-in db
               current-path
-              {:user-id (-> db ::current-user/data :user :id)})))
+              {:user-id (-> db current-user/data :user :id)})))
 
 (defn get-from-current [db k]
   (get-in db (conj current-path k)))
