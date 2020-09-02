@@ -4,6 +4,7 @@
     [ajax.core :refer [GET POST]]
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [re-frame.core :as rf]
+    [re-frame.db :as db]
     [re-graph.core :as re-graph]
     [re-frame.std-interceptors :refer [path]]
     [shadow.resource :as rc]
@@ -22,13 +23,15 @@
 (def query (rc/inline "leihs/borrow/features/current_user/core.gql"))
 
 (defn fetch-and-save [callback]
-  (POST (str js/window.location.origin
-             (:http-url leihs.borrow.lib.re-graph/config))
-        {:params {:query query}
-         :format :json
-         :handler #(do 
-                     (dispatch-sync [::on-fetched-data (help/keywordize-keys %)])
-                     (callback))}))
+  (if (get-in @db/app-db [:ls ::data :user :id])
+    (callback)
+    (POST (str js/window.location.origin
+               (:http-url leihs.borrow.lib.re-graph/config))
+          {:params {:query query}
+           :format :json
+           :handler #(do 
+                       (dispatch-sync [::on-fetched-data (help/keywordize-keys %)])
+                       (callback))})))
 
 (reg-event-fx
   ::fetch
@@ -40,10 +43,10 @@
   (fn-traced [db [_ {:keys [data errors]}]]
     (if errors
       (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)
-      (assoc-in db [::data] (:current-user data)))))
+      (assoc-in db [:ls ::data] (:current-user data)))))
 
 (reg-sub ::data
-         (fn [db _] (get-in db [::data])))
+         (fn [db _] (get-in db [:ls ::data])))
 
 (reg-sub ::pools
          :<- [::data]
