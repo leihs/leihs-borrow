@@ -107,6 +107,8 @@
                                                            :resolve :available-quantity-in-date-range}
                             :images {:type (list :Image)
                                      :resolve :images}
+                            :coverImage {:type :Image
+                                         :resolve :cover-image}
                             :attachments {:type (list :Attachment)
                                           :resolve :attachments}
                             :properties {:type (list :Property)

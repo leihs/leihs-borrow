@@ -24,18 +24,29 @@
        (path :image)
        (assoc image :image-url)))
 
+(defn query [sql tx]
+  (jdbc/query tx sql {:row-fn merge-image-url}))
+
+(defn get-cover [{{:keys [tx]} :request} _ {model-id :id}]
+  (-> image-base-query
+      (sql/join :models [:= :images.id :models.cover_image_id])
+      (sql/where [:= :models.id model-id])
+      sql/format
+      (query tx)
+      first))
+
 (defn get-multiple [{{:keys [tx]} :request} _ value]
   (-> image-base-query
       (sql/merge-where [:= :images.target_id (:id value)])
       (sql/merge-where [:= :images.parent_id nil])
       sql/format
-      (as-> <> (jdbc/query tx <> {:row-fn merge-image-url}))))
+      (query tx)))
 
 (defn get-multiple-thumbnails [{{:keys [tx]} :request} _ value]
   (-> image-base-query
       (sql/merge-where [:= :images.parent_id (:id value)])
       sql/format
-      (as-> <> (jdbc/query tx <> {:row-fn merge-image-url}))))
+      (query tx)))
 
 (defn handler-one
   [{tx :tx, {image-id :image-id} :route-params}]

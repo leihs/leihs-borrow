@@ -42,6 +42,10 @@ fragment modelListProps on Model {
     imageUrl
     # thumbnails { id size imageUrl }
   }
+  coverImage {
+    id
+    imageUrl
+  }
   availableQuantityInDateRange(startDate: $startDate, endDate: $endDate, userId: $userId)
     @include(if: $bothDatesGiven)
 }

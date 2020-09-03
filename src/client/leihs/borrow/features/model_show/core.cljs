@@ -208,7 +208,8 @@
            (if (:is-favorited model) icons/favorite-yes-icon icons/favorite-no-icon)]]]
 
         ; FIXME: show all images not just the first one
-        (if-let [first-image (first (:images model))]
+        (if-let [first-image (or (:cover-image model)
+                                 (first (:images model)))]
           [:div.flex.justify-center.py-4.mt-4.border-b-2.border-gray-300
            [:div [:img {:src (:image-url first-image)}]]])
 

@@ -212,7 +212,8 @@
                            max-quant (:available-quantity-in-date-range model)
                            unavailable? (and max-quant (<= max-quant 0))]
                        {:id (:id model)
-                        :imgSrc (get-in model [:images 0 :image-url])
+                        :imgSrc (or (get-in model [:cover-image :image-url])
+                                    (get-in model [:images 0 :image-url]))
                         :isDimmed false
                         :caption (:name model)
                         :subCaption (:manufacturer model)

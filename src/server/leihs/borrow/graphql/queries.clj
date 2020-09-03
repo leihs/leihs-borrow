@@ -21,6 +21,7 @@
    :available-quantity-in-date-range models/available-quantity-in-date-range
    :category categories/get-one
    :contracts-connection contracts/get-connection
+   :cover-image images/get-cover
    :current-user users/get-current
    :child-categories categories/get-children
    :delegation delegations/get-one
