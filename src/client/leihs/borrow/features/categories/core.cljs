@@ -19,7 +19,7 @@
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
-    ["/leihs-ui-client-side" :as UI]
+    ["/leihs-ui-client-side-external-react" :as UI]
     #_[leihs.borrow.components :as ui]))
 
 (def dispatch-fetch-index-handler
