@@ -1,5 +1,4 @@
 (ns leihs.borrow.features.delegations.index
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [re-frame.core :as rf]

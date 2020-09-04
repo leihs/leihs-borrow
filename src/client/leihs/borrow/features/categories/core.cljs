@@ -1,5 +1,4 @@
 (ns leihs.borrow.features.categories.core
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as reagent]

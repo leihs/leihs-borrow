@@ -1,5 +1,4 @@
 (ns leihs.borrow.lib.filters
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:refer-clojure :exclude [key])
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]

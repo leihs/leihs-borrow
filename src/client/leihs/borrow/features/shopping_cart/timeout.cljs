@@ -1,5 +1,4 @@
 (ns leihs.borrow.features.shopping-cart.timeout
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require [re-frame.core :as rf]
             [re-graph.core :as re-graph]
             [day8.re-frame.tracing :refer-macros [fn-traced]]

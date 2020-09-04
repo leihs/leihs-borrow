@@ -1,5 +1,4 @@
 (ns leihs.borrow.features.current-user.core
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
     [ajax.core :refer [GET POST]]
     [day8.re-frame.tracing :refer-macros [fn-traced]]

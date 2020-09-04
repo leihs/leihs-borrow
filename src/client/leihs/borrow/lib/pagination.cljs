@@ -1,7 +1,7 @@
 (ns leihs.borrow.lib.pagination
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require [re-frame.core :as rf]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
+            [leihs.borrow.lib.helpers :refer [spy]]
             [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                                reg-event-db
                                                reg-sub

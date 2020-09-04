@@ -1,5 +1,4 @@
 (ns leihs.borrow.features.model-show.core
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:refer-clojure :exclude [val])
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]

@@ -1,5 +1,4 @@
 (ns leihs.borrow.features.customer-orders.show
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as reagent]
@@ -7,6 +6,7 @@
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
     [leihs.borrow.components :as ui]
+    [leihs.borrow.lib.helpers :refer [spy]]
     [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                        reg-event-db
                                        reg-sub

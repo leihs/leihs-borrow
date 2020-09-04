@@ -1,5 +1,4 @@
 (ns leihs.borrow.features.pools.show
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require ["autolinker" :as autolinker]
             [re-frame.core :as rf]
             [day8.re-frame.tracing :refer-macros [fn-traced]]

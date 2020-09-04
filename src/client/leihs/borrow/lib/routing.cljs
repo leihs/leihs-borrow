@@ -9,7 +9,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (ns leihs.borrow.lib.routing
-  (:require-macros [leihs.borrow.lib.macros :refer [spy]])
   (:require [bidi.bidi :as bidi]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
             [pushy.core :as pushy]
