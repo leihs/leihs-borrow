@@ -6,6 +6,10 @@ query getCurrentUser {
       lastname
       name
     }
+    languageToUse {
+      id
+      localeName
+    }
     delegations {
       id
       name

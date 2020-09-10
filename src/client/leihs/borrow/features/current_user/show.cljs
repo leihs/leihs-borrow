@@ -12,10 +12,13 @@
                                        subscribe
                                        dispatch]]
     [leihs.borrow.lib.localstorage :as ls]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.components :as ui]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.features.current-user.core :as core]
     [leihs.borrow.client.routes :as routes]))
+
+(set-default-translate-path :borrow.current-user)
 
 (reg-event-fx
   ::routes/current-user-show
@@ -47,6 +50,6 @@
        errors [ui/error-view errors]
        :else [:<>
               [:header.mb-3
-               [:h1.text-3xl.font-extrabold.leading-tight "Current User"]
+               [:h1.text-3xl.font-extrabold.leading-tight (t :title)]
                [:pre.text-xs {:style {:white-space :pre-wrap}}
                 (js/JSON.stringify (clj->js data) 0 2)]]])]))

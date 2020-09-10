@@ -11,6 +11,7 @@ class User < Sequel::Model
                join_table: :favorite_models,
                left_key: :user_id,
                right_key: :model_id)
+  many_to_one(:language)
 end
 
 FactoryBot.define do
@@ -18,6 +19,14 @@ FactoryBot.define do
     created_at { Date.today }
     updated_at { Date.today }
     email { Faker::Internet.email }
+    language do
+      Language.find(locale_name: "en-GB") or
+        create(:language,
+               locale_name: "en-GB",
+               name: "British English",
+               default: true)
+    end
+
 
     transient do
       access_rights { [] }

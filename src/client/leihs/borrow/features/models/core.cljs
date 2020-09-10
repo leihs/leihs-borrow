@@ -12,6 +12,7 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
+    [leihs.borrow.lib.translate :refer [t]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
@@ -132,14 +133,14 @@
        :on-submit (fn [event] (.preventDefault event) (submit-fn filters))}
 
       [:div.form-group
-       [form-line :search-term "Suche"
+       [form-line :search-term (t :borrow.filter/search)
         {:type :text
          :value term
          :on-change #(dispatch [::filters/set-one :term (-> % .-target .-value)])}]]
 
       (when-not (empty? target-users)
         [:label.row
-         [:span.text-xs.col-3.col-form-label "Für "]
+         [:span.text-xs.col-3.col-form-label (t :borrow.filter/for)]
          [:div.col-9
           [:select {:class "form-control"
                     :default-value user-id
@@ -152,8 +153,7 @@
 
       [:div.form-group
        [:div.row
-        [:span.text-xs.col-3.col-form-label
-         (str "Zeitraum" " ")]
+        [:span.text-xs.col-3.col-form-label (t :borrow.filter/time-span)]
         [:div.col-9
          [:label.custom-control.custom-checkbox
           [:input.custom-control-input
@@ -162,12 +162,12 @@
             :checked available-between?
             :on-change (fn [_]
                          (dispatch [::filters/set-one :available-between? (not available-between?)]))}]
-          [:span.custom-control-label "nur Verfügbare anzeigen"]]]]]
+          [:span.custom-control-label (t :borrow.filter/show-only-available)]]]]]
 
 
       [:div {:class (if-not available-between? "d-none")}
        [:div.form-group
-        [form-line :start-date "von"
+        [form-line :start-date (t :borrow.filter/from)
          {:type :date
           :required true
           :disabled (not available-between?)
@@ -175,7 +175,7 @@
           :on-change #(dispatch [::filters/set-one :start-date (-> % .-target .-value)])}]]
 
        [:div.form-group
-        [form-line :end-date "bis"
+        [form-line :end-date (t :borrow.filter/until)
          {:type :date
           :required true
           :disabled (not available-between?)
@@ -184,7 +184,7 @@
           :on-change #(dispatch [::filters/set-one :end-date (-> % .-target .-value)])}]]
 
        [:div.form-group
-        [form-line :quantity "Anzahl"
+        [form-line :quantity (t :borrow.filter/quantity)
          {:type :number
           :min 1
           :value quantity
@@ -193,14 +193,14 @@
       [:button.btn.btn-success.dont-invert.rounded-pill
        {:type :submit
         :class :mt-2}
-       "Get Results"]
+       (t :borrow.filter/get-results)]
 
       [:button.btn.btn-secondary.dont-invert.rounded-pill.mx-1
        {:type :button
         :disabled (not (or (seq filters) (seq data)))
         :on-click clear-fn
         :class :mt-2}
-       "Clear"]]]))
+       (t :borrow.filter/clear)]]]))
 
 (defn models-list [models]
   (let
@@ -250,7 +250,7 @@
                                          extra-args)
                                   [::data]
                                   [:models]])}
-           "LOAD MORE"]]))]))
+           (t :borrow.pagination/load-more)]]))]))
 
 (defn search-and-list [submit-fn clear-fn extra-params]
   (let [models @(subscribe [::data])]
@@ -258,7 +258,7 @@
      [search-panel submit-fn clear-fn]
      (cond
        (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
-       (empty? models) [:p.p-6.w-full.text-center "nothing found!"]
+       (empty? models) [:p.p-6.w-full.text-center (t :borrow.pagination/nothing-found)]
        :else
        [:<>
         [models-list models]

@@ -47,6 +47,9 @@
 (defn data [db]
   (-> db :ls ::data))
 
+(defn locale-name-to-use [db]
+  (-> db data :language-to-use :locale-name keyword))
+
 (reg-sub ::data
          (fn [db _] (get-in db [:ls ::data])))
 

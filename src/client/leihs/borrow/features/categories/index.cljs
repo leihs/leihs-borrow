@@ -15,9 +15,12 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.features.categories.core :as categories]))
+
+(set-default-translate-path :borrow.categories)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx ::routes/categories-index
@@ -29,7 +32,7 @@
       [:<>
 
        [:div.mx-4.mt-6
-        [:h2.font-extrabold.text-3xl "Categories"]]
+        [:h2.font-extrabold.text-3xl (t :title)]]
 
        [:div.pb-8
         (categories/categories-list cats)]])))

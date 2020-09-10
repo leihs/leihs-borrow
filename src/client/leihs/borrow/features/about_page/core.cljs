@@ -12,11 +12,14 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+    [leihs.borrow.lib.translate :as translate]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
     #_[leihs.borrow.components :as ui]))
 
+(set-default-translate-path :borrow.about-page)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -41,7 +44,7 @@
 
 (defn view []
   [:section.m-3
-   [:h1.text-xl.font-black "ABOUT"]
+   [:h1.text-xl.font-black (t :title)]
    [:hr.mt-2.mb-4]
    [ui/tmp-nav]
    [ui/dev-nav]

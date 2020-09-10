@@ -19,9 +19,12 @@
     [leihs.borrow.lib.helpers :as help]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.components :as ui]
     [leihs.borrow.ui.icons :as icons]
     [leihs.borrow.features.current-user.core :as current-user]))
+
+(set-default-translate-path :borrow.shopping-cart)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -351,7 +354,7 @@
           (str ui/thin-space "–" ui/thin-space)
           (ui/format-date :short (get-in exemplar [:end-date]))]
          [:div.text-sm.text-color-muted (if invalid? {:style {:color "red"}})
-          [:span quantity " Items"]
+          [:span quantity (str " " (t :line/total-items))]
           [:span " • "]
           [:span pool-names]]]
         [:div.px-1.self-center.flex-none
@@ -360,7 +363,7 @@
           icons/trash-icon]
          [:button.rounded.border.border-gray-600.px-2.text-color-muted
           {:on-click #(dispatch [::edit-reservation res-lines])}
-          "Edit"]]])]))
+          (t :edit)]]])]))
 
 (reg-sub ::target-users
          :<- [::current-user/data]
@@ -409,17 +412,17 @@
             is-loading? (not (or data errors))]
         [:div.p-2
          [search-panel]
-         [:h1.mt-3.font-bold.text-3xl "Order Overview"]
+         [:h1.mt-3.font-bold.text-3xl (t :order-overview)]
 
          (cond
            is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
            errors [ui/error-view errors]
            (empty? grouped-reservations)
            [:div.bg-content-muted.text-center.my-4.px-2.py-4.rounded-lg
-            [:div.text-base "Your order is empty."] 
+            [:div.text-base (t :empty-order)] 
             [:a.d-inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-pill.px-4.py-2.my-4 
              {:href (routing/path-for ::routes/home)}
-             "Borrow Items"]]
+             (t :borrow-items)]]
 
            :else
            [:<>
@@ -430,9 +433,9 @@
                 {:name :purpose
                  :value (:purpose @state)
                  :on-change (fn [e] (swap! state assoc :purpose (-> e .-target .-value)))
-                 :placeholder "Name Your Order"}]]
+                 :placeholder (t :order-name)}]]
               [:div.flex-none.px-1
-               [:button.rounded.border.border-gray-600.px-2.text-color-muted "edit"]]]
+               [:button.rounded.border.border-gray-600.px-2.text-color-muted (t :edit)]]]
 
              (doall
                (for [[grouped-key res-lines] grouped-reservations]
@@ -441,16 +444,18 @@
 
              [:div.mt-4.text-sm.text-color-muted
               [:p
-               "Total "
-               (:total-models summary) ui/nbsp "Model(s), "
-               (:total-items summary) ui/nbsp "Item(s), "
-               "from "
+               (str (t :line/total) " ")
+               (:total-models summary) ui/nbsp (str (t :line/total-models)
+                                                    ", ")
+               (:total-items summary) ui/nbsp  (str (t :line/total-items)
+                                                    ", ") 
+               (str (t :line/from) " ")
                (string/join ", " (map :name (:pools summary)))
                "."]
               [:p
-               "First pickup "
+               (str (t :line/first-pickup) " ")
                (ui/format-date :short (:earliest-start-date summary))
-               ", last return "
+               (str ", " (t :line/last-return) " ")
                (ui/format-date :short (:latest-end-date summary))
                "."]]
 
@@ -459,7 +464,7 @@
                {:disabled (or (empty? (:purpose @state))
                               (not (empty? invalid-res-ids)))
                 :on-click #(dispatch [::submit-order @state])}
-               "Confirm order"]
+               (t :confirm-order)]
               [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl
                {:on-click #(dispatch [::delete-reservations (map :id reservations)])}
-               "Delete order"]]]])]))))
+               (t :delete-order)]]]])]))))

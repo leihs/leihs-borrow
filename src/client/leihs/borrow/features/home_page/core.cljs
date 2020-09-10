@@ -12,6 +12,7 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
+    [leihs.borrow.lib.translate :refer [t]]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.features.models.core :as models]
@@ -39,9 +40,9 @@
 
        [:div
         [:div.mt-2.mx-3.d-flex.align-items-baseline.justify-content-between
-         [:h2.font-bold.text-2xl "Categories"]
+         [:h2.font-bold.text-2xl (t :borrow.categories/title)]
          [:a.font-semibold.text-l {:href (routing/path-for ::routes/categories-index)} 
-          "All"]]
+          (t :borrow/all)]]
         (categories/categories-list (take 4 cats))]
 
        [:hr]])))

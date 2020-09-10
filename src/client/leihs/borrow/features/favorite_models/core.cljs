@@ -15,9 +15,12 @@
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.pagination :as pagination]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.components :as ui] 
     [leihs.borrow.features.models.core :as models]))
+
+(set-default-translate-path :borrow.favorite-models)
 
 (def EXTRA-PARAMS {:isFavorited true})
 
@@ -39,7 +42,7 @@
     [:<>
      [:header.mx-3.my-4
       [:h1.text-3xl.font-extrabold.leading-none
-       "Favorites"]]
+       (t :title)]]
      [models/search-and-list
       #(dispatch [:routing/navigate
                   [::routes/models-favorites {:query-params %}]])

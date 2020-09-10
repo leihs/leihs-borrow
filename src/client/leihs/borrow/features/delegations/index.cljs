@@ -13,7 +13,10 @@
                                        subscribe
                                        dispatch]]
     [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.client.routes :as routes]))
+
+(set-default-translate-path :borrow.delegations)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -58,7 +61,7 @@
        :else
        [:<>
         [:header.mb-3
-         [:h1.text-3xl.font-extrabold.leading-none "Delegations"]]
+         [:h1.text-3xl.font-extrabold.leading-none (t :title)]]
 
         (when-not (empty? data)
           [:div.mt-3

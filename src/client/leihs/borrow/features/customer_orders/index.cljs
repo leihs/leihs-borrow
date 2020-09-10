@@ -13,11 +13,13 @@
                                        subscribe
                                        dispatch]]
     [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.features.current-user.core :as current-user]
     #_[leihs.borrow.components :as ui]))
 
+(set-default-translate-path :borrow.customer-orders)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -95,7 +97,7 @@
                               :style {:box-shadow "0 0rem 2rem rgba(0, 0, 0, 0.15) inset"}}
      [:div.form.form-compact
       [:label.row
-       [:span.text-xs.col-3.col-form-label "Für "]
+       [:span.text-xs.col-3.col-form-label (t :!borrow.filter/for)]
        [:div.col-9
         [:select {:class "form-control"
                   :default-value user-id
@@ -120,7 +122,7 @@
 
     [:section.mx-3.my-4
      [:header.mb-3
-      [:h1.text-3xl.font-extrabold.leading-none "Orders"]]
+      [:h1.text-3xl.font-extrabold.leading-none (t :title)]]
      [search-panel]
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
@@ -129,17 +131,17 @@
        [:<>
         (when-not (empty? submitted-orders)
           [:div.mt-3
-           [:h2.text-xl.font-semibold "Active Orders"]
+           [:h2.text-xl.font-semibold (t :active-orders)]
            [orders-list submitted-orders ""]])
 
         (when-not (empty? rejected-orders)
           [:div.mt-3
-           [:h2.text-xl.font-semibold "Rejected Orders"]
+           [:h2.text-xl.font-semibold (t :rejected-orders)]
            [orders-list rejected-orders]])
 
         (when-not (empty? approved-orders)
           [:div.mt-3
-           [:h2.text-xl.font-semibold "Approved Orders"]
+           [:h2.text-xl.font-semibold (t :approved-orders)]
            [orders-list approved-orders ""]])
 
         #_[:pre {:style {:white-space :pre-wrap}} (pr-str rejected-orders)]

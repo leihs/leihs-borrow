@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Sep 03 2020 12:28:03 GMT+0200 (Central European Summer Time)
+# timestamp: Mon Sep 07 2020 16:20:48 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -79,6 +79,11 @@ type CurrentUser {
   """Same as user ID"""
   id: UUID!
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
+
+  """
+  This is the language to use for translations. It takes into account user's preferred language, the default one, etc.
+  """
+  languageToUse: Language!
   suspensions: [Suspension]
   unsubmittedOrder: UnsubmittedOrder
   user: User
@@ -134,6 +139,14 @@ enum InventoryPoolsOrderByAttributeEnum {
 input InventoryPoolsOrderByInput {
   attribute: InventoryPoolsOrderByAttributeEnum!
   direction: OrderByDirectionEnum!
+}
+
+type Language {
+  active: Boolean
+  default: Boolean
+  id: UUID
+  localeName: String
+  name: String
 }
 
 type Model {
@@ -374,6 +387,7 @@ type User {
   email: String
   firstname: String
   id: UUID!
+  language: Language
   lastname: String
   login: String
   name: String

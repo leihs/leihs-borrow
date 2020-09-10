@@ -46,6 +46,11 @@
                                                :resolve :responsible}
                                  :members {:type (list (non-null :User))
                                            :resolve :members}}}
+           :Language {:fields {:id {:type :UUID}
+                               :name {:type String}
+                               :localeName {:type String}
+                               :default {:type Boolean}
+                               :active {:type Boolean}}}
            :User {:description "A `User` represents a human agent that can log into and use the system."
                   :fields {:email {:type String}
                            :firstname {:type String}
@@ -54,13 +59,18 @@
                            :name {:type String}
                            :login {:type String}
                            :contracts {:type :ContractsConnection
-                                       :resolve :contracts-connection}}}
+                                       :resolve :contracts-connection}
+                           :language {:type :Language
+                                      :resolve :language}}}
            :UnsubmittedOrder {:fields {:validUntil {:type :DateTime}
                                        :reservations {:type (list :Reservation)}
                                        :invalidReservationIds {:type (list (non-null :UUID))}}}
            :CurrentUser {:fields {:id {:type (non-null :UUID)
                                        :description "Same as user ID"}
                                   :user {:type :User}
+                                  :languageToUse {:description "This is the language to use for translations. It takes into account user's preferred language, the default one, etc."
+                                                  :type (non-null :Language)
+                                                  :resolve :language-to-use}
                                   :inventoryPools {:args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
                                                    :type (list :InventoryPool)
                                                    :resolve :inventory-pools}

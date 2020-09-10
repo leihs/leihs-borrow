@@ -12,20 +12,20 @@ step 'there is/are :n borrowable item(s) for model :model in pool :pool' do |n, 
 end
 
 step 'I enter :term in the search field' do |term|
-  fill_in('Suche', with: term)
+  fill_in('Search', with: term)
 end
 
 step 'I choose to filter by availabilty' do
   # find('input[name="only-available"]').click
-  find('label.custom-checkbox', text: "nur Verfügbare anzeigen").click
+  find('label.custom-checkbox', text: "Show available only").click
 end
 
 step 'I choose next working day as start date' do
-  fill_in('von', with: Date.today.to_s)
+  fill_in('From', with: Date.today.to_s)
 end
 
 step 'I choose next next working day as end date' do
-  fill_in('bis', with: Date.tomorrow.to_s)
+  fill_in('Until', with: Date.tomorrow.to_s)
 end
 
 step 'I see one model with the title :name' do |name|
@@ -67,7 +67,7 @@ end
 
 step 'the reservation has quantity :n' do |n|
   within find('.flex-row') do
-    expect(current_scope).to have_content "#{n} Items"
+    expect(current_scope).to have_content "#{n} Item(s)"
   end
 end
 
@@ -93,7 +93,7 @@ step 'I name the order as :purpose' do |purpose|
 end
 
 step 'the cart is empty' do
-  expect(page).to have_content 'Your order is empty.'
+  expect(page).to have_content 'Your order is empty'
 end
 
 step 'I visit the orders page of the pool :name' do |name|

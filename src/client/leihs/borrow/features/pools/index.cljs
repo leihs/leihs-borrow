@@ -16,6 +16,7 @@
                                        subscribe
                                        dispatch]]
     [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.translate :refer [t]]
     [leihs.borrow.client.routes :as routes]))
 
 ; is kicked off from router when this view is loaded
@@ -44,7 +45,7 @@
        :else
        [:<>
         [:header.mb-3
-         [:h1.text-3xl.font-extrabold.leading-none "Pools"]]
+         [:h1.text-3xl.font-extrabold.leading-none (t :borrow.pools/title)]]
 
         (when-not (empty? pools)
           [:div.mt-3

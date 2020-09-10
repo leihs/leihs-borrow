@@ -13,6 +13,7 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
@@ -20,6 +21,8 @@
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.features.favorite-models.events :as favs]
     [leihs.borrow.features.current-user.core :as current-user]))
+
+(set-default-translate-path :borrow.model-show)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -189,7 +192,7 @@
 
     [:section.mx-3.my-4
      (cond
-       is-loading? [:div [:div [ui/spinner-clock]] [:pre "loading model" [:samp model-id] "…"]]
+       is-loading? [:div [:div [ui/spinner-clock]] [:pre (t :loading) [:samp model-id] "…"]]
        errors [ui/error-view errors]
        :else
        [:<>
@@ -237,7 +240,7 @@
 
         (if-let [recommends (-> model :recommends :edges not-empty)]
           [:div.mt-4
-           [:h2.text-xl.font-bold "Ergänzende Modelle"]
+           [:h2.text-xl.font-bold (t :compatibles)]
            [:div.d-flex.flex-wrap.-mx-2
             (doall
               (for [edge recommends]

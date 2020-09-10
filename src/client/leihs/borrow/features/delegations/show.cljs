@@ -12,6 +12,7 @@
                                                subscribe
                                                dispatch]]
             [leihs.borrow.lib.localstorage :as ls]
+            [leihs.borrow.lib.translate :refer [t]]
             [leihs.borrow.lib.routing :as routing]
             [leihs.borrow.client.routes :as routes]))
 
@@ -48,7 +49,7 @@
 
 (defn responsible [user]
   [:<>
-   [:h3 "Responsible:"]
+   [:h3 (t :borrow.delegations/responsible)]
    [:div (fullname user)]
    (if-let [email (:email user)]
      [:a {:href (str "mailto:" email)}
@@ -56,7 +57,7 @@
 
 (defn members-list [members]
   [:<>
-   [:h3 "Members:"]
+   [:h3 (t :borrow.delegations/members)]
    [:ul
     (doall
       (for [member members]
@@ -72,7 +73,7 @@
      (cond
        is-loading? [:div
                     [:div [ui/spinner-clock]]
-                    [:pre "loading delegation" [:samp (:id delegation)] "…"]]
+                    [:pre (t :borrow.delegations/loading) [:samp (:id delegation)] "…"]]
        errors [ui/error-view errors]
        :else [:<>
               [:header.d-flex.items-stretch

@@ -1,8 +1,10 @@
 (ns leihs.borrow.components
   (:refer-clojure :exclude [time])
   (:require
+    [clojure.string :refer [upper-case]]
     [reagent.core :as reagent]
     [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.translate :refer [t]]
     [leihs.borrow.client.routes :as routes]))
 
 (defn merge-props [defaults givens]
@@ -57,20 +59,20 @@
 
     (defn tmp-nav []
       [:nav.border.border-black.m-3.p-2
-       [:b "NAVIGATION MENU"]
+       [:b (upper-case (t :borrow.about-page/navigation-menu))]
 
-       [:p [:a {:href (routing/path-for ::routes/about-page)} "About"]]
-       [:p [:a {:href (routing/path-for ::routes/shopping-cart)} "Cart"]]
-       [:p [:a {:href (routing/path-for ::routes/categories-index)} "Categories"]]
-       [:p [:a {:href (routing/path-for ::routes/current-user-show)} "Current User"]]
-       [:p [:a {:href (routing/path-for ::routes/delegations-index)} "Delegations"]]
-       [:p [:a {:href (routing/path-for ::routes/home)} "Home"]]
-       [:p [:a {:href (routing/path-for ::routes/models-favorites)} "Favorites"]]
-       [:p [:a {:href (routing/path-for ::routes/orders-index)} "Orders"]]
-       [:p [:a {:href (routing/path-for ::routes/pools-index)} "Pools"]]
+       [:p [:a {:href (routing/path-for ::routes/about-page)} (t :borrow.about-page/title)]]
+       [:p [:a {:href (routing/path-for ::routes/shopping-cart)} (t :borrow.shopping-cart/title)]]
+       [:p [:a {:href (routing/path-for ::routes/categories-index)} (t :borrow.categories/title)]]
+       [:p [:a {:href (routing/path-for ::routes/current-user-show)} (t :borrow.current-user/title)]]
+       [:p [:a {:href (routing/path-for ::routes/delegations-index)} (t :borrow.delegations/title)]]
+       [:p [:a {:href (routing/path-for ::routes/home)} (t :borrow.home-page/title)]]
+       [:p [:a {:href (routing/path-for ::routes/models-favorites)} (t :borrow.favorite-models/title)]]
+       [:p [:a {:href (routing/path-for ::routes/orders-index)} (t :borrow.customer-orders/title)]]
+       [:p [:a {:href (routing/path-for ::routes/pools-index)} (t :borrow.pools/title)]]
        [:form {:action "/sign-out" :method "POST"}
         [:button {:type "submit"}
-         "Logout"]]])
+         (t :borrow/logout)]]])
 
     (defn dev-nav []
       [:nav.border.border-black.m-3.p-2
