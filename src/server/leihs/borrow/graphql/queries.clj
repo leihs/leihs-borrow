@@ -15,6 +15,7 @@
     [leihs.borrow.resources.suspensions :as suspensions]
     [leihs.borrow.resources.users :as users]
     [leihs.borrow.resources.visits :as visits]
+    [leihs.borrow.resources.templates :as templates]
     ))
 
 (def resolvers
@@ -54,4 +55,8 @@
    :user users/get-one
    :users users/get-multiple
    :visits visits/get-multiple
+   :draft-order orders/get-draft
+   :template templates/get-one
+   :templates templates/get-multiple
+   :template-lines templates/get-lines
    })

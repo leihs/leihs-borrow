@@ -18,7 +18,7 @@
                 [re-graph "0.1.10"]
                 [tongue "0.2.9"]]
  :builds {:app {:output-dir "resources/all/public/app/borrow/js"
-                :asset-path "js"
+                :asset-path "/app/borrow/js"
                 :target :browser
                 ; NOTE: comment out and adjust in order for re-frame-10x to work
                 ; :main leihs.borrow.app/main

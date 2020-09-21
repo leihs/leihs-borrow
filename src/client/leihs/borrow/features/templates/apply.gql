@@ -1,0 +1,13 @@
+mutation applyTemplate(
+  $id: UUID
+  $endDate: Date!
+  $startDate: Date!
+) {
+   applyTemplate(
+     id: $id
+     startDate: $startDate
+     endDate: $endDate
+   ) {
+    id
+  }
+}

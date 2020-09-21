@@ -32,7 +32,10 @@
     [leihs.borrow.features.pools.index :as pools-index]
     [leihs.borrow.features.pools.show :as pools-show]
     [leihs.borrow.features.shopping-cart.core :as shopping-cart]
+    [leihs.borrow.features.shopping-cart.draft :as draft-order]
     [leihs.borrow.features.shopping-cart.timeout :as timeout]
+    [leihs.borrow.features.templates.index :as templates-index]
+    [leihs.borrow.features.templates.show :as templates-show]
     ))
 
 ;-; INIT APP & DB
@@ -88,6 +91,7 @@
             ::routes/current-user-show current-user-show/view
             ::routes/delegations-index delegations-index/view
             ::routes/delegations-show delegations-show/view
+            ::routes/draft-order draft-order/view
             ::routes/models models/view
             ::routes/models-show model-show/view
             ::routes/models-favorites favorite-models/view
@@ -96,6 +100,8 @@
             ::routes/orders-show customer-orders-show/view
             ::routes/pools-show pools-show/view
             ::routes/pools-index pools-index/view
+            ::routes/templates-show templates-show/view
+            ::routes/templates-index templates-index/view
 
             ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
             ;        *should* not be a real problem – if the routing is working correctly

@@ -7,5 +7,42 @@ query getCurrentUser {
       login
       email
     }
+    languageToUse {
+      id
+      localeName
+    }
+    delegations {
+      id
+      name
+    }
+    inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
+      id
+      name
+    }
+    suspensions {
+      inventoryPool {
+        id
+      }
+    }
+    unsubmittedOrder {
+      reservations {
+        id
+        model {
+          id
+          name
+        }
+      }
+      invalidReservationIds
+    }
+    draftOrder {
+      reservations {
+        id
+        model {
+          id
+          name
+        }
+      }
+      invalidReservationIds
+    }
   }
 }

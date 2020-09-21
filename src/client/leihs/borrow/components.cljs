@@ -63,12 +63,14 @@
 
        [:p [:a {:href (routing/path-for ::routes/about-page)} (t :borrow.about-page/title)]]
        [:p [:a {:href (routing/path-for ::routes/shopping-cart)} (t :borrow.shopping-cart/title)]]
+       [:p [:a {:href (routing/path-for ::routes/draft-order)} (t :borrow.shopping-cart.draft/title)]]
        [:p [:a {:href (routing/path-for ::routes/categories-index)} (t :borrow.categories/title)]]
        [:p [:a {:href (routing/path-for ::routes/current-user-show)} (t :borrow.current-user/title)]]
        [:p [:a {:href (routing/path-for ::routes/delegations-index)} (t :borrow.delegations/title)]]
        [:p [:a {:href (routing/path-for ::routes/home)} (t :borrow.home-page/title)]]
        [:p [:a {:href (routing/path-for ::routes/models-favorites)} (t :borrow.favorite-models/title)]]
        [:p [:a {:href (routing/path-for ::routes/orders-index)} (t :borrow.customer-orders/title)]]
+       [:p [:a {:href (routing/path-for ::routes/templates-index)} (t :borrow.templates/title)]]
        [:p [:a {:href (routing/path-for ::routes/pools-index)} (t :borrow.pools/title)]]
        [:form {:action "/sign-out" :method "POST"}
         [:button {:type "submit"}

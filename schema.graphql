@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Sep 07 2020 16:20:48 GMT+0200 (Central European Summer Time)
+# timestamp: Fri Sep 18 2020 16:40:14 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -74,6 +74,7 @@ enum ContractStateEnum {
 
 type CurrentUser {
   delegations: [Delegation!]
+  draftOrder: DraftOrder
   favoriteModels(after: String, endDate: Date, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: Date): ModelsConnection
 
   """Same as user ID"""
@@ -105,6 +106,11 @@ type Delegation {
   members: [User!]
   name: String!
   responsible: User!
+}
+
+type DraftOrder {
+  invalidReservationIds: [UUID!]
+  reservations: [Reservation]
 }
 
 enum endDateRestrictionEnum {
@@ -195,6 +201,8 @@ input ModelsOrderByInput {
 
 """Root of all mutations."""
 type MutationRoot {
+  addToCart(ids: [UUID!], userId: UUID): [Reservation]
+  applyTemplate(endDate: Date!, id: UUID!, startDate: Date!): [Reservation]
   createReservation(
     endDate: Date!
     excludeReservationIds: [UUID!]
@@ -314,6 +322,8 @@ type QueryRoot {
     userId: UUID
   ): OrdersConnection
   rootCategories(limit: Int, userId: UUID): [Category!]
+  template(id: UUID!): Template!
+  templates: [Template!]
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
   visits(limit: Int, orderBy: [VisitsOrderByInput]): [Visit]
 }
@@ -344,6 +354,7 @@ input ReservationsOrderByInput {
 }
 
 enum ReservationStateEnum {
+  DRAFT
   UNSUBMITTED
   SUBMITTED
   APPROVED
@@ -363,6 +374,19 @@ type Suspension {
   inventoryPool: InventoryPool!
   suspendedReason: String
   suspendedUntil: Date!
+}
+
+type Template {
+  id: UUID!
+  inventoryPool: InventoryPool!
+  lines: [TemplateLine!]
+  name: String!
+}
+
+type TemplateLine {
+  id: UUID!
+  model: Model!
+  quantity: Int!
 }
 
 type Thumbnail {

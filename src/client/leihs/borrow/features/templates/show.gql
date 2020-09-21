@@ -1,0 +1,18 @@
+query templateShow($id: UUID!) {
+  template(id: $id) {
+    id
+    name
+    inventoryPool {
+      id
+      name
+    }
+    lines {
+      model {
+        id
+        name
+        isReservable
+      }
+      quantity
+    }
+  }
+}

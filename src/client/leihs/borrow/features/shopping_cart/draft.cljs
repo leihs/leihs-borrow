@@ -1,4 +1,4 @@
-(ns leihs.borrow.features.shopping-cart.core
+(ns leihs.borrow.features.shopping-cart.draft
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [clojure.string :as string]
@@ -22,16 +22,17 @@
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.components :as ui]
     [leihs.borrow.ui.icons :as icons]
-    [leihs.borrow.features.current-user.core :as current-user]))
+    [leihs.borrow.features.current-user.core :as current-user]
+    [leihs.borrow.features.shopping-cart.core :as cart]))
 
 (set-default-translate-path :borrow.shopping-cart)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/shopping-cart
+  ::routes/draft-order
   (fn-traced [{:keys [db]} [_ _]]
     {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/features/shopping_cart/getShoppingCart.gql")
+                (rc/inline "leihs/borrow/features/shopping_cart/getDraftOrder.gql")
                 {:userId (filters/user-id db)}
                 [::on-fetched-data]]}))
 
@@ -40,7 +41,7 @@
   (fn-traced [db [_ {:keys [data errors]}]]
     (-> db
         (assoc ::data (get-in data
-                              [:current-user :unsubmitted-order]))
+                              [:current-user :draft-order]))
         (assoc-in [::data :edit-mode] nil)
         (cond-> errors (assoc ::errors errors)))))
 
@@ -113,15 +114,15 @@
                    :excludeReservationIds (map :id res-lines)}]})))
 
 (reg-event-fx
-  ::submit-order
-  (fn-traced [{:keys [db]} [_ args]]
+  ::add-to-cart
+  (fn-traced [{:keys [db]} [_ ids]]
     {:dispatch [::re-graph/mutate
-                (rc/inline "leihs/borrow/features/shopping_cart/submitOrderMutation.gql")
-                (merge args {:userId (filters/user-id db)})
-                [::on-submit-order-result]]}))
+                (rc/inline "leihs/borrow/features/shopping_cart/addToCart.gql")
+                {:ids ids, :userId (filters/user-id db)}
+                [::on-add-to-cart-result]]}))
 
 (reg-event-fx
-  ::on-submit-order-result
+  ::on-add-to-cart-result
   (fn-traced [{:keys [_db]} [_ {:keys [data errors]}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
@@ -140,8 +141,8 @@
 (reg-event-fx
   ::on-update-reservations-result
   (fn-traced [{:keys [db]}
-       [_ {:keys [errors] {del-ids :delete-reservation-lines
-                           new-res-lines :create-reservation} :data}]]
+              [_ {:keys [errors] {del-ids :delete-reservation-lines
+                                  new-res-lines :create-reservation} :data}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
       {:db (update-in db
@@ -153,79 +154,71 @@
        :dispatch [::routes/shopping-cart]})))
 
 (reg-event-db ::update-start-date
-                 [(path ::data :edit-mode :start-date)]
-                 (fn-traced [_ [_ v]] v))
+              [(path ::data :edit-mode :start-date)]
+              (fn-traced [_ [_ v]] v))
 
 (reg-event-db ::update-end-date
-                 [(path ::data :edit-mode :end-date)]
-                 (fn-traced [_ [_ v]] v))
+              [(path ::data :edit-mode :end-date)]
+              (fn-traced [_ [_ v]] v))
 
 (reg-event-db ::update-user-id
               [(path ::data :edit-mode :user-id)]
               (fn-traced [_ [_ v]] v))
 
 (reg-event-db ::update-quantity
-                 [(path ::data :edit-mode :quantity)]
-                 (fn-traced [_ [_ v]] v))
+              [(path ::data :edit-mode :quantity)]
+              (fn-traced [_ [_ v]] v))
 
 (reg-event-db ::cancel-edit
-                 [(path ::data)]
-                 (fn-traced [co _] (assoc co :edit-mode nil)))
+              [(path ::data)]
+              (fn-traced [co _] (assoc co :edit-mode nil)))
 
 (reg-sub ::data
-            (fn [db _] (::data db)))
+         (fn [db _] (::data db)))
 
 (reg-sub ::errors
-            (fn [db _] (::errors db)))
+         (fn [db _] (::errors db)))
 
 (reg-sub ::edit-mode-data
-            :<- [::data]
-            (fn [data _] (:edit-mode data)))
+         :<- [::data]
+         (fn [data _] (:edit-mode data)))
 
 (reg-sub ::max-quantity
-            :<- [::edit-mode-data]
-            (fn [emd _] (:max-quantity emd)))
+         :<- [::edit-mode-data]
+         (fn [emd _] (:max-quantity emd)))
 
 (reg-sub ::edit-mode?
-            :<- [::edit-mode-data]
-            (fn [em [_ res-lines]]
-              (boolean
-                (some->> em
-                         :reservation-lines
-                         (map :id)
-                         set
-                         (= (->> res-lines (map :id) set))))))
+         :<- [::edit-mode-data]
+         (fn [em [_ res-lines]]
+           (boolean
+             (some->> em
+                      :reservation-lines
+                      (map :id)
+                      set
+                      (= (->> res-lines (map :id) set))))))
 
 (reg-sub ::reservations
-            :<- [::data]
-            (fn [co _] (:reservations co)))
+         :<- [::data]
+         (fn [co _] (:reservations co)))
 
 (reg-sub ::reservations-grouped
-            :<- [::reservations]
-            (fn [lines _]
-              (->> lines
-                   (group-by
-                     (fn [line]
-                       [(get-in line [:model :id])
-                        (get-in line [:start-date])
-                        (get-in line [:end-date])])))))
+         :<- [::reservations]
+         (fn [lines _]
+           (->> lines
+                (group-by
+                  (fn [line]
+                    [(get-in line [:model :id])
+                     (get-in line [:start-date])
+                     (get-in line [:end-date])])))))
 
 (reg-sub ::order-summary
-            :<- [::reservations]
-            (fn [rs _]
-              {:pools (-> (map :inventory-pool rs) distinct)
-               :total-models (-> (map :model rs) distinct count)
-               :total-items (-> (map :model rs) count)
-               :earliest-start-date (-> (map :start-date rs) sort first)
-               :latest-end-date (-> (map :end-date rs) sort last)}))
-
-(reg-sub ::timed-out?
-            :<- [::data]
-            (fn [co _]
-              (boolean (some->> co
-                                :valid-until
-                                tf/parse
-                                (tc/after? (tc/now))))))
+         :<- [::reservations]
+         (fn [rs _]
+           {:pools (-> (map :inventory-pool rs) distinct)
+            :total-models (-> (map :model rs) distinct count)
+            :total-items (-> (map :model rs) count)
+            :earliest-start-date (-> (map :start-date rs) sort first)
+            :latest-end-date (-> (map :end-date rs) sort last)}))
 
 (defn edit-reservation [res-lines]
   (let [edit-mode-data @(subscribe [::edit-mode-data])
@@ -265,11 +258,11 @@
                              (let [new-start-date (-> e .-target .-value)]
                                (dispatch [::update-start-date new-start-date])
                                (dispatch [::reset-availability-and-fetch
-                                             {:modelId (:id model)
-                                              :userId user-id
-                                              :startDate new-start-date 
-                                              :endDate end-date
-                                              :excludeReservationIds (map :id res-lines)}])))}]]
+                                          {:modelId (:id model)
+                                           :userId user-id
+                                           :startDate new-start-date 
+                                           :endDate end-date
+                                           :excludeReservationIds (map :id res-lines)}])))}]]
       [:label.px-2.w-1_2
        [:span.text-color-muted "until "]
        [:input {:type :date
@@ -368,15 +361,15 @@
 (reg-sub ::target-users
          :<- [::current-user/data]
          (fn [cu]
-             (let [user (:user cu)
-                   delegations (:delegations cu)]
-               (concat [user] delegations))))
+           (let [user (:user cu)
+                 delegations (:delegations cu)]
+             (concat [user] delegations))))
 
 (reg-sub ::user-id
          :<- [::current-user/data]
          :<- [::filters/user-id]
          (fn [[co user-id]]
-             (or user-id (-> co :user :id))))
+           (or user-id (-> co :user :id))))
 
 (defn search-panel []
   (let [user-id @(subscribe [::user-id])
@@ -387,7 +380,7 @@
                                 :style {:box-shadow "0 0rem 2rem rgba(0, 0, 0, 0.15) inset"}}
        [:div.form.form-compact
         [:label.row
-         [:span.text-xs.col-3.col-form-label "Für "]
+         [:span.text-xs.col-3.col-form-label (t :!borrow.filter/for)]
          [:div.col-9
           [:select {:class "form-control"
                     :default-value user-id
@@ -403,70 +396,53 @@
                 (:name user)]))]]]]])))
 
 (defn view []
-  (let [state (reagent/atom {:purpose ""})]
-    (fn []
-      (let [data @(subscribe [::data])
-            invalid-res-ids (set (:invalid-reservation-ids data))
-            errors @(subscribe [::errors])
-            reservations @(subscribe [::reservations])
-            grouped-reservations @(subscribe [::reservations-grouped])
-            summary @(subscribe [::order-summary])
-            is-loading? (not (or data errors))]
-        [:div.p-2
-         [search-panel]
-         [:h1.mt-3.font-bold.text-3xl (t :order-overview)]
-
-         (cond
-           is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
-           errors [ui/error-view errors]
-           (empty? grouped-reservations)
-           [:div.bg-content-muted.text-center.my-4.px-2.py-4.rounded-lg
-            [:div.text-base (t :empty-order)] 
-            [:a.d-inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-pill.px-4.py-2.my-4 
-             {:href (routing/path-for ::routes/home)}
-             (t :borrow-items)]]
-
-           :else
-           [:<>
-            [:div
-             [:div.mt-2.mb-4.flex
-              [:div.flex-grow
-               [:input.text-xl.w-100
-                {:name :purpose
-                 :value (:purpose @state)
-                 :on-change (fn [e] (swap! state assoc :purpose (-> e .-target .-value)))
-                 :placeholder (t :order-name)}]]
-              [:div.flex-none.px-1
-               [:button.rounded.border.border-gray-600.px-2.text-color-muted (t :edit)]]]
-
-             (doall
-               (for [[grouped-key res-lines] grouped-reservations]
-                 [:<> {:key grouped-key}
-                  [reservation res-lines invalid-res-ids]]))
-
-             [:div.mt-4.text-sm.text-color-muted
-              [:p
-               (str (t :line/total) " ")
-               (:total-models summary) ui/nbsp (str (t :line/total-models)
-                                                    ", ")
-               (:total-items summary) ui/nbsp  (str (t :line/total-items)
-                                                    ", ") 
-               (str (t :line/from) " ")
-               (string/join ", " (map :name (:pools summary)))
-               "."]
-              [:p
-               (str (t :line/first-pickup) " ")
-               (ui/format-date :short (:earliest-start-date summary))
-               (str ", " (t :line/last-return) " ")
-               (ui/format-date :short (:latest-end-date summary))
-               "."]]
-
-             [:div
-              [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
-               {:disabled (or (empty? (:purpose @state))
-                              (not (empty? invalid-res-ids)))
-                :on-click #(dispatch [::submit-order @state])}
-               (t :confirm-order)]
-              [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl
-               {:on-click #(dispatch [::delete-reservations (map :id reservations)])}
-               (t :delete-order)]]]])]))))
+  (let [data @(subscribe [::data])
+        invalid-res-ids (set (:invalid-reservation-ids data))
+        errors @(subscribe [::errors])
+        reservations @(subscribe [::reservations])
+        grouped-reservations @(subscribe [::reservations-grouped])
+        summary @(subscribe [::order-summary])
+        is-loading? (not (or data errors))]
+    [:div.p-2
+     [search-panel]
+     [:h1.mt-3.font-bold.text-3xl (t :draft/title)]
+     (cond
+       is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
+       errors [ui/error-view errors]
+       (empty? grouped-reservations)
+       [:div.bg-content-muted.text-center.my-4.px-2.py-4.rounded-lg
+        [:div.text-base (t :draft/empty)] 
+        [:a.d-inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-pill.px-4.py-2.my-4 
+         {:href (routing/path-for ::routes/home)}
+         (t :borrow-items)]]
+       :else
+       [:<>
+        [:div
+         (doall
+           (for [[grouped-key res-lines] grouped-reservations]
+             [:<> {:key grouped-key}
+              [reservation res-lines invalid-res-ids]]))
+         [:div.mt-4.text-sm.text-color-muted
+          [:p
+           (str (t :line/total) " ")
+           (:total-models summary) ui/nbsp (str (t :line/total-models)
+                                                ", ")
+           (:total-items summary) ui/nbsp  (str (t :line/total-items)
+                                                ", ") 
+           (str (t :line/from) " ")
+           (string/join ", " (map :name (:pools summary)))
+           "."]
+          [:p
+           (str (t :line/first-pickup) " ")
+           (ui/format-date :short (:earliest-start-date summary))
+           (str ", " (t :line/last-return) " ")
+           (ui/format-date :short (:latest-end-date summary))
+           "."]]
+         [:div
+          [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
+           {#_ #_ :disabled (not (empty? invalid-res-ids))
+            :on-click #(dispatch [::add-to-cart (map :id reservations)])}
+           (t :draft/add-to-cart)]
+          [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl
+           {:on-click #(dispatch [::delete-reservations (map :id reservations)])}
+           (t :draft/delete)]]]])]))

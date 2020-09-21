@@ -1,0 +1,30 @@
+query getDraftOrder($userId: UUID) {
+  currentUser(userId: $userId) {
+    draftOrder {
+      reservations {
+        endDate
+        id
+        inventoryPool {
+          id
+          name
+        }
+        model {
+          id
+          name
+          images {
+            id
+            imageUrl
+          }
+        }
+        startDate
+        status
+        user {
+          id
+        }
+        # createdAt
+        # updatedAt
+      }
+      invalidReservationIds
+    }
+  }
+}

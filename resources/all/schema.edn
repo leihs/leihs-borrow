@@ -14,7 +14,7 @@
          :ContractStateEnum {:values [:OPEN :CLOSED]}
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED]}
          :VisitTypeEnum {:values [:PICKUP :RETURN]}
-         :ReservationStateEnum {:values [:UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}
+         :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}
          :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
          :endDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED]}}
 
@@ -26,6 +26,16 @@
                                                :resolve :inventory-pool}
                                :purpose {:type (non-null String)}
                                :note {:type String}}}
+           :Template {:fields {:id {:type (non-null :UUID)}
+                               :name {:type (non-null String)}
+                               :inventoryPool {:type (non-null :InventoryPool)
+                                               :resolve :inventory-pool}
+                               :lines {:type (list (non-null :TemplateLine))
+                                       :resolve :template-lines}}}
+           :TemplateLine {:fields {:id {:type (non-null :UUID)}
+                                   :model {:type (non-null :Model)
+                                           :resolve :model}
+                                   :quantity {:type (non-null Int)}}}
            :InventoryPool {:fields {:id {:type (non-null :UUID)}
                                     :description {:type String}
                                     :email {:type (non-null String)}
@@ -65,6 +75,8 @@
            :UnsubmittedOrder {:fields {:validUntil {:type :DateTime}
                                        :reservations {:type (list :Reservation)}
                                        :invalidReservationIds {:type (list (non-null :UUID))}}}
+           :DraftOrder {:fields {:reservations {:type (list :Reservation)}
+                                 :invalidReservationIds {:type (list (non-null :UUID))}}}
            :CurrentUser {:fields {:id {:type (non-null :UUID)
                                        :description "Same as user ID"}
                                   :user {:type :User}
@@ -76,6 +88,8 @@
                                                    :resolve :inventory-pools}
                                   :unsubmittedOrder {:type :UnsubmittedOrder
                                                      :resolve :unsubmitted-order}
+                                  :draftOrder {:type :DraftOrder
+                                               :resolve :draft-order}
                                   :favoriteModels {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
                                                           :orderBy {:type (list :ModelsOrderByInput)}
                                                           :searchTerm {:type String}
@@ -280,6 +294,11 @@
            :model {:args {:id {:type (non-null :UUID)}}
                    :resolve :model
                    :type (non-null :Model)}
+           :template {:args {:id {:type (non-null :UUID)}}
+                      :resolve :template
+                      :type (non-null :Template)}
+           :templates {:resolve :templates
+                       :type (list (non-null :Template))}
            :models {:args {:categoryId {:type :UUID}
                            :ids {:type (list (non-null :UUID))}
                            :orderBy {:type (list :ModelsOrderByInput)}
@@ -317,6 +336,10 @@
                                         :excludeReservationIds {:type (list (non-null :UUID))}}
                                  :resolve :create-reservation
                                  :type (list :Reservation)}
+             :addToCart {:args {:ids {:type (list (non-null :UUID))}
+                                :userId {:type :UUID}}
+                         :resolve :add-to-cart
+                         :type (list :Reservation)}
              :deleteReservationLines {:args {:ids {:type (list (non-null :UUID))}}
                                       :resolve :delete-reservations
                                       :type (list (non-null :UUID))}
@@ -331,4 +354,9 @@
                                :resolve :unfavorite-model
                                :type (non-null :Model)}
              :refreshTimeout {:resolve :refresh-timeout
-                              :type :RefreshTimeoutResult}}}
+                              :type :RefreshTimeoutResult}
+             :applyTemplate {:args {:id {:type (non-null :UUID)}
+                                    :startDate {:type (non-null :Date)}
+                                    :endDate {:type (non-null :Date)}}
+                             :resolve :apply-template
+                             :type (list :Reservation)}}}

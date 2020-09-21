@@ -14,8 +14,8 @@
       (sql/from :inventory_pools)
       (sql/merge-where [:= :inventory_pools.is_active true])))
 
-(defn accessible-to-user-sqlmap [user-id]
-  (-> base-sqlmap
+(defn accessible-to-user-condition [sqlmap user-id]
+  (-> sqlmap
       (sql/merge-join :access_rights
                       [:=
                        :access_rights.inventory_pool_id
@@ -38,7 +38,8 @@
   [{{tx :tx user-id :target-user-id} :request}
    {:keys [order-by ids]}
    _]
-  (-> (accessible-to-user-sqlmap user-id)
+  (-> base-sqlmap
+      (accessible-to-user-condition user-id)
       (cond-> (seq ids)
         (-> (sql/merge-where [:in :inventory_pools.id ids])))
       (cond-> (seq order-by)

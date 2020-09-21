@@ -1,0 +1,10 @@
+query templatesIndex {
+  templates {
+    id
+    name
+    inventoryPool {
+      id
+      name
+    }
+  }
+}

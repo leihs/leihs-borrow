@@ -126,6 +126,16 @@
                                  (reservations/with-invalid-availability context)
                                  (map :id))}))
 
+(defn get-draft
+  [{{:keys [tx] user-id :target-user-id} :request :as context} _ _]
+  (let [rs  (-> (reservations/draft-sqlmap tx user-id)
+                sql/format
+                (reservations/query tx))]
+    {:reservations rs
+     :invalidReservationIds (as-> rs <>
+                              (reservations/with-invalid-availability context <>)
+                              (map :id <>))}))
+
 (defn submit
   [{{:keys [tx] user-id :target-user-id} :request :as context}
    {:keys [purpose]}
@@ -161,9 +171,7 @@
                           (->> (jdbc/query tx))
                           first)]
             (-> (sql/update :reservations)
-                (sql/set {:status (sql/call :cast
-                                            "submitted"
-                                            :reservation_status)
+                (sql/set {:status "submitted"
                           :inventory_pool_id pool-id
                           :order_id (:id order)})
                 (sql/where [:in :id (map :id rs)])

@@ -18,9 +18,12 @@
              "/" ::models
              "/favorites" ::models-favorites
              ["/" :model-id] ::models-show}
-   "order" ::shopping-cart
+   "order" {"" ::shopping-cart
+            "/draft" ::draft-order}
    "orders" {"/" ::orders-index
              ["/" :order-id] ::orders-show}
+   "templates" {"/" ::templates-index
+                ["/" :template-id] ::templates-show}
    "pools" {"" ::pools-index
             "/" ::pools-index
             ["/" :pool-id] ::pools-show}

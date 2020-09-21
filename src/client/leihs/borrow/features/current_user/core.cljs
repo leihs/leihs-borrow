@@ -57,6 +57,10 @@
          :<- [::data]
          (fn [cu _] (:inventory-pools cu)))
 
+(reg-sub ::delegations
+         :<- [::data]
+         (fn [cu _] (:delegations cu)))
+
 (reg-sub ::suspensions
          :<- [::data]
          (fn [cu _] (:suspensions cu)))

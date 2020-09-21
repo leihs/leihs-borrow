@@ -62,9 +62,14 @@
   (-> (apply sql/select (columns tx))
       (sql/from :reservations)
       (sql/where [:and
-                  [:= :status (sql/call :cast
-                                        "unsubmitted"
-                                        :reservation_status)]
+                  [:= :status "unsubmitted"]
+                  [:= :user_id user-id]])))
+
+(defn draft-sqlmap [tx user-id]
+  (-> (apply sql/select (columns tx))
+      (sql/from :reservations)
+      (sql/where [:and
+                  [:= :status "draft"]
                   [:= :user_id user-id]])))
 
 (defn for-customer-order [tx user-id]
@@ -117,15 +122,22 @@
   (-> (sql/update :reservations)
       (sql/set {:updated_at (time/now tx)})
       (sql/where [:and
-                  [:= :status (sql/call :cast
-                                        "unsubmitted"
-                                        :reservation_status)]
+                  [:= :status "unsubmitted"]
                   [:= :user_id user-id]])
       (sql/returning (valid-until-sql tx))
       sql/format
       (->> (jdbc/query tx))
       first
       :updated_at))
+
+(defn get-drafts [tx user-id ids]
+  (-> (apply sql/select (columns tx))
+      (sql/from :reservations)
+      (sql/merge-where [:= :status "draft"])
+      (sql/merge-where [:= :user_id user-id])
+      (sql/merge-where [:in :id ids])
+      sql/format
+      (query tx)))
 
 (defn get-multiple
   [{{:keys [tx] user-id :target-user-id} :request :as context}
@@ -137,9 +149,7 @@
                    :PoolOrder [:= :order_id (:id value)]
                    :Visit [:in :id (:reservation-ids value)]
                    :CurrentUser [:and
-                                 [:= :status (sql/call :cast
-                                                       "unsubmitted"
-                                                       :reservation_status)]
+                                 [:= :status "unsubmitted"]
                                  [:= :user_id user-id]]))
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by)))
@@ -184,13 +194,39 @@
                (conj result pool-avail))
         (conj result (assoc pool-avail :quantity desired-quantity))))))
 
+(defn create-draft
+  [{{:keys [tx] user-id :target-user-id} :request :as context}
+   {:keys [model-id start-date end-date quantity inventory-pool-id] :as args}
+   _]
+  (when-not (models/reservable? context args {:id model-id})
+    (throw
+      (ex-info
+        "Model either does not exist or is not reservable by the user." {})))
+  (let [row {:inventory_pool_id inventory-pool-id
+             :model_id model-id
+             :start_date (sql/call :cast start-date :date)
+             :end_date (sql/call :cast end-date :date)
+             :quantity 1
+             :user_id user-id
+             :status "draft"
+             :created_at (time/now tx)
+             :updated_at (time/now tx)}]
+    (-> (sql/insert-into :reservations)
+        (sql/values (->> row
+                         repeat
+                         (take quantity)))
+        (assoc :returning (columns tx))
+        sql/format
+        log/spy
+        (query tx))))
+
 (defn create
   [{{:keys [tx] user-id :target-user-id} :request :as context}
    {:keys [model-id start-date end-date quantity inventory-pool-ids]
     exclude-reservation-ids :exclude-reservation-ids 
     :or {exclude-reservation-ids []}
     :as args}
-   value]
+   _]
   (when-not (models/reservable? context args {:id model-id})
     (throw
       (ex-info
@@ -228,9 +264,7 @@
                                   (assoc :end_date (sql/call :cast end-date :date))
                                   (assoc :quantity 1
                                          :user_id user-id
-                                         :status (sql/call :cast
-                                                           "unsubmitted"
-                                                           :reservation_status)
+                                         :status "unsubmitted"
                                          :created_at (time/now tx)
                                          :updated_at (time/now tx)))]
                       (-> (sql/insert-into :reservations)
@@ -241,3 +275,19 @@
                           sql/format
                           (query tx)))))
              flatten)))))
+
+(defn add-to-cart
+  [{{:keys [tx] user-id :target-user-id} :request :as context}
+   {:keys [ids]}
+   _]
+  (let [drafts (get-drafts tx user-id ids)]
+    (if (empty? drafts)
+      (throw (ex-info "No draft reservations found to process." {})))
+    (if-not (empty? (with-invalid-availability context drafts))
+      (throw (ex-info "Some reserved quantities are not available anymore." {})))
+    (-> (sql/update :reservations)
+        (sql/set {:status "unsubmitted", :updated_at (time/now tx)})
+        (sql/where [:in :id (map :id drafts)])
+        (sql/returning :*)
+        sql/format
+        (query tx))))

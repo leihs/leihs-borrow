@@ -3,7 +3,9 @@ jobs:
     name: Build prod ready uberjar
 
     run_when:
-      any branch is pushed: { type: branch, include_match: ^.*$ }
+      any branch has been updated:
+        type: branch
+        include_match: ^.*$
 
     context:
       task_defaults:
@@ -87,6 +89,11 @@ jobs:
       Status of this job is **used by github's "branch protection"**!
 
     depends_on: &GOOD_TO_MERGE_DEPENDENCIES
+      meta was successful:
+        type: job
+        job_key: meta
+        states: [passed]
+
       backend-specs was successful:
         type: job
         job_key: backend-specs
@@ -271,3 +278,37 @@ jobs:
               body: |
                 npm install --silent --no-audit
                 npx shadow-cljs release app
+
+  meta:
+    name: Meta
+    description: |
+      Various superordinate quality assurance tasks
+
+    run_when:
+      any branch is pushed: { type: branch, include_match: ^.*$ }
+
+    context:
+      task_defaults:
+        max_trials: 1
+        traits:
+          Ruby: true
+
+      tasks:
+        database-submodule-consistency:
+          name: "database in toplevel and submodules all point to the same commit"
+          scripts:
+            main:
+              body: |
+                #!/usr/bin/env bash
+                set -exu
+                git fetch --all --quiet
+                git submodule update --quiet --init --recursive
+
+                v_db_top=$(git submodule status database | cut -f 2 -d ' ')
+                v_db_legacy=$(git submodule status --recursive | grep spec/support/legacy-api/database | cut -f 2 -d ' ')
+
+                echo "database | toplevel: ${v_db_top}"
+                echo "database | legacy:   ${v_db_legacy}"
+
+                # TESTS (FAIL-FIRST)
+                test $v_db_legacy == $v_db_top

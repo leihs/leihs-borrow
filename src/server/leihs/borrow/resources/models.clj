@@ -27,6 +27,20 @@
       (sql/from :models)
       (sql/order-by [:name :asc])))
 
+(defn borrowable-quantity [tx model-id pool-id]
+  (-> (sql/select :%count.*)
+      (sql/from :models)
+      (sql/join :items [:= :items.model_id :models.id])
+      (sql/merge-where [:= :models.id model-id])
+      (sql/merge-where [:= :items.inventory_pool_id pool-id])
+      (sql/merge-where [:= :items.retired nil])
+      (sql/merge-where [:= :items.is_borrowable true])
+      (sql/merge-where [:= :items.parent_id nil])
+      sql/format
+      (->> (jdbc/query tx))
+      first
+      :count))
+
 (defn merge-reservable-conditions [sqlmap user-id]
   (-> sqlmap
       (sql/merge-join :items
@@ -96,7 +110,10 @@
   "If the available quantity was already computed through the enclosing
   resolver, then just return it. Otherwise fetch from legacy and compute."
   [{{tx :tx user-id :target-user-id} :request :as context}
-   {:keys [inventory-pool-ids start-date end-date exclude-reservation-ids] :as args}
+   {:keys [inventory-pool-ids
+           start-date
+           end-date
+           exclude-reservation-ids] :as args}
    value]
   (or (:available-quantity-in-date-range value)
       (let [pool-ids (or (not-empty inventory-pool-ids)
