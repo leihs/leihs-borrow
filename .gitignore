@@ -3,6 +3,7 @@
 .nrepl-port
 .rebel_readline_history
 .shadow-cljs
+.calva
 log
 resources/all/public/app/borrow/js
 scratch*

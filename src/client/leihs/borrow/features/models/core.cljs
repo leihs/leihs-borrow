@@ -39,14 +39,16 @@
           start-date (:start-date filters)
           end-date (:end-date filters)
           user-id (or (:user-id filters) (-> db current-user/data :user :id))
+          pool-id (:pool-id filters)
           dates-valid? (<= start-date end-date) ; if somehow end is before start, ignore it instead of error
-          query-vars (merge {:searchTerm (:term filters)
-                             :startDate (when dates-valid? start-date)
-                             :endDate (when dates-valid? end-date)
-                             :onlyAvailable (when dates-valid? (:available-between? filters))
-                             :userId user-id
-                             :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
-                            extra-args)]
+          query-vars (-> {:searchTerm (:term filters)
+                          :startDate (when dates-valid? start-date)
+                          :endDate (when dates-valid? end-date)
+                          :onlyAvailable (when dates-valid? (:available-between? filters))
+                          :userId user-id
+                          :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
+                         (merge extra-args)
+                         (cond-> pool-id (assoc :poolIds [pool-id])))]
       ; NOTE: no caching yet, clear data before new search  
       {:db (assoc-in db [::data] nil)
        :dispatch [::re-graph/query
@@ -113,94 +115,113 @@
 (def product-card-width-in-rem 12)
 (def product-card-margins-in-rem 1)
 
-(defn search-panel [submit-fn clear-fn]
-  (let [filters @(subscribe [::filters/current])
-        target-users @(subscribe [::target-users])
-        term @(subscribe [::filters/term])
-        data @(subscribe [::data])
-        start-date @(subscribe [::filters/start-date])
-        end-date @(subscribe [::filters/end-date])
-        available-between? @(subscribe [::filters/available-between?])
-        quantity @(subscribe [::filters/quantity])
-        user-id @(subscribe [::user-id])
-        routing @(subscribe [:routing/routing])
-        on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
+(defn search-panel
+  ([submit-fn clear-fn]
+   (search-panel submit-fn
+                 clear-fn
+                 #(dispatch [::filters/set-pool-id (-> % .-target .-value)])))
+  ([submit-fn clear-fn change-pool-fn]
+   (let
+    [filters @(subscribe [::filters/current])
+     target-users @(subscribe [::target-users])
+     term @(subscribe [::filters/term])
+     data @(subscribe [::data])
+     start-date @(subscribe [::filters/start-date])
+     end-date @(subscribe [::filters/end-date])
+     available-between? @(subscribe [::filters/available-between?])
+     quantity @(subscribe [::filters/quantity])
+     user-id @(subscribe [::user-id])
+     pool-id @(subscribe [::filters/pool-id])
+     pools @(subscribe [::current-user/pools])
+     routing @(subscribe [:routing/routing])
+     on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
 
-    [:div.px-3.py-4.bg-light {:class (when on-search-view? "mb-4")
-                              :style {:box-shadow "0 0rem 2rem rgba(0, 0, 0, 0.15) inset"}}
-     [:form.form.form-compact
-      {:action "/search"
-       :on-submit (fn [event] (.preventDefault event) (submit-fn filters))}
+     [:div.px-3.py-4.bg-light {:class (when on-search-view? "mb-4")
+                               :style {:box-shadow "0 0rem 2rem rgba(0, 0, 0, 0.15) inset"}}
+      [:form.form.form-compact
+       {:action "/search"
+        :on-submit (fn [event] (.preventDefault event) (submit-fn filters))}
 
-      [:div.form-group
-       [form-line :search-term (t :borrow.filter/search)
-        {:type :text
-         :value term
-         :on-change #(dispatch [::filters/set-one :term (-> % .-target .-value)])}]]
+       [:div.form-group
+        [form-line :search-term (t :borrow.filter/search)
+         {:type :text
+          :value term
+          :on-change #(dispatch [::filters/set-one :term (-> % .-target .-value)])}]]
 
-      (when-not (empty? target-users)
-        [:label.row
-         [:span.text-xs.col-3.col-form-label (t :borrow.filter/for)]
-         [:div.col-9
-          [:select {:class "form-control"
-                    :default-value user-id
-                    :name :user-id
-                    :on-change #(dispatch [::filters/set-one :user-id (-> % .-target .-value)])}
-           (doall
+       (when-not (empty? target-users)
+         [:label.row
+          [:span.text-xs.col-3.col-form-label (t :borrow.filter/for)]
+          [:div.col-9
+           [:select {:class "form-control"
+                     :default-value user-id
+                     :name :user-id
+                     :on-change #(dispatch [::filters/set-one :user-id (-> % .-target .-value)])}
+            (doall
              (for [user target-users]
                [:option {:value (:id user) :key (:id user)}
                 (:name user)]))]]])
 
-      [:div.form-group
-       [:div.row
-        [:span.text-xs.col-3.col-form-label (t :borrow.filter/time-span)]
+       [:label.row
+        [:span.text-xs.col-3.col-form-label "Aus "]
         [:div.col-9
-         [:label.custom-control.custom-checkbox
-          [:input.custom-control-input
-           {:type :checkbox
-            :name :only-available
-            :checked available-between?
-            :on-change (fn [_]
-                         (dispatch [::filters/set-one :available-between? (not available-between?)]))}]
-          [:span.custom-control-label (t :borrow.filter/show-only-available)]]]]]
-
-
-      [:div {:class (if-not available-between? "d-none")}
-       [:div.form-group
-        [form-line :start-date (t :borrow.filter/from)
-         {:type :date
-          :required true
-          :disabled (not available-between?)
-          :value start-date
-          :on-change #(dispatch [::filters/set-one :start-date (-> % .-target .-value)])}]]
+         [:select {:class "form-control"
+                   :default-value (or pool-id "all")
+                   :name :user-id
+                   :on-change change-pool-fn}
+          (doall
+           (for [pool (cons {:id "all" :name "Allen Geräteparks"} pools)]
+             [:option {:value (:id pool) :key (:id pool)}
+              (:name pool)]))]]]
 
        [:div.form-group
-        [form-line :end-date (t :borrow.filter/until)
-         {:type :date
-          :required true
-          :disabled (not available-between?)
-          :min start-date
-          :value end-date
-          :on-change #(dispatch [::filters/set-one :end-date (-> % .-target .-value)])}]]
+        [:div.row
+         [:span.text-xs.col-3.col-form-label (t :borrow.filter/time-span)]
+         [:div.col-9
+          [:label.custom-control.custom-checkbox
+           [:input.custom-control-input
+            {:type :checkbox
+             :name :only-available
+             :checked available-between?
+             :on-change (fn [_]
+                          (dispatch [::filters/set-one :available-between? (not available-between?)]))}]
+           [:span.custom-control-label (t :borrow.filter/show-only-available)]]]]]
+       
+       [:div {:class (if-not available-between? "d-none")}
+        [:div.form-group
+         [form-line :start-date (t :borrow.filter/from)
+          {:type :date
+           :required true
+           :disabled (not available-between?)
+           :value start-date
+           :on-change #(dispatch [::filters/set-one :start-date (-> % .-target .-value)])}]]
 
-       [:div.form-group
-        [form-line :quantity (t :borrow.filter/quantity)
-         {:type :number
-          :min 1
-          :value quantity
-          :on-change #(dispatch [::filters/set-one :quantity (-> % .-target .-value)])}]]]
+        [:div.form-group
+         [form-line :end-date (t :borrow.filter/until)
+          {:type :date
+           :required true
+           :disabled (not available-between?)
+           :min start-date
+           :value end-date
+           :on-change #(dispatch [::filters/set-one :end-date (-> % .-target .-value)])}]]
 
-      [:button.btn.btn-success.dont-invert.rounded-pill
-       {:type :submit
-        :class :mt-2}
-       (t :borrow.filter/get-results)]
+        [:div.form-group
+         [form-line :quantity (t :borrow.filter/quantity)
+          {:type :number
+           :min 1
+           :value quantity
+           :on-change #(dispatch [::filters/set-one :quantity (-> % .-target .-value)])}]]]
 
-      [:button.btn.btn-secondary.dont-invert.rounded-pill.mx-1
-       {:type :button
-        :disabled (not (or (seq filters) (seq data)))
-        :on-click clear-fn
-        :class :mt-2}
-       (t :borrow.filter/clear)]]]))
+       [:button.btn.btn-success.dont-invert.rounded-pill
+        {:type :submit
+         :class :mt-2}
+        (t :borrow.filter/get-results)]
+
+       [:button.btn.btn-secondary.dont-invert.rounded-pill.mx-1
+        {:type :button
+         :disabled (not (or (seq filters) (seq data)))
+         :on-click clear-fn
+         :class :mt-2}
+        (t :borrow.filter/clear)]]])))
 
 (defn models-list [models]
   (let
@@ -219,7 +240,7 @@
                         :href  (routing/path-for ::routes/models-show
                                                  :model-id (:id model))})))]
     [:div.mx-1.mt-2
-     [:> UI/Components.CategoryList {:list models-list}]
+     [:> UI/Components.ModelList {:list models-list}]
      (when debug? [:p (pr-str @(subscribe [::data]))])]))
 
 (defn load-more [extra-args]

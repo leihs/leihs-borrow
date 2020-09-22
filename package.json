@@ -19,7 +19,7 @@
     "@eins78/graphql-schema-diff": "0.7.0",
     "@prettier/plugin-ruby": "^0.15.1",
     "prettier": "^1.18.2",
-    "shadow-cljs": "^2.10.14"
+    "shadow-cljs": "^2.10.21"
   },
   "prettier": {
     "printWidth": 80,

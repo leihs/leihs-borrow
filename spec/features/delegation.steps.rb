@@ -172,7 +172,9 @@ step "I see :n times :name" do |n, name|
 end
 
 step "I select :name xxx" do |name|
-  find("select option", text: name).select_option
+  # WTF: this should work but throws `Selenium::WebDriver::Error::JavascriptError: TypeError: cyclic object value`
+  # find('select[name="user-id"] option', text: name).select_option
+  all('select[name="user-id"] option').select {|n| n.text.include?(name)}.first.select_option
 end
 
 step 'I click on the menu' do

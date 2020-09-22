@@ -1,7 +1,11 @@
+-- :snip and-pool-ids-snip
+AND inventory_pools.id IN (:v*:pool-ids)
+
 -- A ":result" value of ":*" specifies a vector of records
 -- (as hashmaps) will be returned
 -- :name all-reservable-root-categories :? :*
 -- :doc Get all reservable root categories by user-id
+
 WITH all_borrowable_categories AS (
   SELECT DISTINCT model_groups.id, model_groups.name
   FROM model_groups
@@ -46,6 +50,7 @@ WITH all_borrowable_categories AS (
     AND items.retired IS NULL
     AND items.is_borrowable = 't'
     AND items.parent_id IS NULL
+    --~ (when (:and-pool-ids params) ":snip:and-pool-ids")
   )
 SELECT model_groups.id, model_groups.name
 FROM model_groups

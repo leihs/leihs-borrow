@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# NOTE: we need to start legacy webapp to log in!
+
+. ./scripts/_test-env.sh
+
+cd ../legacy || {
+    echo "ERROR: could not find `leihs/legacy`. Run this from inside superproject (`leihs/borrow`)!"
+    exit 1
+}
+
+export RAILS_LOG_LEVEL=debug
+bundle exec rails s -p $LEIHS_LEGACY_PORT -b 127.0.0.1

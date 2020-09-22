@@ -12,28 +12,37 @@
 (hugsql/def-sqlvec-fns "sql/child_categories.sql")
 
 (comment
-  (->> {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"}
+  (->> {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
+        :limit nil
+        :and-pool-ids (and-pool-ids-snip {:pool-ids ["8d3631ee-818b-56d2-9d08-b9369d62d1e1"]})}
        all-reservable-root-categories-sqlvec
        (jdbc/query (ds/get-ds)))
   (->> {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
         :category-id "94915209-2723-530a-92f8-76c0e8ac7ca4"}
        all-reservable-child-categories-sqlvec
-       (jdbc/query (ds/get-ds))))
+       (jdbc/query (ds/get-ds)))
+  (and-pool-ids-snip {:pool-ids ["foo"]}))
 
 (defn get-roots [{{:keys [tx] user-id :target-user-id} :request}
-                 {:keys [limit]}
+                 {:keys [limit pool-ids]}
                  _]
   (-> {:user-id user-id
        :limit (cond->> (str limit) limit (str "LIMIT "))}
+      (cond-> (seq pool-ids)
+        (assoc :and-pool-ids
+               (and-pool-ids-snip {:pool-ids pool-ids})))
       all-reservable-root-categories-sqlvec
       (->> (jdbc/query tx))))
 
 (defn get-children [{{:keys [tx] user-id :target-user-id} :request}
-                    _
+                    {:keys [pool-ids]}
                     value]
-  (->> {:user-id user-id :category-id (:id value)}
-       all-reservable-child-categories-sqlvec
-       (jdbc/query tx)))
+  (-> {:user-id user-id :category-id (:id value)}
+      (cond-> (seq pool-ids)
+        (assoc :and-pool-ids
+               (and-pool-ids-snip {:pool-ids pool-ids})))
+      all-reservable-child-categories-sqlvec
+      (->> (jdbc/query tx))))
 
 (def base-sqlmap
   (-> (sql/select :model_groups.id [:model_groups.name :name])

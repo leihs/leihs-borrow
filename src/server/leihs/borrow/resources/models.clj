@@ -9,6 +9,7 @@
             [java-time :refer [interval local-date before?] :as jt]
             [logbug.debug :as debug]
             [leihs.core.sql :as sql]
+            [leihs.core.core :refer [spy-with]]
             [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.entitlements :as entitlements]
@@ -41,31 +42,36 @@
       first
       :count))
 
-(defn merge-reservable-conditions [sqlmap user-id]
-  (-> sqlmap
-      (sql/merge-join :items
-                      [:= :models.id :items.model_id])
-      (sql/merge-join :inventory_pools
-                      [:= :items.inventory_pool_id :inventory_pools.id])
-      (sql/merge-join :access_rights
-                      [:= :inventory_pools.id :access_rights.inventory_pool_id])
-      (sql/merge-join (sql/raw (str "(" entitlements/all-sql ") AS pwg"))
-                      [:and
-                       [:= :models.id :pwg.model_id]
-                       [:= :inventory_pools.id :pwg.inventory_pool_id]
-                       [:> :pwg.quantity 0]
-                       [:or
-                        [:in
-                         :pwg.entitlement_group_id
-                         (-> (sql/select :entitlement_group_id)
-                             (sql/from :entitlement_groups_users)
-                             (sql/merge-where [:= :user_id user-id]))]
-                        [:= :pwg.entitlement_group_id nil]]])
-      (sql/merge-where [:= :inventory_pools.is_active true])
-      (sql/merge-where [:= :access_rights.user_id user-id])
-      (sql/merge-where [:= :items.retired nil])
-      (sql/merge-where [:= :items.is_borrowable true])
-      (sql/merge-where [:= :items.parent_id nil])))
+(defn merge-reservable-conditions
+  ([sqlmap user-id]
+   (merge-reservable-conditions sqlmap user-id nil))
+  ([sqlmap user-id pool-ids]
+   (-> sqlmap
+       (sql/merge-join :items
+                       [:= :models.id :items.model_id])
+       (sql/merge-join :inventory_pools
+                       [:= :items.inventory_pool_id :inventory_pools.id])
+       (sql/merge-join :access_rights
+                       [:= :inventory_pools.id :access_rights.inventory_pool_id])
+       (sql/merge-join (sql/raw (str "(" entitlements/all-sql ") AS pwg"))
+                       [:and
+                        [:= :models.id :pwg.model_id]
+                        [:= :inventory_pools.id :pwg.inventory_pool_id]
+                        [:> :pwg.quantity 0]
+                        [:or
+                         [:in
+                          :pwg.entitlement_group_id
+                          (-> (sql/select :entitlement_group_id)
+                              (sql/from :entitlement_groups_users)
+                              (sql/merge-where [:= :user_id user-id]))]
+                         [:= :pwg.entitlement_group_id nil]]])
+       (sql/merge-where [:= :inventory_pools.is_active true])
+       (sql/merge-where [:= :access_rights.user_id user-id])
+       (cond-> (seq pool-ids)
+         (sql/merge-where [:in :inventory_pools.id pool-ids]))
+       (sql/merge-where [:= :items.retired nil])
+       (sql/merge-where [:= :items.is_borrowable true])
+       (sql/merge-where [:= :items.parent_id nil]))))
 
 (defn reservable?
   [{{:keys [tx] user-id :target-user-id} :request :as context}
@@ -204,11 +210,11 @@
                  (assoc :inventory-pool pool))))
          pool-ids)))
 
-(defn from-compatibles [sqlmap value user-id unscope-reservable]
+(defn from-compatibles [sqlmap value user-id pool-ids unscope-reservable]
   (-> sqlmap
       (sql/from :models_compatibles)
       (cond-> (not unscope-reservable)
-        (merge-reservable-conditions user-id))
+        (merge-reservable-conditions user-id pool-ids))
       (sql/join :models [:=
                          :models.id
                          :models_compatibles.compatible_id])
@@ -232,15 +238,16 @@
            order-by
            search-term
            unscope-reservable
+           pool-ids
            is-favorited]}
    value]
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
-        (from-compatibles value user-id unscope-reservable))
+        (from-compatibles value user-id pool-ids unscope-reservable))
       (cond-> (or category-id (= (::lacinia/container-type-name context) :Category))
         (merge-categories-conditions tx (or category-id (:id value)) direct-only))
       (cond-> (not unscope-reservable)
-        (merge-reservable-conditions user-id))
+        (merge-reservable-conditions user-id pool-ids))
       (cond-> (seq ids)
         (sql/merge-where [:in :models.id ids]))
       (cond-> search-term
