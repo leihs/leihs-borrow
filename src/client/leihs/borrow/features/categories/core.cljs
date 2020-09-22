@@ -25,7 +25,9 @@
   (fn-traced [{:keys [db]} _]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/categories/getRootCategories.gql")
-                {:userId (filters/user-id db)} #_{:count how-many}
+                {:userId (filters/user-id db)
+                 :poolIds (when-let [pool-id (filters/pool-id db)]
+                            [pool-id])}
                 [::on-fetched-categories-index]]}) )
 
 (reg-event-fx ::fetch-index dispatch-fetch-index-handler)

@@ -37,6 +37,8 @@
                           query
                           {:categoryId category-id
                            :parentId parent-id
+                           :poolIds (when-let [pool-id (filters/pool-id db)]
+                                      [pool-id])
                            :userId user-id}
                           [::on-fetched-category-data category-id]]
                          [::models/get-models {:categoryId category-id}])})))

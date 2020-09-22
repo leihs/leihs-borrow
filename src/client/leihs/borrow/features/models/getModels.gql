@@ -9,6 +9,7 @@ query getModels(
   $isFavorited: Boolean
   $quantity: Int
   $userId: UUID!
+  $poolIds: [UUID!]
 ) {
   models(
     searchTerm: $searchTerm
@@ -17,6 +18,7 @@ query getModels(
     onlyAvailable: $onlyAvailable
     quantity: $quantity
     userId: $userId
+    poolIds: $poolIds
     categoryId: $categoryId
     isFavorited: $isFavorited
   ) {

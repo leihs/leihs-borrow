@@ -1,7 +1,6 @@
 #!/bin/sh
 
 . ./scripts/_dev-env.sh
-
-# git submodule update --init --recursive
 export LEIHS_LEGACY_HTTP_BASE_URL="http://localhost:3210"
-bin/boot --offline focus
+
+java -jar target/leihs-borrow.jar run

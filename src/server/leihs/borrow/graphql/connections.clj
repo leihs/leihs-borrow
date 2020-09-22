@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [first])
   (:require [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
+            [leihs.core.core :refer [spy-with]]
             [leihs.core.sql :as sql]))
 
 (def intervene-per-page-default (atom nil))
@@ -96,6 +97,7 @@
      (if (and after (not (after-cursor-row-exists? tx sqlmap after)))
        (throw (ex-info "After cursor row does not exist!" {}))
        (let [rows (-> sqlmap
+                      (->> (spy-with sql/format))
                       (cursored-sqlmap after first)
                       sql/format
                       (->> (jdbc/query tx))

@@ -65,6 +65,14 @@
     (assoc-in db (conj current-path key) value)))
 
 (reg-event-db
+  ::set-pool-id
+  [(path current-path)]
+  (fn-traced [old [_ value]]
+    (if (#{"all" nil} value)
+      (dissoc old :pool-id)
+      (assoc old :pool-id value))))
+
+(reg-event-db
   ::clear-current
   (fn-traced [db _]
     (assoc-in db
@@ -106,8 +114,13 @@
   ::user-id
   (fn [db _] (get-from-current db :user-id)))
 
+(reg-sub
+  ::pool-id
+  (fn [db _] (get-from-current db :pool-id)))
+
 (defn current [db] (get-in db current-path nil))
 (defn term [db] (get-in db (conj current-path :term)))
 (defn start-date [db] (get-in db (conj current-path :start-date)))
 (defn end-date [db] (get-in db (conj current-path :end-date)))
 (defn user-id [db] (get-in db (conj current-path :user-id)))
+(defn pool-id [db] (get-in db (conj current-path :pool-id)))

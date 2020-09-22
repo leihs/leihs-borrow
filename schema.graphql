@@ -19,7 +19,7 @@ type Availability {
 }
 
 type Category {
-  children(userId: UUID): [Category]
+  children(poolIds: [UUID!], userId: UUID): [Category]
   id: UUID!
   images: [Image]
 
@@ -308,7 +308,7 @@ type QueryRoot {
   inventoryPool(id: UUID!): InventoryPool
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   model(id: UUID!): Model!
-  models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], quantity: Int, searchTerm: String, userId: UUID): ModelsConnection
+  models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], poolIds: [UUID!], quantity: Int, searchTerm: String, userId: UUID): ModelsConnection
   order(id: UUID!, userId: UUID): Order!
   orders(
     after: String
@@ -321,7 +321,7 @@ type QueryRoot {
     states: [PoolOrderStateEnum]
     userId: UUID
   ): OrdersConnection
-  rootCategories(limit: Int, userId: UUID): [Category!]
+  rootCategories(limit: Int, poolIds: [UUID!], userId: UUID): [Category!]
   template(id: UUID!): Template!
   templates: [Template!]
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]

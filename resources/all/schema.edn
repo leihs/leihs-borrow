@@ -184,7 +184,8 @@
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
-                                          :args {:userId {:type :UUID}}
+                                          :args {:userId {:type :UUID}
+                                                 :poolIds {:type (list (non-null :UUID))}}
                                           :resolve :child-categories}
                                :models {:type :ModelsConnection
                                         :description "Includes only direct ones or all from self and the descendent sub-categories."
@@ -308,7 +309,8 @@
                            :isFavorited {:type Boolean}
                            :onlyAvailable {:type Boolean}
                            :quantity {:type :Int}
-                           :userId {:type :UUID}}
+                           :userId {:type :UUID}
+                           :poolIds {:type (list (non-null :UUID))}}
                     :type :ModelsConnection
                     :resolve :models-connection}
            :inventoryPool {:resolve :inventory-pool
@@ -323,7 +325,8 @@
                       :type :Category}
            :rootCategories {:resolve :root-categories
                             :args {:limit {:type Int}
-                                   :userId {:type :UUID}}
+                                   :userId {:type :UUID}
+                                   :poolIds {:type (list (non-null :UUID))}}
                             :type (list (non-null :Category))}}
 
  :mutations {:createReservation {:args {:startDate {:type (non-null :Date)}
