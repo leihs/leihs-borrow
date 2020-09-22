@@ -54,6 +54,7 @@
    :unsubmitted-order orders/get-unsubmitted
    :user users/get-one
    :users users/get-multiple
+   :visit visits/get-one
    :visits visits/get-multiple
    :draft-order orders/get-draft
    :template templates/get-one

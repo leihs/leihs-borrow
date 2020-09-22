@@ -2,6 +2,13 @@
            :DateTime {:parse :date-time-parse :serialize :date-time-serialize}
            :Date {:parse :date-parse :serialize :date-serialize}}
 
+ :interfaces {:Visit {:fields {:id {:type (non-null :UUID)}
+                               :date {:type (non-null :Date)}
+                               :quantity {:type (non-null Int)}
+                               :inventoryPool {:type (non-null :InventoryPool)}
+                               :reservations {:type (list :Reservation)
+                                              :args {:orderBy {:type (list :ReservationsOrderByInput)}}}}}}
+
  :enums {:ModelsOrderByAttributeEnum {:values [:ID :NAME]},
          :UsersOrderByAttributeEnum {:values [:ID]},
          :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME]},
@@ -228,16 +235,25 @@
                             :createdAt {:type (non-null :DateTime)}
                             :updatedAt {:type (non-null :DateTime)}}
                    :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}
-           :Visit {:fields {:id {:type (non-null :UUID)}
-                            :date {:type (non-null :Date)}
-                            :visitType {:type (non-null :VisitTypeEnum)}
-                            :isApproved {:type (non-null Boolean)}
-                            :quantity {:type (non-null Int)}
-                            :inventoryPool {:type (non-null :InventoryPool)
-                                            :resolve :inventory-pool}
-                            :reservations {:type (list :Reservation)
-                                           :args {:orderBy {:type (list :ReservationsOrderByInput)}}
-                                           :resolve :reservations}}}
+           :Pickup {:implements [:Visit]
+                    :fields {:id {:type (non-null :UUID)}
+                             :date {:type (non-null :Date)}
+                             :quantity {:type (non-null Int)}
+                             :inventoryPool {:type (non-null :InventoryPool)
+                                             :resolve :inventory-pool}
+                             :reservations {:type (list :Reservation)
+                                            :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                            :resolve :reservations}
+                             :isApproved {:type (non-null Boolean)}}}
+           :Return {:implements [:Visit]
+                    :fields {:id {:type (non-null :UUID)}
+                             :date {:type (non-null :Date)}
+                             :quantity {:type (non-null Int)}
+                             :inventoryPool {:type (non-null :InventoryPool)
+                                             :resolve :inventory-pool}
+                             :reservations {:type (list :Reservation)
+                                            :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                            :resolve :reservations}}} 
            :RefreshTimeoutResult {:fields {:unsubmittedOrder {:type :UnsubmittedOrder}}}}
 
  :input-objects {:ModelsOrderByInput {:fields {:attribute {:type (non-null :ModelsOrderByAttributeEnum)}
@@ -287,6 +303,9 @@
                            :userId {:type :UUID}
                            :orderBy {:type (list :OrdersOrderByInput)}}
                     :type :OrdersConnection}
+           :visit {:resolve :visit
+                   :args {:id {:type (non-null :UUID)}}
+                   :type (non-null :Visit)}
            :visits {:resolve :visits
                     :args {:limit {:type Int}
                            :orderBy {:type (list :VisitsOrderByInput)}}
