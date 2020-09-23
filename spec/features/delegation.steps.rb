@@ -102,7 +102,7 @@ step 'I visit the orders page of the pool :name' do |name|
 end
 
 step 'I approve the order of the user/delegation' do
-  find('[data-order-approve]').click
+  click_on('[data-order-approve]')
 end
 
 step 'I see the order :purpose under approved orders' do |purpose|
@@ -172,7 +172,7 @@ step "I see :n times :name" do |n, name|
 end
 
 step "I select :name xxx" do |name|
-  find("select option", text: name).select_option
+  find('select[name="user-id"] option', text: name).select_option
 end
 
 step 'I click on the menu' do
