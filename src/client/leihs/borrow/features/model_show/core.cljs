@@ -143,7 +143,7 @@
         pools @(subscribe [::current-user/pools])
         has-availability? (boolean (:availability model))
         on-submit (fn [jsargs]
-                    (js/alert (str "Submiting!" (js/JSON.stringify jsargs)))
+                    ; (js/alert (str "Submiting!" (js/JSON.stringify jsargs)))
                     (let [args (js->clj jsargs :keywordize-keys true)]
                       (dispatch
                         [::model-create-reservation
