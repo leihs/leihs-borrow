@@ -36,6 +36,8 @@
     [leihs.borrow.features.shopping-cart.timeout :as timeout]
     [leihs.borrow.features.templates.index :as templates-index]
     [leihs.borrow.features.templates.show :as templates-show]
+    [leihs.borrow.features.visits.pickups :as pickups-index]
+    [leihs.borrow.features.visits.returns :as returns-index]
     ))
 
 ;-; INIT APP & DB
@@ -102,6 +104,8 @@
             ::routes/pools-index pools-index/view
             ::routes/templates-show templates-show/view
             ::routes/templates-index templates-index/view
+            ::routes/pickups-index pickups-index/view
+            ::routes/returns-index returns-index/view
 
             ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
             ;        *should* not be a real problem – if the routing is working correctly

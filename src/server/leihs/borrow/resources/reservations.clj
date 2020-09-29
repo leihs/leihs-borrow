@@ -147,7 +147,8 @@
       (sql/from :reservations)
       (sql/where (case (::lacinia/container-type-name context)
                    :PoolOrder [:= :order_id (:id value)]
-                   :Visit [:in :id (:reservation-ids value)]
+                   :Contract [:= :contract_id (:id value)]
+                   (:Pickup :Return :Visit) [:in :id (:reservation-ids value)]
                    :CurrentUser [:and
                                  [:= :status "unsubmitted"]
                                  [:= :user_id user-id]]))

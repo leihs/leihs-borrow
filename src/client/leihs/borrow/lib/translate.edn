@@ -52,6 +52,8 @@
                                   :order-name "Name Your Order"}
                   :templates {:title "Templates"
                               :some-not-reservable "Some models are not reservable!"}
+                  :visits {:pickups {:title "Pickups"}
+                           :returns {:title "Rückgaben"}}
                   }}
  :de-CH {:borrow {:all "Alle"
                   :about-page {:title "Übersicht"
@@ -107,4 +109,6 @@
                                   :order-name "Benenne deine Bestellung"}
                   :templates {:title "Vorlagen"
                               :some-not-reservable "Some models are not reservable!"}
+                  :visits {:pickups {:title "Abholungen"}
+                           :returns {:title "Rückgaben"}}
                   }}}

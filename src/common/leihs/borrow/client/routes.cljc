@@ -24,9 +24,13 @@
              ["/" :order-id] ::orders-show}
    "templates" {"/" ::templates-index
                 ["/" :template-id] ::templates-show}
+   "pickups" {"" ::pickups-index
+              "/" ::pickups-index}
    "pools" {"" ::pools-index
             "/" ::pools-index
             ["/" :pool-id] ::pools-show}
+   "returns" {"" ::returns-index
+              "/" ::returns-index}
    :else ::not-found})
 
 (def routes-map

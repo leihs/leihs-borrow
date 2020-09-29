@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Sep 18 2020 16:40:14 GMT+0200 (Central European Summer Time)
+# timestamp: Wed Sep 23 2020 16:18:04 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -44,6 +44,7 @@ type Contract {
   inventoryPool: InventoryPool!
   note: String
   purpose: String!
+  reservations: [Reservation]
   state: String!
 }
 
@@ -267,10 +268,20 @@ type PageInfo {
   hasNextPage: Boolean
 }
 
+type Pickup {
+  date: Date!
+  id: UUID!
+  inventoryPool: InventoryPool!
+  isApproved: Boolean!
+  quantity: Int!
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
+}
+
 type PoolOrder {
   createdAt: DateTime!
   id: UUID!
   inventoryPool: InventoryPool!
+  order: Order
   rejectedReason: String
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
   state: PoolOrderStateEnum!
@@ -321,11 +332,12 @@ type QueryRoot {
     states: [PoolOrderStateEnum]
     userId: UUID
   ): OrdersConnection
+  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
+  returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
   rootCategories(limit: Int, userId: UUID): [Category!]
   template(id: UUID!): Template!
   templates: [Template!]
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
-  visits(limit: Int, orderBy: [VisitsOrderByInput]): [Visit]
 }
 
 type RefreshTimeoutResult {
@@ -338,6 +350,7 @@ type Reservation {
   id: UUID!
   inventoryPool: InventoryPool!
   model: Model!
+  poolOrder: PoolOrder
   startDate: Date!
   status: ReservationStateEnum!
   updatedAt: DateTime!
@@ -361,6 +374,14 @@ enum ReservationStateEnum {
   REJECTED
   SIGNED
   CLOSED
+}
+
+type Return {
+  date: Date!
+  id: UUID!
+  inventoryPool: InventoryPool!
+  quantity: Int!
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
 }
 
 enum startDateRestrictionEnum {
@@ -427,16 +448,6 @@ input UsersOrderByInput {
 }
 
 scalar UUID
-
-type Visit {
-  date: Date!
-  id: UUID!
-  inventoryPool: InventoryPool!
-  isApproved: Boolean!
-  quantity: Int!
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
-  visitType: VisitTypeEnum!
-}
 
 enum VisitsOrderByAttributeEnum {
   DATE

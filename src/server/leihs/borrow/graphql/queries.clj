@@ -44,17 +44,19 @@
    :models-connection models/get-connection
    :order orders/get-one
    :orders-connection orders/get-connection
+   :pickups visits/get-pickups
+   :pool-order orders/get-one-by-pool
    :pool-orders orders/get-multiple-by-pool
    :properties properties/get-multiple
    :reservations reservations/get-multiple
    :responsible delegations/responsible
+   :returns visits/get-returns
    :root-categories categories/get-roots
    :suspensions suspensions/get-multiple
    :thumbnails images/get-multiple-thumbnails
    :unsubmitted-order orders/get-unsubmitted
    :user users/get-one
    :users users/get-multiple
-   :visits visits/get-multiple
    :draft-order orders/get-draft
    :template templates/get-one
    :templates templates/get-multiple

@@ -175,9 +175,8 @@ describe 'visits' do
 
     q = <<-GRAPHQL
       query {
-        visits(orderBy: [{attribute: DATE, direction: ASC}]) {
+        pickups(orderBy: [{attribute: DATE, direction: ASC}]) {
           date
-          visitType
           inventoryPool {
             id
           }
@@ -187,31 +186,40 @@ describe 'visits' do
             id
           }
         }
+        returns {
+          date
+          inventoryPool {
+            id
+          }
+          quantity
+          reservations(orderBy: [{attribute: ID, direction: ASC}]) {
+            id
+          }
+        }
       }
     GRAPHQL
 
     result = query(q, user.id)
     expect_graphql_result(result, {
-      :visits=> [
+      :pickups => [
         {:date => "#{(Date.today + 1.day).to_s}T00:00:00Z",
-         :visitType => "PICKUP",
          :inventoryPool => {:id => "cfffa894-c0bd-42f3-b3d5-27603f00138d"},
          :quantity => 2,
          :isApproved => true,
          :reservations => [{:id => "4f92b4ef-ba21-4a7d-9d4d-622e7bddf688"},
                            {:id => "56b01674-26f0-4e5e-ac61-7625af86520d"}]},
-        {:date => "#{(Date.today + 2.day).to_s}T00:00:00Z",
-         :visitType => "RETURN",
-         :inventoryPool => {:id => "cfffa894-c0bd-42f3-b3d5-27603f00138d"},
-         :quantity => 1,
-         :isApproved => true,
-         :reservations => [{:id => "9aab0840-d673-4255-970a-4b5b3136b5a4"}]},
         {:date => "#{(Date.today + 3.day).to_s}T00:00:00Z",
-         :visitType => "PICKUP",
          :inventoryPool => {:id => "9ad7032a-cfe2-45a3-885e-24fb70444de1"},
          :quantity => 1,
          :isApproved => false,
-         :reservations => [{:id => "7875f990-10eb-4edd-af0e-9ab11533bd3d"}]}]
+         :reservations => [{:id => "7875f990-10eb-4edd-af0e-9ab11533bd3d"}]}
+      ],
+      :returns => [
+        {:date => "#{(Date.today + 2.day).to_s}T00:00:00Z",
+         :inventoryPool => {:id => "cfffa894-c0bd-42f3-b3d5-27603f00138d"},
+         :quantity => 1,
+         :reservations => [{:id => "9aab0840-d673-4255-970a-4b5b3136b5a4"}]}
+      ]
     })
   end
 end

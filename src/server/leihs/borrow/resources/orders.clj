@@ -46,16 +46,34 @@
 (defn pool-order-row [row]
   (update row :state upper-case))
 
-(defn get-one
+(defn get-one-by-pool
   [{{:keys [tx] user-id :target-user-id} :request}
-   {:keys [id]}
-   _]
-  (-> (sql/select :*)
-      (sql/from [(multiple-base-sqlmap tx user-id) :tmp])
-      (sql/merge-where [:= :id id])
+   _
+   {pool-order-id :order-id}]
+  (-> (sql/select :orders.id
+                  :orders.purpose
+                  :orders.inventory_pool_id
+                  :orders.customer_order_id
+                  [(sql/call :upper :orders.state) :state]
+                  (helpers/date-time-created-at :orders)
+                  (helpers/date-time-updated-at :orders))
+      (sql/from :orders)
+      (sql/merge-where [:= :id pool-order-id])
       sql/format
       (->> (jdbc/query tx))
       first))
+
+(defn get-one
+  [{{:keys [tx] user-id :target-user-id} :request}
+   {:keys [id]}
+   {customer-order-id :customer-order-id}]
+  (-> (sql/select :*)
+      (sql/from [(multiple-base-sqlmap tx user-id) :tmp])
+      (sql/merge-where [:= :id (or id customer-order-id)])
+      sql/format
+      (->> (jdbc/query tx))
+      first
+      log/spy))
 
 (defn equal-condition [a1 a2]
   [:and ["@>" a1 a2] ["<@" a1 a2]])

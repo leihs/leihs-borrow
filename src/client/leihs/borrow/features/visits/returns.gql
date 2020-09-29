@@ -1,0 +1,21 @@
+query {
+  returns {
+    date
+    quantity
+    inventoryPool {
+      id
+      name
+    }
+    reservations {
+      model {
+        name
+      }
+      poolOrder {
+        order {
+          id
+          purpose
+        }
+      }
+    }
+  }
+}
