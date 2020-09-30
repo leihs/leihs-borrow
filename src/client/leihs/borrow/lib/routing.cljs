@@ -64,7 +64,8 @@
           bidi-match (bidi-match-route-with-query-params routes token)]
       {:db (assoc-in db [:routing/routing :bidi-match] bidi-match)
        :dispatch-n (list [::scroll-to-top true]
-                         [(:handler bidi-match) bidi-match])})))
+                         [(:handler bidi-match) bidi-match]
+                         [::current-user/fetch])})))
 
 (reg-event-fx
   :routing/navigate
