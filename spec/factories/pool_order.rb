@@ -7,7 +7,7 @@ end
 
 FactoryBot.define do
   factory :pool_order do
-    # order
+    order
     user
     inventory_pool
     state { 'submitted' }

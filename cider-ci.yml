@@ -293,7 +293,7 @@ jobs:
 
       tasks:
         database-submodule-consistency:
-          name: "database in toplevel and submodules all point to the same commit"
+          name: "database and spec/support/legacy-api/database point to the same commit"
           scripts:
             main:
               body: |

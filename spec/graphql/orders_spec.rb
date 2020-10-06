@@ -104,6 +104,7 @@ describe 'orders' do
         ) {
           submitOrder(
             purpose: $purpose
+            title: $purpose
           ) {
             purpose
             state
@@ -185,6 +186,7 @@ describe 'orders' do
         ) {
           submitOrder(
             purpose: $purpose
+            title: $purpose
           ) {
             purpose
           }
@@ -266,50 +268,6 @@ describe 'orders' do
     result = query(q, user.id).deep_symbolize_keys
     expect(result.dig(:data, :order, :state).to_set).to eq \
       Set['SUBMITTED', 'APPROVED']
-    expect(result[:errors]).to be_nil
-  end
-
-  it 'an old pool order without customer order' do
-    purpose = Faker::Lorem.sentence
-
-    order = FactoryBot.create(:order, purpose: Faker::Lorem.sentence)
-    pool_order_1 = FactoryBot.create(:pool_order,
-                                     id: 'f8ce9934-6848-44a6-854a-c92802bdbed2',
-                                     order: order,
-                                     inventory_pool: inventory_pool_1,
-                                     user: user,
-                                     state: 'approved',
-                                     purpose: purpose)
-    pool_order_1.update(customer_order_id: nil)
-    order.delete
-
-    q = <<-GRAPHQL
-      query {
-        order(id: "f8ce9934-6848-44a6-854a-c92802bdbed2") {
-          id
-          purpose
-          state
-          subOrdersByPool {
-            id
-            state
-          }
-        }
-      }
-    GRAPHQL
-
-    result = query(q, user.id).deep_symbolize_keys
-
-    expect(result[:data]).to eq({
-      order: {
-        id: 'f8ce9934-6848-44a6-854a-c92802bdbed2',
-        purpose: purpose,
-        state: ['APPROVED'],
-        subOrdersByPool: [
-          { id: 'f8ce9934-6848-44a6-854a-c92802bdbed2',
-            state: 'APPROVED' }
-        ]
-      }
-    })
     expect(result[:errors]).to be_nil
   end
 

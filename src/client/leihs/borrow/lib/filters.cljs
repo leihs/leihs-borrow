@@ -17,9 +17,7 @@
                                        dispatch]]
     [leihs.core.core :refer [flip]]
     [leihs.borrow.lib.localstorage :as ls]
-    [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.components :as ui]
     [leihs.borrow.features.current-user.core :as current-user]))
 
 (def BOOLEANS #{:available-between?})

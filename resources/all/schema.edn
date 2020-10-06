@@ -225,6 +225,7 @@
                                 :updatedAt {:type (non-null :DateTime)}}}
            :Order {:fields {:id {:type (non-null :UUID)}
                             :purpose {:type (non-null String)}
+                            :title {:type (non-null String)}
                             :state {:type (list :PoolOrderStateEnum)
                                     :description "List of distinct states of all the sub-orders."}
                             :subOrdersByPool {:type (list :PoolOrder)
@@ -362,6 +363,7 @@
                                       :resolve :delete-reservations
                                       :type (list (non-null :UUID))}
              :submitOrder {:args {:purpose {:type (non-null String)}
+                                  :title {:type (non-null String)}
                                   :userId {:type :UUID}}
                            :resolve :submit-order
                            :type (non-null :Order)}

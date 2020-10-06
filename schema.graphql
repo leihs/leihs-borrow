@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Wed Sep 23 2020 16:18:04 GMT+0200 (Central European Summer Time)
+# timestamp: Fri Oct 02 2020 10:02:31 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -222,7 +222,7 @@ type MutationRoot {
   deleteReservationLines(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
   refreshTimeout: RefreshTimeoutResult
-  submitOrder(purpose: String!, userId: UUID): Order!
+  submitOrder(purpose: String!, title: String!, userId: UUID): Order!
   unfavoriteModel(id: UUID!): Model!
 }
 
@@ -234,6 +234,7 @@ type Order {
   """List of distinct states of all the sub-orders."""
   state: [PoolOrderStateEnum]
   subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
+  title: String!
   updatedAt: DateTime!
 }
 

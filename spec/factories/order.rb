@@ -6,5 +6,6 @@ end
 FactoryBot.define do
   factory :order do
     user
+    title { purpose }
   end
 end

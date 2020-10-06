@@ -22,14 +22,17 @@
   (let [common-columns [:id :purpose :created_at :updated_at]]
     (-> (sql/select :orders_union.id
                     :orders_union.purpose
+                    :orders_union.title
                     [distinct-states-sql-expr :state]
                     (helpers/date-time-created-at :orders_union)
                     (helpers/date-time-updated-at :orders_union))
         (sql/from
           [{:union [(-> (apply sql/select common-columns)
+                        (sql/merge-select :title)
                         (sql/from :customer_orders)
                         (sql/where [:= :user_id user-id]))
                     (-> (apply sql/select common-columns)
+                        (sql/merge-select [:purpose :title])
                         (sql/from :orders)
                         (sql/where [:= :user_id user-id])
                         (sql/merge-where [:= :customer_order_id nil]))]}
@@ -40,6 +43,7 @@
                    [:= :orders_union.id :orders.id]])
         (assoc :group-by [:orders_union.id
                           :orders_union.purpose
+                          :orders_union.title
                           :orders_union.created_at
                           :orders_union.updated_at]))))
 
@@ -156,7 +160,7 @@
 
 (defn submit
   [{{:keys [tx] user-id :target-user-id} :request :as context}
-   {:keys [purpose]}
+   {:keys [purpose title]}
    _]
   (let [reservations (reservations/for-customer-order tx user-id)]
     (if (empty? reservations)
@@ -165,6 +169,7 @@
       (throw (ex-info "Some reserved quantities are not available anymore." {})))
     (let [customer-order (-> (sql/insert-into :customer_orders)
                              (sql/values [{:purpose purpose
+                                           :title title
                                            :user_id user-id}])
                              (sql/returning :id
                                             :purpose
@@ -220,7 +225,8 @@
 
 (defn refresh-timeout
   "Always returns the valid until date. If the unsubmitted order is not
-  timed-out, then it will be updated as a side-effect."
+  timed-out or it is timed-out, but all the reservations have still valid
+  availability, then the valid until date will be updated as a side-effect."
   [{{:keys [tx] user-id :target-user-id} :request :as context}
    args
    value]

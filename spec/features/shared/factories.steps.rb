@@ -92,6 +92,16 @@ step "the user is inventory manager of pool :name" do |name|
                     role: :inventory_manager)
 end
 
+step "the user is customer of pool :name" do |name|
+  pool = InventoryPool.find(name: name) ||
+    FactoryBot.create(:inventory_pool, name: name)
+
+  FactoryBot.create(:direct_access_right,
+                    user_id: @user.id,
+                    inventory_pool_id: pool.id,
+                    role: :customer)
+end
+
 step "the delegation :delegation is customer of pool :name" do |delegation, name|
   pool = InventoryPool.find(name: name) ||
     FactoryBot.create(:inventory_pool, name: name)
@@ -160,7 +170,7 @@ step "there is a room :room for building :building" do |room, building|
 end
 
 step 'there is an inventory pool :name' do |name|
-  FactoryBot.create(:inventory_pool, name: name)
+  @pool = FactoryBot.create(:inventory_pool, name: name)
 end
 
 step 'there is a model :name' do |name|

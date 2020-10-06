@@ -65,7 +65,8 @@
       {:db (assoc-in db [:routing/routing :bidi-match] bidi-match)
        :dispatch-n (list [::scroll-to-top true]
                          [(:handler bidi-match) bidi-match]
-                         [::current-user/fetch])})))
+                         [::current-user/fetch]
+                         [:leihs.borrow.features.shopping-cart.timeout/refresh])})))
 
 (reg-event-fx
   :routing/navigate
