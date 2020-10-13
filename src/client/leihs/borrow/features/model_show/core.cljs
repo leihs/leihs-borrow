@@ -3,7 +3,7 @@
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [reagent.core :as reagent]
-    #_[re-frame.core :as rf]
+    [re-frame.core :as rf]
     [re-frame.std-interceptors :refer [path]]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
@@ -31,22 +31,41 @@
 
 (set-default-translate-path :borrow.model-show)
 
+(def model-id (atom nil))
+
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/models-show
   (fn-traced
     [{:keys [db]} [_ args]]
-    (let [id (get-in args [:route-params :model-id])
-          start-date (filters/start-date db)
-          end-date (filters/end-date db)
-          user-id (filters/user-id db)]
-      {:dispatch [::fetch id user-id start-date end-date]})))
+    (reset! model-id (get-in args [:route-params :model-id]))
+    {:dispatch [::fetch]}))
 
 (reg-event-fx
   ::fetch
-  (fn-traced
-    [{:keys [db]} [_ id user-id start-date end-date]]
+  (fn-traced [{:keys [db]} _]
+    {:dispatch
+     [::re-graph/query
+      (rc/inline "leihs/borrow/features/model_show/getModelShow.gql")
+      {:modelId @model-id, :userId (filters/user-id db)}
+      [::on-fetched-data]]}))
+
+(defn pool-ids-with-borrowable-quantity [db model-id]
+  (let [quants (get-in db
+                       [:ls
+                        ::data
+                        model-id
+                        :total-borrowable-quantities])]
+    (->> quants
+         (filter #(-> % :quantity (> 0)))
+         (map #(-> % :inventory-pool :id)))))
+
+(reg-event-fx
+  ::on-fetched-data
+  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
     (let [now (js/Date.)
+          start-date (filters/start-date db)
+          end-date (filters/end-date db)
           filter-start-date (some-> start-date datefn/parseISO)
           filter-end-date (some-> end-date datefn/parseISO)
           initial-start-date (or filter-start-date now)
@@ -55,34 +74,72 @@
           min-date-loaded (datefn/startOfMonth now)
           max-date-loaded (-> initial-end-date
                               (datefn/addMonths 6)
-                              datefn/endOfMonth)
-          pools (-> db ::current-user/data :inventory-pools)]
-      {:dispatch
-       [::re-graph/query
-        (rc/inline "leihs/borrow/features/model_show/getModelShow.gql")
-        {:modelId id,
-         :userId user-id
-         :startDate (h/date-format-day min-date-loaded),
-         :endDate (h/date-format-day max-date-loaded),
-         :bothDatesGiven true, ; we always set default values here…
-         :pools (map :id pools)} ; FIXME: remove this filter (we want ALL pools)
-        [::on-fetched-data id]]})))
+                              datefn/endOfMonth)]
+      {:db (-> db
+               (update-in [:ls ::data @model-id] (fnil identity {}))
+               (cond-> errors (assoc-in [::errors @model-id] errors))
+               (assoc-in [:ls ::data @model-id] (:model data)))
+       :dispatch [::fetch-availability
+                  (h/date-format-day min-date-loaded)
+                  (h/date-format-day max-date-loaded)]})))
 
 (reg-event-fx
-  ::load-more-availability
-  (fn-traced [{:keys [db]} [_ model-id user-id start-date end-date]]
-    {:db (assoc-in db
-                   [:ls ::data model-id :is-loading-more-availability]
-                   true)
-     :dispatch [::fetch model-id user-id start-date end-date]}))
+  ::fetch-availability
+  (fn-traced [{:keys [db]} [_ start-date end-date]]
+    (let [user-id (filters/user-id db)
+          pool-ids (pool-ids-with-borrowable-quantity db @model-id)]
+      {:db (assoc-in db
+                     [:ls ::data @model-id :fetching-until-date]
+                     end-date)
+       :dispatch [::re-graph/query
+                  (rc/inline "leihs/borrow/features/model_show/getAvailability.gql")
+                  {:modelId @model-id
+                   :userId user-id
+                   :poolIds pool-ids
+                   :startDate (h/spy start-date)
+                   :endDate (h/spy end-date)}
+                  [::on-fetched-availability]]})))
+
+#_(defn merge-availability [old-one new-one]
+    (map (fn [{{pool-id :id} :inventory-pool :as old-for-pool}]
+           (if-let [new-for-pool (->> new-one
+                                      (filter #(-> %
+                                                   :inventory-pool
+                                                   :id
+                                                   (= pool-id)))
+                                      first)]
+             (update-in old-for-pool
+                        [:dates]
+                        concat
+                        (:dates new-for-pool))
+             old-for-pool)) 
+         old-one))
+
+#_(defn update-availability [model new-availability]
+    (if (empty? (:availability model))
+      (assoc model :availability new-availability)
+      (update model
+              :availability
+              merge-availability
+              new-availability)))
+
+(defn set-loading-as-ended [model]
+  (merge model
+         {:fetching-until-date nil
+          :fetched-until-date (:fetching-until-date model)}))
 
 (reg-event-db
-  ::on-fetched-data
-  (fn-traced [db [_ model-id {:keys [data errors]}]]
+  ::on-fetched-availability
+  (fn-traced [db
+              [_ {{{new-availability :availability} :model} :data
+                  errors :errors}]]
     (-> db
-        (update-in [:ls ::data model-id] (fnil identity {}))
-        (cond-> errors (assoc-in [::errors model-id] errors))
-        (assoc-in [:ls ::data model-id] (:model data)))))
+        (cond-> errors (assoc-in [::errors @model-id] errors))
+        (update-in [:ls ::data @model-id]
+                   #(-> %
+                        set-loading-as-ended
+                        (assoc :availability new-availability)
+                        #_(update-availability new-availability))))))
 
 (reg-event-fx
   ::favorite-model
@@ -98,18 +155,36 @@
     {:db (assoc-in db [:ls ::data model-id :is-favorited] false),
      :dispatch [::favs/unfavorite-model model-id]}))
 
-(reg-sub ::model-data (fn [db [_ id]] (get-in db [:ls ::data id])))
+(reg-sub ::model-data
+         (fn [db [_ id]]
+           (get-in db [:ls ::data id])))
 
 (reg-sub
   ::errors
   (fn [db [_ id]]
     (get-in db [::errors id])))
 
+(reg-sub
+  ::pools
+  (fn [[_ id] _] (rf/subscribe [::model-data id]))
+  (fn [m _]
+    (letfn [(assoc-borrowable-quantity [p]
+              (assoc p
+                     :total-borrowable-quantity
+                     (->> m
+                          :total-borrowable-quantities
+                          (filter #(-> % :inventory-pool :id (= (:id p))))
+                          first
+                          :quantity)))]
+      (->> m
+        :availability
+        (map :inventory-pool)
+        (map assoc-borrowable-quantity)))))
+
 (reg-event-fx
   ::model-create-reservation
   (fn-traced
-    [_ [_ args]]
-    {:dispatch
+    [_ [_ args]] {:dispatch
        [::re-graph/mutate
         (rc/inline
           "leihs/borrow/features/model_show/createReservationMutation.gql") args
@@ -136,12 +211,17 @@
         initial-end-date (or filter-end-date
                              (datefn/addDays initial-start-date 1))
         min-date-loaded (datefn/startOfMonth now)
-        max-date-loaded (-> initial-end-date
-                            (datefn/addMonths 6)
-                            datefn/endOfMonth)
+        max-date-loaded (-> model
+                            :fetched-until-date
+                            js/Date.
+                            datefn/endOfDay)
+        fetching-until-date (some-> model
+                                    :fetching-until-date
+                                    js/Date.
+                                    datefn/endOfDay)
         ; max-quantity (:available-quantity-in-date-range model)
-        pools @(subscribe [::current-user/pools])
-        has-availability? (boolean (:availability model))
+        pools @(subscribe [::pools (:id model)])
+        has-availability? (seq (:availability model))
         on-submit (fn [jsargs]
                     ; (js/alert (str "Submiting!" (js/JSON.stringify jsargs)))
                     (let [args (js->clj jsargs :keywordize-keys true)]
@@ -154,11 +234,7 @@
                           :poolIds [(:poolId args)]
                           :userId (:user-id filters)}])))]
     
-    (when has-availability?
-      #_(js/console.log (clj->js [initial-start-date
-                                initial-end-date
-                                min-date-loaded
-                                max-date-loaded]))
+    (when (seq pools)
       [:div.border-b-2.border-gray-300.mt-4.pb-4
        [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
        [:div.d-flex.mx-n2
@@ -170,18 +246,27 @@
           :initialEndDate initial-end-date,
           :minDateLoaded min-date-loaded,
           :maxDateLoaded max-date-loaded,
-          :isLoadingFuture (:is-loading-more-availability model),
+          :isLoadingFuture (boolean fetching-until-date),
           ; END DYNAMIC FETCHING PROPS
           :onShownDateChange (fn [date-object]
-                              (let [until-date (get (js->clj date-object) "date")]
-                                (js/console.log (str "Load More! " until-date))
-                                (dispatch [::load-more-availability
-                                           (:id model)
-                                           (:user-id filters)
-                                           (h/date-format-day min-date-loaded)
-                                           (h/date-format-day until-date)]))),
-          :initialPoolId (:pool-id filters)
-          :inventoryPools pools
+                               (let [until-date (get (js->clj date-object) "date")]
+                                 (h/log "Calendar shows until: " (h/date-format-day until-date))
+                                 (if (or (h/spy fetching-until-date) 
+                                         (datefn/isEqual until-date max-date-loaded) 
+                                         (datefn/isBefore until-date max-date-loaded))
+                                   (h/log "We are either fetching or already have until: "
+                                          (h/date-format-day until-date))
+                                   (dispatch [::fetch-availability
+                                              ; Always fetching from min-date-loaded for the
+                                              ; time being, as there are issue if scrolling
+                                              ; too fast and was not sure if there was something
+                                              ; wrong with concating the availabilities.
+                                              (-> min-date-loaded h/date-format-day)
+                                              (-> until-date
+                                                  (datefn/addMonths 6)
+                                                  h/date-format-day)]))))
+          :initialInventoryPoolId (:pool-id filters)
+          :inventoryPools (map h/camel-case-keys pools)
           :onSubmit on-submit,
           :modelData (h/camel-case-keys model)}]]])))
 

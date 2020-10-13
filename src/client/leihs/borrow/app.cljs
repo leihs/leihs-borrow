@@ -2,6 +2,7 @@
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [reagent.core :as r]
+    [reagent.dom :as rdom]
     [re-frame.core :as rf]
     [leihs.borrow.lib.re-graph :as re-graph]
     #_[shadow.resource :as rc]
@@ -123,8 +124,8 @@
 
 (defn mount-root []
   (rf/clear-subscription-cache!)
-  (r/render [main-view views]
-            (.getElementById js/document "app")))
+  (rdom/render [main-view views]
+               (.getElementById js/document "app")))
 
 (defn ^:export main []
   ; start the app framework; NOTE: order is important!

@@ -22,6 +22,12 @@
                        :inventory_pools.id])
       (sql/merge-where [:= :access_rights.user_id user-id])))
 
+(defn accessible-to-user [tx user-id]
+  (-> base-sqlmap
+      (accessible-to-user-condition user-id)
+      sql/format
+      (->> (jdbc/query tx))))
+
 (defn with-workdays-sqlmap [sqlmap]
   (-> sqlmap
       (sql/merge-select :workdays.*)

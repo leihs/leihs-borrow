@@ -1,18 +1,9 @@
-query getModelShow(
-  $modelId: UUID!, 
-  $startDate: Date, 
-  $endDate: Date, 
-  $userId: UUID,
-  $bothDatesGiven: Boolean!
-  $pools: [UUID!]
-) {
+query getModelShow($modelId: UUID!) {
   model(id: $modelId) {
     id
     name
     manufacturer
     description
-    # availableQuantityInDateRange(startDate: $startDate, endDate: $endDate, userId: $userId) 
-    #   @include(if: $bothDatesGiven)
     isFavorited
     images {
       id
@@ -47,23 +38,11 @@ query getModelShow(
         }
       }
     }
-
-    # FIXME: put in separate query
-    availability(
-      startDate: $startDate
-      endDate: $endDate
-      inventoryPoolIds: $pools
-    ) @include(if: $bothDatesGiven) {
+    totalBorrowableQuantities {
       inventoryPool {
         id
-        name
       }
-      dates {
-        date
-        quantity
-        startDateRestriction
-        endDateRestriction
-      }
+      quantity
     }
   }
 }

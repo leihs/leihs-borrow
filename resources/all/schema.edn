@@ -124,6 +124,8 @@
                                                   :endDate {:type (non-null :Date)}}
                                            :type (list :ModelInventoryPoolAvailability)
                                            :resolve :model-availability}
+                            :totalBorrowableQuantities {:type (list :TotalBorrowableQuantity)
+                                                        :resolve :total-borrowable-quantities}
                             :availableQuantityInDateRange {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
                                                                   :startDate {:type (non-null :Date)}
                                                                   :endDate {:type (non-null :Date)}
@@ -165,6 +167,8 @@
                                :value {:type (non-null String)}}}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                                      :dates {:type (list :DayData)}}}
+           :TotalBorrowableQuantity {:fields {:inventoryPool {:type (non-null :InventoryPool)}
+                                              :quantity {:type (non-null Int)}}}
            :Attachment {:fields {:id {:type (non-null :UUID)}
                                  :url {:type (non-null String)}
                                  :contentType {:type (non-null String)}

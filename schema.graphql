@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Oct 02 2020 10:02:31 GMT+0200 (Central European Summer Time)
+# timestamp: Wed Oct 07 2020 13:42:53 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -172,6 +172,7 @@ type Model {
   name: String!
   properties: [Property]
   recommends(first: Int): ModelsConnection
+  totalBorrowableQuantities: [TotalBorrowableQuantity]
 }
 
 type ModelEdge {
@@ -417,6 +418,11 @@ type Thumbnail {
   id: UUID!
   imageUrl: String!
   size: Int!
+}
+
+type TotalBorrowableQuantity {
+  inventoryPool: InventoryPool!
+  quantity: Int!
 }
 
 type UnsubmittedOrder {

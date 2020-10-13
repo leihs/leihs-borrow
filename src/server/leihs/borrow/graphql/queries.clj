@@ -61,4 +61,5 @@
    :template templates/get-one
    :templates templates/get-multiple
    :template-lines templates/get-lines
+   :total-borrowable-quantities models/total-borrowable-quantities
    })

@@ -30,7 +30,7 @@
                             (datefn/addHours @last-fetched 1)))
     (callback)
     (POST (str js/window.location.origin
-               (:http-url leihs.borrow.lib.re-graph/config))
+               (-> leihs.borrow.lib.re-graph/config :http :url))
           {:params {:query query}
            :format :json
            :handler #(do 

@@ -42,6 +42,29 @@
       first
       :count))
 
+(defn total-borrowable-quantities
+  [{{:keys [tx] user-id :target-user-id} :request} _ {model-id :id}]
+  (let [pools (pools/accessible-to-user tx user-id)]
+    (map (fn [pool]
+           {:inventory-pool pool
+            :quantity (borrowable-quantity tx model-id (:id pool))})
+         pools)))
+
+(defn merge-join-entitlements [sqlmap user-id]
+  (sql/merge-join sqlmap
+                  (sql/raw (str "(" entitlements/all-sql ") AS ents"))
+                  [:and
+                   [:= :models.id :ents.model_id]
+                   [:= :inventory_pools.id :ents.inventory_pool_id]
+                   [:> :ents.quantity 0]
+                   [:or
+                    [:in
+                     :ents.entitlement_group_id
+                     (-> (sql/select :entitlement_group_id)
+                         (sql/from :entitlement_groups_users)
+                         (sql/merge-where [:= :user_id user-id]))]
+                    [:= :ents.entitlement_group_id nil]]]))
+
 (defn merge-reservable-conditions
   ([sqlmap user-id]
    (merge-reservable-conditions sqlmap user-id nil))
@@ -53,18 +76,7 @@
                        [:= :items.inventory_pool_id :inventory_pools.id])
        (sql/merge-join :access_rights
                        [:= :inventory_pools.id :access_rights.inventory_pool_id])
-       (sql/merge-join (sql/raw (str "(" entitlements/all-sql ") AS pwg"))
-                       [:and
-                        [:= :models.id :pwg.model_id]
-                        [:= :inventory_pools.id :pwg.inventory_pool_id]
-                        [:> :pwg.quantity 0]
-                        [:or
-                         [:in
-                          :pwg.entitlement_group_id
-                          (-> (sql/select :entitlement_group_id)
-                              (sql/from :entitlement_groups_users)
-                              (sql/merge-where [:= :user_id user-id]))]
-                         [:= :pwg.entitlement_group_id nil]]])
+       (merge-join-entitlements user-id)
        (sql/merge-where [:= :inventory_pools.is_active true])
        (sql/merge-where [:= :access_rights.user_id user-id])
        (cond-> (seq pool-ids)
@@ -185,13 +197,8 @@
   [{{tx :tx user-id :target-user-id} :request :as context}
    {:keys [start-date end-date inventory-pool-ids]}
    value]
-  (let [pool-ids (or inventory-pool-ids
-                     (map :id
-                          (pools/to-reserve-from tx
-                                                 user-id
-                                                 start-date
-                                                 end-date)))]
-    (map (fn [pool-id]
+  (let [pools (pools/get-multiple context {:ids inventory-pool-ids} nil)]
+    (map (fn [{pool-id :id}]
            (let [pool (pools/get-by-id (-> context :request :tx)
                                        pool-id)
                  avail (availability/get
@@ -208,7 +215,7 @@
                            (map #(restrict/validate-date-with-avail tx % pool)
                                 dates-with-avail)))
                  (assoc :inventory-pool pool))))
-         pool-ids)))
+         pools)))
 
 (defn from-compatibles [sqlmap value user-id pool-ids unscope-reservable]
   (-> sqlmap
@@ -295,7 +302,7 @@
       :exists))
 
 (defn merge-availability-if-selects-fields
-  [models context {:keys [only-available] :as args} value]
+  [models context _ value]
   (let [field-args (some->> context
                             executor/selections-seq2
                             (filter #(= (:name %) :Model/availableQuantityInDateRange))

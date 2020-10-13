@@ -2,9 +2,8 @@
   (:require [re-graph.core :as re-graph]
             [leihs.borrow.lib.re-frame :refer [dispatch]]))
 
-(def config {:ws-url nil 
-             :http-url "/app/borrow/graphql" 
-             :http-parameters {:with-credentials? true}})
+(def config {:ws nil 
+             :http {:url "/app/borrow/graphql"}})
 
 (defn init []
   (dispatch [::re-graph/init config]))

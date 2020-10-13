@@ -21,3 +21,5 @@
 
 (defn date-format-day [date]
   (datefn/format date "yyyy-MM-dd"))
+
+(def log js/console.log)
