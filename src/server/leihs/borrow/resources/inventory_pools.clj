@@ -67,16 +67,19 @@
              (or id (:inventory-pool-id value))))
 
 (defn has-reservable-items? [{{:keys [tx]} :request} _ {:keys [id]}]
-  (-> (sql/select :*)
-      (sql/from :items)
-      (sql/where [:and
-                  [:= :inventory_pool_id id]
-                  :is_borrowable
-                  [:is :parent_id nil]])
-      sql/format
-      (->> (jdbc/query tx))
-      empty?
-      not))
+  (-> (sql/select
+        (sql/call :exists
+                  (-> (sql/select :*)
+                      (sql/from :items)
+                      (sql/where [:and
+                                  [:= :inventory_pool_id id]
+                                  [:is :retired nil]
+                                  :is_borrowable
+                                  [:is :parent_id nil]]))))
+    sql/format
+    (->> (jdbc/query tx))
+    first
+    :exists))
 
 (defn maximum-reservation-time [{{:keys [tx]} :request} _ _]
   (-> tx settings! :maximum_reservation_time))
