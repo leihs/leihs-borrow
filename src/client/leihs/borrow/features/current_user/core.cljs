@@ -32,6 +32,7 @@
     (POST (str js/window.location.origin
                (-> leihs.borrow.lib.re-graph/config :http :url))
           {:params {:query query}
+           :headers leihs.borrow.lib.re-graph/headers
            :format :json
            :handler #(do 
                        (dispatch-sync [::on-fetched-data (help/keywordize-keys %)])

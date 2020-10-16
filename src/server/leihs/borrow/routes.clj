@@ -82,7 +82,7 @@
   (core-routing/init paths resolve-table)
   (-> ;wrap-handler-with-logging
       dispatch-to-handler
-      ; anti-csrf/wrap
+      anti-csrf/wrap
       ; locale/wrap
       authenticate/wrap
       session/wrap-authenticate

@@ -5,7 +5,8 @@
     [reagent.core :as reagent]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.translate :refer [t]]
-    [leihs.borrow.client.routes :as routes]))
+    [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.csrf :as csrf]))
 
 (defn merge-props [defaults givens]
   (merge
@@ -75,6 +76,7 @@
        [:p [:a {:href (routing/path-for ::routes/templates-index)} (t :borrow.templates/title)]]
        [:p [:a {:href (routing/path-for ::routes/pools-index)} (t :borrow.pools/title)]]
        [:form {:action "/sign-out" :method "POST"}
+        [csrf/token-field]
         [:button {:type "submit"}
          (t :borrow/logout)]]])
 

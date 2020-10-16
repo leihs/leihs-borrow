@@ -1,4 +1,7 @@
-{:source-paths ["src/client" "src/common" "leihs-ui/dist" "shared-clj/src/"]
+{:source-paths ["src/client"
+                "src/common"
+                "leihs-ui/dist"
+                "shared-clj/src"]
  :dependencies [[binaryage/devtools "0.9.10"]
                 [better-cond "2.1.0"]
                 [camel-snake-kebab "0.4.1"]
@@ -15,7 +18,7 @@
                 [reagent "0.10.0"]
                 [reagent-utils "0.3.3"]
                 [re-frame "1.1.1"]
-                [re-graph "0.1.14"]
+                [re-graph "0.1.14" :exclusions [re-graph.hato]]
                 [tongue "0.2.9"]]
  :builds {:app {:output-dir "resources/all/public/app/borrow/js"
                 :asset-path "/app/borrow/js"
