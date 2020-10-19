@@ -14,12 +14,13 @@
 (reg-event-fx
   ::abort-all
   (fn [{:keys [db]} _]
-    (let [req-ids (-> db
-                      :re-graph
-                      :re-graph.internals/default
-                      :http
-                      :requests
-                      keys)
+    (let [req-ids (->> db
+                       :re-graph
+                       :re-graph.internals/default
+                       :http
+                       :requests
+                       keys
+                       (remove (-> db ::running-mutations-ids set)))
           events (->> req-ids
                       (map (partial vector ::re-graph/abort)))]
       {:dispatch-n events})))
