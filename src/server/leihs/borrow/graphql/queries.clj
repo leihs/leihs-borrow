@@ -16,6 +16,7 @@
     [leihs.borrow.resources.users :as users]
     [leihs.borrow.resources.visits :as visits]
     [leihs.borrow.resources.templates :as templates]
+    [leihs.borrow.testing :as testing]
     ))
 
 (def resolvers
@@ -61,5 +62,6 @@
    :template templates/get-one
    :templates templates/get-multiple
    :template-lines templates/get-lines
+   :testing-query testing/query
    :total-borrowable-quantities models/total-borrowable-quantities
    })
