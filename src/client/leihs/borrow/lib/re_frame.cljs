@@ -24,22 +24,8 @@
                                        (update :data help/kebab-case-keys)))
                                 event))))))
 
-(def base-interceptors
-  [localstorage-interceptor
-   kebab-case-data-and-errors-interceptor
-   #_(rf/->interceptor :before
-                       (fn [ctx]
-                         (js/console.log (-> ctx
-                                             :coeffects
-                                             :db
-                                             :re-graph
-                                             :re-graph.internals/default
-                                             :http
-                                             :requests
-                                             ))
-                         (js/console.log (-> ctx :coeffects :event))
-                         ctx)
-                       :after #(help/spy %))])
+(def base-interceptors [localstorage-interceptor
+                        kebab-case-data-and-errors-interceptor])
 
 (defn reg-event-db
   ([event-id event-handler]
