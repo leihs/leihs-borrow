@@ -12,7 +12,7 @@
                                                dispatch-sync]]))
 
 (reg-event-fx
-  ::abort-all
+  ::abort-running-queries
   (fn [{:keys [db]} _]
     (let [req-ids (->> db
                        :re-graph

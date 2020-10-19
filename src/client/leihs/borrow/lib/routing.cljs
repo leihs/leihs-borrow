@@ -64,7 +64,7 @@
     (let [{:keys [routes]} (:routing/routing db)
           bidi-match (bidi-match-route-with-query-params routes token)]
       {:db (assoc-in db [:routing/routing :bidi-match] bidi-match)
-       :dispatch-n (list [::requests/abort-all] 
+       :dispatch-n (list [::requests/abort-running-queries] 
                          [::scroll-to-top true]
                          [(:handler bidi-match) bidi-match]
                          [::current-user/fetch]
