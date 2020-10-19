@@ -27,17 +27,19 @@
 (def base-interceptors
   [localstorage-interceptor
    kebab-case-data-and-errors-interceptor
-   (rf/->interceptor :before
-                     (fn [ctx]
-                       (js/console.log (-> ctx
-                                           :coeffects
-                                           :db
-                                           :re-graph
-                                           :re-graph.internals/default
-                                           :http
-                                           :requests
-                                           ))
-                       ctx))])
+   #_(rf/->interceptor :before
+                       (fn [ctx]
+                         (js/console.log (-> ctx
+                                             :coeffects
+                                             :db
+                                             :re-graph
+                                             :re-graph.internals/default
+                                             :http
+                                             :requests
+                                             ))
+                         (js/console.log (-> ctx :coeffects :event))
+                         ctx)
+                       :after #(help/spy %))])
 
 (defn reg-event-db
   ([event-id event-handler]
