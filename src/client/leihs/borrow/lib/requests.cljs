@@ -11,23 +11,29 @@
                                                dispatch
                                                dispatch-sync]]))
 
+(def re-graph-requests-db-path
+  [:re-graph :re-graph.internals/default :http :requests])
+
 (reg-event-fx
   ::abort-running-queries
   (fn [{:keys [db]} _]
-    (let [req-ids (->> db
-                       :re-graph
-                       :re-graph.internals/default
-                       :http
-                       :requests
-                       keys
-                       (remove (-> db ::running-mutations-ids set)))
+    (let [req-ids (as-> db <>
+                    (get-in <> re-graph-requests-db-path)
+                    (keys <>)
+                    (remove (-> db ::running-mutations-ids set) <>))
           events (->> req-ids
                       (map (partial vector ::re-graph/abort)))]
       {:dispatch-n events})))
 
+(reg-sub ::running-mutations-ids
+         (fn [db _] (::running-mutations-ids db)))
+
+(reg-sub ::running
+         (fn [db _] (get-in db re-graph-requests-db-path)))
+
 (rf/reg-global-interceptor
   (rf/->interceptor
-    :id :track-mutation-ids
+    :id :track-mutations-ids
     :after (fn [ctx]
              (let [[ev-id :as ev] (-> ctx :coeffects :event)
                    path [:effects :db ::running-mutations-ids]]
