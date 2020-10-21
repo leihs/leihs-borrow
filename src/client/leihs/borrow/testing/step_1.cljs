@@ -3,8 +3,6 @@
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
-    [shadow.resource :as rc]
-    [leihs.borrow.components :as ui]
     [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                        reg-event-db
                                        reg-sub
@@ -13,18 +11,13 @@
                                        dispatch]]
     [leihs.borrow.lib.helpers :refer [spy log pp]]
     [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.lib.filters :as filters]
-    [leihs.borrow.lib.requests :as requests]
-    [leihs.borrow.features.current-user.core :as current-user]))
+    [leihs.borrow.lib.requests :as requests]))
 
 (def sleep-secs 5)
 
-(reg-event-fx
-  ::routes/testing-step-1
-  (fn-traced [& _]
-    {:dispatch [::query]}))
+(reg-event-fx ::routes/testing-step-1
+              (fn-traced [& _]))
 
 (reg-event-fx
   ::query
@@ -51,13 +44,14 @@
   (fn-traced [& _] (log "mutation completed")))
 
 (defn view []
-  (let [routing @(subscribe [:routing/routing])
-        running-mutations-ids @(subscribe [::requests/running-mutations-ids])
+  (let [running-mutations-ids @(subscribe [::requests/running-mutations-ids])
         running-requests @(subscribe [::requests/running])]
     [:section.mx-3.my-4
      [:<>
       [:header.mb-3
-       [:h1.text-3xl.font-extrabold.leading-tight "Step 1"]]
+       [:h1.text-3xl.font-extrabold.leading-tight "Step 1"]
+       [:p.mt-2.text-color-muted.text-sm
+        [:a {:href (routing/path-for ::routes/testing-step-2)} "-> Step 2"]]]
       [:div "running-mutations-ids:"]
       [:pre.text-xs {:style {:white-space :pre-wrap}}
        (pp (or running-mutations-ids []))]
