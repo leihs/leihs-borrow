@@ -102,11 +102,6 @@ jobs:
         job_key: check-graphql-schema
         states: [passed]
 
-      check-ui-build was successful:
-        type: job
-        job_key: check-ui-build
-        states: [passed]
-
       feature-specs was successful:
         type: job
         job_key: feature-specs
@@ -249,33 +244,6 @@ jobs:
                 sed -i '' -e "s/localhost:3250/localhost:${LEIHS_BORROW_HTTP_PORT}/" .graphqlconfig.yaml
                 npm install --silent --no-audit
                 ./scripts/diff-graphql-schema
-
-  check-ui-build:
-    name: Check UI was build successfully
-    run_when:
-      any branch has been updated:
-        type: branch
-        include_match: ^.*$
-    context:
-      task_defaults:
-        include:
-          - cider-ci/environment_variables.yml
-        environment_variables:
-          LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
-        git_options:
-          submodules:
-            include_match: ^.*$
-      tasks:
-        test:
-          include: ['cider-ci/ui_task_component.yml']
-          scripts:
-            test:
-              start_when:
-                shared ui was built:
-                  script_key: prepare-shared-ui
-              body: |
-                npm install --silent --no-audit
-                npx shadow-cljs release app
 
   meta:
     name: Meta
