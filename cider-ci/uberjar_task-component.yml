@@ -48,7 +48,7 @@ scripts:
         if [ ! -f ${UBERJAR_PATH} ]; then
           build_uberjar
           mv "$LEIN_UBERJAR_PATH" "$UBERJAR_PATH"
-          s3-cache-helper upload -n "$S3_UBERJAR_FILE_NAME" -p "$UBERJAR_PATH"
+          s3-cache-helper upload -n "$S3_UBERJAR_FILE_NAME" -p "$UBERJAR_PATH" || true
         fi
         # link the either downloaded or build uberjar
         ln -s "$UBERJAR_PATH" "$LEIN_UBERJAR_PATH"
