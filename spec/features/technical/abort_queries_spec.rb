@@ -1,19 +1,26 @@
 require 'spec_helper'
 require 'pry'
+require_relative '../shared/common.rb'
 
 feature 'abort queries' do
   scenario 'main' do
     @user = FactoryBot.create(:user)
     login(@user)
-    # When I log in as the user
-    # And I visit "/app/borrow/testing/step-1"
-    # And I click on "query"
-    # And I click on "mutate"
-    # Then I see 2 running requests
-    # And I see 1 running mutation id
-    # When I click on "-> Step 2"
-    # And I wait for 1 second
+    visit "/app/borrow/testing/step-1"
+    wait_until { parse_pre("#requests").empty? } 
+    click_on "mutate"
+    mutation_id = parse_pre("#requests").first.first
+    click_on "query"
+    query_id = parse_pre("#requests").select { |k, _| k != mutation_id }.first.first
+    click_on "-> Step 2"
+    req_ids = parse_pre("#requests").keys
+    expect(req_ids).to include mutation_id
+    expect(req_ids).not_to include query_id
   end
+end
+
+def parse_pre(id)
+  JSON.parse find(id).text
 end
 
 def login(user)

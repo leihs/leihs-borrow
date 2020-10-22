@@ -27,9 +27,9 @@
        [:p.mt-2.text-color-muted.text-sm
         [:a {:href (routing/path-for ::routes/testing-step-1)} "<- Step 1"]]]
       [:div "running-mutations-ids:"]
-      [:pre.text-xs {:style {:white-space :pre-wrap}}
+      [:pre#mutation-ids.text-xs {:style {:white-space :pre-wrap}}
        (pp (or running-mutations-ids []))]
       [:div "running-requests:"]
-      [:pre.text-xs {:style {:white-space :pre-wrap}}
+      [:pre#requests.text-xs {:style {:white-space :pre-wrap}}
        (pp (or running-requests {}))]]]))
 
