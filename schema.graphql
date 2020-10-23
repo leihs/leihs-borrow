@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Oct 26 2020 15:20:33 GMT+0100 (Central European Standard Time)
+# timestamp: Tue Oct 27 2020 08:45:22 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -228,6 +228,7 @@ type MutationRoot {
   favoriteModel(id: UUID!): Model!
   refreshTimeout: RefreshTimeoutResult
   submitOrder(purpose: String!, title: String!, userId: UUID): Order!
+  testing(sleepSecs: Int): String
   unfavoriteModel(id: UUID!): Model!
 }
 
@@ -344,6 +345,7 @@ type QueryRoot {
   rootCategories(limit: Int, poolIds: [UUID!], userId: UUID): [Category!]
   template(id: UUID!): Template!
   templates: [Template!]
+  testing(sleepSecs: Int): String
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
 }
 

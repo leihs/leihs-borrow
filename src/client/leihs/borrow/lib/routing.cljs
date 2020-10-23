@@ -22,6 +22,7 @@
                                                subscribe
                                                dispatch]]
             [leihs.borrow.lib.localstorage :as ls]
+            [leihs.borrow.lib.requests :as requests]
             [leihs.borrow.features.current-user.core :as current-user]
             [leihs.borrow.client.routes :as routes]))
 
@@ -63,7 +64,8 @@
     (let [{:keys [routes]} (:routing/routing db)
           bidi-match (bidi-match-route-with-query-params routes token)]
       {:db (assoc-in db [:routing/routing :bidi-match] bidi-match)
-       :dispatch-n (list [::scroll-to-top true]
+       :dispatch-n (list [::requests/abort-running-queries] 
+                         [::scroll-to-top true]
                          [(:handler bidi-match) bidi-match]
                          [::current-user/fetch]
                          [:leihs.borrow.features.shopping-cart.timeout/refresh])})))
