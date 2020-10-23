@@ -38,7 +38,7 @@ jobs:
         states: [passed]
     context:
       generate_tasks:
-        include_match: ^spec\/features\/(.*)\.feature$
+        include_match: spec\/features\/(.*)(\.feature|_spec\.rb)$
       task_defaults:
         include:
           - cider-ci/ruby-bundle_task-component.yml
@@ -162,7 +162,7 @@ jobs:
         states: [passed]
     context:
       generate_tasks:
-        include_match: spec/.*_spec.rb
+        include_match: spec/graphql/.*_spec.rb
       task_defaults:
         include:
           - cider-ci/ruby-bundle_task-component.yml

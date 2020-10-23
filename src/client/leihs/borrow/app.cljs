@@ -39,6 +39,9 @@
     [leihs.borrow.features.templates.show :as templates-show]
     [leihs.borrow.features.visits.pickups :as pickups-index]
     [leihs.borrow.features.visits.returns :as returns-index]
+
+    [leihs.borrow.testing.step-1 :as testing-step-1]
+    [leihs.borrow.testing.step-2 :as testing-step-2]
     ))
 
 ;-; INIT APP & DB
@@ -107,6 +110,8 @@
             ::routes/templates-index templates-index/view
             ::routes/pickups-index pickups-index/view
             ::routes/returns-index returns-index/view
+            ::routes/testing-step-1 testing-step-1/view
+            ::routes/testing-step-2 testing-step-2/view
 
             ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
             ;        *should* not be a real problem – if the routing is working correctly
