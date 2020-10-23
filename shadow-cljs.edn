@@ -25,6 +25,10 @@
                 :target :browser
                 ; NOTE: comment out and adjust in order for re-frame-10x to work
                 ; :main leihs.borrow.app/main
+                ;
+                ; NOTE: only (temporarily!) enable this to debug problems in release builds
+                ;; :compiler-options {:source-map true :optimizations :whitespace}
+                ;
                 :devtools {:preloads [day8.re-frame-10x.preload]}
                 :modules {:app {:entries [leihs.borrow.app]}}
                 :dev {:closure-defines {"re_frame.trace.trace_enabled_QMARK_" true

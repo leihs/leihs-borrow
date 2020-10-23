@@ -14,7 +14,8 @@
             [leihs.borrow.lib.localstorage :as ls]
             [leihs.borrow.lib.routing :as routing]
             [leihs.borrow.features.pools.core :refer [badge]]
-            [leihs.borrow.client.routes :as routes]))
+            [leihs.borrow.client.routes :as routes]
+            ["/leihs-ui-client-side-external-react" :as UI]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -50,15 +51,13 @@
         pool @(subscribe [::pool pool-id])
         errors @(subscribe [::errors pool-id])
         is-loading? (not (or pool errors))]
-    [:section.mx-3.my-4
+    [:> UI/Components.AppLayout.Page
+     {:title (cond (:name pool) (:name pool) :else "…")}
      (cond
        is-loading? [:div [:div [ui/spinner-clock]] [:pre "loading pool" [:samp (:id pool)] "…"]]
        errors [ui/error-view errors]
        :else
        [:<>
-        [:header.d-flex.items-stretch
-         [:h1.text-3xl.font-extrabold.leading-none (:name pool)]] 
-
         [:div (badge pool)]
 
         (if-let [email (:email pool)]

@@ -23,6 +23,23 @@
 
 https://github.com/nimaai/vim-shadow-cljs
 
+## RUN TESTS
+
+```bash
+./scripts/prepare-shared-ui.sh \
+&& ./scripts/build-uberjar-prod.sh \
+&& ./scripts/start-backend-test
+```
+
+```bash
+./scripts/start-legacy-test
+```
+
+```bash
+while ! curl -I --silent --fail http://localhost:3250; do sleep 5; done \
+&& be rspec spec/features/smoke.feature
+```
+
 ## PROD
 
 compile it:

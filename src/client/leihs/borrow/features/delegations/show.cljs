@@ -14,7 +14,8 @@
             [leihs.borrow.lib.localstorage :as ls]
             [leihs.borrow.lib.translate :refer [t]]
             [leihs.borrow.lib.routing :as routing]
-            [leihs.borrow.client.routes :as routes]))
+            [leihs.borrow.client.routes :as routes]
+            ["/leihs-ui-client-side-external-react" :as UI]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -69,16 +70,14 @@
         delegation @(subscribe [::delegation delegation-id])
         errors @(subscribe [::errors delegation-id])
         is-loading? (not (or delegation errors))]
-    [:section.mx-3.my-4
+    [:> UI/Components.AppLayout.Page
+     {:title (when delegation (:name delegation) "…")}
      (cond
        is-loading? [:div
                     [:div [ui/spinner-clock]]
                     [:pre (t :borrow.delegations/loading) [:samp (:id delegation)] "…"]]
        errors [ui/error-view errors]
        :else [:<>
-              [:header.d-flex.items-stretch
-               [:h1.text-3xl.font-extrabold.leading-none (:name delegation)]] 
-              [:br]
               [responsible (:responsible delegation)]
               [:br]
               [members-list (:members delegation)]

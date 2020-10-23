@@ -2,8 +2,7 @@
   (:require [leihs.borrow.resources.favorites :as favorites]
             [leihs.borrow.resources.reservations :as reservations]
             [leihs.borrow.resources.orders :as orders]
-            [leihs.borrow.resources.templates :as templates]
-            [leihs.borrow.testing :as testing]))
+            [leihs.borrow.resources.templates :as templates]))
 
 (def resolvers
   {:add-to-cart reservations/add-to-cart
@@ -13,5 +12,4 @@
    :delete-reservations reservations/delete
    :refresh-timeout orders/refresh-timeout
    :submit-order orders/submit
-   :testing-mutate testing/mutate
    :unfavorite-model favorites/delete})

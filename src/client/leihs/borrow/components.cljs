@@ -59,7 +59,7 @@
 
 
     (defn tmp-nav []
-      [:nav.border.border-black.m-3.p-2
+      [:nav.border.border-black.mb-3.p-2
        [:b (upper-case (t :borrow.about-page/navigation-menu))]
 
        [:p [:a {:href (routing/path-for ::routes/about-page)} (t :borrow.about-page/title)]]
@@ -81,7 +81,7 @@
          (t :borrow/logout)]]])
 
     (defn dev-nav []
-      [:nav.border.border-black.m-3.p-2
+      [:nav.border.border-black.mb-3.p-2
        [:b "dev nav"]
 
        [:p [:a {:href (routing/path-for ::routes/categories-show
@@ -92,7 +92,8 @@
                 (routing/path-for
                   ::routes/models-show
                   :model-id "1c18b3d3-88e8-57ac-8c28-24d3f8f77604")}
-            "a model show"]]])
+            "a model show"]]
+       [:p [:a {:href "/app/borrow/graphiql/index.html"} "Graph" [:i "i"] "QL API console"]]])
 
 
     ; copied from <https://github.com/sindresorhus/cli-spinners/blob/af93e2f345a73a16c7686066c08dd970d66d8870/spinners.json#L720>

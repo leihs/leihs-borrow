@@ -106,7 +106,7 @@ step 'I approve the order of the user/delegation' do
 end
 
 step 'I see the order :purpose under approved orders' do |purpose|
-  within find('.mt-3', text: 'Approved Orders') do
+  within find('.ui-page', text: 'Approved Orders') do
     expect(current_scope).to have_content purpose
   end
 end

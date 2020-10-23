@@ -18,6 +18,7 @@
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.components :as ui] 
+    ["/leihs-ui-client-side-external-react" :as UI]
     [leihs.borrow.features.models.core :as models]))
 
 (set-default-translate-path :borrow.favorite-models)
@@ -39,10 +40,9 @@
 
 (defn view []
   (let [models @(subscribe [::models/data])]
-    [:<>
-     [:header.mx-3.my-4
-      [:h1.text-3xl.font-extrabold.leading-none
-       (t :title)]]
+    [:> UI/Components.AppLayout.Page
+     {:title (t :title)}
+     
      [models/search-and-list
       #(dispatch [:routing/navigate
                   [::routes/models-favorites {:query-params %}]])

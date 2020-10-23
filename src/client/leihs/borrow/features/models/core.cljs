@@ -136,8 +136,7 @@
      routing @(subscribe [:routing/routing])
      on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
 
-     [:div.px-3.py-4.bg-light {:class (when on-search-view? "mb-4")
-                               :style {:box-shadow "0 0rem 2rem rgba(0, 0, 0, 0.15) inset"}}
+     [:div.px-3.py-4.bg-light {:class (str "mt-3 mb-3" (when on-search-view? ""))}
       [:form.form.form-compact
        {:action "/search"
         :on-submit (fn [event] (.preventDefault event) (submit-fn filters))}
@@ -239,7 +238,7 @@
                         :subCaption (:manufacturer model)
                         :href  (routing/path-for ::routes/models-show
                                                  :model-id (:id model))})))]
-    [:div.mx-1.mt-2
+    [:<>
      [:> UI/Components.ModelList {:list models-list}]
      (when debug? [:p (pr-str @(subscribe [::data]))])]))
 
@@ -253,8 +252,8 @@
         user-id (:user-id filters)
         dates-valid? (<= start-date end-date) ; if somehow end is before start, ignore it instead of error
         only-available? (:only-available? filters)]
-    [:div
-     [:hr]
+    
+    [:<>
      (if (and fetching-more? dates-valid?)
        [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
        (when has-next-page?

@@ -53,6 +53,5 @@
              :caption (:name category)
              :imgSrc (get-in category [:images 0 :image-url])}))]
 
-    [:div.mx-1.mt-2
-     [:> UI/Components.CategoryList {:list list}]]))
+  [:> UI/Components.CategoryList {:list list}]))
 

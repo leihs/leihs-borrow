@@ -23,8 +23,3 @@
   (datefn/format date "yyyy-MM-dd"))
 
 (def log js/console.log)
-
-(defn pp-js [x]
-  (js/JSON.stringify x 0 2))
-
-(defn pp [x] (-> x clj->js pp-js))

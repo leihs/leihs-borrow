@@ -16,7 +16,8 @@
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.features.models.core :as models]))
+    [leihs.borrow.features.models.core :as models]
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.templates)
 
@@ -73,17 +74,14 @@
         end-date @(subscribe [::filters/end-date])
         errors @(subscribe [::errors template-id])
         is-loading? (not (or template errors))]
-    [:section.mx-3.my-4
+    [:> UI/Components.AppLayout.Page
+     {:title (or (:name template "…"))
+      :backLink {:href (routing/path-for ::routes/templates-index) :children "All Templates"}}
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
        errors [ui/error-view errors]
        :else
        [:<>
-        [:header.mb-3
-         [:h1.text-3xl.font-extrabold.leading-tight (:name template)]
-         [:p.mt-2.text-color-muted.text-sm
-          [:a {:href (routing/path-for ::routes/templates-index)}
-           "← all templates"]]]
         (when some-not-reservable?
           [:<>
            [:div {:class "text-danger"}

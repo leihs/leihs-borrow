@@ -1,7 +1,7 @@
 (ns leihs.borrow.features.categories.show
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
-    #_[reagent.core :as reagent]
+    [reagent.core :as r]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
@@ -18,6 +18,7 @@
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.pagination :as pagination]
     [leihs.borrow.components :as ui]
+    ["/leihs-ui-client-side-external-react" :as UI]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.features.models.core :as models]))
 
@@ -86,17 +87,12 @@
        is-loading? [:div.p-4.text-center [:div.p-2 [ui/spinner-clock]] [:pre "loading category" [:samp category-id] "…"]]
        errors [ui/error-view errors]
        :else
-       [:<>
-        [:header.mb-4.mx-3.mt-4
-         [:h1.text-3xl.font-extrabold.leading-none
-          (:name category)]
+       [:> UI/Components.AppLayout.Page
+        {:title (:name category)
+         :backLink (when parent-id {:href (str (routing/path-for ::routes/categories-show :categories-path (join "/" prev-ids)))
+                    :children "back"})}
 
-         (when parent-id
-           [:span.mt-2.text-color-muted.text-sm
-            [:a.text-color-content-link {:href (str (routing/path-for ::routes/categories-show
-                                                                      :categories-path (join "/" prev-ids)))} "← back"]])]
-
-        [:ul.font-semibold.mx-3.mb-4
+        [:ul.font-semibold.my-3
          (doall
            (for [{:keys [id] :as child} children]
              [:<> {:key id}

@@ -17,7 +17,7 @@
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
-    #_[leihs.borrow.components :as ui]))
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.about-page)
 
@@ -43,14 +43,12 @@
                             :else "unknown")]])
 
 (defn view []
-  [:section.m-3
-   [:h1.text-xl.font-black (t :title)]
-   [:hr.mt-2.mb-4]
+  [:> UI/Components.AppLayout.Page
+   {:title (t :title)}
+
    [ui/tmp-nav]
    [ui/dev-nav]
-   [:h2.sr-only "Links"]
-   [:ul.list-disc.list-inside
-    [:li [:a {:href "/app/borrow/graphiql/index.html"} "Graph" [:i "i"] "QL API console"]]]
+
    [:button.btn.btn-secondary.dont-invert.mx-1.mb-4
     {:type :button
      :on-click #(dispatch [::ls/clear])

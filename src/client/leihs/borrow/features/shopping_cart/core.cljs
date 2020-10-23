@@ -22,7 +22,8 @@
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.components :as ui]
     [leihs.borrow.ui.icons :as icons]
-    [leihs.borrow.features.current-user.core :as current-user]))
+    [leihs.borrow.features.current-user.core :as current-user]
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
 
@@ -414,19 +415,17 @@
             grouped-reservations @(subscribe [::reservations-grouped])
             summary @(subscribe [::order-summary])
             is-loading? (not (or data errors))]
-        [:div.p-2
+        [:> UI/Components.AppLayout.Page
+         {:title (t :order-overview)}
          [search-panel]
-         [:h1.mt-3.font-bold.text-3xl (t :order-overview)]
 
          (cond
            is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
            errors [ui/error-view errors]
            (empty? grouped-reservations)
-           [:div.bg-content-muted.text-center.my-4.px-2.py-4.rounded-lg
-            [:div.text-base (t :empty-order)] 
-            [:a.d-inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-pill.px-4.py-2.my-4 
-             {:href (routing/path-for ::routes/home)}
-             (t :borrow-items)]]
+           [:> UI/Components.AppLayout.CallToAction 
+            {:actions [{:children (t :borrow-items) :href (routing/path-for ::routes/home)}]}
+            (t :empty-order)]
 
            :else
            [:<>

@@ -30,7 +30,7 @@
   ::on-refresh
   (fn-traced [db [_ {:keys [data errors]}]]
     (if errors
-      (js/console.log "timeout refresh errors: " errors)
+      (js/console.log "timeout refresh errors: " (clj->js errors))
       (assoc-in db
                 [::cart/data :valid-until]
                 (-> data :refresh-timeout :unsubmitted-order :valid-until)))))

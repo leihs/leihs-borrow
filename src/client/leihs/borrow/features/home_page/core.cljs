@@ -17,7 +17,8 @@
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.features.models.core :as models]
     [leihs.borrow.features.current-user.core :as current-user]
-    [leihs.borrow.features.categories.core :as categories]))
+    [leihs.borrow.features.categories.core :as categories]
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -30,19 +31,20 @@
 
 (defn view []
   (fn []
-    (let [cats @(subscribe [::categories/categories-index])]
-      [:<>
+    (let [cats @(subscribe [::categories/categories-index])
+          cats-url (routing/path-for ::routes/categories-index)
+          favs @(subscribe [::categories/categories-index])]
+      
+      [:> UI/Components.AppLayout.Page
 
        [models/search-panel
         #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
         #(dispatch [::models/clear])]
-       [:hr]
 
-       [:div
-        [:div.mt-2.mx-3.d-flex.align-items-baseline.justify-content-between
-         [:h2.font-bold.text-2xl (t :borrow.categories/title)]
-         [:a.font-semibold.text-l {:href (routing/path-for ::routes/categories-index)} 
-          (t :borrow/all)]]
+       [:> UI/Components.AppLayout.SubSection
+        {:title (t :borrow.categories/title)
+         :titleHref cats-url
+         :moreLink {:href cats-url :children (t :borrow/all)}}
         (categories/categories-list (take 4 cats))]
-
-       [:hr]])))
+       
+       ])))

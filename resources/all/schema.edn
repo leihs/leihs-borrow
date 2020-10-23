@@ -347,10 +347,7 @@
                             :args {:limit {:type Int}
                                    :userId {:type :UUID}
                                    :poolIds {:type (list (non-null :UUID))}}
-                            :type (list (non-null :Category))}
-           :testing {:resolve :testing-query
-                     :args {:sleepSecs {:type Int}}
-                     :type String}}
+                            :type (list (non-null :Category))}}
 
  :mutations {:createReservation {:args {:startDate {:type (non-null :Date)}
                                         :endDate {:type (non-null :Date)}
@@ -386,7 +383,4 @@
                                     :startDate {:type (non-null :Date)}
                                     :endDate {:type (non-null :Date)}}
                              :resolve :apply-template
-                             :type (list :Reservation)}
-             :testing {:resolve :testing-mutate
-                       :args {:sleepSecs {:type Int}}
-                       :type String}}}
+                             :type (list :Reservation)}}}

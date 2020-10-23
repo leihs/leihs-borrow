@@ -17,7 +17,8 @@
                                        dispatch]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.translate :refer [t]]
-    [leihs.borrow.client.routes :as routes]))
+    [leihs.borrow.client.routes :as routes]
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-ctx ::routes/pools-index
@@ -38,15 +39,13 @@
 (defn view []
   (let [pools @(subscribe [::current-user/pools])
         is-loading? (not pools)]
-    [:section.mx-3.my-4
+    [:> UI/Components.AppLayout.Page
+     {:title (t :borrow.pools/title)}
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
        ; errors [ui/error-view errors]
        :else
        [:<>
-        [:header.mb-3
-         [:h1.text-3xl.font-extrabold.leading-none (t :borrow.pools/title)]]
-
         (when-not (empty? pools)
           [:div.mt-3
            [pools-list pools ""]])])]))

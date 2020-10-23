@@ -1,16 +1,17 @@
 (ns leihs.borrow.ui.main-nav
   (:require
-    #_[re-frame.core :as rf]
-    #_[shadow.resource :as rc]
-    #_["date-fns" :as datefn]
+   #_[re-frame.core :as rf]
+   #_[shadow.resource :as rc]
+   #_["date-fns" :as datefn]
 
-    [leihs.borrow.lib.re-frame :refer [subscribe dispatch]]
-    [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.re-frame :refer [subscribe dispatch]]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.client.routes :as routes]
 
-    [leihs.borrow.features.shopping-cart.core :as cart]
+   [leihs.borrow.features.shopping-cart.core :as cart]
 
-    [leihs.borrow.ui.icons :as icons]))
+   #_["/leihs-ui-client-side-external-react" :as UI]
+   [leihs.borrow.ui.icons :as icons]))
 
 (defn navbar []
   (let [cart-data @(subscribe [:leihs.borrow.features.shopping-cart.core/data])
@@ -38,6 +39,11 @@
         cart [:a.nav-item.nav-link.px-0 {:href (routing/path-for ::routes/shopping-cart)}
               icons/shopping-cart-icon]]
 
+    #_[:> UI/Components.Navbar
+     {:brandName "LEIHS"
+      :menuItem {:isOpen is-fake-menu-open?}
+      :cartItem {:href (routing/path-for ::routes/shopping-cart)}}]
+       
     [:nav.ui-main-nav.navbar.navbar-light.text-xl.shadow-md.py-0.px-2.sticky-top.flex-nowrap.justify-content-between
      {:style style}
 

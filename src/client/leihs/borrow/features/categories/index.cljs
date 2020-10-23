@@ -18,7 +18,8 @@
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.features.categories.core :as categories]))
+    [leihs.borrow.features.categories.core :as categories]
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.categories)
 
@@ -29,10 +30,8 @@
 (defn view []
   (fn []
     (let [cats @(subscribe [::categories/categories-index])]
-      [:<>
-
-       [:div.mx-4.mt-6
-        [:h2.font-extrabold.text-3xl (t :title)]]
+      [:> UI/Components.AppLayout.Page
+       {:title (t :title)}
 
        [:div.pb-8
         (categories/categories-list cats)]])))

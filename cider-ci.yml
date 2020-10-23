@@ -38,7 +38,7 @@ jobs:
         states: [passed]
     context:
       generate_tasks:
-        include_match: spec\/features\/(.*)(\.feature|_spec\.rb)$
+        include_match: ^spec\/features\/(.*)\.feature$
       task_defaults:
         include:
           - cider-ci/ruby-bundle_task-component.yml
@@ -65,6 +65,9 @@ jobs:
           screenshots:
             include_match: tmp\/(.*-|)screenshots\/.*\.png$
             content_type: image/png
+          logs:
+            include_match: '^logs?\/.+\.log$'
+            content_type: text/plain
         scripts:
           test:
             start_when:
@@ -157,7 +160,7 @@ jobs:
         states: [passed]
     context:
       generate_tasks:
-        include_match: spec/graphql/.*_spec.rb
+        include_match: spec/.*_spec.rb
       task_defaults:
         include:
           - cider-ci/ruby-bundle_task-component.yml

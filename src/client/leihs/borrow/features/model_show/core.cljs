@@ -17,6 +17,7 @@
     #_[leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.ui.icons :as icons]
     ["/leihs-ui-client-side-external-react" :as UI]
     ["date-fns" :as datefn]
@@ -326,26 +327,20 @@
                (for [[field] fields]
                  [:<> {:key (:id field)} [:dt.font-bold (:key field)]
                   [:dd.pl-6 (:value field)]]))])
-          (if-let [recommends
-                     (->
-                       model
-                       :recommends
-                       :edges
-                       not-empty)]
-            [:div.mt-4 [:h2.text-xl.font-bold (t :compatibles)]
-             [:div.d-flex.flex-wrap.-mx-2
-              (doall
-                (for [edge recommends]
-                  (let [rec (:node edge)
-                        href (str "/app/borrow/models/" (:id rec))]
-                    [:div {:key (:id rec), :class "w-1/2"}
-                     [:div.p-2
-                      ; FIXME: use path helper!
-                      [:div.square-container.relative.rounded.overflow-hidden.border.border-gray-200
-                       [:a {:href href}
-                        (if-let [img (get-in rec [:images 0 :image-url])]
-                          [:img.absolute.object-contain.object-center.h-full.w-full.p-1
-                           {:src img}]
-                          [:div.absolute.h-full.w-full.bg-gray-400 " "])]]
-                      [:a.text-gray-700.font-semibold {:href href}
-                       (:name rec)]]])))]]) #_[:p.debug (pr-str model)]])]))
+          (if-let [recommends (-> model :recommends :edges not-empty)]
+            (let [recommends-models (doall
+                                     (for [m recommends]
+                                       (let [model (:node m)]
+                                         {:id (:id model)
+                                          :imgSrc (or (get-in model [:cover-image :image-url])
+                                                      (get-in model [:images 0 :image-url]))
+                                          :caption (:name model)
+                                          :subCaption (:manufacturer model)
+                                          :href  (routing/path-for ::routes/models-show
+                                                                   :model-id (:id model))})))]
+              [:> UI/Components.AppLayout.SubSection
+               {:title (t :compatibles)}
+               [:> UI/Components.ModelList {:list recommends-models}]])) 
+          
+          #_[:p.debug (pr-str model)]
+          ])] ))

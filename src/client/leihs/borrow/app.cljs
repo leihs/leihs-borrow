@@ -6,7 +6,7 @@
     [re-frame.core :as rf]
     [leihs.borrow.lib.re-graph :as re-graph]
     #_[shadow.resource :as rc]
-    [leihs.borrow.components :as ui]
+    [leihs.borrow.components :as uic]
     [leihs.borrow.ui.main-nav :as main-nav]
 
     [leihs.borrow.lib.re-frame :refer [reg-event-fx
@@ -39,9 +39,8 @@
     [leihs.borrow.features.templates.show :as templates-show]
     [leihs.borrow.features.visits.pickups :as pickups-index]
     [leihs.borrow.features.visits.returns :as returns-index]
-
-    [leihs.borrow.testing.step-1 :as testing-step-1]
-    [leihs.borrow.testing.step-2 :as testing-step-2]
+    ;; [leihs.borrow.shared-ui :as UI]
+    ["/leihs-ui-client-side-external-react" :as UI]
     ))
 
 ;-; INIT APP & DB
@@ -68,26 +67,26 @@
 
 (defn main-view [views]
   (let [errors @(subscribe [:app/fatal-errors])]
-    [:main
-     [main-nav/navbar]
-     (when errors [ui/fatal-error-screen errors])
+    [:> UI/Components.AppLayout.MainView
+     {:navbar (r/as-element [main-nav/navbar])}
+     (when errors [uic/fatal-error-screen errors])
      [routing/routed-view views]]))
 
 (defn- route-is-loading-view
   []
   [:div.app-loading-view
-   [:h1.text-monospace.text-center.p-8.show-after-3sec
-    [:p.text-5xl [ui/spinner-clock]]
+   [:h1.text-monospace.text-center.p-5.show-after-3sec
+    [:p.text-5xl [uic/spinner-clock]]
     [:p.font-black.text-xl "loading…"]
     [:p.text-base "if this takes a long time something went wrong."]
     [:p.mt-4
-     [:button.border-black.border-2.rounded-full.py-1.px-3
+     [:button.btn.btn-lg.btn-dark.rounded-pill.px-4
       {:type :button, :on-click #(-> js/window (.-location) (.reload))}
       "RELOAD"]]
     ]])
 
 ; (defn- not-found-view [] [:h1.font-black.text-monospace.text-5xl.text-center.p-8 "404 NOT FOUND!"])
-(defn- wip-models-index-view [] [:h1.font-black.text-monospace.text-5xl.text-center.p-8 "WIP MODELS INDEX!"])
+; (defn- wip-models-index-view [] [:h1.font-black.text-monospace.text-5xl.text-center.p-8 "WIP MODELS INDEX!"])
 
 ;-; CORE APP
 (def views {::routes/home home-page/view
@@ -110,8 +109,6 @@
             ::routes/templates-index templates-index/view
             ::routes/pickups-index pickups-index/view
             ::routes/returns-index returns-index/view
-            ::routes/testing-step-1 testing-step-1/view
-            ::routes/testing-step-2 testing-step-2/view
 
             ; FIXME: this is used for "loading" AND "not found", find a way to distinguish.
             ;        *should* not be a real problem – if the routing is working correctly

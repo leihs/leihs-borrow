@@ -16,7 +16,7 @@
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.client.routes :as routes]
-    #_[leihs.borrow.components :as ui]))
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 
 ; is kicked off from router when this view is loaded
@@ -72,17 +72,15 @@
         errors @(subscribe [::errors order-id])
         is-loading? (not (or order errors))]
 
-    [:section.mx-3.my-4
+    [:> UI/Components.AppLayout.Page
+     {:title (if order (str "Order “" (:purpose order) "”") "…")
+      :subTitle (if order (str "from: " (ui/format-date :short (:created-at order))) "…")
+      :backLink {:href (routing/path-for ::routes/orders-index) :children "All Orders"}}
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
        errors [ui/error-view errors]
        :else
        [:<>
-        [:header.mb-3
-         [:h1.text-3xl.font-extrabold.leading-tight 
-          "Order “" (:purpose order) "”"]
-         [:p "from: " (ui/format-date :short (:created-at order))]
-         [:p.mt-2.text-color-muted.text-sm [:a {:href (routing/path-for ::routes/orders-index)} "← all Orders"]]]
 
         #_[:pre "?" (get-in order [:sub-orders-by-pool])]
 
