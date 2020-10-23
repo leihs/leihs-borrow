@@ -20,7 +20,7 @@
     [leihs.borrow.client.routes :as routes]))
 
 ; is kicked off from router when this view is loaded
-(reg-event-ctx ::routes/pools-index
+(reg-event-ctx ::routes/inventory-pools-index
               (fn-traced [ctx _] ctx))
 
 (defn pool-line [pool]
@@ -32,7 +32,9 @@
      (for [pool pools]
        [:a.list-group-item.d-flex.justify-content-between.align-items-center
         {:key (:id pool),
-         :href (routing/path-for ::routes/pools-show :pool-id (:id pool))}
+         :href (routing/path-for ::routes/inventory-pools-show
+                                 :inventory-pool-id
+                                 (:id pool))}
         [pool-line pool]]))])
 
 (defn view []
