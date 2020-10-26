@@ -26,4 +26,5 @@
                        string/lower-case
                        (str "-id")
                        keyword)]
-    (path path-name {path-param id})))
+    (str (-> context :request :headers :origin)
+         (path path-name {path-param id}))))
