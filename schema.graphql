@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Oct 26 2020 10:19:59 GMT+0100 (Central European Standard Time)
+# timestamp: Mon Oct 26 2020 10:47:52 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -7,7 +7,7 @@ schema {
 }
 
 type Attachment {
-  borrowUrl: String!
+  attachmentUrl: String!
   contentType: String!
   filename: String!
   id: UUID!

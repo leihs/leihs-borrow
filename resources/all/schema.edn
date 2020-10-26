@@ -174,7 +174,7 @@
            :TotalBorrowableQuantity {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                               :quantity {:type (non-null Int)}}}
            :Attachment {:fields {:id {:type (non-null :UUID)}
-                                 :borrowUrl {:type (non-null String)}
+                                 :attachmentUrl {:type (non-null String)}
                                  :contentType {:type (non-null String)}
                                  :filename {:type (non-null String)}
                                  :size {:type (non-null Int)}}}
