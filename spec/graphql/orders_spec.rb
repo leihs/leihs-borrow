@@ -220,6 +220,7 @@ describe 'orders' do
 
     purpose = Faker::Lorem.sentence
 
+    order = nil
     database.transaction do
       order = FactoryBot.create(:order,
                                 id: '84391a0b-2a55-43f9-bf6d-bb144a2aaf96',
