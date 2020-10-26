@@ -259,13 +259,16 @@ describe 'orders' do
 
     q = <<-GRAPHQL
       query {
-        order(id: "84391a0b-2a55-43f9-bf6d-bb144a2aaf96") {
+        order(id: "#{order.id}") {
+          borrowUrl
           state
         }
       }
     GRAPHQL
 
     result = query(q, user.id).deep_symbolize_keys
+    expect(result.dig(:data, :order, :borrowUrl)).to eq \
+      "#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/orders/#{order.id}"
     expect(result.dig(:data, :order, :state).to_set).to eq \
       Set['SUBMITTED', 'APPROVED']
     expect(result[:errors]).to be_nil
