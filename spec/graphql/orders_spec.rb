@@ -4,7 +4,8 @@ require_relative 'graphql_helper'
 describe 'orders' do
   before :example do
     FactoryBot.create(:settings,
-                      deliver_received_order_notifications: true)
+                      deliver_received_order_notifications: true,
+                      external_base_url: LEIHS_BORROW_HTTP_BASE_URL)
   end
 
   let(:user) do

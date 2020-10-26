@@ -7,13 +7,14 @@
             [com.walmartlabs.lacinia :as lacinia]
             [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]
+            [leihs.borrow.resources.settings :as settings]
             [leihs.borrow.client.routes :as client-routes]
             [leihs.borrow.paths :refer [path]]))
 
 (defn url
   "This function assumes the following convention in the paths map:
   \"orders\" {[\"/\" :order-id] ::orders-show}"
-  [context _ {:keys [id]}]
+  [{{:keys [tx]} :request :as context} _ {:keys [id]}]
   (let [type-name (-> context
                       ::lacinia/container-type-name
                       name)
@@ -26,5 +27,5 @@
                        string/lower-case
                        (str "-id")
                        keyword)]
-    (str (-> context :request :headers :origin)
+    (str (:external_base_url (settings/get tx))
          (path path-name {path-param id}))))
