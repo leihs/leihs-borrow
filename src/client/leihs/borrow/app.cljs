@@ -103,8 +103,8 @@
             ::routes/shopping-cart shopping-cart/view
             ::routes/orders-index customer-orders-index/view
             ::routes/orders-show customer-orders-show/view
-            ::routes/pools-show pools-show/view
-            ::routes/pools-index pools-index/view
+            ::routes/inventory-pools-show pools-show/view
+            ::routes/inventory-pools-index pools-index/view
             ::routes/templates-show templates-show/view
             ::routes/templates-index templates-index/view
             ::routes/pickups-index pickups-index/view

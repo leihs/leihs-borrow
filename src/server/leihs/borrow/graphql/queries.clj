@@ -16,6 +16,7 @@
     [leihs.borrow.resources.users :as users]
     [leihs.borrow.resources.visits :as visits]
     [leihs.borrow.resources.templates :as templates]
+    [leihs.borrow.resources.shared.core :as shared]
     ))
 
 (def resolvers
@@ -62,4 +63,5 @@
    :templates templates/get-multiple
    :template-lines templates/get-lines
    :total-borrowable-quantities models/total-borrowable-quantities
+   :url shared/url
    })

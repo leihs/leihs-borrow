@@ -318,7 +318,7 @@
                 (for [a attachments]
                   [:<> {:key (:id a)}
                    [:li.border-b-2.border-gray-300.py-2
-                    [:a.text-blue-500 {:href (:url a)} (:filename a)]
+                    [:a.text-blue-500 {:href (:attachment-url a)} (:filename a)]
                     [:small.text-gray-600
                      (str " (" (ui/decorate-file-size (:size a)) ")")]]]))]])
           (if-let [fields (not-empty (map vector (:properties model)))]

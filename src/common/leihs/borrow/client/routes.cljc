@@ -26,9 +26,9 @@
                 ["/" :template-id] ::templates-show}
    "pickups" {"" ::pickups-index
               "/" ::pickups-index}
-   "pools" {"" ::pools-index
-            "/" ::pools-index
-            ["/" :pool-id] ::pools-show}
+   "inventory-pools" {"" ::inventory-pools-index
+            "/" ::inventory-pools-index
+            ["/" :inventory-pool-id] ::inventory-pools-show}
    "returns" {"" ::returns-index
               "/" ::returns-index}
    :else ::not-found})

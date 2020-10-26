@@ -16,7 +16,7 @@ query getModelShow($modelId: UUID!) {
     attachments {
       id
       filename
-      url
+      attachmentUrl
       size
       # content_type # FIXME: include this field when API bug is fixed
     }

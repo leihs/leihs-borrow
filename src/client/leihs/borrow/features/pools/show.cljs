@@ -19,9 +19,9 @@
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/pools-show
+  ::routes/inventory-pools-show
   (fn-traced [_ [_ args]]
-    (let [pool-id (get-in args [:route-params :pool-id])]
+    (let [pool-id (get-in args [:route-params :inventory-pool-id])]
       {:dispatch [::re-graph/query
                   (rc/inline "leihs/borrow/features/pools/show.gql")
                   {:id pool-id}
@@ -47,7 +47,7 @@
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])
-        pool-id (get-in routing [:bidi-match :route-params :pool-id])
+        pool-id (get-in routing [:bidi-match :route-params :inventory-pool-id])
         pool @(subscribe [::pool pool-id])
         errors @(subscribe [::errors pool-id])
         is-loading? (not (or pool errors))]
