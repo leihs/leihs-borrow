@@ -70,11 +70,11 @@ end
 
 step "user's preferred language is :lang" do |lang|
   l = Language.find(name: lang)
-  @user.update(language_id: l.id)
+  @user.update(language_locale: l.locale)
 end
 
 step "user does not have a prefered language" do
-  expect(@user.reload.language_id).to be_nil
+  expect(@user.reload.language_locale).to be_nil
 end
 
 step "I log out" do

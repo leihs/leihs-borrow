@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Tue Oct 27 2020 08:45:22 GMT+0100 (Central European Standard Time)
+# timestamp: Tue Oct 27 2020 10:50:44 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -154,8 +154,7 @@ input InventoryPoolsOrderByInput {
 type Language {
   active: Boolean
   default: Boolean
-  id: UUID
-  localeName: String
+  locale: String
   name: String
 }
 

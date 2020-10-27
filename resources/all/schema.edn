@@ -61,9 +61,8 @@
                                                :resolve :responsible}
                                  :members {:type (list (non-null :User))
                                            :resolve :members}}}
-           :Language {:fields {:id {:type :UUID}
-                               :name {:type String}
-                               :localeName {:type String}
+           :Language {:fields {:name {:type String}
+                               :locale {:type String}
                                :default {:type Boolean}
                                :active {:type Boolean}}}
            :User {:description "A `User` represents a human agent that can log into and use the system."
@@ -146,7 +145,7 @@
                             :properties {:type (list :Property)
                                          :resolve :properties}
                             :recommends {; NOTE: args must match those needed for the :ModelsConnection, does not happen automatically!
-                                         :args {:first {:type Int}} 
+                                         :args {:first {:type Int}}
                                          :type :ModelsConnection
                                          :resolve :models-connection}}}
            :ModelsConnection {:fields {:totalCount {:type Int}
@@ -260,7 +259,7 @@
                                              :resolve :inventory-pool}
                              :reservations {:type (list :Reservation)
                                             :args {:orderBy {:type (list :ReservationsOrderByInput)}}
-                                            :resolve :reservations}}} 
+                                            :resolve :reservations}}}
            :RefreshTimeoutResult {:fields {:unsubmittedOrder {:type :UnsubmittedOrder}}}}
 
  :input-objects {:ModelsOrderByInput {:fields {:attribute {:type (non-null :ModelsOrderByAttributeEnum)}

@@ -58,7 +58,7 @@ step "there is a default language :lang with locale name :l_name" do |lang, l_na
     FactoryBot.create(:language,
                       name: lang,
                       default: true,
-                      locale_name: l_name)
+                      locale: l_name)
   end
 end
 
@@ -66,7 +66,7 @@ step "there is a language :lang with locale name :l_name" do |lang, l_name|
   unless Language.find(name: lang)
     FactoryBot.create(:language,
                       name: lang,
-                      locale_name: l_name)
+                      locale: l_name)
   end
 end
 
@@ -187,7 +187,7 @@ step "there are meta mail templates" do
      [:reminder, :user]].each do |tmpl, type|
        FactoryBot.create(:mail_template,
                          is_template_template: true,
-                         language_id: lang.id,
+                         language_locale: lang.locale,
                          name: tmpl,
                          type: type,
                          format: :text,

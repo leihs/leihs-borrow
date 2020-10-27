@@ -26,7 +26,7 @@
 
 (defn fetch-and-save [callback]
   (if (and (get-in @db/app-db [:ls ::data :user :id])
-           (datefn/isBefore (js/Date.) 
+           (datefn/isBefore (js/Date.)
                             (datefn/addHours @last-fetched 1)))
     (callback)
     (POST (str js/window.location.origin
@@ -34,11 +34,11 @@
           {:params {:query query}
            :headers leihs.borrow.lib.re-graph/headers
            :format :json
-           :handler #(do 
+           :handler #(do
                        (dispatch-sync [::on-fetched-data (help/keywordize-keys %)])
                        (if @last-fetched
                          (swap! last-fetched datefn/addHours 1)
-                         (reset! last-fetched (js/Date.))) 
+                         (reset! last-fetched (js/Date.)))
                        (callback))})))
 
 (reg-event-fx
@@ -65,8 +65,8 @@
 (defn data [db]
   (-> db :ls ::data))
 
-(defn locale-name-to-use [db]
-  (-> db data :language-to-use :locale-name keyword))
+(defn locale-to-use [db]
+  (-> db data :language-to-use :locale keyword))
 
 (reg-sub ::data
          (fn [db _] (get-in db [:ls ::data])))

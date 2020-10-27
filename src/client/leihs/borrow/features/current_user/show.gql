@@ -8,8 +8,7 @@ query getCurrentUser {
       email
     }
     languageToUse {
-      id
-      localeName
+      locale
     }
     delegations {
       id
