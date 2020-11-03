@@ -44,6 +44,8 @@ scripts:
       gems are bundled:
         script_key: legacy-bundle-rspec-ruby
         states: [passed]
+      uberjar has passed: # this is not a real dependency but is to prevent timeout issues
+        script_key: build-borrow-uberjar
 
   stop-legacy-service:
     timeout: 5 Seconds

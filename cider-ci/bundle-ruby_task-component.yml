@@ -1,0 +1,20 @@
+include:
+- path: cider-ci/install-ruby_task-component.yml
+  submodule: [leihs-ui]
+
+traits:
+  Bash: true
+
+scripts:
+
+  bundle-ruby:
+    exclusive_executor_resource: bundle-ruby_{{$RUBY}}
+    timeout: 20 Minutes
+    body: |
+      #!/usr/bin/env bash
+      set -eux
+      export PATH=~/.rubies/$RUBY/bin:$PATH
+      bundle install
+    start_when:
+      install-ruby:
+        script_key: install-ruby

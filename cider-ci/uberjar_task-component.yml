@@ -1,55 +1,25 @@
 include:
-  - 'cider-ci/ui_task_component.yml'
+- path: cider-ci/install-ruby_task-component.yml
+  submodule: [leihs-ui]
 
 traits:
-  JDK: true
+  JDK 8: true
   Leiningen 2: true
   npm: true
-  S3-Cache: true
 
 scripts:
+
+  build-leihs-ui-for-borrow:
+    start_when:
+      install-ruby-passed: {script_key: install-ruby}
+    timeout: 10 minutes
+    body: ${LEIHS_BORROW_DIR}/leihs-ui/bin/build
+    exclusive_executor_resource: build-leihs-ui
+
   build-borrow-uberjar:
     timeout: 10 Minutes
     exclusive_executor_resource: build-leihs-borrow-jar
-    environment_variables:
-      RUBY: '{{RUBY_ENGINE}}-{{RUBY_VERSION}}'
-      RUBY_ENGINE: ruby
-      RUBY_VERSION: 2.6.0
     start_when:
       shared ui was built:
-        script_key: prepare-shared-ui
-    body: |
-      #!/usr/bin/env bash
-      set -euxo
-
-      # custom stuff for this project
-      #
-      cd $LEIHS_BORROW_DIR
-      source cider-ci/scripts/borrow-build-uberjar.sh
-
-      # the reminder should be pretty much the same for all our projects resulting in an uberjar
-
-      cd $PROJECT_DIR
-      DIGEST=$(git log -n 1 HEAD --pretty=%T)
-      mkdir -p $PROJECT_DIR/target
-
-      UBERJAR_PATH=/tmp/${UBERJAR_NAME}_${DIGEST}.jar # path of locally cached uberjar
-      S3_UBERJAR_FILE_NAME="${UBERJAR_NAME}_${DIGEST}.jar" # name of the uberjar in the S3 Bucket
-
-      export PATH=~/.rubies/$RUBY/bin:$PATH # the s3-chache-helper needs this
-
-      if [ -e $UBERJAR_PATH ]; then
-          echo "INFO: locally cached uberjar found; linking and exiting"
-          ln -s "$UBERJAR_PATH" "$LEIN_UBERJAR_PATH"
-          exit 0
-      else
-        s3-cache-helper download -n "$S3_UBERJAR_FILE_NAME" -p "$UBERJAR_PATH"
-        # build the uberjar if it was not downloaded
-        if [ ! -f ${UBERJAR_PATH} ]; then
-          build_uberjar
-          mv "$LEIN_UBERJAR_PATH" "$UBERJAR_PATH"
-          s3-cache-helper upload -n "$S3_UBERJAR_FILE_NAME" -p "$UBERJAR_PATH" || true
-        fi
-        # link the either downloaded or build uberjar
-        ln -s "$UBERJAR_PATH" "$LEIN_UBERJAR_PATH"
-      fi
+        script_key:  build-leihs-ui-for-borrow
+    body: ${LEIHS_BORROW_DIR}/bin/build

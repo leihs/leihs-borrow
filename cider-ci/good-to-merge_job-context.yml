@@ -1,0 +1,8 @@
+task_defaults:
+  max_trials: 1
+tasks:
+  all relevant tests have passed:
+    name: 'All relevant tests have passed, thus good to merge'
+    scripts:
+      main:
+        body: echo 'All relevant tests have passed' ; exit 0

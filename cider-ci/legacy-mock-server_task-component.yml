@@ -3,7 +3,7 @@ scripts:
   run_legacy-mock-server:
     start_when:
       bundled:
-        script_key: bundle-rspec-ruby
+        script_key: bundle-ruby
       # the following is not a hard dependency, this ist just not fall
       # into a timeout when building the uberjar taks very long
       the uberjar is ready:
