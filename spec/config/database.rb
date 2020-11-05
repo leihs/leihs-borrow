@@ -1,14 +1,17 @@
 require 'addressable'
 require 'sequel'
 
+DB_ENV = ENV['LEIHS_DATABASE_URL'].presence
+
+def http_uri
+  # trick Addressable to parse db urls
+  @http_uri ||= \
+    Addressable::URI.parse DB_ENV.gsub(/^jdbc:postgresql/,'http').gsub(/^postgres/,'http')
+end
+
 def database
   @database ||= \
     begin
-      # trick Addressable to parse db urls
-      http_uri = \
-        Addressable::URI.parse(
-          ENV['LEIHS_DATABASE_URL'].gsub(/^jdbc:postgresql/,'http').gsub(/^postgres/,'http')
-        )
       db_url = 'postgres://' \
         + (http_uri.user.presence || ENV['PGUSER'].presence || 'postgres') \
         + ((pw = (http_uri.password.presence || ENV['PGPASSWORD'].presence)) ? ":#{pw}" : "") \
@@ -46,6 +49,7 @@ end
 RSpec.configure do |config|
   config.before(:example)  do
     clean_db
+    system("DATABASE_NAME=#{http_uri.basename} ./database/scripts/restore-seeds")
   end
   # config.after(:suite) do
   #   clean_db
