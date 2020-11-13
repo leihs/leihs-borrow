@@ -49,9 +49,7 @@
                           :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
                          (merge extra-args)
                          (cond-> pool-id (assoc :poolIds [pool-id])))]
-      ; NOTE: no caching yet, clear data before new search  
-      {:db (assoc-in db [::data] nil)
-       :dispatch [::re-graph/query
+      {:dispatch [::re-graph/query
                   query-gql
                   query-vars
                   [::on-fetched-models]]})))
@@ -61,7 +59,7 @@
   (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-      {:db (assoc-in db [::data] (get-in data [:models]))})))
+      {:db (assoc-in db [:ls ::data] (get-in data [:models]))})))
 
 (reg-event-fx
   ::clear
@@ -72,18 +70,18 @@
 
 (reg-event-db
   ::clear-data
-  (fn-traced [db _] (dissoc db ::data)))
+  (fn-traced [db _] (update db :ls dissoc ::data)))
 
 
 (reg-sub ::fetching
-         (fn [db _] (get-in db [::data :fetching])))
+         (fn [db _] (get-in db [:ls ::data :fetching])))
 
 (reg-sub ::has-next-page?
-         (fn [db _] (get-in db [::data :page-info :has-next-page])))
+         (fn [db _] (get-in db [:ls ::data :page-info :has-next-page])))
 
 (reg-sub
   ::data
-  (fn [db] (-> (get-in db [::data :edges]))))
+  (fn [db] (-> (get-in db [:ls ::data :edges]))))
 
 (reg-sub ::target-users
          :<- [::current-user/data]
@@ -286,6 +284,7 @@
 
 (defn view []
   [search-and-list
-   #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
+   #(do (dispatch [::clear-data])
+        (dispatch [:routing/navigate [::routes/models {:query-params %}]]))
    #(dispatch [::clear %])
    nil])
