@@ -16,7 +16,7 @@
     [leihs.borrow.lib.translate :refer [t]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.filters :as filters]
-    [leihs.borrow.lib.helpers :refer [spy log]]
+    [leihs.borrow.lib.helpers :refer [spy spy-with log]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.pagination :as pagination]
     [leihs.borrow.client.routes :as routes]
@@ -41,58 +41,67 @@
         user-id (or (:user-id filters) (-> db current-user/data :user :id))
         pool-id (:pool-id filters)
         dates-valid? (<= start-date end-date)] ; if somehow end is before start, ignore it instead of error
-    {:searchTerm (:term filters)
-     :startDate (when dates-valid? start-date)
-     :endDate (when dates-valid? end-date)
-     :onlyAvailable (when dates-valid? (:available-between? filters))
-     :userId user-id
-     :bothDatesGiven (boolean (and dates-valid? start-date end-date))}))
+    (cond-> {:searchTerm (:term filters)
+             :startDate (when dates-valid? start-date)
+             :endDate (when dates-valid? end-date)
+             :onlyAvailable (when dates-valid? (:available-between? filters))
+             :userId user-id
+             :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
+      pool-id
+      (assoc :poolIds [pool-id]))))
 
 (defn cache-key
-  ([] (cache-key {}))
-  ([extra] (-> @db/app-db
-               base-query-vars
-               (merge extra)
-               hash)))
+  ([db] (cache-key db {}))
+  ([db extra] (-> db
+                  base-query-vars
+                  (merge extra)
+                  hash)))
 
 (reg-event-fx
   ::get-models
-  (fn-traced [{:keys [db]} [_ extra-args]]
-    (let [query-vars (-> (base-query-vars db)
-                         (merge extra-args))]
+  (fn-traced [{:keys [db]} [_ extra-vars]]
+    (let [query-vars (-> (base-query-vars db) (merge extra-vars))]
       {:dispatch [::re-graph/query
                   query-gql
                   query-vars
-                  [::on-fetched-models]]})))
+                  [::on-fetched-models extra-vars]]})))
 
 (reg-event-fx
   ::on-fetched-models
-  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
+  (fn [{:keys [db]} [_ extra-vars {:keys [data errors]}]]
     (if errors
-      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-      {:db (assoc-in db [:ls ::data] (get-in data [:models]))})))
+      {:db (update-in db
+                      [:meta :app :fatal-errors]
+                      (fnil conj []) errors)}
+      {:db (assoc-in db
+                     [:ls ::data (cache-key db extra-vars)]
+                     (get-in data [:models]))})))
 
 (reg-event-fx
   ::clear
-  (fn-traced [_ _]
+  (fn-traced [{:keys [db]} [_ extra-vars]]
     {:dispatch-n (list [::filters/clear-current]
-                       [::clear-data]
+                       [::clear-data extra-vars]
                        [:routing/navigate [::routes/home]])}))
 
 (reg-event-db
   ::clear-data
-  (fn-traced [db _] (update db :ls dissoc ::data)))
+  (fn-traced [db [_ extra-vars]]
+    (update-in db [:ls ::data] dissoc (cache-key db extra-vars))))
 
 
 (reg-sub ::fetching
-         (fn [db _] (get-in db [:ls ::data :fetching])))
+         (fn [db [_ extra-vars]]
+           (get-in db [:ls ::data (cache-key db extra-vars) :fetching])))
 
 (reg-sub ::has-next-page?
-         (fn [db _] (get-in db [:ls ::data :page-info :has-next-page])))
+         (fn [db [_ extra-vars]]
+           (get-in db [:ls ::data (cache-key db extra-vars) :page-info :has-next-page])))
 
 (reg-sub
   ::data
-  (fn [db] (-> (get-in db [:ls ::data :edges]))))
+  (fn [db [_ extra-vars]]
+    (-> (get-in db [:ls ::data (cache-key db extra-vars) :edges]))))
 
 (reg-sub ::target-users
          :<- [::current-user/data]
@@ -125,32 +134,32 @@
 (def product-card-margins-in-rem 1)
 
 (defn search-panel
-  ([submit-fn clear-fn]
+  ([submit-fn clear-fn extra-params]
    (search-panel submit-fn
                  clear-fn
+                 extra-params
                  #(dispatch [::filters/set-pool-id (-> % .-target .-value)])))
-  ([submit-fn clear-fn change-pool-fn]
-   (let
-    [filters @(subscribe [::filters/current])
-     target-users @(subscribe [::target-users])
-     term @(subscribe [::filters/term])
-     data @(subscribe [::data])
-     start-date @(subscribe [::filters/start-date])
-     end-date @(subscribe [::filters/end-date])
-     available-between? @(subscribe [::filters/available-between?])
-     quantity @(subscribe [::filters/quantity])
-     user-id @(subscribe [::user-id])
-     pool-id @(subscribe [::filters/pool-id])
-     pools @(subscribe [::current-user/pools])
-     routing @(subscribe [:routing/routing])
-     on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
+  ([submit-fn clear-fn extra-params change-pool-fn]
+   (let [filters @(subscribe [::filters/current])
+         target-users @(subscribe [::target-users])
+         term @(subscribe [::filters/term])
+         data @(subscribe [::data extra-params])
+         start-date @(subscribe [::filters/start-date])
+         end-date @(subscribe [::filters/end-date])
+         available-between? @(subscribe [::filters/available-between?])
+         quantity @(subscribe [::filters/quantity])
+         user-id @(subscribe [::user-id])
+         pool-id @(subscribe [::filters/pool-id])
+         pools @(subscribe [::current-user/pools])
+         routing @(subscribe [:routing/routing])
+         on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
 
      [:div.px-3.py-4.bg-light {:class (str "mt-3 mb-3" (when on-search-view? ""))}
       [:form.form.form-compact
        {:action "/search"
         :on-submit (fn [event]
                      (.preventDefault event)
-                     (dispatch [::clear-data])
+                     (dispatch [::clear-data extra-params])
                      (submit-fn filters))}
 
        [:div.form-group
@@ -168,9 +177,9 @@
                      :name :user-id
                      :on-change #(dispatch [::filters/set-one :user-id (-> % .-target .-value)])}
             (doall
-             (for [user target-users]
-               [:option {:value (:id user) :key (:id user)}
-                (:name user)]))]]])
+              (for [user target-users]
+                [:option {:value (:id user) :key (:id user)}
+                 (:name user)]))]]])
 
        [:label.row
         [:span.text-xs.col-3.col-form-label "Aus "]
@@ -180,9 +189,9 @@
                    :name :user-id
                    :on-change change-pool-fn}
           (doall
-           (for [pool (cons {:id "all" :name "Allen Geräteparks"} pools)]
-             [:option {:value (:id pool) :key (:id pool)}
-              (:name pool)]))]]]
+            (for [pool (cons {:id "all" :name "Allen Geräteparks"} pools)]
+              [:option {:value (:id pool) :key (:id pool)}
+               (:name pool)]))]]]
 
        [:div.form-group
         [:div.row
@@ -284,10 +293,11 @@
                                   [:models]])}
            (t :borrow.pagination/load-more)]]))]))
 
-(defn search-and-list [submit-fn clear-fn extra-params]
-  (let [models @(subscribe [::data])]
+(defn search-and-list
+  [submit-fn clear-fn extra-params]
+  (let [models @(subscribe [::data extra-params])]
     [:<>
-     [search-panel submit-fn clear-fn]
+     [search-panel submit-fn clear-fn extra-params]
      (cond
        (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
        (empty? models) [:p.p-6.w-full.text-center (t :borrow.pagination/nothing-found)]
@@ -299,5 +309,5 @@
 (defn view []
   [search-and-list
    #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
-   #(dispatch [::clear %])
+   #(dispatch [::clear {}])
    nil])

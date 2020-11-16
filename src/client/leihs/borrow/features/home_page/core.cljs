@@ -23,7 +23,7 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/home
-  (fn-traced [_ [_ {:keys [query-params]}]] 
+  (fn-traced [{:keys [db]} [_ {:keys [query-params]}]] 
     {:dispatch-n (list [::filters/init]
                        (when (seq query-params)
                          [::filters/set-multiple query-params])
@@ -39,7 +39,8 @@
 
        [models/search-panel
         #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
-        #(dispatch [::models/clear])]
+        #(dispatch [::models/clear])
+        nil]
 
        [:> UI/Components.AppLayout.SubSection
         {:title (t :borrow.categories/title)

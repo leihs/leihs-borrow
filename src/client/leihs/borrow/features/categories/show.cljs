@@ -56,10 +56,11 @@
 
 (reg-event-fx
   ::clear
-  (fn-traced [_ [_ nav-args]]
-    {:dispatch-n (list [::filters/clear-current]
-                       [::models/clear-data]
-                       [:routing/navigate [::routes/categories-show nav-args]])}))
+  (fn-traced [_ [_ nav-args cache-key-fn]]
+    {:dispatch-n
+     (list [::filters/clear-current]
+           [::models/clear-data cache-key-fn]
+           [:routing/navigate [::routes/categories-show nav-args]])}))
 
 (reg-sub
   ::category-data
@@ -106,5 +107,7 @@
          #(dispatch [:routing/navigate
                      [::routes/categories-show 
                       {:categories-path categories-path :query-params %}]])
-         #(dispatch [::clear {:categories-path categories-path}])
+         #(dispatch [::clear
+                     {:categories-path categories-path}
+                     (fn [] (models/cache-key extra-args))])
          extra-args]])]))
