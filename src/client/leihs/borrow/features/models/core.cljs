@@ -4,6 +4,7 @@
     [reagent.core :as r]
     [akiroz.re-frame.storage :refer [persist-db]]
     [re-frame.core :as rf]
+    [re-frame.db :as db]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
     [leihs.borrow.lib.re-frame :refer [reg-event-fx
@@ -15,6 +16,7 @@
     [leihs.borrow.lib.translate :refer [t]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.filters :as filters]
+    [leihs.borrow.lib.helpers :refer [spy log]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.pagination :as pagination]
     [leihs.borrow.client.routes :as routes]
@@ -32,23 +34,32 @@
     {:dispatch-n (list [::filters/set-multiple query-params]
                        [::get-models])}))
 
+(defn base-query-vars [db]
+  (let [filters (filters/current db)
+        start-date (:start-date filters)
+        end-date (:end-date filters)
+        user-id (or (:user-id filters) (-> db current-user/data :user :id))
+        pool-id (:pool-id filters)
+        dates-valid? (<= start-date end-date)] ; if somehow end is before start, ignore it instead of error
+    {:searchTerm (:term filters)
+     :startDate (when dates-valid? start-date)
+     :endDate (when dates-valid? end-date)
+     :onlyAvailable (when dates-valid? (:available-between? filters))
+     :userId user-id
+     :bothDatesGiven (boolean (and dates-valid? start-date end-date))}))
+
+(defn cache-key
+  ([] (cache-key {}))
+  ([extra] (-> @db/app-db
+               base-query-vars
+               (merge extra)
+               hash)))
+
 (reg-event-fx
   ::get-models
   (fn-traced [{:keys [db]} [_ extra-args]]
-    (let [filters (filters/current db)
-          start-date (:start-date filters)
-          end-date (:end-date filters)
-          user-id (or (:user-id filters) (-> db current-user/data :user :id))
-          pool-id (:pool-id filters)
-          dates-valid? (<= start-date end-date) ; if somehow end is before start, ignore it instead of error
-          query-vars (-> {:searchTerm (:term filters)
-                          :startDate (when dates-valid? start-date)
-                          :endDate (when dates-valid? end-date)
-                          :onlyAvailable (when dates-valid? (:available-between? filters))
-                          :userId user-id
-                          :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
-                         (merge extra-args)
-                         (cond-> pool-id (assoc :poolIds [pool-id])))]
+    (let [query-vars (-> (base-query-vars db)
+                         (merge extra-args))]
       {:dispatch [::re-graph/query
                   query-gql
                   query-vars
@@ -185,7 +196,7 @@
              :on-change (fn [_]
                           (dispatch [::filters/set-one :available-between? (not available-between?)]))}]
            [:span.custom-control-label (t :borrow.filter/show-only-available)]]]]]
-       
+
        [:div {:class (if-not available-between? "d-none")}
         [:div.form-group
          [form-line :start-date (t :borrow.filter/from)
