@@ -35,7 +35,7 @@
   ::clear
   (fn-traced [_ _]
     {:dispatch-n (list [::filters/clear-current]
-                       [::clear-results]
+                       [::models/clear-data]
                        [:routing/navigate [::routes/models-favorites]])}))
 
 (defn view []

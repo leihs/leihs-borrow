@@ -58,7 +58,7 @@
   ::clear
   (fn-traced [_ [_ nav-args]]
     {:dispatch-n (list [::filters/clear-current]
-                       [::models/clear-results]
+                       [::models/clear-data]
                        [:routing/navigate [::routes/categories-show nav-args]])}))
 
 (reg-sub
