@@ -287,13 +287,13 @@
        errors [ui/error-view errors]
        :else
          [:<>
-          [:header.d-flex.align-items-center
-           [:h1.w-100.text-3xl.font-extrabold.leading-none (:name model)
+          [:header.d-flex.align-items-start
+           [:h1.w-100.leading-none (:name model)
             (if-let [manufacturer (:manufacturer model)]
               [:<> " " [:br]
                   [:small.font-normal.text-gray-600.leading-none manufacturer]])]
-           [:span.flex-shrink-1.text-4xl.ml-2.pr-2
-            [:button
+           [:div
+            [:button.btn.btn-link.p-0.text-color-content.text-3xl.font-extrabold
              {:on-click
                 #(dispatch
                     [(if (:is-favorited model)

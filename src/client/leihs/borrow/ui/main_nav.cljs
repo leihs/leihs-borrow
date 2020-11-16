@@ -20,7 +20,6 @@
 
         style {:top 0 :z-index 1000
                :border-bottom-color "rgba(0,0,0, 0.08)"
-               :backdrop-filter "blur(12px)" :-webkit-backdrop-filter "blur(12px)"
                :background "rgba(255,255,255, 0.83)"}
 
         ; partials
@@ -44,7 +43,7 @@
       :menuItem {:isOpen is-fake-menu-open?}
       :cartItem {:href (routing/path-for ::routes/shopping-cart)}}]
        
-    [:nav.ui-main-nav.navbar.navbar-light.text-xl.shadow-md.py-0.px-2.sticky-top.flex-nowrap.justify-content-between
+    [:nav.ui-main-nav.navbar.navbar-light.text-xl.shadow-md.backdrop-blur-md.py-0.px-2.sticky-top.flex-nowrap.justify-content-between
      {:style style}
 
      [:div.navbar-nav.w-100

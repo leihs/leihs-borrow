@@ -439,10 +439,10 @@
            (ui/format-date :short (:latest-end-date summary))
            "."]]
          [:div
-          [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
+          [:button.w-100.p-2.my-4.rounded-pill.bg-content-inverse.text-color-content-inverse.text-xl
            {#_ #_ :disabled (not (empty? invalid-res-ids))
             :on-click #(dispatch [::add-to-cart (map :id reservations)])}
            (t :draft/add-to-cart)]
-          [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl
+          [:button.w-100.p-2.my-4.rounded-pill.bg-content-danger.text-color-content-inverse.text-xl
            {:on-click #(dispatch [::delete-reservations (map :id reservations)])}
            (t :draft/delete)]]]])]))

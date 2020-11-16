@@ -41,7 +41,7 @@
   [:section.p-4
    {:style {:white-space "pre-wrap" :background "salmon" :padding "1rem"}}
    [:h1 "ERROR :("]
-                  [:p [:button.border-black.border-2.rounded-full.py-1.px-3 {:type :button, :on-click #(-> js/window (.-location) (.reload))} "RELOAD"]]
+                  [:p [:button.btn.border-black.border-2.rounded-pill.py-1.px-3 {:type :button, :on-click #(-> js/window (.-location) (.reload))} "RELOAD"]]
                   (doall
                     (for
                       [[idx error] (map-indexed vector errors)]
@@ -51,7 +51,7 @@
     [:section.p-4
      {:style {:white-space "pre-wrap" :background "salmon" :padding "1rem"}}
      [:h1 "FATAL ERROR :("]
-                          [:p [:button.border-black.border-2.rounded-full.py-1.px-3 {:type :button, :on-click #(-> js/window (.-location) (.reload))} "RELOAD"]]
+                          [:p [:button.btn.border-black.border-2.rounded-pill.py-1.px-3 {:type :button, :on-click #(-> js/window (.-location) (.reload))} "RELOAD"]]
                           (doall
                             (for
                               [[idx error] (map-indexed vector errors)]
@@ -77,7 +77,7 @@
        [:p [:a {:href (routing/path-for ::routes/inventory-pools-index)} (t :borrow.pools/title)]]
        [:form {:action "/sign-out" :method "POST"}
         [csrf/token-field]
-        [:button {:type "submit"}
+        [:button.btn.btn-link.p-0 {:type "submit"}
          (t :borrow/logout)]]])
 
     (defn dev-nav []
