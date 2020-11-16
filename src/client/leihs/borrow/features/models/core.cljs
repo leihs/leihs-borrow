@@ -137,7 +137,10 @@
      [:div.px-3.py-4.bg-light {:class (str "mt-3 mb-3" (when on-search-view? ""))}
       [:form.form.form-compact
        {:action "/search"
-        :on-submit (fn [event] (.preventDefault event) (submit-fn filters))}
+        :on-submit (fn [event]
+                     (.preventDefault event)
+                     (dispatch [::clear-data])
+                     (submit-fn filters))}
 
        [:div.form-group
         [form-line :search-term (t :borrow.filter/search)
@@ -284,7 +287,6 @@
 
 (defn view []
   [search-and-list
-   #(do (dispatch [::clear-data])
-        (dispatch [:routing/navigate [::routes/models {:query-params %}]]))
+   #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
    #(dispatch [::clear %])
    nil])
