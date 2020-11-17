@@ -41,36 +41,33 @@
         user-id (or (:user-id filters) (-> db current-user/data :user :id))
         pool-id (:pool-id filters)
         dates-valid? (<= start-date end-date)] ; if somehow end is before start, ignore it instead of error
-    {:searchTerm (:term filters)
-     :startDate (when dates-valid? start-date)
-     :endDate (when dates-valid? end-date)
-     :onlyAvailable (when dates-valid? (:available-between? filters))
-     :userId user-id
-     :bothDatesGiven (boolean (and dates-valid? start-date end-date))}))
+    (cond-> {:searchTerm (:term filters)
+             :startDate (when dates-valid? start-date)
+             :endDate (when dates-valid? end-date)
+             :onlyAvailable (when dates-valid? (:available-between? filters))
+             :userId user-id
+             :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
+      pool-id
+      (assoc :poolIds [pool-id]))))
 
-(defn cache-key
-  ([] (cache-key {}))
-  ([extra] (-> @db/app-db
-               base-query-vars
-               (merge extra)
-               hash)))
+(defn query-vars [db extra-vars]
+  (-> db base-query-vars (merge extra-vars)))
 
 (reg-event-fx
   ::get-models
-  (fn-traced [{:keys [db]} [_ extra-args]]
-    (let [query-vars (-> (base-query-vars db)
-                         (merge extra-args))]
+  (fn-traced [{:keys [db]} [_ extra-vars]]
+    (let [q-vars (query-vars db extra-vars)]
       {:dispatch [::re-graph/query
                   query-gql
-                  query-vars
-                  [::on-fetched-models]]})))
+                  q-vars
+                  [::on-fetched-models (hash q-vars)]]})))
 
 (reg-event-fx
   ::on-fetched-models
-  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
+  (fn-traced [{:keys [db]} [_ cache-key {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-      {:db (assoc-in db [:ls ::data] (get-in data [:models]))})))
+      {:db (assoc-in db [:ls ::data cache-key] (get-in data [:models]))})))
 
 (reg-event-fx
   ::clear
@@ -83,6 +80,13 @@
   ::clear-data
   (fn-traced [db _] (update db :ls dissoc ::data)))
 
+(reg-event-db ::clear-data-under-key
+              (fn-traced [db [_ cache-key]]
+                (update-in db [:ls ::data] dissoc cache-key)))
+
+(reg-sub ::cache-key
+         (fn [db [_ extra-vars]]
+           (-> db (query-vars extra-vars) hash)))
 
 (reg-sub ::fetching
          (fn [db _] (get-in db [:ls ::data :fetching])))
@@ -90,9 +94,9 @@
 (reg-sub ::has-next-page?
          (fn [db _] (get-in db [:ls ::data :page-info :has-next-page])))
 
-(reg-sub
-  ::data
-  (fn [db] (-> (get-in db [:ls ::data :edges]))))
+(reg-sub ::data
+         (fn [db [_ cache-key]]
+           (-> (get-in db [:ls ::data cache-key :edges]))))
 
 (reg-sub ::target-users
          :<- [::current-user/data]
@@ -126,15 +130,19 @@
 
 (defn search-panel
   ([submit-fn clear-fn]
+   (search-panel submit-fn clear-fn {}))
+  ([submit-fn clear-fn extra-vars]
    (search-panel submit-fn
                  clear-fn
+                 extra-vars
                  #(dispatch [::filters/set-pool-id (-> % .-target .-value)])))
-  ([submit-fn clear-fn change-pool-fn]
+  ([submit-fn clear-fn extra-vars change-pool-fn]
    (let
     [filters @(subscribe [::filters/current])
      target-users @(subscribe [::target-users])
      term @(subscribe [::filters/term])
-     data @(subscribe [::data])
+     cache-key @(subscribe [::cache-key extra-vars])
+     data @(subscribe [::data cache-key])
      start-date @(subscribe [::filters/start-date])
      end-date @(subscribe [::filters/end-date])
      available-between? @(subscribe [::filters/available-between?])
@@ -254,7 +262,7 @@
      [:> UI/Components.ModelList {:list models-list}]
      (when debug? [:p (pr-str @(subscribe [::data]))])]))
 
-(defn load-more [extra-args]
+(defn load-more [extra-vars]
   (let [fetching-more? @(subscribe [::fetching])
         has-next-page? @(subscribe [::has-next-page?])
         filters @(subscribe [::filters/current])
@@ -279,25 +287,27 @@
                                           :onlyAvailable only-available?
                                           :userId user-id
                                           :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
-                                         extra-args)
+                                         extra-vars)
                                   [::data]
                                   [:models]])}
            (t :borrow.pagination/load-more)]]))]))
 
-(defn search-and-list [submit-fn clear-fn extra-params]
-  (let [models @(subscribe [::data])]
+(defn search-and-list [submit-fn clear-fn extra-vars]
+  (let [cache-key @(subscribe [::cache-key extra-vars])
+        models @(subscribe [::data cache-key])]
     [:<>
-     [search-panel submit-fn clear-fn]
+     [search-panel submit-fn clear-fn extra-vars]
      (cond
        (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
        (empty? models) [:p.p-6.w-full.text-center (t :borrow.pagination/nothing-found)]
        :else
        [:<>
         [models-list models]
-        [load-more extra-params]])]))
+        ; TODO: include cache-key! [load-more extra-vars]
+        ])]))
 
 (defn view []
   [search-and-list
    #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
-   #(dispatch [::clear %])
+   #(dispatch [::clear])
    nil])
