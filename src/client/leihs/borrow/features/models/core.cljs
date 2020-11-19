@@ -38,17 +38,18 @@
   (let [filters (filters/current db)
         start-date (:start-date filters)
         end-date (:end-date filters)
-        user-id (or (:user-id filters) (-> db current-user/data :user :id))
+        user-id (:user-id filters)
         pool-id (:pool-id filters)
         dates-valid? (<= start-date end-date)] ; if somehow end is before start, ignore it instead of error
     (cond-> {:searchTerm (:term filters)
              :startDate (when dates-valid? start-date)
              :endDate (when dates-valid? end-date)
              :onlyAvailable (when dates-valid? (:available-between? filters))
-             :userId user-id
              :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
       pool-id
-      (assoc :poolIds [pool-id]))))
+      (assoc :poolIds [pool-id])
+      user-id
+      (assoc :userId user-id))))
 
 (defn query-vars [db extra-vars]
   (-> db base-query-vars (merge extra-vars)))
@@ -276,13 +277,14 @@
           [:button.border.border-black.p-2.rounded
            {:on-click #(dispatch [::pagination/get-more
                                   query-gql
-                                  (merge {:searchTerm term
-                                          :startDate start-date
-                                          :endDate end-date
-                                          :onlyAvailable only-available?
-                                          :userId user-id
-                                          :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
-                                         extra-vars)
+                                  (-> {:searchTerm term
+                                       :startDate start-date
+                                       :endDate end-date
+                                       :onlyAvailable only-available?
+                                       :userId user-id
+                                       :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
+                                      (cond-> user-id (assoc :userId user-id))
+                                      (merge extra-vars))
                                   [::data]
                                   [:models]])}
            (t :borrow.pagination/load-more)]]))]))
