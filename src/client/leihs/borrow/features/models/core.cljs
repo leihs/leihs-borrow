@@ -135,6 +135,7 @@
                           (update :quantity #(or % 1))))]
     (fn [submit-fn clear-fn filters cache-key]
       (let [data @(subscribe [::data cache-key])
+            current-user-data @(subscribe [::current-user/data])
             target-users @(subscribe [::target-users])
             pools @(subscribe [::current-user/pools])
             routing @(subscribe [:routing/routing])
@@ -160,7 +161,8 @@
              [:span.text-xs.col-3.col-form-label (t :borrow.filter/for)]
              [:div.col-9
               [:select {:class "form-control"
-                        :default-value (:user-id @state)
+                        :default-value (or (:user-id @state)
+                                           (-> current-user-data :user :id))
                         :name :user-id
                         :on-change #(swap! state assoc :user-id (-> % .-target .-value))}
                (doall
