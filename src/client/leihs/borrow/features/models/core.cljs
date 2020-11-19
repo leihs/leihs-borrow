@@ -106,12 +106,6 @@
              (when (not-empty delegations)
                (concat [(:user cu)] delegations)))))
 
-(reg-sub ::user-id
-         :<- [::current-user/data]
-         :<- [::filters/user-id]
-         (fn [[co user-id]]
-           (or user-id (-> co :user :id))))
-
 ;-; VIEWS
 (defn form-line [name label input-props]
   [:label.row
