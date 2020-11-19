@@ -128,7 +128,7 @@
 (def product-card-width-in-rem 12)
 (def product-card-margins-in-rem 1)
 
-(defn search-panel [submit-fn clear-fn filters extra-vars]
+(defn search-panel [submit-fn clear-fn filters cache-key]
   (let [state (r/atom (-> filters
                           (select-keys [:term
                                         :start-date
@@ -139,8 +139,7 @@
                                         :pool-id])
                           (update :quantity #(or % 1))))]
     (fn [submit-fn clear-fn filters]
-      (let [data @(subscribe [::data])
-            cache-key @(subscribe [::cache-key extra-vars])
+      (let [data @(subscribe [::data cache-key])
             target-users @(subscribe [::target-users])
             pools @(subscribe [::current-user/pools])
             routing @(subscribe [:routing/routing])
@@ -288,12 +287,12 @@
                                   [:models]])}
            (t :borrow.pagination/load-more)]]))]))
 
-(defn search-and-list [submit-fn clear-fn extra-params]
-  (let [models @(subscribe [::data])
-        filters @(subscribe [::filters/current])
-        cache-key @(subscribe [::cache-key extra-vars])]
+(defn search-and-list [submit-fn clear-fn extra-vars]
+  (let [cache-key @(subscribe [::cache-key extra-vars])
+        models @(subscribe [::data cache-key])
+        filters @(subscribe [::filters/current])]
     [:<>
-     ^{:key (hash filters)} [search-panel submit-fn clear-fn filters extra-vars]
+     ^{:key cache-key} [search-panel submit-fn clear-fn filters cache-key]
      (cond
        (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
        (empty? models) [:p.p-6.w-full.text-center (t :borrow.pagination/nothing-found)]
