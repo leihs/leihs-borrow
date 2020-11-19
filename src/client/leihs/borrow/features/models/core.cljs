@@ -138,7 +138,7 @@
                                         :user-id
                                         :pool-id])
                           (update :quantity #(or % 1))))]
-    (fn [submit-fn clear-fn filters]
+    (fn [submit-fn clear-fn filters cache-key]
       (let [data @(subscribe [::data cache-key])
             target-users @(subscribe [::target-users])
             pools @(subscribe [::current-user/pools])

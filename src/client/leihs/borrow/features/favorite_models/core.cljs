@@ -28,8 +28,9 @@
 ;-; EVENTS 
 (reg-event-fx
   ::routes/models-favorites
-  (fn-traced [_ _]
-    {:dispatch [::models/get-models EXTRA-PARAMS]}))
+  (fn-traced [_ {:keys [query-params]}]
+    {:dispatch-n (list [::filters/set-multiple query-params]
+                       [::models/get-models EXTRA-PARAMS])}))
 
 (reg-event-fx
   ::clear

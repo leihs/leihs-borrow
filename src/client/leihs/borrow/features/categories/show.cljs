@@ -28,13 +28,14 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/categories-show
-  (fn-traced [{:keys [db]} [_ args]]
+  (fn-traced [{:keys [db]} [_ {:keys [query-params] :as args}]]
     (let [categories-path (get-in args [:route-params :categories-path])
           categories (split categories-path #"/")
           category-id (last categories)
           parent-id (last (butlast categories))
           user-id (filters/user-id db)]
-      {:dispatch-n (list [::re-graph/query
+      {:dispatch-n (list [::filters/set-multiple query-params]
+                         [::re-graph/query
                           query
                           {:categoryId category-id
                            :parentId parent-id

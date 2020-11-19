@@ -17,6 +17,7 @@
                                        dispatch]]
     [leihs.core.core :refer [flip presence]]
     [leihs.borrow.lib.localstorage :as ls]
+    [leihs.borrow.lib.helpers :refer [spy spy-with log]]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.features.current-user.core :as current-user]))
 
