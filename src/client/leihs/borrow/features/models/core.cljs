@@ -34,9 +34,8 @@
     {:dispatch-n (list [::filters/set-multiple query-params]
                        [::get-models])}))
 
-(defn base-query-vars [db]
-  (let [filters (filters/current db)
-        start-date (:start-date filters)
+(defn base-query-vars [filters]
+  (let [start-date (:start-date filters)
         end-date (:end-date filters)
         user-id (:user-id filters)
         pool-id (:pool-id filters)
@@ -51,13 +50,13 @@
       user-id
       (assoc :userId user-id))))
 
-(defn query-vars [db extra-vars]
-  (-> db base-query-vars (merge extra-vars)))
+(defn query-vars [filters extra-vars]
+  (-> filters base-query-vars (merge extra-vars)))
 
 (reg-event-fx
   ::get-models
   (fn-traced [{:keys [db]} [_ extra-vars]]
-    (let [q-vars (query-vars db extra-vars)]
+    (let [q-vars (-> db filters/current (query-vars extra-vars))]
       {:dispatch [::re-graph/query
                   query-gql
                   q-vars
@@ -86,18 +85,28 @@
                 (update-in db [:ls ::data] dissoc cache-key)))
 
 (reg-sub ::cache-key
-         (fn [db [_ extra-vars]]
-           (-> db (query-vars extra-vars) hash)))
+         :<- [::filters/current]
+         (fn [f [_ extra-vars]]
+           (-> f (query-vars extra-vars) hash)))
 
-(reg-sub ::fetching
-         (fn [db _] (get-in db [:ls ::data :fetching])))
-
-(reg-sub ::has-next-page?
-         (fn [db _] (get-in db [:ls ::data :page-info :has-next-page])))
+(reg-sub ::data-under-cache-key
+         (fn [db [_ cache-key]]
+           (-> (get-in db [:ls ::data cache-key]))))
 
 (reg-sub ::data
-         (fn [db [_ cache-key]]
-           (-> (get-in db [:ls ::data cache-key :edges]))))
+         (fn [[_ cache-key] _]
+           (subscribe [::data-under-cache-key cache-key]))
+         (fn [d _] (:edges d)))
+
+(reg-sub ::fetching
+         (fn [[_ cache-key] _]
+           (subscribe [::data-under-cache-key cache-key]))
+         (fn [data _] (:fetching data)))
+
+(reg-sub ::has-next-page?
+         (fn [[_ cache-key] _]
+           (subscribe [::data-under-cache-key cache-key]))
+         (fn [data _] (-> data :page-info :has-next-page)))
 
 (reg-sub ::target-users
          :<- [::current-user/data]
@@ -254,17 +263,11 @@
      [:> UI/Components.ModelList {:list models-list}]
      (when debug? [:p (pr-str @(subscribe [::data]))])]))
 
-(defn load-more [extra-vars]
-  (let [fetching-more? @(subscribe [::fetching])
-        has-next-page? @(subscribe [::has-next-page?])
+(defn load-more [cache-key extra-vars]
+  (let [fetching-more? @(subscribe [::fetching cache-key])
+        has-next-page? @(subscribe [::has-next-page? cache-key])
         filters @(subscribe [::filters/current])
-        term (:term filters)
-        start-date (:start-date filters)
-        end-date (:end-date filters)
-        user-id (:user-id filters)
-        dates-valid? (<= start-date end-date) ; if somehow end is before start, ignore it instead of error
-        only-available? (:only-available? filters)]
-    
+        dates-valid? (<= (:start-date filters) (:end-date filters))]
     [:<>
      (if (and fetching-more? dates-valid?)
        [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
@@ -273,15 +276,8 @@
           [:button.border.border-black.p-2.rounded
            {:on-click #(dispatch [::pagination/get-more
                                   query-gql
-                                  (-> {:searchTerm term
-                                       :startDate start-date
-                                       :endDate end-date
-                                       :onlyAvailable only-available?
-                                       :userId user-id
-                                       :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
-                                      (cond-> user-id (assoc :userId user-id))
-                                      (merge extra-vars))
-                                  [::data]
+                                  (query-vars filters extra-vars)
+                                  [::data cache-key]
                                   [:models]])}
            (t :borrow.pagination/load-more)]]))]))
 
@@ -297,8 +293,7 @@
        :else
        [:<>
         [models-list models]
-        ; TODO: include cache-key! [load-more extra-vars]
-        ])]))
+        [load-more cache-key extra-vars]])]))
 
 (defn view []
   [search-and-list
