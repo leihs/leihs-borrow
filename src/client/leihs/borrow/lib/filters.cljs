@@ -15,17 +15,22 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
-    [leihs.core.core :refer [flip]]
+    [leihs.core.core :refer [flip presence]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.features.current-user.core :as current-user]))
 
 (def BOOLEANS #{:available-between?})
 
-(defn massage-values [fs]
-  (->> fs
+(defn massage-values [m]
+  (->> m
        (map (fn [[k v]]
               [k (cond-> v (BOOLEANS k) js/JSON.parse)]))
+       (into {})))
+
+(defn remove-blanks [m]
+  (->> m
+       (filter (fn [[_ v]] (presence v)))
        (into {})))
 
 (def filters-gql
@@ -55,7 +60,10 @@
 (reg-event-db
   ::set-multiple
   [(path current-path)]
-  (fn-traced [old [_ filters]] (merge old (massage-values filters))))
+  (fn-traced [old [_ filters]]
+    (if (empty? filters)
+      old
+      (-> filters massage-values remove-blanks))))
 
 (reg-event-db
   ::set-one

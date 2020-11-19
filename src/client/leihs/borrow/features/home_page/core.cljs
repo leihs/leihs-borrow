@@ -33,13 +33,16 @@
   (fn []
     (let [cats @(subscribe [::categories/categories-index])
           cats-url (routing/path-for ::routes/categories-index)
-          favs @(subscribe [::categories/categories-index])]
+          favs @(subscribe [::categories/categories-index])
+          filters @(subscribe [::filters/current])]
       
       [:> UI/Components.AppLayout.Page
 
+       ^{:key (hash filters)}
        [models/search-panel
         #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
-        #(dispatch [::models/clear])]
+        #(dispatch [::models/clear])
+        filters]
 
        [:> UI/Components.AppLayout.SubSection
         {:title (t :borrow.categories/title)

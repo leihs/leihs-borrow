@@ -15,6 +15,7 @@
     [leihs.borrow.lib.translate :refer [t]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.filters :as filters]
+    [leihs.borrow.lib.helpers :refer [spy spy-with log]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.pagination :as pagination]
     [leihs.borrow.client.routes :as routes]
@@ -74,7 +75,6 @@
   ::clear-data
   (fn-traced [db _] (dissoc db ::data)))
 
-
 (reg-sub ::fetching
          (fn [db _] (get-in db [::data :fetching])))
 
@@ -115,112 +115,114 @@
 (def product-card-width-in-rem 12)
 (def product-card-margins-in-rem 1)
 
-(defn search-panel
-  ([submit-fn clear-fn]
-   (search-panel submit-fn
-                 clear-fn
-                 #(dispatch [::filters/set-pool-id (-> % .-target .-value)])))
-  ([submit-fn clear-fn change-pool-fn]
-   (let
-    [filters @(subscribe [::filters/current])
-     target-users @(subscribe [::target-users])
-     term @(subscribe [::filters/term])
-     data @(subscribe [::data])
-     start-date @(subscribe [::filters/start-date])
-     end-date @(subscribe [::filters/end-date])
-     available-between? @(subscribe [::filters/available-between?])
-     quantity @(subscribe [::filters/quantity])
-     user-id @(subscribe [::user-id])
-     pool-id @(subscribe [::filters/pool-id])
-     pools @(subscribe [::current-user/pools])
-     routing @(subscribe [:routing/routing])
-     on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
+(defn search-panel [submit-fn clear-fn filters]
+  (let [state (r/atom (-> filters
+                          (select-keys [:term
+                                        :start-date
+                                        :end-date
+                                        :available-between?
+                                        :quantity
+                                        :user-id
+                                        :pool-id])
+                          (update :quantity #(or % 1))))]
+    (fn [submit-fn clear-fn filters]
+      (let [data @(subscribe [::data])
+            target-users @(subscribe [::target-users])
+            pools @(subscribe [::current-user/pools])
+            routing @(subscribe [:routing/routing])
+            on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
+        [:div.px-3.py-4.bg-light {:class (str "mt-3 mb-3" (when on-search-view? ""))}
+         [:form.form.form-compact
+          {:action "/search"
+           :on-submit (fn [event]
+                        (.preventDefault event)
+                        (submit-fn (cond-> @state
+                                     (= (:pool-id @state) "all")
+                                     (dissoc :pool-id))))}
 
-     [:div.px-3.py-4.bg-light {:class (str "mt-3 mb-3" (when on-search-view? ""))}
-      [:form.form.form-compact
-       {:action "/search"
-        :on-submit (fn [event] (.preventDefault event) (submit-fn filters))}
+          [:div.form-group
+           [form-line :search-term (t :borrow.filter/search)
+            {:type :text
+             :value (:term @state)
+             :on-change (fn [ev]
+                          (swap! state assoc :term (-> ev .-target .-value)))}]]
 
-       [:div.form-group
-        [form-line :search-term (t :borrow.filter/search)
-         {:type :text
-          :value term
-          :on-change #(dispatch [::filters/set-one :term (-> % .-target .-value)])}]]
+          (when-not (empty? target-users)
+            [:label.row
+             [:span.text-xs.col-3.col-form-label (t :borrow.filter/for)]
+             [:div.col-9
+              [:select {:class "form-control"
+                        :default-value (:user-id @state)
+                        :name :user-id
+                        :on-change #(swap! state assoc :user-id (-> % .-target .-value))}
+               (doall
+                 (for [user target-users]
+                   [:option {:value (:id user) :key (:id user)}
+                    (:name user)]))]]])
 
-       (when-not (empty? target-users)
-         [:label.row
-          [:span.text-xs.col-3.col-form-label (t :borrow.filter/for)]
-          [:div.col-9
-           [:select {:class "form-control"
-                     :default-value user-id
-                     :name :user-id
-                     :on-change #(dispatch [::filters/set-one :user-id (-> % .-target .-value)])}
-            (doall
-             (for [user target-users]
-               [:option {:value (:id user) :key (:id user)}
-                (:name user)]))]]])
+          [:label.row
+           [:span.text-xs.col-3.col-form-label "Aus "]
+           [:div.col-9
+            [:select (let [value (or (:pool-id @state) "all")]
+                       {:class "form-control"
+                        :default-value value
+                        :value value
+                        :name :pool-id
+                        :on-change #(swap! state assoc :pool-id (-> % .-target .-value))})
+             (doall
+               (for [pool (cons {:id "all" :name "Allen Geräteparks"} pools)]
+                 [:option {:value (:id pool) :key (:id pool)}
+                  (:name pool)]))]]]
 
-       [:label.row
-        [:span.text-xs.col-3.col-form-label "Aus "]
-        [:div.col-9
-         [:select {:class "form-control"
-                   :default-value (or pool-id "all")
-                   :name :user-id
-                   :on-change change-pool-fn}
-          (doall
-           (for [pool (cons {:id "all" :name "Allen Geräteparks"} pools)]
-             [:option {:value (:id pool) :key (:id pool)}
-              (:name pool)]))]]]
+          [:div.form-group
+           [:div.row
+            [:span.text-xs.col-3.col-form-label (t :borrow.filter/time-span)]
+            [:div.col-9
+             [:label.custom-control.custom-checkbox
+              [:input.custom-control-input
+               {:type :checkbox
+                :name :only-available
+                :checked (:available-between? @state)
+                :on-change (fn [_]
+                             (swap! state update :available-between? not))}]
+              [:span.custom-control-label (t :borrow.filter/show-only-available)]]]]]
 
-       [:div.form-group
-        [:div.row
-         [:span.text-xs.col-3.col-form-label (t :borrow.filter/time-span)]
-         [:div.col-9
-          [:label.custom-control.custom-checkbox
-           [:input.custom-control-input
-            {:type :checkbox
-             :name :only-available
-             :checked available-between?
-             :on-change (fn [_]
-                          (dispatch [::filters/set-one :available-between? (not available-between?)]))}]
-           [:span.custom-control-label (t :borrow.filter/show-only-available)]]]]]
-       
-       [:div {:class (if-not available-between? "d-none")}
-        [:div.form-group
-         [form-line :start-date (t :borrow.filter/from)
-          {:type :date
-           :required true
-           :disabled (not available-between?)
-           :value start-date
-           :on-change #(dispatch [::filters/set-one :start-date (-> % .-target .-value)])}]]
+          [:div {:class (if-not (:available-between? @state) "d-none")}
+           [:div.form-group
+            [form-line :start-date (t :borrow.filter/from)
+             {:type :date
+              :required true
+              :disabled (not (:available-between? @state))
+              :value (:start-date @state)
+              :on-change #(swap! state assoc :start-date (-> % .-target .-value))}]]
 
-        [:div.form-group
-         [form-line :end-date (t :borrow.filter/until)
-          {:type :date
-           :required true
-           :disabled (not available-between?)
-           :min start-date
-           :value end-date
-           :on-change #(dispatch [::filters/set-one :end-date (-> % .-target .-value)])}]]
+           [:div.form-group
+            [form-line :end-date (t :borrow.filter/until)
+             {:type :date
+              :required true
+              :disabled (not (:available-between? @state))
+              :min (:start-date @state)
+              :value (:end-date @state)
+              :on-change #(swap! state assoc :end-date (-> % .-target .-value))}]]
 
-        [:div.form-group
-         [form-line :quantity (t :borrow.filter/quantity)
-          {:type :number
-           :min 1
-           :value quantity
-           :on-change #(dispatch [::filters/set-one :quantity (-> % .-target .-value)])}]]]
+           [:div.form-group
+            [form-line :quantity (t :borrow.filter/quantity)
+             {:type :number
+              :min 1
+              :value (:quantity @state)
+              :on-change #(swap! state assoc :quantity (-> % .-target .-value))}]]]
 
-       [:button.btn.btn-success.dont-invert.rounded-pill
-        {:type :submit
-         :class :mt-2}
-        (t :borrow.filter/get-results)]
+          [:button.btn.btn-success.dont-invert.rounded-pill
+           {:type :submit
+            :class :mt-2}
+           (t :borrow.filter/get-results)]
 
-       [:button.btn.btn-secondary.dont-invert.rounded-pill.mx-1
-        {:type :button
-         :disabled (not (or (seq filters) (seq data)))
-         :on-click clear-fn
-         :class :mt-2}
-        (t :borrow.filter/clear)]]])))
+          [:button.btn.btn-secondary.dont-invert.rounded-pill.mx-1
+           {:type :button
+            :disabled (not (or (seq filters) (seq data)))
+            :on-click #(do (reset! state nil) (clear-fn))
+            :class :mt-2}
+           (t :borrow.filter/clear)]]]))))
 
 (defn models-list [models]
   (let
@@ -273,9 +275,10 @@
            (t :borrow.pagination/load-more)]]))]))
 
 (defn search-and-list [submit-fn clear-fn extra-params]
-  (let [models @(subscribe [::data])]
+  (let [models @(subscribe [::data])
+        filters @(subscribe [::filters/current])]
     [:<>
-     [search-panel submit-fn clear-fn]
+     ^{:key (hash filters)} [search-panel submit-fn clear-fn filters]
      (cond
        (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
        (empty? models) [:p.p-6.w-full.text-center (t :borrow.pagination/nothing-found)]
@@ -287,5 +290,5 @@
 (defn view []
   [search-and-list
    #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
-   #(dispatch [::clear %])
+   #(dispatch [::clear])
    nil])
