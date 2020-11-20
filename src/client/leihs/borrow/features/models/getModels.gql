@@ -8,7 +8,7 @@ query getModels(
   $categoryId: UUID
   $isFavorited: Boolean
   $quantity: Int
-  $userId: UUID!
+  $userId: UUID
   $poolIds: [UUID!]
 ) {
   models(
