@@ -37,7 +37,8 @@
   (fn-traced [_ _]
     {:dispatch-n (list [::filters/clear-current]
                        [::models/clear-data]
-                       [:routing/navigate [::routes/models-favorites]])}))
+                       [:routing/navigate [::routes/models-favorites]]
+                       [::models/get-models EXTRA-PARAMS])}))
 
 (defn view []
   (let [models @(subscribe [::models/data])]
