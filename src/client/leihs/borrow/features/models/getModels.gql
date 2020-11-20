@@ -2,6 +2,7 @@ query getModels(
   $searchTerm: String
   $startDate: Date!
   $endDate: Date!
+  $first: Int!
   $afterCursor: String
   $bothDatesGiven: Boolean!
   $onlyAvailable: Boolean
@@ -13,7 +14,7 @@ query getModels(
 ) {
   models(
     searchTerm: $searchTerm
-    first: 20
+    first: $first
     after: $afterCursor
     onlyAvailable: $onlyAvailable
     quantity: $quantity

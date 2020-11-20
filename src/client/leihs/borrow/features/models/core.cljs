@@ -53,14 +53,19 @@
 (defn query-vars [filters extra-vars]
   (-> filters base-query-vars (merge extra-vars)))
 
+(defn number-of-cached [db cache-key]
+  (some-> db :ls ::data (get cache-key) :edges count))
+
 (reg-event-fx
   ::get-models
   (fn-traced [{:keys [db]} [_ extra-vars]]
-    (let [q-vars (-> db filters/current (query-vars extra-vars))]
+    (let [q-vars (-> db filters/current (query-vars extra-vars))
+          cache-key (hash q-vars)
+          n (number-of-cached db cache-key)]
       {:dispatch [::re-graph/query
                   query-gql
-                  q-vars
-                  [::on-fetched-models (hash q-vars)]]})))
+                  (cond-> q-vars n (assoc :first n))
+                  [::on-fetched-models cache-key]]})))
 
 (reg-event-fx
   ::on-fetched-models
