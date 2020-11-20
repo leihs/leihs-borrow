@@ -17,7 +17,7 @@
           has-next? (get page-info :has-next-page)
           query-vars (merge {:after-cursor (get page-info :end-cursor)}
                             query-vars)]
-      (when (spy has-next?)
+      (when has-next?
         {:dispatch-n (list [::fetching db-path true]
                            [::re-graph/query
                             query

@@ -276,7 +276,7 @@
            {:on-click #(dispatch [::pagination/get-more
                                   query-gql
                                   (query-vars filters extra-vars)
-                                  [::edges cache-key]
+                                  [:ls ::data cache-key]
                                   [:models]])}
            (t :borrow.pagination/load-more)]]))]))
 
