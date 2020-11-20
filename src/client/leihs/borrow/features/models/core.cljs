@@ -93,7 +93,7 @@
          (fn [db [_ cache-key]]
            (-> (get-in db [:ls ::data cache-key]))))
 
-(reg-sub ::data
+(reg-sub ::edges
          (fn [[_ cache-key] _]
            (subscribe [::data-under-cache-key cache-key]))
          (fn [d _] (:edges d)))
@@ -143,7 +143,7 @@
                                         :pool-id])
                           (update :quantity #(or % 1))))]
     (fn [submit-fn clear-fn filters cache-key]
-      (let [data @(subscribe [::data cache-key])
+      (let [edges @(subscribe [::edges cache-key])
             current-user-data @(subscribe [::current-user/data])
             target-users @(subscribe [::target-users])
             pools @(subscribe [::current-user/pools])
@@ -184,7 +184,6 @@
            [:div.col-9
             [:select (let [value (or (:pool-id @state) "all")]
                        {:class "form-control"
-                        :default-value value
                         :value value
                         :name :pool-id
                         :on-change #(swap! state assoc :pool-id (-> % .-target .-value))})
@@ -238,7 +237,7 @@
 
           [:button.btn.btn-secondary.dont-invert.rounded-pill.mx-1
            {:type :button
-            :disabled (not (or (seq filters) (seq data)))
+            :disabled (not (or (seq filters) (seq edges)))
             :on-click #(do (reset! state nil) (clear-fn))
             :class :mt-2}
            (t :borrow.filter/clear)]]]))))
@@ -277,13 +276,13 @@
            {:on-click #(dispatch [::pagination/get-more
                                   query-gql
                                   (query-vars filters extra-vars)
-                                  [::data cache-key]
+                                  [::edges cache-key]
                                   [:models]])}
            (t :borrow.pagination/load-more)]]))]))
 
 (defn search-and-list [submit-fn clear-fn extra-vars]
   (let [cache-key @(subscribe [::cache-key extra-vars])
-        models @(subscribe [::data cache-key])
+        models @(subscribe [::edges cache-key])
         filters @(subscribe [::filters/current])]
     [:<>
      ^{:key cache-key} [search-panel submit-fn clear-fn filters cache-key]
