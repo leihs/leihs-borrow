@@ -97,7 +97,6 @@
      (if (and after (not (after-cursor-row-exists? tx sqlmap after)))
        (throw (ex-info "After cursor row does not exist!" {}))
        (let [rows (-> sqlmap
-                      (->> (spy-with sql/format))
                       (cursored-sqlmap after first)
                       sql/format
                       (->> (jdbc/query tx))
