@@ -28,13 +28,14 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/categories-show
-  (fn-traced [{:keys [db]} [_ args]]
+  (fn-traced [{:keys [db]} [_ {:keys [query-params] :as args}]]
     (let [categories-path (get-in args [:route-params :categories-path])
           categories (split categories-path #"/")
           category-id (last categories)
           parent-id (last (butlast categories))
           user-id (filters/user-id db)]
-      {:dispatch-n (list [::re-graph/query
+      {:dispatch-n (list [::filters/set-multiple query-params]
+                         [::re-graph/query
                           query
                           {:categoryId category-id
                            :parentId parent-id
@@ -56,10 +57,11 @@
 
 (reg-event-fx
   ::clear
-  (fn-traced [_ [_ nav-args]]
+  (fn-traced [_ [_ nav-args extra-vars]]
     {:dispatch-n (list [::filters/clear-current]
-                       [::models/clear-results]
-                       [:routing/navigate [::routes/categories-show nav-args]])}))
+                       [::models/clear-data]
+                       [:routing/navigate [::routes/categories-show nav-args]]
+                       [::models/get-models extra-vars])}))
 
 (reg-sub
   ::category-data
@@ -106,5 +108,7 @@
          #(dispatch [:routing/navigate
                      [::routes/categories-show 
                       {:categories-path categories-path :query-params %}]])
-         #(dispatch [::clear {:categories-path categories-path}])
+         #(dispatch [::clear
+                     {:categories-path categories-path}
+                     {:categoryId category-id}])
          extra-args]])]))

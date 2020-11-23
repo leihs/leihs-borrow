@@ -28,15 +28,17 @@
 ;-; EVENTS 
 (reg-event-fx
   ::routes/models-favorites
-  (fn-traced [_ _]
-    {:dispatch [::models/get-models EXTRA-PARAMS]}))
+  (fn-traced [_ {:keys [query-params]}]
+    {:dispatch-n (list [::filters/set-multiple query-params]
+                       [::models/get-models EXTRA-PARAMS])}))
 
 (reg-event-fx
   ::clear
   (fn-traced [_ _]
     {:dispatch-n (list [::filters/clear-current]
-                       [::clear-results]
-                       [:routing/navigate [::routes/models-favorites]])}))
+                       [::models/clear-data]
+                       [:routing/navigate [::routes/models-favorites]]
+                       [::models/get-models EXTRA-PARAMS])}))
 
 (defn view []
   (let [models @(subscribe [::models/data])]

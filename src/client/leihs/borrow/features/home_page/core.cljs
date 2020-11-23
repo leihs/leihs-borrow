@@ -25,8 +25,7 @@
   ::routes/home
   (fn-traced [_ [_ {:keys [query-params]}]] 
     {:dispatch-n (list [::filters/init]
-                       (when (seq query-params)
-                         [::filters/set-multiple query-params])
+                       [::filters/set-multiple query-params]
                        [::categories/fetch-index 4])}))
 
 (defn view []
@@ -42,7 +41,8 @@
        [models/search-panel
         #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
         #(dispatch [::models/clear])
-        filters]
+        filters
+        nil]
 
        [:> UI/Components.AppLayout.SubSection
         {:title (t :borrow.categories/title)

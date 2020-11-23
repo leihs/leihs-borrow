@@ -5,7 +5,13 @@
             [leihs.core.core :refer [spy-with]]
             [leihs.core.sql :as sql]))
 
-(def intervene-per-page-default (atom nil))
+(def PER-PAGE
+  "Standard per-page limit for fetching and displaying results."
+  20)
+
+(def intervene-per-page-default
+  "The internal per-page limit used by the intervene function."
+  (atom nil))
 
 (defn init [{pp :special-per-page-default}]
   (reset! intervene-per-page-default pp))
@@ -93,11 +99,11 @@
     {:keys [after first] :as args}
     value
     post-process]
-   (let [sqlmap (sqlmap-fn context args value)]
+   (let [sqlmap (sqlmap-fn context args value)
+         first (or first PER-PAGE)]
      (if (and after (not (after-cursor-row-exists? tx sqlmap after)))
        (throw (ex-info "After cursor row does not exist!" {}))
        (let [rows (-> sqlmap
-                      (->> (spy-with sql/format))
                       (cursored-sqlmap after first)
                       sql/format
                       (->> (jdbc/query tx))
@@ -118,18 +124,19 @@
   ([conn-fn intervene-fn limit]
    (intervene conn-fn intervene-fn @intervene-per-page-default limit))
   ([conn-fn intervene-fn batch-size limit]
-   (loop [{:keys [page-info edges] :as conn} (conn-fn {:first batch-size})
-          result-edges []]
-     (let [avail-edges (intervene-fn edges)
-           result-edges* (concat result-edges avail-edges)]
-       (if (or (>= (count result-edges*) limit) (not (:has-next-page page-info)))
-         (-> conn
-             (assoc :edges (take limit result-edges*))
-             (as-> <> (assoc-in <>
-                                [:page-info :end-cursor]
-                                (-> <> :edges last :cursor)))
-             (assoc-in [:page-info :has-next-page]
-                       (> (count result-edges*) limit)) ; FIXME: in negative case there is NO GUARANTEE...?
-             (assoc :total-count nil))
-         (recur (conn-fn {:first batch-size :after (:end-cursor page-info)})
-                result-edges*))))))
+   (let [limit (or limit PER-PAGE)]
+     (loop [{:keys [page-info edges] :as conn} (conn-fn {:first batch-size})
+            result-edges []]
+       (let [avail-edges (intervene-fn edges)
+             result-edges* (concat result-edges avail-edges)]
+         (if (or (>= (count result-edges*) limit) (not (:has-next-page page-info)))
+           (-> conn
+               (assoc :edges (take limit result-edges*))
+               (as-> <> (assoc-in <>
+                                  [:page-info :end-cursor]
+                                  (-> <> :edges last :cursor)))
+               (assoc-in [:page-info :has-next-page]
+                         (> (count result-edges*) limit)) ; FIXME: in negative case there is NO GUARANTEE...?
+               (assoc :total-count nil))
+           (recur (conn-fn {:first batch-size :after (:end-cursor page-info)})
+                  result-edges*)))))))

@@ -17,6 +17,7 @@
                                        dispatch]]
     [leihs.core.core :refer [flip presence]]
     [leihs.borrow.lib.localstorage :as ls]
+    [leihs.borrow.lib.helpers :refer [spy spy-with log]]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.features.current-user.core :as current-user]))
 
@@ -83,7 +84,8 @@
   (fn-traced [db _]
     (assoc-in db
               current-path
-              {:user-id (-> db current-user/data :user :id)})))
+              {:user-id (-> db current-user/data :user :id)
+               :quantity 1})))
 
 (defn get-from-current [db k]
   (get-in db (conj current-path k)))

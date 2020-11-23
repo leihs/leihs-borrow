@@ -20,7 +20,8 @@
                            :until "Until"
                            :quantity "Quantity"
                            :get-results "Get Results"
-                           :clear "Clear"}
+                           :clear "Clear"
+                           :pools {:all "All inventory pools"}}
                   :home-page {:title "Home"}
                   :logout "Logout"
                   :model-show {:loading "Loading model"
@@ -81,7 +82,8 @@
                            :until "Bis"
                            :quantity "Anzahl"
                            :get-results "Resultate anzeigen"
-                           :clear "Löschen"}
+                           :clear "Löschen"
+                           :pools {:all "Allen Geräteparks"}}
                   :home-page {:title "Home"}
                   :logout "Abmelden"
                   :model-show {:loading "Modell wird geladen"
