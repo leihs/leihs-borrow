@@ -16,10 +16,30 @@ step 'I see :n different :model models' do |n, model_name|
   expect(model_items.count).to eq n.to_i
 end
 
+step 'all the :model_name models belong to the :category category' do |model_name, category_name|
+  models = LeihsModel.all
+  category = Category.find(name: category_name)
+  category ||= FactoryBot.create(:category, name: category_name)
+  models2 = models.select { |m| m.product =~ /#{model_name}/ }
+  models2.each { |m| m.add_category(category) }
+end
+
 step 'I click :n times on :txt' do |n, txt|
   n.to_i.times { click_on(txt); sleep(1) }
 end
 
+step 'there is :txt button' do |txt|
+  expect(page).to have_content txt
+end
+
 step 'there is no :txt button' do |txt|
   expect(page).not_to have_content txt
+end
+
+step 'I see category :category_name' do |category_name|
+  find('.ui-models-list-item', text: category_name)
+end
+
+step 'I enter :term in the search field' do |term|
+  fill_in('Search', with: term)
 end
