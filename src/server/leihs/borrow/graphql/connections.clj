@@ -5,8 +5,13 @@
             [leihs.core.core :refer [spy-with]]
             [leihs.core.sql :as sql]))
 
-(def PER-PAGE 20)
-(def intervene-per-page-default (atom nil))
+(def PER-PAGE
+  "Standard per-page limit for fetching and displaying results."
+  20)
+
+(def intervene-per-page-default
+  "The internal per-page limit used by the intervene function."
+  (atom nil))
 
 (defn init [{pp :special-per-page-default}]
   (reset! intervene-per-page-default pp))
