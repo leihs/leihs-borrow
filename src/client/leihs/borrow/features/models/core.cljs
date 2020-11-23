@@ -185,7 +185,7 @@
                     (:name user)]))]]])
 
           [:label.row
-           [:span.text-xs.col-3.col-form-label "Aus "]
+           [:span.text-xs.col-3.col-form-label (t :borrow.filter/from)]
            [:div.col-9
             [:select (let [value (or (:pool-id @state) "all")]
                        {:class "form-control"
@@ -193,7 +193,7 @@
                         :name :pool-id
                         :on-change #(swap! state assoc :pool-id (-> % .-target .-value))})
              (doall
-               (for [pool (cons {:id "all" :name "Allen Geräteparks"} pools)]
+               (for [pool (cons {:id "all" :name  (t :borrow.filter.pools/all)} pools)]
                  [:option {:value (:id pool) :key (:id pool)}
                   (:name pool)]))]]]
 
