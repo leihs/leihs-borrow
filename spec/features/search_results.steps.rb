@@ -36,10 +36,26 @@ step 'there is no :txt button' do |txt|
   expect(page).not_to have_content txt
 end
 
+step 'I click on category :category_name' do |category_name|
+  find('.ui-models-list-item', text: category_name).click
+end
+
 step 'I see category :category_name' do |category_name|
   find('.ui-models-list-item', text: category_name)
 end
 
 step 'I enter :term in the search field' do |term|
   fill_in('Search', with: term)
+end
+
+step 'I select pool :pool_name' do |pool_name|
+  select(pool_name, from: 'From')
+end
+
+step 'I select all pools' do
+  select('All inventory pools', from: 'From')
+end
+
+step 'there are no results' do
+  expect(page).not_to have_selector '.ui-models-list-item'
 end

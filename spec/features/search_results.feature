@@ -58,3 +58,20 @@ Feature: Search results (and caching)
     And I click button "Get Results"
     Then I see 40 different "Camera" models
     And there is no "Load more" button
+
+  Scenario: Category page (implicit filter taken from the URL)
+    # Filter with search term
+    When I click on category "Cameras"
+    And I click on "Load more"
+    Then I see 40 different "Camera" models
+    And there is no "Load more" button
+
+    When I select pool "Pool B"
+    And I click button "Get Results"
+    Then there are no results
+    And there is no "Load more" button
+
+    When I select all pools
+    And I click button "Get Results"
+    Then I see 40 different "Camera" models
+    And there is no "Load more" button
