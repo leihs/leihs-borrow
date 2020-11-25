@@ -22,11 +22,14 @@
     [leihs.borrow.features.current-user.core :as current-user]))
 
 (def BOOLEANS #{:available-between?})
+(def INTEGERS #{:quantity})
 
 (defn massage-values [m]
   (->> m
        (map (fn [[k v]]
-              [k (cond-> v (BOOLEANS k) js/JSON.parse)]))
+              [k (cond (BOOLEANS k) (js/JSON.parse v)
+                       (INTEGERS k) (js/Number v)
+                       :else v)]))
        (into {})))
 
 (defn remove-blanks [m]

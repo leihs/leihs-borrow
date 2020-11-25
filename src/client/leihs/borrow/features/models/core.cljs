@@ -44,6 +44,7 @@
              :startDate (when dates-valid? start-date)
              :endDate (when dates-valid? end-date)
              :onlyAvailable (when dates-valid? (:available-between? filters))
+             :quantity (:quantity filters)
              :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
       pool-id
       (assoc :poolIds [pool-id])

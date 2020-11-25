@@ -75,3 +75,17 @@ Feature: Search results (and caching)
     And I click button "Get Results"
     Then I see 40 different "Camera" models
     And there is no "Load more" button
+
+  Scenario: Filter available with quantity > 1
+    # Filter with search term
+    Given there is a model "Model A"
+    And there are 2 borrowable items for model "Model A" in pool "Pool A"
+    And there is a model "Model B"
+    And there is 1 borrowable item for model "Model B" in pool "Pool A"
+    When I choose to filter by availabilty
+    And I choose next working day as start date
+    And I choose next next working day as end date
+    And I set the quantity to 2
+    And I click button "Get Results"
+    Then I see 1 different "Model A" models
+    And I don't see any "Model B" model

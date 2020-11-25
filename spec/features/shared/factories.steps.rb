@@ -197,3 +197,16 @@ step "there are meta mail templates" do
      end
   end
 end
+
+step 'there is/are :n borrowable item(s) for model :model in pool :pool' do |n, model, pool|
+  model = LeihsModel.find(product: model)
+  pool = InventoryPool.find(name: pool)
+
+  n.to_i.times do
+    FactoryBot.create(:item,
+                      is_borrowable: true,
+                      leihs_model: model,
+                      responsible: pool,
+                      owner: pool)
+  end
+end

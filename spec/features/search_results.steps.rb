@@ -59,3 +59,7 @@ end
 step 'there are no results' do
   expect(page).not_to have_selector '.ui-models-list-item'
 end
+
+step 'I don\'t see any :model_name model' do |model_name|
+  expect(page).not_to have_content model_name
+end
