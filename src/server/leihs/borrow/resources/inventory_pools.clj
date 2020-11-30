@@ -1,6 +1,7 @@
 (ns leihs.borrow.resources.inventory-pools
   (:require [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
+            [com.walmartlabs.lacinia :as lacinia]
             [hugsql.core :as hugsql]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.settings :refer [settings!]]
@@ -12,7 +13,7 @@
   (-> (sql/select :inventory_pools.*)
       (sql/modifiers :distinct)
       (sql/from :inventory_pools)
-      (sql/merge-where [:= :inventory_pools.is_active true])))
+      (sql/where [:= :inventory_pools.is_active true])))
 
 (defn accessible-to-user-condition [sqlmap user-id]
   (-> sqlmap
@@ -54,17 +55,23 @@
       sql/format
       (->> (jdbc/query tx))))
 
-(defn get-by-id [tx id]
-  (-> base-sqlmap
-      with-workdays-sqlmap
-      (sql/merge-where [:= :inventory_pools.id id])
-      sql/format
-      (->> (jdbc/query tx))
-      first))
+(defn get-by-id
+  ([tx id]
+   (get-by-id tx id false))
+  ([tx id include-inactives]
+   (-> base-sqlmap
+       (cond-> include-inactives
+         (sql/where [:in :inventory_pools.is_active [true, false]]))
+       with-workdays-sqlmap
+       (sql/merge-where [:= :inventory_pools.id id])
+       sql/format
+       (->> (jdbc/query tx))
+       first)))
 
 (defn get-one [context {:keys [id]} value]
   (get-by-id (-> context :request :tx)
-             (or id (:inventory-pool-id value))))
+             (or id (:inventory-pool-id value))
+             (= (::lacinia/container-type-name context) :PoolOrder)))
 
 (defn has-reservable-items? [{{:keys [tx]} :request} _ {:keys [id]}]
   (-> (sql/select

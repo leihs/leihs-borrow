@@ -24,7 +24,8 @@ describe 'orders' do
   let(:inventory_pool_2) do
     FactoryBot.create(
       :inventory_pool,
-      id: '4e2f1362-0891-4df7-b760-16a2a8d3373f'
+      id: '4e2f1362-0891-4df7-b760-16a2a8d3373f',
+      is_active: false
     )
   end
 
@@ -263,15 +264,27 @@ describe 'orders' do
         order(id: "#{order.id}") {
           borrowUrl
           state
+          subOrdersByPool {
+            inventoryPool {
+              id
+              isActive
+            }
+          }
         }
       }
     GRAPHQL
 
     result = query(q, user.id).deep_symbolize_keys
-    expect(result.dig(:data, :order, :borrowUrl)).to eq \
-      "#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/orders/#{order.id}"
-    expect(result.dig(:data, :order, :state).to_set).to eq \
-      Set['SUBMITTED', 'APPROVED']
+    expect(result).to eq(
+      { data:
+       { order:
+         { borrowUrl: "#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/orders/#{order.id}",
+           state: ["APPROVED", "SUBMITTED"],
+           subOrdersByPool: [
+             {inventoryPool: {id: inventory_pool_1.id, isActive: true}},
+             {inventoryPool: {id: inventory_pool_2.id, isActive: false}}
+           ]}}}
+    )
     expect(result[:errors]).to be_nil
   end
 

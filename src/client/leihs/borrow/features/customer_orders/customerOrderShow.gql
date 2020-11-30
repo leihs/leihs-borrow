@@ -13,6 +13,7 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
       inventoryPool {
         id
         name
+        isActive
       }
       # createdAt
       # updatedAt

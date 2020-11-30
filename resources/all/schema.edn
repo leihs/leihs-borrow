@@ -42,6 +42,7 @@
            :InventoryPool {:fields {:id {:type (non-null :UUID)}
                                     :borrowUrl {:type (non-null String) :resolve :url}
                                     :description {:type String}
+                                    :isActive {:type (non-null Boolean)}
                                     :email {:type (non-null String)}
                                     :name {:type (non-null String)}
                                     :shortname {:type (non-null String)}

@@ -1,6 +1,7 @@
 (ns leihs.borrow.resources.orders
   (:refer-clojure :exclude [resolve])
-  (:require [leihs.core.sql :as sql]
+  (:require [leihs.core.core :refer [spy-with]]
+            [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]
             [leihs.core.database.helpers :as database]
             [clojure.string :refer [upper-case]]
@@ -18,34 +19,18 @@
 (def distinct-states-sql-expr
   (sql/raw "array_agg(DISTINCT upper(orders.state))"))
 
-(defn multiple-base-sqlmap [tx user-id]
-  (let [common-columns [:id :purpose :created_at :updated_at]]
-    (-> (sql/select :orders_union.id
-                    :orders_union.purpose
-                    :orders_union.title
-                    [distinct-states-sql-expr :state]
-                    (helpers/date-time-created-at :orders_union)
-                    (helpers/date-time-updated-at :orders_union))
-        (sql/from
-          [{:union [(-> (apply sql/select common-columns)
-                        (sql/merge-select :title)
-                        (sql/from :customer_orders)
-                        (sql/where [:= :user_id user-id]))
-                    (-> (apply sql/select common-columns)
-                        (sql/merge-select [:purpose :title])
-                        (sql/from :orders)
-                        (sql/where [:= :user_id user-id])
-                        (sql/merge-where [:= :customer_order_id nil]))]}
-           :orders_union])
-        (sql/join :orders
-                  [:or
-                   [:= :orders_union.id :orders.customer_order_id]
-                   [:= :orders_union.id :orders.id]])
-        (assoc :group-by [:orders_union.id
-                          :orders_union.purpose
-                          :orders_union.title
-                          :orders_union.created_at
-                          :orders_union.updated_at]))))
+(defn multiple-base-sqlmap [user-id]
+  (-> (sql/select :customer_orders.id
+                  :customer_orders.purpose
+                  :customer_orders.title
+                  [distinct-states-sql-expr :state]
+                  (helpers/date-time-created-at :customer_orders)
+                  (helpers/date-time-updated-at :customer_orders))
+      (sql/from :customer_orders)
+      (sql/join :orders
+                [:= :customer_orders.id :orders.customer_order_id])
+      (sql/where [:= :customer_orders.user_id user-id])
+      (assoc :group-by [:customer_orders.id])))
 
 (defn pool-order-row [row]
   (update row :state upper-case))
@@ -70,10 +55,9 @@
 (defn get-one
   [{{:keys [tx] user-id :target-user-id} :request}
    {:keys [id]}
-   {customer-order-id :customer-order-id}]
-  (-> (sql/select :*)
-      (sql/from [(multiple-base-sqlmap tx user-id) :tmp])
-      (sql/merge-where [:= :id (or id customer-order-id)])
+   _]
+  (-> (multiple-base-sqlmap user-id)
+      (sql/merge-where [:= :customer_orders.id id])
       sql/format
       (->> (jdbc/query tx))
       first
@@ -86,7 +70,7 @@
   [{{:keys [tx] user-id :target-user-id} :request}
    {:keys [order-by states]}
    value]
-  (-> (multiple-base-sqlmap tx user-id)
+  (-> (multiple-base-sqlmap user-id)
       (cond-> states
         (sql/having (equal-condition
                       distinct-states-sql-expr
@@ -95,7 +79,8 @@
                            (map #(sql/call :cast (name %) :text))
                            sql/array))))
       (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by)))))
+        (sql/order-by (helpers/treat-order-arg order-by)))
+      (->> (spy-with sql/format))))
 
 (defn get-connection [context args value]
   (connections/wrap get-connection-sql-map
@@ -113,12 +98,7 @@
                         (helpers/date-time-updated-at)))]
     (-> (apply sql/select columns)
         (sql/from :orders)
-        ; An old pool order without customer order become
-        ; customer order itself and contains itself as a
-        ; sub-order too.
-        (sql/where [:or
-                    [:= :customer_order_id (:id value)]
-                    [:= :id (:id value)]])
+        (sql/where [:= :customer_order_id (:id value)])
         (cond-> (seq order-by)
           (sql/order-by (helpers/treat-order-arg order-by)))
         sql/format
