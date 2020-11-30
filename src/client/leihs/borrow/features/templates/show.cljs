@@ -60,7 +60,7 @@
          (fn [db [_ id]] (get-in db [:ls ::data id])))
 
 (reg-sub ::errors
-         (fn [db _] (::errors db)))
+         (fn [db [_ id]] (get-in db [::errors id])))
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])
