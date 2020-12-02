@@ -210,3 +210,19 @@ step 'there is/are :n borrowable item(s) for model :model in pool :pool' do |n, 
                       owner: pool)
   end
 end
+
+step 'there is a category :name' do |name|
+  @category = FactoryBot.create(:category, name: name)
+end
+
+step 'the :model_name model belongs to category :cat_name' do |model_name, cat_name|
+  cat = Category.find(name: cat_name)
+  model = LeihsModel.find(product: model_name)
+  cat.add_direct_model(model)
+end
+
+step 'parent of category :child_name is category :parent_name' do |child_name, parent_name|
+  parent = Category.find(name: parent_name)
+  child = Category.find(name: child_name)
+  parent.add_child(child)
+end

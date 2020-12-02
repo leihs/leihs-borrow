@@ -115,6 +115,10 @@ step "I fill out the form with:" do |table|
   fill_form_with_table(table)
 end
 
+step 'the title of the page is :title' do |title|
+  find("h1", text: title)
+end
+
 def fill_form_with_table(table)
   table.hashes.each do |row|
     fill_in(row['field'], with: row['value'])

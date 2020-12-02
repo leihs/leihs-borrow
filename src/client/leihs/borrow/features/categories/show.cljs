@@ -13,6 +13,7 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
+    [leihs.borrow.lib.helpers :refer [spy]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
@@ -53,7 +54,7 @@
         (cond->
           errors
           (assoc-in [::errors category-id] errors))
-        (assoc-in [:ls ::data category-id] data))))
+        (assoc-in [:ls ::data category-id] (:category data)))))
 
 (reg-event-fx
   ::clear
@@ -64,6 +65,11 @@
                        [::models/get-models extra-vars])}))
 
 (reg-sub
+  ::ancestors
+  (fn [db [_ ids]]
+    (map #(get-in db [:ls ::data %]) ids)))
+
+(reg-sub
   ::category-data
   (fn [db [_ id]] (get-in db [:ls ::data id])))
 
@@ -71,30 +77,49 @@
   ::errors
   (fn [db [_ id]] (get-in db [::errors id])))
 
+(defn breadcrumbs [cat-ancestors]
+  [:div#breadcrumbs
+   (interpose
+     " | "
+     (loop [as-reversed (reverse cat-ancestors)
+            bc-links []]
+       (if (empty? as-reversed)
+         bc-links
+         (recur (rest as-reversed)
+                (let [current-as (reverse as-reversed)
+                      href (->> current-as
+                                (map :id)
+                                (join "/")
+                                (routing/path-for ::routes/categories-show
+                                                  :categories-path)
+                                str)
+                      link [:a {:href href}
+                            (-> current-as last :name)]]
+                  (cons link bc-links))))))])
+
 (defn view []
   (let [routing @(subscribe [:routing/routing])
         categories-path (get-in routing [:bidi-match :route-params :categories-path])
         cat-ids (split categories-path #"/")
         category-id (last cat-ids)
         prev-ids (butlast cat-ids)
-        parent-id (first prev-ids)
-        fetched @(subscribe [::category-data category-id])
-        {:keys [children] :as category} (:category fetched)
+        cat-ancestors @(subscribe [::ancestors prev-ids])
+        {:keys [children] :as category} @(subscribe [::category-data category-id])
         errors @(subscribe [::errors category-id])
         is-loading? (not category)
         extra-args {:categoryId category-id}]
 
     [:<>
      (cond
-       is-loading? [:div.p-4.text-center [:div.p-2 [ui/spinner-clock]] [:pre "loading category" [:samp category-id] "…"]]
+       is-loading? [:div.p-4.text-center
+                    [:div.p-2 [ui/spinner-clock]]
+                    [:pre "loading category" [:samp category-id] "…"]]
        errors [ui/error-view errors]
        :else
-       [:> UI/Components.AppLayout.Page
-        {:title (:name category)
-         :backLink (when parent-id {:href (str (routing/path-for ::routes/categories-show :categories-path (join "/" prev-ids)))
-                    :children "back"})}
-
-        [:ul.font-semibold.my-3
+       [:> UI/Components.AppLayout.Page {:title (:name category)}
+        (when-not (empty? cat-ancestors)
+          [breadcrumbs cat-ancestors])
+        [:ul#children.font-semibold.my-3
          (doall
            (for [{:keys [id] :as child} children]
              [:<> {:key id}
@@ -103,7 +128,6 @@
                 {:class "text-gray-800 bg-content border-gray-800 hover:bg-gray-200"
                  :href (-> js/window .-location .-pathname (str "/" id))}
                 (:name child)]]]))]
-
         [models/search-and-list
          #(dispatch [:routing/navigate
                      [::routes/categories-show 

@@ -36,10 +36,6 @@ step 'there is no :txt button' do |txt|
   expect(page).not_to have_content txt
 end
 
-step 'I click on category :category_name' do |category_name|
-  find('.ui-models-list-item', text: category_name).click
-end
-
 step 'I see category :category_name' do |category_name|
   find('.ui-models-list-item', text: category_name)
 end

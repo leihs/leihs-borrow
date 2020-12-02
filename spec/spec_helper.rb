@@ -5,7 +5,7 @@ require 'capybara'
 require 'uuidtools'
 require 'pry'
 
-ACCEPTED_FIREFOX_ENV_PATHS = ['FIREFOX_ESR_60_PATH']
+ACCEPTED_FIREFOX_ENV_PATHS = ['FIREFOX_ESR_78_PATH']
 
 # switch to HTTPS ?
 LEIHS_BORROW_HTTP_BASE_URL = ENV['LEIHS_BORROW_HTTP_BASE_URL'].presence || 'http://localhost:3250'
