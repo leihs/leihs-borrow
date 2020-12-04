@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Nov 30 2020 13:37:05 GMT+0100 (Central European Standard Time)
+# timestamp: Fri Dec 04 2020 11:56:12 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -320,6 +320,17 @@ type Property {
 
 """Root of all queries."""
 type QueryRoot {
+  categories(
+    ids: [UUID!]
+    poolIds: [UUID!]
+
+    """
+    This is used in case of fetching the categories present in the URL. If not
+    all categories are found among the reservable ones, then the path itself is invalid.
+    """
+    raiseIfNotAllIdsFound: Boolean
+    userId: UUID
+  ): [Category!]
   category(id: UUID!, parentId: UUID): Category
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   currentUser(userId: UUID): CurrentUser!

@@ -349,6 +349,13 @@
                              :parentId {:type :UUID}}
                       :resolve :category
                       :type :Category}
+           :categories {:resolve :categories
+                        :args {:ids {:type (list (non-null :UUID))}
+                               :userId {:type :UUID}
+                               :poolIds {:type (list (non-null :UUID))}
+                               :raiseIfNotAllIdsFound {:description "This is used in case of fetching the categories present in the URL. If not all categories are found among the reservable ones, then the path itself is invalid."
+                                                       :type Boolean}}
+                        :type (list (non-null :Category))}
            :rootCategories {:resolve :root-categories
                             :args {:limit {:type Int}
                                    :userId {:type :UUID}

@@ -69,3 +69,31 @@ Feature: Search results (and caching)
     And I see model "Beamer"
     And I see model "Mini Beamer"
     And don't see any breadcrumbs
+
+  Scenario: Breadcrumbs when coming directly to a sub-category
+    When visit the sub-category "Mini Beamers"
+    Then the title of the page is "Mini Beamers"
+    And I see 1 model
+    And I see model "Mini Beamer"
+    And I see the following breadcrumb:
+      | category |
+      | Video    |
+      | Beamers  |
+    And I pry
+
+    When I click on "Beamers" within breadcrumbs
+    Then the title of the page is "Beamers"
+    And I see 2 models
+    And I see model "Beamer"
+    And I see model "Mini Beamer"
+    And I see the following breadcrumb:
+      | category |
+      | Video    |
+
+    When I click on "Video" within breadcrumbs
+    Then the title of the page is "Video"
+    And I see 3 models
+    And I see model "Video Camera"
+    And I see model "Beamer"
+    And I see model "Mini Beamer"
+    And don't see any breadcrumbs

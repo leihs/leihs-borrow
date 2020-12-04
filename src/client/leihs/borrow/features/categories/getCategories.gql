@@ -1,0 +1,22 @@
+query getCategories(
+  $userId: UUID,
+  $ids: [UUID!],
+  $poolIds: [UUID!]
+) {
+  categories: categories(
+    userId: $userId,
+    ids: $ids,
+    poolIds: $poolIds,
+    raiseIfNotAllIdsFound: true
+  ) {
+    id
+    name
+    images {
+      imageUrl
+    }
+    children(userId: $userId, poolIds: $poolIds) {
+      id
+      name
+    }
+  }
+}

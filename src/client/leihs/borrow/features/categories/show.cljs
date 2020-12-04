@@ -26,35 +26,59 @@
 (def query
   (rc/inline "leihs/borrow/features/categories/getCategoryShow.gql"))
 
+(def categories-query
+  (rc/inline "leihs/borrow/features/categories/getCategories.gql"))
+
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/categories-show
   (fn-traced [{:keys [db]} [_ {:keys [query-params] :as args}]]
     (let [categories-path (get-in args [:route-params :categories-path])
-          categories (split categories-path #"/")
-          category-id (last categories)
-          parent-id (last (butlast categories))
+          category-ids (split categories-path #"/")
+          ancestor-ids (butlast category-ids)
+          category-id (last category-ids)
+          parent-id (last ancestor-ids)
           user-id (filters/user-id db)]
       {:dispatch-n (list [::filters/set-multiple query-params]
+
+                         ; We include the actual category itself because the
+                         ; backend validates if all categories in the path
+                         ; are still among the reservable ones.
+                         [::re-graph/query categories-query
+                          {:ids category-ids
+                           :poolIds (when-let [pool-id (filters/pool-id db)]
+                                      [pool-id])}
+                          [::on-fetched-categories-data]]
+
+                         ; We fetch the actual category again to get the correct
+                         ; label in the context of the parent category.
                          [::re-graph/query
                           query
-                          {:categoryId category-id
-                           :parentId parent-id
-                           :poolIds (when-let [pool-id (filters/pool-id db)]
-                                      [pool-id])
-                           :userId user-id}
+                          {:categoryId category-id :parentId parent-id}
                           [::on-fetched-category-data category-id]]
+
                          [::models/get-models {:categoryId category-id}])})))
+
+(reg-event-db
+  ::on-fetched-categories-data
+  (fn-traced [db [_ {:keys [data errors]}]]
+    (-> db
+        (cond-> errors (assoc-in [::errors] errors))
+        (update-in [:ls ::data]
+                   #(apply merge %1 %2)
+                   (->> data
+                        :categories
+                        (map #(hash-map (:id %) %)))))))
 
 (reg-event-db
   ::on-fetched-category-data
   (fn-traced [db [_ category-id {:keys [data errors]}]]
     (-> db
-        (update-in [:ls ::data category-id] (fnil identity {}))
-        (cond->
-          errors
+        (cond-> errors
           (assoc-in [::errors category-id] errors))
-        (assoc-in [:ls ::data category-id] (:category data)))))
+        (update-in [:ls ::data category-id]
+                   merge
+                   (:category data)))))
 
 (reg-event-fx
   ::clear
@@ -80,21 +104,19 @@
 (defn breadcrumbs [cat-ancestors]
   [:div#breadcrumbs
    (interpose
-     " | "
-     (loop [as-reversed (reverse cat-ancestors)
-            bc-links []]
-       (if (empty? as-reversed)
+     " > "
+     (loop [ancs cat-ancestors, bc-links []]
+       (if (empty? ancs)
          bc-links
-         (recur (rest as-reversed)
-                (let [current-as (reverse as-reversed)
-                      href (->> current-as
+         (recur (butlast ancs)
+                (let [href (->> ancs
                                 (map :id)
                                 (join "/")
                                 (routing/path-for ::routes/categories-show
                                                   :categories-path)
                                 str)
                       link [:a {:href href}
-                            (-> current-as last :name)]]
+                            (-> ancs last :name)]]
                   (cons link bc-links))))))])
 
 (defn view []
@@ -106,7 +128,8 @@
         cat-ancestors @(subscribe [::ancestors prev-ids])
         {:keys [children] :as category} @(subscribe [::category-data category-id])
         errors @(subscribe [::errors category-id])
-        is-loading? (not category)
+        is-loading? (not (and category
+                              (every? some? cat-ancestors)))
         extra-args {:categoryId category-id}]
 
     [:<>

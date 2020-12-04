@@ -12,6 +12,6 @@ end
 
 step 'I see the following breadcrumb:' do |table|
   within '#breadcrumbs' do
-    expect(current_scope).to have_content table.rows.flatten.join(" | ")
+    expect(current_scope).to have_content table.rows.flatten.join(" > ")
   end
 end
