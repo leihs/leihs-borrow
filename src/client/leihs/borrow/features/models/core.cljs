@@ -16,7 +16,7 @@
     [leihs.borrow.lib.translate :refer [t]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.filters :as filters]
-    [leihs.borrow.lib.helpers :refer [spy spy-with log]]
+    [leihs.borrow.lib.helpers :refer [spy spy-with log obj->map]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.pagination :as pagination]
     [leihs.borrow.client.routes :as routes]
@@ -139,19 +139,24 @@
 (def product-card-margins-in-rem 1)
 
 (defn search-panel [submit-fn clear-fn filters cache-key]
-  (let [edges @(subscribe [::edges cache-key])
-        current-user-data @(subscribe [::current-user/data])
+  (let [current-user-data @(subscribe [::current-user/data])
         filters @(subscribe [::filters/current])
-        target-users @(subscribe [::target-users])
         pools @(subscribe [::current-user/pools])
         routing @(subscribe [:routing/routing])
         on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
     [:> UI/Components.ModelFilterForm
      {:className (str "mt-3 mb-3" (when on-search-view? ""))
+      :initialTerm (:term filters)
+      :initialUserId (:user-id filters)
+      :initialPoolId (:pool-id filters)
+      :initialAvailableBetween (:available-between? filters)
+      :initialStartDate (:start-date filters)
+      :initialEndDate (:end-date filters)
+      :initialQuantity (:quantity filters)
       :user (:user current-user-data)
       :delegations (:delegations current-user-data)
       :pools pools
-      :onSubmit submit-fn
+      :onSubmit #(submit-fn (obj->map %))
       :onClear clear-fn}]))
 
 (defn models-list [models]
