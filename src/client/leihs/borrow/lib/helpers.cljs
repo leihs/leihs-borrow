@@ -28,3 +28,8 @@
   (js/JSON.stringify x 0 2))
 
 (defn pp [x] (-> x clj->js pp-js))
+
+(defn obj->map [x]
+  (-> x
+      (js->clj :keywordize-keys true)
+      kebab-case-keys))

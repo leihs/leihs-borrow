@@ -16,7 +16,7 @@
     [leihs.borrow.lib.translate :refer [t]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.filters :as filters]
-    [leihs.borrow.lib.helpers :refer [spy spy-with log]]
+    [leihs.borrow.lib.helpers :refer [spy spy-with log obj->map]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.pagination :as pagination]
     [leihs.borrow.client.routes :as routes]
@@ -139,114 +139,25 @@
 (def product-card-margins-in-rem 1)
 
 (defn search-panel [submit-fn clear-fn filters cache-key]
-  (let [state (r/atom (-> filters
-                          (select-keys [:term
-                                        :start-date
-                                        :end-date
-                                        :available-between?
-                                        :quantity
-                                        :user-id
-                                        :pool-id])
-                          (update :quantity #(or % 1))))]
-    (fn [submit-fn clear-fn filters cache-key]
-      (let [edges @(subscribe [::edges cache-key])
-            current-user-data @(subscribe [::current-user/data])
-            target-users @(subscribe [::target-users])
-            pools @(subscribe [::current-user/pools])
-            routing @(subscribe [:routing/routing])
-            on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
-        [:div.px-3.py-4.bg-light {:class (str "mt-3 mb-3" (when on-search-view? ""))}
-         [:form.form.form-compact
-          {:action "/search"
-           :on-submit (fn [event]
-                        (.preventDefault event)
-                        (submit-fn (cond-> @state
-                                     (= (:pool-id @state) "all")
-                                     (dissoc :pool-id))))}
-
-          [:div.form-group
-           [form-line :search-term (t :borrow.filter/search)
-            {:type :text
-             :value (:term @state)
-             :on-change (fn [ev]
-                          (swap! state assoc :term (-> ev .-target .-value)))}]]
-
-          (when-not (empty? target-users)
-            [:label.row
-             [:span.text-xs.col-3.col-form-label (t :borrow.filter/for)]
-             [:div.col-9
-              [:select {:class "form-control"
-                        :default-value (or (:user-id @state)
-                                           (-> current-user-data :user :id))
-                        :name :user-id
-                        :on-change #(swap! state assoc :user-id (-> % .-target .-value))}
-               (doall
-                 (for [user target-users]
-                   [:option {:value (:id user) :key (:id user)}
-                    (:name user)]))]]])
-
-          [:label.row
-           [:span.text-xs.col-3.col-form-label (t :borrow.filter/from)]
-           [:div.col-9
-            [:select (let [value (or (:pool-id @state) "all")]
-                       {:class "form-control"
-                        :value value
-                        :name :pool-id
-                        :on-change #(swap! state assoc :pool-id (-> % .-target .-value))})
-             (doall
-               (for [pool (cons {:id "all" :name  (t :borrow.filter.pools/all)} pools)]
-                 [:option {:value (:id pool) :key (:id pool)}
-                  (:name pool)]))]]]
-
-          [:div.form-group
-           [:div.row
-            [:span.text-xs.col-3.col-form-label (t :borrow.filter/time-span)]
-            [:div.col-9
-             [:label.custom-control.custom-checkbox
-              [:input.custom-control-input
-               {:type :checkbox
-                :name :only-available
-                :checked (:available-between? @state)
-                :on-change (fn [_]
-                             (swap! state update :available-between? not))}]
-              [:span.custom-control-label (t :borrow.filter/show-only-available)]]]]]
-
-          [:div {:class (if-not (:available-between? @state) "d-none")}
-           [:div.form-group
-            [form-line :start-date (t :borrow.filter/from)
-             {:type :date
-              :required true
-              :disabled (not (:available-between? @state))
-              :value (:start-date @state)
-              :on-change #(swap! state assoc :start-date (-> % .-target .-value))}]]
-
-           [:div.form-group
-            [form-line :end-date (t :borrow.filter/until)
-             {:type :date
-              :required true
-              :disabled (not (:available-between? @state))
-              :min (:start-date @state)
-              :value (:end-date @state)
-              :on-change #(swap! state assoc :end-date (-> % .-target .-value))}]]
-
-           [:div.form-group
-            [form-line :quantity (t :borrow.filter/quantity)
-             {:type :number
-              :min 1
-              :value (:quantity @state)
-              :on-change #(swap! state assoc :quantity (-> % .-target .-value))}]]]
-
-          [:button.btn.btn-success.dont-invert.rounded-pill
-           {:type :submit
-            :class :mt-2}
-           (t :borrow.filter/get-results)]
-
-          [:button.btn.btn-secondary.dont-invert.rounded-pill.mx-1
-           {:type :button
-            :disabled (not (or (seq filters) (seq edges)))
-            :on-click #(do (reset! state nil) (clear-fn))
-            :class :mt-2}
-           (t :borrow.filter/clear)]]]))))
+  (let [current-user-data @(subscribe [::current-user/data])
+        filters @(subscribe [::filters/current])
+        pools @(subscribe [::current-user/pools])
+        routing @(subscribe [:routing/routing])
+        on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
+    [:> UI/Components.ModelFilterForm
+     {:className (str "mt-3 mb-3" (when on-search-view? ""))
+      :initialTerm (:term filters)
+      :initialUserId (:user-id filters)
+      :initialPoolId (:pool-id filters)
+      :initialAvailableBetween (:available-between? filters)
+      :initialStartDate (:start-date filters)
+      :initialEndDate (:end-date filters)
+      :initialQuantity (:quantity filters)
+      :user (:user current-user-data)
+      :delegations (:delegations current-user-data)
+      :pools pools
+      :onSubmit #(submit-fn (obj->map %))
+      :onClear clear-fn}]))
 
 (defn models-list [models]
   (let
