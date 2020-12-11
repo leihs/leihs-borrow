@@ -42,33 +42,9 @@ describe 'contracts' do
     )
 
     c1_id = 'e1828e88-dec8-4430-963f-2a528aeb7d60'
-
-    database.run <<-SQL
-      SET session_replication_role = REPLICA;
-
-      INSERT INTO contracts(
-        id,
-        user_id,
-        inventory_pool_id,
-        compact_id,
-        purpose,
-        created_at,
-        updated_at,
-        state
-      )
-      VALUES (
-        '#{c1_id}',
-        '#{user.id}',
-        '#{inventory_pool.id}',
-        '#{Faker::Lorem.word}',
-        '#{Faker::Lorem.sentence}',
-        now(),
-        now(),
-        'open'
-        );
-
-      SET session_replication_role = DEFAULT;
-    SQL
+    Contract.create_with_disabled_triggers(c1_id,
+                                           user.id,
+                                           inventory_pool.id)
 
     r1 = FactoryBot.create(:reservation,
                            leihs_model: model,
@@ -78,33 +54,9 @@ describe 'contracts' do
                            user: user)
 
     c2_id = '7f484dff-8058-4cdf-b91d-77ae5c459d0e'
-
-    database.run <<-SQL
-      SET session_replication_role = REPLICA;
-
-      INSERT INTO contracts(
-        id,
-        user_id,
-        inventory_pool_id,
-        compact_id,
-        purpose,
-        created_at,
-        updated_at,
-        state
-      )
-      VALUES (
-        '#{c2_id}',
-        '#{user.id}',
-        '#{inventory_pool.id}',
-        '#{Faker::Lorem.word}',
-        '#{Faker::Lorem.sentence}',
-        now(),
-        now(),
-        'open'
-        );
-
-      SET session_replication_role = DEFAULT;
-    SQL
+    Contract.create_with_disabled_triggers(c2_id,
+                                           user.id,
+                                           inventory_pool.id)
 
     r2 = FactoryBot.create(:reservation,
                            leihs_model: model,
@@ -156,27 +108,6 @@ describe 'contracts' do
                         state: :approved,
                         order: order)
     end
-
-    # let(:contract_1) do
-    #   FactoryBot.create(:contract,
-    #                     user: user,
-    #                     inventory_pool: inventory_pool,
-    #                     state: :open)
-    # end
-
-    # let(:contract_2) do
-    #   FactoryBot.create(:contract,
-    #                     user: user,
-    #                     inventory_pool: inventory_pool,
-    #                     state: :open)
-    # end
-
-    # let(:contract_3) do
-    #   FactoryBot.create(:contract,
-    #                     user: user,
-    #                     inventory_pool: inventory_pool_2,
-    #                     state: :open)
-    # end
 
     let(:model_2) do
       FactoryBot.create(:leihs_model)
