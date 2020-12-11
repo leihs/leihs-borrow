@@ -25,6 +25,7 @@
    :available-quantity-in-date-range models/available-quantity-in-date-range
    :category categories/get-one
    :categories categories/get-multiple
+   :contract contracts/get-one
    :contracts-connection contracts/get-connection
    :cover-image images/get-cover
    :current-user users/get-current

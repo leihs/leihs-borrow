@@ -218,6 +218,7 @@
                                   :user {:type (non-null :User)
                                          :resolve :user}
                                   :poolOrder {:type :PoolOrder :resolve :pool-order}
+                                  :contract {:type :Contract :resolve :contract}
                                   :endDate {:type (non-null :Date)}
                                   :createdAt {:type (non-null :DateTime)}
                                   :updatedAt {:type (non-null :DateTime)}}}
@@ -230,6 +231,8 @@
                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                                :resolve :reservations}
                                 :order {:type :Order, :resolve :order}
+                                :contracts {:type :ContractsConnection
+                                            :resolve :contracts-connection}
                                 :createdAt {:type (non-null :DateTime)}
                                 :updatedAt {:type (non-null :DateTime)}}}
            :Order {:fields {:id {:type (non-null :UUID)}
@@ -241,6 +244,8 @@
                             :subOrdersByPool {:type (list :PoolOrder)
                                               :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
                                               :resolve :pool-orders}
+                            :contracts {:type :ContractsConnection
+                                        :resolve :contracts-connection}
                             :createdAt {:type (non-null :DateTime)}
                             :updatedAt {:type (non-null :DateTime)}}
                    :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}
@@ -298,6 +303,10 @@
            :delegation {:args {:id {:type (non-null :UUID)}}
                         :resolve :delegation
                         :type (non-null :Delegation)}
+           :contract {:args {:id {:type (non-null :UUID)}
+                             :userId {:type :UUID}}
+                      :resolve :contract
+                      :type (non-null :Contract)}
            :order {:args {:id {:type (non-null :UUID)}
                           :userId {:type :UUID}}
                    :resolve :order
