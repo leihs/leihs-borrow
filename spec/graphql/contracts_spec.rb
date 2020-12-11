@@ -183,6 +183,50 @@ describe 'contracts' do
                                status: :signed,
                                order: pool_order_2,
                                contract_id: c3_id)
+
+        q = <<~QUERY
+        {
+          order(id: "#{order.id}") {
+            contracts {
+              edges {
+                node {
+                  id
+                  reservations {
+                    id
+                    contract {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+            subOrdersByPool {
+              id
+              reservations {
+                id
+                contract {
+                  id
+                }
+              }
+              contracts {
+                edges {
+                  node {
+                    id
+                    reservations {
+                      id
+                      contract {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        QUERY
+
+        result = query(q, user.id)
       end
     end
   end
