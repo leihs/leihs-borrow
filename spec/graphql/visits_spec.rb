@@ -122,32 +122,10 @@ describe 'visits' do
                         user: user)
     end
 
-    database.run <<-SQL
-      SET session_replication_role = REPLICA;
-
-      INSERT INTO contracts(
-        id,
-        user_id,
-        inventory_pool_id,
-        compact_id,
-        purpose,
-        created_at,
-        updated_at,
-        state
-      )
-      VALUES (
-        '8473b42c-7cd3-45b1-a95d-a9750439cf9d',
-        '#{user.id}',
-        '#{inventory_pool_1.id}',
-        '#{Faker::Lorem.word}',
-        '#{Faker::Lorem.sentence}',
-        now(),
-        now(),
-        'open'
-        );
-
-      SET session_replication_role = DEFAULT;
-    SQL
+    c_id = '8051e761-0ad9-4fbf-9bb3-726f66dc0555'
+    Contract.create_with_disabled_triggers(c_id,
+                                           user.id,
+                                           inventory_pool_1.id)
 
     database.transaction do
       order = FactoryBot.create(:order,
@@ -166,7 +144,7 @@ describe 'visits' do
                         leihs_model: model_1,
                         inventory_pool: inventory_pool_1,
                         order: pool_order_1,
-                        contract_id: '8473b42c-7cd3-45b1-a95d-a9750439cf9d',
+                        contract_id: c_id,
                         status: 'signed',
                         start_date: (Date.today + 1.day).to_s,
                         end_date: (Date.today + 2.days).to_s,

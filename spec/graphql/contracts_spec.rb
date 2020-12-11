@@ -16,6 +16,13 @@ describe 'contracts' do
     )
   end
 
+  let(:inventory_pool_2) do
+    FactoryBot.create(
+      :inventory_pool,
+      id: 'eccdb633-07c1-4242-b801-685978884655'
+    )
+  end
+
   let(:model) do
     FactoryBot.create(:leihs_model,
                       id: '85b6fded-3370-455e-a4fd-60d8ace298ee')
@@ -127,5 +134,125 @@ describe 'contracts' do
         ]
       }
     })
+  end
+
+  context 'from order through pool orders down to reservations' do
+    let(:order) do
+      FactoryBot.create(:order, user: user)
+    end
+
+    let(:pool_order_1) do
+      FactoryBot.create(:pool_order,
+                        user: user,
+                        inventory_pool: inventory_pool,
+                        state: :approved,
+                        order: order)
+    end
+
+    let(:pool_order_2) do
+      FactoryBot.create(:pool_order,
+                        user: user,
+                        inventory_pool: inventory_pool_2,
+                        state: :approved,
+                        order: order)
+    end
+
+    # let(:contract_1) do
+    #   FactoryBot.create(:contract,
+    #                     user: user,
+    #                     inventory_pool: inventory_pool,
+    #                     state: :open)
+    # end
+
+    # let(:contract_2) do
+    #   FactoryBot.create(:contract,
+    #                     user: user,
+    #                     inventory_pool: inventory_pool,
+    #                     state: :open)
+    # end
+
+    # let(:contract_3) do
+    #   FactoryBot.create(:contract,
+    #                     user: user,
+    #                     inventory_pool: inventory_pool_2,
+    #                     state: :open)
+    # end
+
+    let(:model_2) do
+      FactoryBot.create(:leihs_model)
+    end
+
+    let(:model_3) do
+      FactoryBot.create(:leihs_model)
+    end
+
+    let(:model_4) do
+      FactoryBot.create(:leihs_model)
+    end
+
+    it 'works' do
+      database.transaction do
+        c1_id = 'd4c80a2e-cd06-445f-9520-a7ce1adaf8f4'
+        Contract.create_with_disabled_triggers(c1_id,
+                                               user.id,
+                                               inventory_pool.id)
+        c2_id = 'aadc0513-daeb-40a7-b566-2b41b005f2e0'
+        Contract.create_with_disabled_triggers(c2_id,
+                                               user.id,
+                                               inventory_pool.id)
+        c3_id = 'd0954b93-af72-46ba-96c0-6058255e031e'
+        Contract.create_with_disabled_triggers(c3_id,
+                                               user.id,
+                                               inventory_pool_2.id)
+
+        r1 = FactoryBot.create(:reservation,
+                               user: user,
+                               inventory_pool: inventory_pool,
+                               leihs_model: model,
+                               item_id: FactoryBot.create(:item,
+                                                          leihs_model: model,
+                                                          responsible: inventory_pool,
+                                                          owner: inventory_pool).id,
+                               status: :signed,
+                               order: pool_order_1,
+                               contract_id: c1_id)
+
+        r2 = FactoryBot.create(:reservation,
+                               user: user,
+                               inventory_pool: inventory_pool,
+                               leihs_model: model,
+                               item_id: FactoryBot.create(:item,
+                                                          leihs_model: model_2,
+                                                          responsible: inventory_pool,
+                                                          owner: inventory_pool).id,
+                               status: :signed,
+                               order: pool_order_1,
+                               contract_id: c1_id)
+
+        r3 = FactoryBot.create(:reservation,
+                               user: user,
+                               inventory_pool: inventory_pool,
+                               leihs_model: model,
+                               item_id: FactoryBot.create(:item,
+                                                          leihs_model: model_3,
+                                                          responsible: inventory_pool,
+                                                          owner: inventory_pool).id,
+                               status: :signed,
+                               order: pool_order_1,
+                               contract_id: c2_id)
+
+        r4 = FactoryBot.create(:reservation,
+                               user: user,
+                               inventory_pool: inventory_pool_2,
+                               leihs_model: model,
+                               item_id: FactoryBot.create(:item,
+                                                          leihs_model: model_4,
+                                                          responsible: inventory_pool_2,
+                                                          owner: inventory_pool_2).id,
+                               status: :signed,
+                               order: pool_order_2,
+                               contract_id: c3_id)
+      end
+    end
   end
 end

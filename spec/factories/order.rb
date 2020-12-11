@@ -6,6 +6,7 @@ end
 FactoryBot.define do
   factory :order do
     user
+    purpose { Faker::Lorem.sentence }
     title { purpose }
   end
 end
