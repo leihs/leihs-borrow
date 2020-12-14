@@ -74,6 +74,10 @@
                            :name {:type String}
                            :login {:type String}
                            :contracts {:type :ContractsConnection
+                                       :args {:first {:type Int}
+                                              :after {:type String}
+                                              :states {:type (list :ContractStateEnum)}
+                                              :orderBy {:type (list :ContractsOrderByInput)}}
                                        :resolve :contracts-connection}
                            :language {:type :Language
                                       :resolve :language}}}
@@ -232,6 +236,10 @@
                                                :resolve :reservations}
                                 :order {:type :Order, :resolve :order}
                                 :contracts {:type :ContractsConnection
+                                            :args {:first {:type Int}
+                                                   :after {:type String}
+                                                   :states {:type (list :ContractStateEnum)}
+                                                   :orderBy {:type (list :ContractsOrderByInput)}}
                                             :resolve :contracts-connection}
                                 :createdAt {:type (non-null :DateTime)}
                                 :updatedAt {:type (non-null :DateTime)}}}
@@ -245,6 +253,10 @@
                                               :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
                                               :resolve :pool-orders}
                             :contracts {:type :ContractsConnection
+                                        :args {:first {:type Int}
+                                               :after {:type String}
+                                               :states {:type (list :ContractStateEnum)}
+                                               :orderBy {:type (list :ContractsOrderByInput)}}
                                         :resolve :contracts-connection}
                             :createdAt {:type (non-null :DateTime)}
                             :updatedAt {:type (non-null :DateTime)}}

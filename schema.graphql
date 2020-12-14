@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Dec 11 2020 12:13:26 GMT+0100 (Central European Standard Time)
+# timestamp: Mon Dec 14 2020 10:01:37 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -234,7 +234,7 @@ type MutationRoot {
 
 type Order {
   borrowUrl: String!
-  contracts: ContractsConnection
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   id: UUID!
   purpose: String!
@@ -287,7 +287,7 @@ type Pickup {
 }
 
 type PoolOrder {
-  contracts: ContractsConnection
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   id: UUID!
   inventoryPool: InventoryPool!
@@ -458,7 +458,7 @@ type UnsubmittedOrder {
 A `User` represents a human agent that can log into and use the system.
 """
 type User {
-  contracts: ContractsConnection
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   email: String
   firstname: String
   id: UUID!
