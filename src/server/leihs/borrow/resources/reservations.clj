@@ -27,10 +27,10 @@
   (as-> (database/columns tx "reservations") <>
     (remove #{:created_at :updated_at :start_date :end_date} <>)
     (conj <>
-          (helpers/date-time-created-at)
-          (helpers/date-time-updated-at)
-          (helpers/date-start-date)
-          (helpers/date-end-date))))
+          (helpers/date-time-created-at :reservations)
+          (helpers/date-time-updated-at :reservations)
+          (helpers/date-start-date :reservations)
+          (helpers/date-end-date :reservations))))
 
 (defn query [sql-format tx]
   (jdbc/query tx
@@ -41,41 +41,40 @@
 (defn count [tx model-id]
   (-> (sql/select :%count.*)
       (sql/from :reservations)
-      (sql/where [:= :model_id model-id])
+      (sql/where [:= :reservations.model_id model-id])
       sql/format
       (query tx)
       first
       :count))
 
 (defn updated-at [tx model-id]
-  (-> (sql/select :updated_at)
+  (-> (sql/select :reservations.updated_at)
       (sql/from :reservations)
       (sql/where [:= :model_id model-id])
-      (sql/order-by [:updated_at :desc])
+      (sql/order-by [:reservations.updated_at :desc])
       (sql/limit 1)
       sql/format
       (query tx)
       first
       :updated_at))
 
-(defn unsubmitted-sqlmap [tx user-id]
+(defn base-sqlmap [tx user-id]
   (-> (apply sql/select (columns tx))
       (sql/from :reservations)
-      (sql/where [:and
-                  [:= :status "unsubmitted"]
-                  [:= :user_id user-id]])))
+      (sql/merge-where [:= :reservations.user_id user-id])))
+
+(defn unsubmitted-sqlmap [tx user-id]
+  (-> (base-sqlmap tx user-id)
+      (sql/merge-where [:= :reservations.status "unsubmitted"])))
 
 (defn draft-sqlmap [tx user-id]
-  (-> (apply sql/select (columns tx))
-      (sql/from :reservations)
-      (sql/where [:and
-                  [:= :status "draft"]
-                  [:= :user_id user-id]])))
+  (-> (base-sqlmap tx user-id)
+      (sql/merge-where [:= :reservations.status "draft"])))
 
 (defn for-customer-order [tx user-id]
   (-> (unsubmitted-sqlmap tx user-id)
       sql/format
-      (->> (jdbc/query tx))))
+      (query tx)))
 
 (defn with-invalid-availability [context reservations]
   (->> reservations
