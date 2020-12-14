@@ -259,6 +259,9 @@
                                                :states {:type (list :ContractStateEnum)}
                                                :orderBy {:type (list :ContractsOrderByInput)}}
                                         :resolve :contracts-connection}
+                            :reservations {:type (list :Reservation)
+                                           :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                           :resolve :reservations}
                             :createdAt {:type (non-null :DateTime)}
                             :updatedAt {:type (non-null :DateTime)}}
                    :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}

@@ -126,32 +126,42 @@
                   [:= :user_id user-id]])
       (sql/returning (valid-until-sql tx))
       sql/format
-      (->> (jdbc/query tx))
+      (query tx)
       first
       :updated_at))
 
 (defn get-drafts [tx user-id ids]
-  (-> (apply sql/select (columns tx))
-      (sql/from :reservations)
-      (sql/merge-where [:= :status "draft"])
-      (sql/merge-where [:= :user_id user-id])
+  (-> (draft-sqlmap tx user-id)
       (sql/merge-where [:in :id ids])
       sql/format
       (query tx)))
 
+(defn merge-where-according-to-container
+  [sqlmap container {:keys [id] :as value}]
+  (case container
+    :PoolOrder
+    (sql/merge-where sqlmap [:= :reservations.order_id id])
+    :Order
+    (-> sqlmap
+        (sql/merge-join :orders
+                        [:= :reservations.order_id :orders.id])
+        (sql/merge-where [:= :orders.customer_order_id id]))
+    :Contract
+    (sql/merge-where sqlmap [:= :reservations.contract_id id])
+    (:Pickup :Return :Visit)
+    (sql/merge-where sqlmap [:in :reservations.id (:reservation-ids value)])
+    :CurrentUser
+    (sql/merge-where sqlmap [:= :reservations.status "unsubmitted"])
+    sqlmap))
+
 (defn get-multiple
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  [{{:keys [tx] user-id :target-user-id} :request
+    container ::lacinia/container-type-name
+    :as context}
    {:keys [order-by]}
    value]
-  (-> (apply sql/select (columns tx))
-      (sql/from :reservations)
-      (sql/where (case (::lacinia/container-type-name context)
-                   :PoolOrder [:= :order_id (:id value)]
-                   :Contract [:= :contract_id (:id value)]
-                   (:Pickup :Return :Visit) [:in :id (:reservation-ids value)]
-                   :CurrentUser [:and
-                                 [:= :status "unsubmitted"]
-                                 [:= :user_id user-id]]))
+  (-> (base-sqlmap tx user-id)
+      (merge-where-according-to-container container value)
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by)))
       sql/format
@@ -171,8 +181,8 @@
                       (sql/merge-where [:= :du.delegation_id :r.user_id]))]])
       (sql/returning :id)
       sql/format
-      (->> (jdbc/query tx)
-           (map :id))))
+      (query tx)
+      (->> (map :id))))
 
 (defn distribute [pool-avails quantity]
   (if (> quantity
@@ -218,7 +228,6 @@
                          (take quantity)))
         (assoc :returning (columns tx))
         sql/format
-        log/spy
         (query tx))))
 
 (defn create
