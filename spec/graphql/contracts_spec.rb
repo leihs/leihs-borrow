@@ -95,6 +95,7 @@ describe 'contracts' do
 
     let(:pool_order_1) do
       FactoryBot.create(:pool_order,
+                        id: '81c2d71b-e44f-461a-88a8-cabdda2946f6',
                         user: user,
                         inventory_pool: inventory_pool,
                         state: :approved,
@@ -103,6 +104,7 @@ describe 'contracts' do
 
     let(:pool_order_2) do
       FactoryBot.create(:pool_order,
+                        id: 'f21b2729-a0e0-48ec-af96-feb2a7d45121',
                         user: user,
                         inventory_pool: inventory_pool_2,
                         state: :approved,
@@ -150,7 +152,7 @@ describe 'contracts' do
                                contract_id: c1_id)
 
         r2 = FactoryBot.create(:reservation,
-                               id: 'b6271cff-21ab-445c-a74d-fcd8965789dc',
+                               id: '8a215e9d-6016-42ca-812d-249b04e1e7ae',
                                user: user,
                                inventory_pool: inventory_pool,
                                leihs_model: model,
@@ -163,6 +165,7 @@ describe 'contracts' do
                                contract_id: c1_id)
 
         r3 = FactoryBot.create(:reservation,
+                               id: 'b6271cff-21ab-445c-a74d-fcd8965789dc',
                                user: user,
                                inventory_pool: inventory_pool,
                                leihs_model: model,
@@ -175,6 +178,7 @@ describe 'contracts' do
                                contract_id: c2_id)
 
         r4 = FactoryBot.create(:reservation,
+                               id: 'f0d86df9-8f2c-4b30-b6ff-a63e65e1cf9b',
                                user: user,
                                inventory_pool: inventory_pool_2,
                                leihs_model: model,
@@ -202,28 +206,28 @@ describe 'contracts' do
                 }
               }
             }
-            # subOrdersByPool(orderBy: [{attribute: ID, direction: ASC}]) {
-            #   id
-            #   reservations(orderBy: [{attribute: ID, direction: ASC}]) {
-            #     id
-            #     contract {
-            #       id
-            #     }
-            #   }
-            #   contracts(orderBy: [{attribute: ID, direction: ASC}]) {
-            #     edges {
-            #       node {
-            #         id
-            #         reservations(orderBy: [{attribute: ID, direction: ASC}]) {
-            #           id
-            #           contract {
-            #             id
-            #           }
-            #         }
-            #       }
-            #     }
-            #   }
-            # }
+            subOrdersByPool(orderBy: [{attribute: ID, direction: ASC}]) {
+              id
+              reservations(orderBy: [{attribute: ID, direction: ASC}]) {
+                id
+                contract {
+                  id
+                }
+              }
+              contracts(orderBy: [{attribute: ID, direction: ASC}]) {
+                edges {
+                  node {
+                    id
+                    reservations(orderBy: [{attribute: ID, direction: ASC}]) {
+                      id
+                      contract {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
         QUERY
@@ -254,7 +258,54 @@ describe 'contracts' do
                       contract: { id: c3_id } }
                   ] } }
               ]
-            }
+            },
+            subOrdersByPool: [
+              { id: pool_order_1.id,
+                reservations: [
+                  { id: r1.id,
+                    contract: { id: c1_id } },
+                  { id: r2.id,
+                    contract: { id: c1_id } },
+                  { id: r3.id,
+                    contract: { id: c2_id } }
+                ],
+                contracts: {
+                  edges: [
+                    { node: {
+                      id: c1_id,
+                      reservations: [
+                        { id: r1.id,
+                          contract: { id: c1_id } },
+                        { id: r2.id,
+                          contract: { id: c1_id } }
+                      ] } },
+                    { node: {
+                      id: c2_id,
+                      reservations: [
+                        { id: r3.id,
+                          contract: { id: c2_id } }
+                      ] } }
+                  ]
+                }
+              },
+              { id: pool_order_2.id,
+                reservations: [
+                  { id: r4.id,
+                    contract: { id: c3_id } }
+                ],
+                contracts: {
+                  edges: [
+                    { node: {
+                      id: c3_id,
+                      reservations: [
+                        { id: r4.id,
+                          contract: { id: c3_id } }
+                      ] }
+                    }
+                  ]
+                }
+              }
+            ]
           }
         })
       end
