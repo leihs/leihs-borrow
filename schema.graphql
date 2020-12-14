@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Dec 14 2020 10:01:37 GMT+0100 (Central European Standard Time)
+# timestamp: Mon Dec 14 2020 13:43:46 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -45,7 +45,7 @@ type Contract {
   inventoryPool: InventoryPool!
   note: String
   purpose: String!
-  reservations: [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
   state: String!
 }
 
