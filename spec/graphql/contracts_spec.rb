@@ -123,20 +123,21 @@ describe 'contracts' do
 
     it 'works' do
       database.transaction do
-        c1_id = 'd4c80a2e-cd06-445f-9520-a7ce1adaf8f4'
+        c1_id = 'aadc0513-daeb-40a7-b566-2b41b005f2e0'
         Contract.create_with_disabled_triggers(c1_id,
                                                user.id,
                                                inventory_pool.id)
-        c2_id = 'aadc0513-daeb-40a7-b566-2b41b005f2e0'
+        c2_id = 'd0954b93-af72-46ba-96c0-6058255e031e'
         Contract.create_with_disabled_triggers(c2_id,
                                                user.id,
                                                inventory_pool.id)
-        c3_id = 'd0954b93-af72-46ba-96c0-6058255e031e'
+        c3_id = 'd4c80a2e-cd06-445f-9520-a7ce1adaf8f4'
         Contract.create_with_disabled_triggers(c3_id,
                                                user.id,
                                                inventory_pool_2.id)
 
         r1 = FactoryBot.create(:reservation,
+                               id: '0c1bbc9f-2b3e-44f9-b0bb-69919200e571',
                                user: user,
                                inventory_pool: inventory_pool,
                                leihs_model: model,
@@ -149,6 +150,7 @@ describe 'contracts' do
                                contract_id: c1_id)
 
         r2 = FactoryBot.create(:reservation,
+                               id: 'b6271cff-21ab-445c-a74d-fcd8965789dc',
                                user: user,
                                inventory_pool: inventory_pool,
                                leihs_model: model,
@@ -187,11 +189,11 @@ describe 'contracts' do
         q = <<~QUERY
         {
           order(id: "#{order.id}") {
-            contracts {
+            contracts(orderBy: [{attribute: ID, direction: ASC}]) {
               edges {
                 node {
                   id
-                  reservations {
+                  reservations(orderBy: [{attribute: ID, direction: ASC}]) {
                     id
                     contract {
                       id
@@ -200,33 +202,61 @@ describe 'contracts' do
                 }
               }
             }
-            subOrdersByPool {
-              id
-              reservations {
-                id
-                contract {
-                  id
-                }
-              }
-              contracts {
-                edges {
-                  node {
-                    id
-                    reservations {
-                      id
-                      contract {
-                        id
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            # subOrdersByPool(orderBy: [{attribute: ID, direction: ASC}]) {
+            #   id
+            #   reservations(orderBy: [{attribute: ID, direction: ASC}]) {
+            #     id
+            #     contract {
+            #       id
+            #     }
+            #   }
+            #   contracts(orderBy: [{attribute: ID, direction: ASC}]) {
+            #     edges {
+            #       node {
+            #         id
+            #         reservations(orderBy: [{attribute: ID, direction: ASC}]) {
+            #           id
+            #           contract {
+            #             id
+            #           }
+            #         }
+            #       }
+            #     }
+            #   }
+            # }
           }
         }
         QUERY
 
         result = query(q, user.id)
+        expect_graphql_result(result, {
+          order: {
+            contracts: {
+              edges: [
+                { node: {
+                  id: c1_id,
+                  reservations: [
+                    { id: r1.id,
+                      contract: { id: c1_id } },
+                    { id: r2.id,
+                      contract: { id: c1_id } }
+                  ] } },
+                { node: {
+                  id: c2_id,
+                  reservations: [
+                    { id: r3.id,
+                      contract: { id: c2_id } }
+                  ] } },
+                { node: {
+                  id: c3_id,
+                  reservations: [
+                    { id: r4.id,
+                      contract: { id: c3_id } }
+                  ] } }
+              ]
+            }
+          }
+        })
       end
     end
   end
