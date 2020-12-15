@@ -9,8 +9,7 @@
            (into (sorted-map) <>)
            (update <> 
                    :attribute
-                   (comp keyword
-                         (partial str table ".")
+                   (comp (partial sql/qualify table)
                          string/lower-case
                          name))
            (vals <>))
