@@ -8,6 +8,7 @@
   :dependencies
   (extend-shared-deps
     '[[io.dropwizard.metrics/metrics-core "3.1.2"] ; lacinia does not work with the version from shared-deps
+      [better-cond "2.1.0"]
       [clj-http "3.10.0"]
       [clojure.java-time "0.3.2"]
       [com.layerware/hugsql "0.5.1"]

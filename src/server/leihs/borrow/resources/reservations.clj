@@ -60,13 +60,10 @@
       first
       :updated_at))
 
-(defn base-sqlmap
-  ([tx] (base-sqlmap tx nil))
-  ([tx user-id]
-   (-> (apply sql/select (columns tx))
-       (sql/from :reservations)
-       (cond-> user-id
-         (sql/merge-where [:= :reservations.user_id user-id])))))
+(defn base-sqlmap [tx user-id]
+  (-> (apply sql/select (columns tx))
+      (sql/from :reservations)
+      (sql/merge-where [:= :reservations.user_id user-id])))
 
 (defn unsubmitted-sqlmap [tx user-id]
   (-> (base-sqlmap tx user-id)
@@ -141,31 +138,22 @@
       (query tx)))
 
 (defn merge-where-according-to-container
-  [sqlmap container {:keys [id user-id] :as value}]
-  (let [sqlmap-with-user-id
-        (sql/merge-where sqlmap
-                         [:= :reservations.user_id user-id])]
-    (case container
-      :PoolOrder
-      (sql/merge-where sqlmap-with-user-id
-                       [:= :reservations.order_id id])
-      :Order
-      (-> sqlmap-with-user-id
-          (sql/merge-join :orders
-                          [:= :reservations.order_id :orders.id])
-          (sql/merge-where [:= :orders.customer_order_id id]))
-      :Contract
-      (sql/merge-where sqlmap-with-user-id
-                       [:= :reservations.contract_id id])
-      (:Pickup :Return :Visit)
-      (sql/merge-where sqlmap-with-user-id
-                       [:in :reservations.id (:reservation-ids value)])
-      :CurrentUser
-      (sql/merge-where sqlmap
-                       [:and
-                        [:= :reservations.status "unsubmitted"]
-                        [:= :reservations.user_id id]])
-      sqlmap)))
+  [sqlmap container {:keys [id] :as value}]
+  (case container
+    :PoolOrder
+    (sql/merge-where sqlmap [:= :reservations.order_id id])
+    :Order
+    (-> sqlmap
+        (sql/merge-join :orders
+                        [:= :reservations.order_id :orders.id])
+        (sql/merge-where [:= :orders.customer_order_id id]))
+    :Contract
+    (sql/merge-where sqlmap [:= :reservations.contract_id id])
+    (:Pickup :Return :Visit)
+    (sql/merge-where sqlmap [:in :reservations.id (:reservation-ids value)])
+    :CurrentUser
+    (sql/merge-where sqlmap [:= :reservations.status "unsubmitted"])
+    sqlmap))
 
 (defn get-multiple
   [{{:keys [tx] user-id :target-user-id} :request
@@ -173,7 +161,7 @@
     :as context}
    {:keys [order-by]}
    value]
-  (-> (base-sqlmap tx)
+  (-> (base-sqlmap tx user-id)
       (merge-where-according-to-container container value)
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by)))
