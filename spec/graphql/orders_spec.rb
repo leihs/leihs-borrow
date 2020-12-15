@@ -144,6 +144,7 @@ describe 'orders' do
           purpose: purpose,
           state: ['SUBMITTED'],
           reservations: [
+            { id: '100ffcc9-5401-415b-9185-5fffa8e5c526' },
             { id: '20fbda2e-9265-4728-8e70-418c2b348d8a' },
             { id: 'bf7080fb-2118-472e-8cff-50a51d648389' }
           ],
