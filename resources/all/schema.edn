@@ -24,7 +24,7 @@
                                :state {:type (non-null String)}
                                :inventoryPool {:type (non-null :InventoryPool)
                                                :resolve :inventory-pool}
-                                :reservations {:type (list :Reservation)
+                                :reservations {:type (list (non-null :Reservation))
                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                                :resolve :reservations}
                                :purpose {:type (non-null String)}
@@ -232,7 +232,7 @@
                                                 :resolve :inventory-pool}
                                 :state {:type (non-null :PoolOrderStateEnum)}
                                 :rejectedReason {:type String}
-                                :reservations {:type (list :Reservation)
+                                :reservations {:type (list (non-null :Reservation))
                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                                :resolve :reservations}
                                 :order {:type :Order, :resolve :order}
@@ -259,7 +259,7 @@
                                                :states {:type (list :ContractStateEnum)}
                                                :orderBy {:type (list :ContractsOrderByInput)}}
                                         :resolve :contracts-connection}
-                            :reservations {:type (list :Reservation)
+                            :reservations {:type (list (non-null :Reservation))
                                            :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                            :resolve :reservations}
                             :createdAt {:type (non-null :DateTime)}
@@ -270,7 +270,7 @@
                              :quantity {:type (non-null Int)}
                              :inventoryPool {:type (non-null :InventoryPool)
                                              :resolve :inventory-pool}
-                             :reservations {:type (list :Reservation)
+                             :reservations {:type (list (non-null :Reservation))
                                             :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                             :resolve :reservations}
                              :isApproved {:type (non-null Boolean)}}}
@@ -279,7 +279,7 @@
                              :quantity {:type (non-null Int)}
                              :inventoryPool {:type (non-null :InventoryPool)
                                              :resolve :inventory-pool}
-                             :reservations {:type (list :Reservation)
+                             :reservations {:type (list (non-null :Reservation))
                                             :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                             :resolve :reservations}}}
            :RefreshTimeoutResult {:fields {:unsubmittedOrder {:type :UnsubmittedOrder}}}}
