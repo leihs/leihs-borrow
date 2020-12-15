@@ -39,7 +39,7 @@
 
         (and user-id
              (not= user-id auth-user-id)
-             (not= (delegations/member? tx auth-user-id user-id)))
+             (not (delegations/member? tx auth-user-id user-id)))
         (throw (ex-info "User ID not authorized!" {}))
 
         :else (resolver (assoc-in context
