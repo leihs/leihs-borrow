@@ -38,7 +38,7 @@
               {:row-fn 
                #(cond-> %
                   (:status %)
-                  (update % :status clojure.string/upper-case))}))
+                  (update :status clojure.string/upper-case))}))
 
 (defn count [tx model-id]
   (-> (sql/select :%count.*)
