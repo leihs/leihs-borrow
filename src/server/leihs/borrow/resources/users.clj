@@ -26,7 +26,7 @@
           search-term
             (merge-search-term-where-clause search-term)
           (seq order-by)
-            (-> (sql/order-by (helpers/treat-order-arg order-by)))
+            (-> (sql/order-by (helpers/treat-order-arg order-by :users)))
           offset
             (sql/offset offset)
           limit

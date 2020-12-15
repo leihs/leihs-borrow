@@ -46,7 +46,7 @@
            :contracts.state
            (map #(-> % name lower-case) states)]))
       (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by)))))
+        (sql/order-by (helpers/treat-order-arg order-by :contracts)))))
 
 (defn get-one
   [{{:keys [tx] user-id :target-user-id} :request}

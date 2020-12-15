@@ -50,7 +50,7 @@
       (cond-> (seq ids)
         (-> (sql/merge-where [:in :inventory_pools.id ids])))
       (cond-> (seq order-by)
-        (-> (sql/order-by (helpers/treat-order-arg order-by))
+        (-> (sql/order-by (helpers/treat-order-arg order-by :inventory_pools))
             (sql/merge-order-by [:inventory_pools.name :asc])))
       sql/format
       (->> (jdbc/query tx))))

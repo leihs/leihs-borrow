@@ -164,7 +164,7 @@
   (-> (base-sqlmap tx user-id)
       (merge-where-according-to-container container value)
       (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by)))
+        (sql/order-by (helpers/treat-order-arg order-by :reservations)))
       sql/format
       (query tx)))
 

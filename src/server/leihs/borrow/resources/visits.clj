@@ -22,7 +22,7 @@
   (-> (base-sqlmap tx)
       (sql/merge-where [:= :user_id user-id])
       (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by)))
+        (sql/order-by (helpers/treat-order-arg order-by :visits)))
       (cond-> limit (-> (sql/limit limit)))))
 
 (defn get-pickups [{{:keys [tx]} :request :as context}
