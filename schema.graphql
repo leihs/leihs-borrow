@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Dec 14 2020 19:27:54 GMT+0100 (Central European Standard Time)
+# timestamp: Tue Dec 15 2020 15:45:56 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -45,7 +45,7 @@ type Contract {
   inventoryPool: InventoryPool!
   note: String
   purpose: String!
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   state: String!
 }
 
@@ -238,7 +238,7 @@ type Order {
   createdAt: DateTime!
   id: UUID!
   purpose: String!
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
 
   """List of distinct states of all the sub-orders."""
   state: [PoolOrderStateEnum]
@@ -284,7 +284,7 @@ type Pickup {
   inventoryPool: InventoryPool!
   isApproved: Boolean!
   quantity: Int!
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
 }
 
 type PoolOrder {
@@ -294,7 +294,7 @@ type PoolOrder {
   inventoryPool: InventoryPool!
   order: Order
   rejectedReason: String
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   state: PoolOrderStateEnum!
   updatedAt: DateTime!
 }
@@ -406,7 +406,7 @@ type Return {
   id: UUID!
   inventoryPool: InventoryPool!
   quantity: Int!
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
 }
 
 enum startDateRestrictionEnum {
