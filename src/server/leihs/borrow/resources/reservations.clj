@@ -36,7 +36,9 @@
   (jdbc/query tx
               sql-format
               {:row-fn 
-               #(update % :status clojure.string/upper-case)}))
+               #(cond-> %
+                  (:status %)
+                  (update % :status clojure.string/upper-case))}))
 
 (defn count [tx model-id]
   (-> (sql/select :%count.*)
