@@ -166,6 +166,7 @@
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by :reservations)))
       sql/format
+      log/spy
       (query tx)))
 
 (defn delete [{{:keys [tx] user-id :target-user-id} :request}
