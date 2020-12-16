@@ -242,6 +242,14 @@
                                                    :states {:type (list :ContractStateEnum)}
                                                    :orderBy {:type (list :ContractsOrderByInput)}}
                                             :resolve :contracts-connection}
+                                :pickups {:resolve :pickups
+                                          :args {:limit {:type Int}
+                                                 :orderBy {:type (list :VisitsOrderByInput)}}
+                                          :type (list :Pickup)}
+                                :returns {:resolve :returns
+                                          :args {:limit {:type Int}
+                                                 :orderBy {:type (list :VisitsOrderByInput)}}
+                                          :type (list :Return)}
                                 :createdAt {:type (non-null :DateTime)}
                                 :updatedAt {:type (non-null :DateTime)}}}
            :Order {:fields {:id {:type (non-null :UUID)}
@@ -250,6 +258,14 @@
                             :title {:type (non-null String)}
                             :state {:type (list (non-null :PoolOrderStateEnum))
                                     :description "List of distinct states of all the sub-orders."}
+                            :pickups {:resolve :pickups
+                                      :args {:limit {:type Int}
+                                             :orderBy {:type (list :VisitsOrderByInput)}}
+                                      :type (list :Pickup)}
+                            :returns {:resolve :returns
+                                      :args {:limit {:type Int}
+                                             :orderBy {:type (list :VisitsOrderByInput)}}
+                                      :type (list :Return)}
                             :subOrdersByPool {:type (list :PoolOrder)
                                               :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
                                               :resolve :pool-orders}

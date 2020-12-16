@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Tue Dec 15 2020 15:45:56 GMT+0100 (Central European Standard Time)
+# timestamp: Wed Dec 16 2020 11:51:51 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -237,11 +237,13 @@ type Order {
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   id: UUID!
+  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   purpose: String!
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+  returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
 
   """List of distinct states of all the sub-orders."""
-  state: [PoolOrderStateEnum]
+  state: [PoolOrderStateEnum!]
   subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
   title: String!
   updatedAt: DateTime!
@@ -293,8 +295,10 @@ type PoolOrder {
   id: UUID!
   inventoryPool: InventoryPool!
   order: Order
+  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   rejectedReason: String
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+  returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
   state: PoolOrderStateEnum!
   updatedAt: DateTime!
 }
