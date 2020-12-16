@@ -248,7 +248,7 @@
                             :borrowUrl {:type (non-null String) :resolve :url}
                             :purpose {:type (non-null String)}
                             :title {:type (non-null String)}
-                            :state {:type (list :PoolOrderStateEnum)
+                            :state {:type (list (non-null :PoolOrderStateEnum))
                                     :description "List of distinct states of all the sub-orders."}
                             :subOrdersByPool {:type (list :PoolOrder)
                                               :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
