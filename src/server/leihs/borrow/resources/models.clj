@@ -266,7 +266,7 @@
                               :favorite_models.model_id
                               nil])))
       (cond-> (seq order-by)
-        (-> (sql/order-by (helpers/treat-order-arg order-by :models))
+        (-> (sql/order-by (helpers/treat-order-arg order-by))
             (sql/merge-order-by [:name :asc])))
       (cond-> limit
         (sql/limit limit))

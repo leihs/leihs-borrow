@@ -79,8 +79,8 @@
                            (map #(sql/call :cast (name %) :text))
                            sql/array))))
       (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by :orders)))
-      (->> (spy-with sql/format))))
+        (sql/order-by
+          (helpers/treat-order-arg order-by :customer_orders)))))
 
 (defn get-connection [context args value]
   (connections/wrap get-connection-sql-map
