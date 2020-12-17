@@ -38,6 +38,7 @@ Feature: Delegations
 
     # submit the order
     When I name the order as "My order"
+    And I enter purpose of the order as "My order"
     And I click on "Confirm order" and accept the alert
     Then the cart is empty
 

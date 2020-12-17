@@ -32,11 +32,11 @@ step 'the cart page is loaded' do
 end
 
 step 'I see one reservation for model :name' do |name|
-  find('.flex-row', text: name)
+  find('.ui-reservation-line', text: name)
 end
 
 step 'the reservation has quantity :n' do |n|
-  within find('.flex-row') do
+  within find('.ui-reservation-line') do
     expect(current_scope).to have_content "#{n} Item(s)"
   end
 end
@@ -51,14 +51,18 @@ step ':term is pre-filled as the search term' do |term|
 end
 
 step 'I delete the reservation for model :name' do |name|
-  find('.flex-row', text: name).find('.ui-trash-icon').click
+  find('.ui-reservation-line', text: name).find('.ui-trash-icon').click
 end
 
 step 'the reservation for model :name was deleted from the cart' do |name|
-  expect(page).not_to have_selector('.flex-row', text: name)
+  expect(page).not_to have_selector('.ui-reservation-line', text: name)
 end
 
-step 'I name the order as :purpose' do |purpose|
+step 'I name the order as :title' do |title|
+  fill_in('title', with: title)
+end
+
+step 'I enter purpose of the order as :purpose' do |purpose|
   fill_in('purpose', with: purpose)
 end
 
@@ -112,7 +116,7 @@ step 'I visit the url with query params for dates as before but :m_name as term'
 end
 
 step 'I click on :label for the model :name' do |label, name|
-  find(".flex-row", text: name).click_button("Edit")
+  find(".ui-reservation-line", text: name).click_button("Edit")
 end
 
 step 'I increase the start date by 1 day for the model :name' do |name|

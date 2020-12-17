@@ -335,36 +335,25 @@
 (defn reservation [res-lines invalid-res-ids]
   (let [exemplar (first res-lines)
         model (:model exemplar)
-        img (get-in model [:images 0])
         quantity (count res-lines)
         edit-mode? @(subscribe [::edit-mode? res-lines])
-        pool-names (->> res-lines
-                        (map (comp :name :inventory-pool))
-                        distinct
-                        (clojure.string/join ", "))
-        invalid? (every? invalid-res-ids (map :id res-lines))]
-    [:div.flex.flex-row.border-b.mb-2.pb-2.-mx-1
-     [:div.px-1.flex-none {:class "w-1/4"} [ui/image-square-thumb img]]
+        invalid? (every? invalid-res-ids (map :id res-lines))
+
+        props
+        {:reservation (first res-lines)
+         :isInvalid invalid?
+         :imageUrl (get-in model [:images 0 :image-url]) ; FIXME: use `coverImage`
+         :pools (->> res-lines (map (comp :inventory-pool)) distinct)
+         :quantity quantity
+         :onEdit #(dispatch [::edit-reservation res-lines])
+         :onDelete #(dispatch [::delete-reservations (map :id res-lines)])}]
+
+    [:<>
      (if edit-mode?
        [edit-reservation res-lines]
-       [:div
-        [:div.px-1.flex-1 (if invalid? {:style {:color "red"}})
-         [:div.font-semibold (:name model)]
-         [:div.text-sm
-          (ui/format-date :short (get-in exemplar [:start-date]))
-          (str ui/thin-space "–" ui/thin-space)
-          (ui/format-date :short (get-in exemplar [:end-date]))]
-         [:div.text-sm.text-color-muted (if invalid? {:style {:color "red"}})
-          [:span quantity (str " " (t :line/total-items))]
-          [:span " • "]
-          [:span pool-names]]]
-        [:div.px-1.self-center.flex-none
-         [:button.text-sm
-          {:on-click #(dispatch [::delete-reservations (map :id res-lines)])}
-          icons/trash-icon]
-         [:button.rounded.border.border-gray-600.px-2.text-color-muted
-          {:on-click #(dispatch [::edit-reservation res-lines])}
-          (t :edit)]]])]))
+       ; not edit:
+       [:<>
+        [:> UI/Components.ShoppingCart.ReservationLine props]])]))
 
 (reg-sub ::target-users
          :<- [::current-user/data]
@@ -423,63 +412,64 @@
            is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
            errors [ui/error-view errors]
            (empty? grouped-reservations)
-           [:> UI/Components.AppLayout.CallToAction 
+           [:> UI/Components.AppLayout.CallToAction
             {:actions [{:children (t :borrow-items) :href (routing/path-for ::routes/home)}]}
             (t :empty-order)]
 
            :else
-           [:<>
-            [:div
-             [:label.row
-              [:span.text-xs.col-3.col-form-label (t :order-title)]
-              [:div.mt-2.mb-4.flex
-               [:div.flex-grow
-                [:input.text-xl.w-100
-                 {:name :title
-                  :value @title
-                  :on-change (fn [e] (reset! title (-> e .-target .-value)))
-                  :placeholder (t :order-title-placeholder)}]]]]
+           [:form
+            {:on-submit #(do (.preventDefault %)
+                             (dispatch [::submit-order {:purpose @purpose, :title @title}]))}
+            [:div.form-group
+             [:label.w-100.mb-0 (t :order-title)
+              [:input.form-control.form-control-lg.mt-1
+               {:name :title
+                :required true
+                :value (or @title "")
+                :on-change (fn [e] (reset! title (-> e .-target .-value)))
+                :placeholder (t :order-title-placeholder)}]]]
 
-             [:label.row
-              [:span.text-xs.col-3.col-form-label (t :order-purpose)]
-              [:div.mt-2.mb-4.flex
-               [:div.flex-grow
-                [:textarea.text-xl.w-100
-                 {:name :purpose
-                  :value (or (and @linked? @title) @purpose)
-                  :on-change (fn [e]
-                               (reset! purpose (-> e .-target .-value))
-                               (reset! linked? false))
-                  :placeholder (t :order-purpose-placeholder)}]]]]
+            [:div.form-group
+             [:label.w-100.mb-0 (t :order-purpose)
+              [:textarea.form-control.mt-1
+               {:name :purpose
+                :required true
+                :value (or (and @linked? @title) @purpose "")
+                :on-change (fn [e]
+                             (reset! purpose (-> e .-target .-value))
+                             (reset! linked? false))
+                :placeholder (t :order-purpose-placeholder)}]]]
 
+            [:div.form-group
+             [:label.mb-1 "Reservationen"]
              (doall
-               (for [[grouped-key res-lines] grouped-reservations]
-                 [:<> {:key grouped-key}
-                  [reservation res-lines invalid-res-ids]]))
+              (for [[grouped-key res-lines] grouped-reservations]
+                [:<> {:key grouped-key}
+                 [reservation res-lines invalid-res-ids]]))]
 
-             [:div.mt-4.text-sm.text-color-muted
-              [:p
-               (str (t :line/total) " ")
-               (:total-models summary) ui/nbsp (str (t :line/total-models)
-                                                    ", ")
-               (:total-items summary) ui/nbsp  (str (t :line/total-items)
-                                                    ", ") 
-               (str (t :line/from) " ")
-               (string/join ", " (map :name (:pools summary)))
-               "."]
-              [:p
-               (str (t :line/first-pickup) " ")
-               (ui/format-date :short (:earliest-start-date summary))
-               (str ", " (t :line/last-return) " ")
-               (ui/format-date :short (:latest-end-date summary))
-               "."]]
+            [:div.mt-3.text-sm.text-color-muted
+             [:p
+              (str (t :line/total) " ")
+              (:total-models summary) ui/nbsp (str (t :line/total-models)
+                                                   ", ")
+              (:total-items summary) ui/nbsp  (str (t :line/total-items)
+                                                   ", ")
+              (str (t :line/from) " ")
+              (string/join ", " (map :name (:pools summary)))
+              "."]
+             [:p
+              (str (t :line/first-pickup) " ")
+              (ui/format-date :short (:earliest-start-date summary))
+              (str ", " (t :line/last-return) " ")
+              (ui/format-date :short (:latest-end-date summary))
+              "."]]
 
-             [:div
-              [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
-               {:disabled (or (empty? @purpose)
-                              (not (empty? invalid-res-ids)))
-                :on-click #(dispatch [::submit-order {:purpose @purpose, :title @title}])}
-               (t :confirm-order)]
-              [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl
-               {:on-click #(dispatch [::delete-reservations (map :id reservations)])}
-               (t :delete-order)]]]])]))))
+            [:div.mt-3
+             [:button.btn.btn-lg.w-100.p-2.mb-3.rounded-pill.bg-content-inverse.text-color-content-inverse.text-xl
+              {:type :submit
+               :disabled (or #_(empty? @purpose)
+                             (not (empty? invalid-res-ids)))}
+              (t :confirm-order)]
+             [:button.btn.btn-lg.w-100.p-2.mb-3.rounded-pill.bg-content-danger.text-color-content-inverse.text-xl
+              {:type :button :on-click #(dispatch [::delete-reservations (map :id reservations)])}
+              (t :delete-order)]]])]))))
