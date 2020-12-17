@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Wed Dec 16 2020 11:51:51 GMT+0100 (Central European Standard Time)
+# timestamp: Thu Dec 17 2020 10:54:03 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -284,7 +284,6 @@ type Pickup {
   date: Date!
   id: UUID!
   inventoryPool: InventoryPool!
-  isApproved: Boolean!
   quantity: Int!
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
 }

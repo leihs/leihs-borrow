@@ -55,6 +55,7 @@
                    value]
   (-> (get-visits-sqlmap context args value)
       (sql/merge-where [:= :visits.type "hand_over"])
+      (sql/merge-where [:= :visits.is_approved true])
       sql/format
       (as-> <> (jdbc/query tx <>))))
 
