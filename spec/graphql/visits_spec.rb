@@ -159,7 +159,6 @@ describe 'visits' do
             id
           }
           quantity
-          isApproved
           reservations(orderBy: [{attribute: ID, direction: ASC}]) {
             id
           }
@@ -183,14 +182,8 @@ describe 'visits' do
         {:date => "#{(Date.today + 1.day).to_s}T00:00:00Z",
          :inventoryPool => {:id => "cfffa894-c0bd-42f3-b3d5-27603f00138d"},
          :quantity => 2,
-         :isApproved => true,
          :reservations => [{:id => "4f92b4ef-ba21-4a7d-9d4d-622e7bddf688"},
-                           {:id => "56b01674-26f0-4e5e-ac61-7625af86520d"}]},
-        {:date => "#{(Date.today + 3.day).to_s}T00:00:00Z",
-         :inventoryPool => {:id => "9ad7032a-cfe2-45a3-885e-24fb70444de1"},
-         :quantity => 1,
-         :isApproved => false,
-         :reservations => [{:id => "7875f990-10eb-4edd-af0e-9ab11533bd3d"}]}
+                           {:id => "56b01674-26f0-4e5e-ac61-7625af86520d"}]}
       ],
       :returns => [
         {:date => "#{(Date.today + 2.day).to_s}T00:00:00Z",
