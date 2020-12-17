@@ -26,8 +26,9 @@ end
 
 def with_disabled_triggers
   database.run 'SET session_replication_role = REPLICA;'
-  yield
+  result = yield
   database.run 'SET session_replication_role = DEFAULT;'
+  result
 end
 
 def clean_db

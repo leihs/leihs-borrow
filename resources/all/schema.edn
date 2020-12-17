@@ -24,8 +24,9 @@
                                :state {:type (non-null String)}
                                :inventoryPool {:type (non-null :InventoryPool)
                                                :resolve :inventory-pool}
-                               :reservations {:type (list :Reservation)
-                                              :resolve :reservations}
+                                :reservations {:type (list (non-null :Reservation))
+                                               :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                               :resolve :reservations}
                                :purpose {:type (non-null String)}
                                :note {:type String}}}
            :Template {:fields {:id {:type (non-null :UUID)}
@@ -74,6 +75,10 @@
                            :name {:type String}
                            :login {:type String}
                            :contracts {:type :ContractsConnection
+                                       :args {:first {:type Int}
+                                              :after {:type String}
+                                              :states {:type (list :ContractStateEnum)}
+                                              :orderBy {:type (list :ContractsOrderByInput)}}
                                        :resolve :contracts-connection}
                            :language {:type :Language
                                       :resolve :language}}}
@@ -218,6 +223,7 @@
                                   :user {:type (non-null :User)
                                          :resolve :user}
                                   :poolOrder {:type :PoolOrder :resolve :pool-order}
+                                  :contract {:type :Contract :resolve :contract}
                                   :endDate {:type (non-null :Date)}
                                   :createdAt {:type (non-null :DateTime)}
                                   :updatedAt {:type (non-null :DateTime)}}}
@@ -226,21 +232,52 @@
                                                 :resolve :inventory-pool}
                                 :state {:type (non-null :PoolOrderStateEnum)}
                                 :rejectedReason {:type String}
-                                :reservations {:type (list :Reservation)
+                                :reservations {:type (list (non-null :Reservation))
                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                                :resolve :reservations}
                                 :order {:type :Order, :resolve :order}
+                                :contracts {:type :ContractsConnection
+                                            :args {:first {:type Int}
+                                                   :after {:type String}
+                                                   :states {:type (list :ContractStateEnum)}
+                                                   :orderBy {:type (list :ContractsOrderByInput)}}
+                                            :resolve :contracts-connection}
+                                :pickups {:resolve :pickups
+                                          :args {:limit {:type Int}
+                                                 :orderBy {:type (list :VisitsOrderByInput)}}
+                                          :type (list :Pickup)}
+                                :returns {:resolve :returns
+                                          :args {:limit {:type Int}
+                                                 :orderBy {:type (list :VisitsOrderByInput)}}
+                                          :type (list :Return)}
                                 :createdAt {:type (non-null :DateTime)}
                                 :updatedAt {:type (non-null :DateTime)}}}
            :Order {:fields {:id {:type (non-null :UUID)}
                             :borrowUrl {:type (non-null String) :resolve :url}
                             :purpose {:type (non-null String)}
                             :title {:type (non-null String)}
-                            :state {:type (list :PoolOrderStateEnum)
+                            :state {:type (list (non-null :PoolOrderStateEnum))
                                     :description "List of distinct states of all the sub-orders."}
+                            :pickups {:resolve :pickups
+                                      :args {:limit {:type Int}
+                                             :orderBy {:type (list :VisitsOrderByInput)}}
+                                      :type (list :Pickup)}
+                            :returns {:resolve :returns
+                                      :args {:limit {:type Int}
+                                             :orderBy {:type (list :VisitsOrderByInput)}}
+                                      :type (list :Return)}
                             :subOrdersByPool {:type (list :PoolOrder)
                                               :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
                                               :resolve :pool-orders}
+                            :contracts {:type :ContractsConnection
+                                        :args {:first {:type Int}
+                                               :after {:type String}
+                                               :states {:type (list :ContractStateEnum)}
+                                               :orderBy {:type (list :ContractsOrderByInput)}}
+                                        :resolve :contracts-connection}
+                            :reservations {:type (list (non-null :Reservation))
+                                           :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                           :resolve :reservations}
                             :createdAt {:type (non-null :DateTime)}
                             :updatedAt {:type (non-null :DateTime)}}
                    :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}
@@ -249,16 +286,15 @@
                              :quantity {:type (non-null Int)}
                              :inventoryPool {:type (non-null :InventoryPool)
                                              :resolve :inventory-pool}
-                             :reservations {:type (list :Reservation)
+                             :reservations {:type (list (non-null :Reservation))
                                             :args {:orderBy {:type (list :ReservationsOrderByInput)}}
-                                            :resolve :reservations}
-                             :isApproved {:type (non-null Boolean)}}}
+                                            :resolve :reservations}}}
            :Return {:fields {:id {:type (non-null :UUID)}
                              :date {:type (non-null :Date)}
                              :quantity {:type (non-null Int)}
                              :inventoryPool {:type (non-null :InventoryPool)
                                              :resolve :inventory-pool}
-                             :reservations {:type (list :Reservation)
+                             :reservations {:type (list (non-null :Reservation))
                                             :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                             :resolve :reservations}}}
            :RefreshTimeoutResult {:fields {:unsubmittedOrder {:type :UnsubmittedOrder}}}}
@@ -298,6 +334,10 @@
            :delegation {:args {:id {:type (non-null :UUID)}}
                         :resolve :delegation
                         :type (non-null :Delegation)}
+           :contract {:args {:id {:type (non-null :UUID)}
+                             :userId {:type :UUID}}
+                      :resolve :contract
+                      :type (non-null :Contract)}
            :order {:args {:id {:type (non-null :UUID)}
                           :userId {:type :UUID}}
                    :resolve :order

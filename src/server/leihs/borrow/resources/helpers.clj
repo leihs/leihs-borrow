@@ -2,14 +2,18 @@
   (:require [clojure.string :as string]
             [leihs.core.sql :as sql]))
 
-(defn treat-order-arg [order]
-  (map #(as-> % <>
-          (into (sorted-map) <>)
-          (update <> 
-                  :attribute
-                  (comp keyword string/lower-case name))
-          (vals <>))
-       order))
+(defn treat-order-arg
+  ([order] (treat-order-arg order nil))
+  ([order table]
+   (map #(as-> % <>
+           (into (sorted-map) <>)
+           (update <> 
+                   :attribute
+                   (comp (partial sql/qualify table)
+                         string/lower-case
+                         name))
+           (vals <>))
+        order)))
 
 (def date-format "YYYY-MM-DD")
 (def date-time-format "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"")

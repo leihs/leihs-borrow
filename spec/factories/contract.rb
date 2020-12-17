@@ -2,6 +2,38 @@ class Contract < Sequel::Model
   many_to_one(:user)
   many_to_one(:inventory_pool)
   one_to_many(:reservations)
+
+  def self.create_with_disabled_triggers(id,
+                                         user_id,
+                                         inventory_pool_id,
+                                         state = :open,
+                                         compact_id = id,
+                                         purpose = Faker::Lorem.word)
+    with_disabled_triggers do
+      database.run <<-SQL
+        INSERT INTO contracts(
+          id,
+          user_id,
+          inventory_pool_id,
+          compact_id,
+          purpose,
+          created_at,
+          updated_at,
+          state
+        )
+        VALUES (
+          '#{id}',
+          '#{user_id}',
+          '#{inventory_pool_id}',
+          '#{compact_id}',
+          '#{purpose}',
+          now(),
+          now(),
+          '#{state}'
+          );
+      SQL
+    end
+  end
 end
 
 FactoryBot.define do

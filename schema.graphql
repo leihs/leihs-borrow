@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Dec 04 2020 11:56:12 GMT+0100 (Central European Standard Time)
+# timestamp: Thu Dec 17 2020 10:54:03 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -45,7 +45,7 @@ type Contract {
   inventoryPool: InventoryPool!
   note: String
   purpose: String!
-  reservations: [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   state: String!
 }
 
@@ -234,12 +234,16 @@ type MutationRoot {
 
 type Order {
   borrowUrl: String!
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   id: UUID!
+  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   purpose: String!
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+  returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
 
   """List of distinct states of all the sub-orders."""
-  state: [PoolOrderStateEnum]
+  state: [PoolOrderStateEnum!]
   subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
   title: String!
   updatedAt: DateTime!
@@ -280,18 +284,20 @@ type Pickup {
   date: Date!
   id: UUID!
   inventoryPool: InventoryPool!
-  isApproved: Boolean!
   quantity: Int!
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
 }
 
 type PoolOrder {
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   id: UUID!
   inventoryPool: InventoryPool!
   order: Order
+  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   rejectedReason: String
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+  returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
   state: PoolOrderStateEnum!
   updatedAt: DateTime!
 }
@@ -332,6 +338,7 @@ type QueryRoot {
     userId: UUID
   ): [Category!]
   category(id: UUID!, parentId: UUID): Category
+  contract(id: UUID!, userId: UUID): Contract!
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   currentUser(userId: UUID): CurrentUser!
   delegation(id: UUID!): Delegation!
@@ -365,6 +372,7 @@ type RefreshTimeoutResult {
 }
 
 type Reservation {
+  contract: Contract
   createdAt: DateTime!
   endDate: Date!
   id: UUID!
@@ -401,7 +409,7 @@ type Return {
   id: UUID!
   inventoryPool: InventoryPool!
   quantity: Int!
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
 }
 
 enum startDateRestrictionEnum {
@@ -454,7 +462,7 @@ type UnsubmittedOrder {
 A `User` represents a human agent that can log into and use the system.
 """
 type User {
-  contracts: ContractsConnection
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   email: String
   firstname: String
   id: UUID!

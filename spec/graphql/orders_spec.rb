@@ -109,6 +109,11 @@ describe 'orders' do
           ) {
             purpose
             state
+            reservations(
+              orderBy: [{attribute: ID, direction: ASC}]
+            ) { 
+              id
+            }
             subOrdersByPool(
               orderBy: [{attribute: INVENTORY_POOL_ID, direction: ASC}]
             ) {
@@ -117,7 +122,7 @@ describe 'orders' do
               }
               reservations(
                 orderBy: [{attribute: ID, direction: ASC}]
-              ){
+              ) {
                 id
                 status
               }
@@ -138,6 +143,11 @@ describe 'orders' do
         submitOrder: {
           purpose: purpose,
           state: ['SUBMITTED'],
+          reservations: [
+            { id: '100ffcc9-5401-415b-9185-5fffa8e5c526' },
+            { id: '20fbda2e-9265-4728-8e70-418c2b348d8a' },
+            { id: 'bf7080fb-2118-472e-8cff-50a51d648389' }
+          ],
           subOrdersByPool: [
             { inventoryPool: { id: '4e2f1362-0891-4df7-b760-16a2a8d3373f' },
               reservations: [

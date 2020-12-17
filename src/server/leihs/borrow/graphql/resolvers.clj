@@ -22,22 +22,31 @@
       (resolver context args value))))
 
 (defn wrap-resolver-with-target-user-id [resolver]
-  (fn [{{tx :tx {auth-user-id :id} :authenticated-entity} :request :as context}
-       {arg-user-id :user-id :as args}
-       {value-user-id :id :as value}]
-    (when arg-user-id
-      (when-not (or (= arg-user-id auth-user-id)
-                    (delegations/member? tx auth-user-id arg-user-id))
-        (throw (ex-info "User ID not authorized!" {}))))
-    (resolver (assoc-in context
-                        [:request :target-user-id]
-                        (or (and (#{:CurrentUser :User}
-                                   (::lacinia/container-type-name context))
-                                 value-user-id)
-                            arg-user-id
-                            auth-user-id))
-              args
-              value)))
+  (fn [{{tx :tx {auth-user-id :id} :authenticated-entity} :request 
+        container ::lacinia/container-type-name
+        :as context}
+       args
+       value]
+    (let [[user-id :as distinct-user-ids]
+           (->> [(and (#{:CurrentUser :User} container) (:id value))
+                 (:user-id value)
+                 (:user-id args)]
+                (remove nil?)
+                distinct)]
+      (cond
+        (> (count distinct-user-ids) 1)
+        (throw (ex-info "User ID inconsistency found!" {}))
+
+        (and user-id
+             (not= user-id auth-user-id)
+             (not (delegations/member? tx auth-user-id user-id)))
+        (throw (ex-info "User ID not authorized!" {}))
+
+        :else (resolver (assoc-in context
+                                  [:request :target-user-id]
+                                  (or user-id auth-user-id))
+                        args
+                        value)))))
 
 (def resolvers
   (-> queries/resolvers
