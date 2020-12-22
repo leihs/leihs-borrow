@@ -34,19 +34,22 @@
 (def schema (load-schema))
 
 (defn exec-query
-  [query-string request]
+  [query-string
+   {{{user-id :userId :as vars} :variables} :body
+    {auth-user-id :id} :authenticated-entity
+    :as request}]
   (log/debug "graphql query" query-string
-             "with variables" (-> request
-                                  :body
-                                  :variables))
-  (lacinia/execute schema
-                   query-string
-                   (-> request
-                       :body
-                       :variables)
-                   (cond-> {:request request}
-                     @lacinia-enable-timing
-                     (assoc ::lacinia/enable-timing? true))))
+             "with variables" vars)
+  (let [target-user-id (or user-id auth-user-id)
+        merge-context (-> request
+                          (assoc :target-user-id target-user-id)
+                          (->> (hash-map :request))
+                          (cond-> @lacinia-enable-timing
+                            (assoc ::lacinia/enable-timing? true)))]
+    (lacinia/execute schema
+                     query-string
+                     vars
+                     merge-context)))
 
 (def keys-order [:error :data :extensions])
 
