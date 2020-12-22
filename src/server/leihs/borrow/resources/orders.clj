@@ -204,13 +204,19 @@
         :result)))
 
 (defn refresh-timeout
-  "Always returns the valid until date. If the unsubmitted order is not
-  timed-out or it is timed-out, but all the reservations have still valid
-  availability, then the valid until date will be updated as a side-effect."
+  "If any of the unsubmitted reservations has an invalid start date,
+  then make them all draft. The unsubmitted order returned is {} in this case.
+  Otherwise, if the unsubmitted order is not timed-out or it is timed-out,
+  but all the reservations have still valid availability, then the valid
+  until date is updated as a side-effect. The unsubmitted order is returned
+  in any case."
   [{{:keys [tx] user-id :target-user-id} :request :as context}
    args
    value]
-  (if (or (not (timeout? tx user-id))
-          (not (reservations/unsubmitted-with-invalid-availability? context)))
-    (reservations/touch-unsubmitted! tx user-id))
-  {:unsubmitted-order (get-unsubmitted context args value)})
+  (if (reservations/some-unsubmitted-with-invalid-start-date? context)
+    (do (reservations/unsubmitted->draft tx user-id)
+        {:unsubmitted-order {}})
+    (do (if (or (not (timeout? tx user-id))
+                (not (reservations/some-unsubmitted-with-invalid-availability? context)))
+          (reservations/touch-unsubmitted! tx user-id))
+        {:unsubmitted-order (get-unsubmitted context args value)})))

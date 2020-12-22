@@ -102,7 +102,33 @@
                      (into rs))))
                [])))
 
-(defn unsubmitted-with-invalid-availability?
+(defn merge-where-invalid-start-date [sqlmap]
+  (sql/merge-where
+    sqlmap
+    [:<
+     :reservations.start_date 
+     (sql/raw
+       (str "CURRENT_DATE"
+            " + "
+            "MAKE_INTERVAL("
+            "days => COALESCE(workdays.reservation_advance_days, 0)"
+            ")"))]))
+
+(defn some-unsubmitted-with-invalid-start-date?
+  [{{:keys [tx] user-id :target-user-id} :request :as context}]
+  (-> (unsubmitted-sqlmap tx user-id)
+      (sql/merge-join :inventory_pools
+                      [:=
+                       :reservations.inventory_pool_id
+                       :inventory_pools.id])
+      pools/with-workdays-sqlmap
+      merge-where-invalid-start-date
+      sql/format
+      (query tx)
+      empty?
+      not))
+
+(defn some-unsubmitted-with-invalid-availability?
   [{{:keys [tx] user-id :target-user-id} :request :as context}]
   (->> user-id
        (for-customer-order tx)
@@ -131,6 +157,15 @@
       first
       :updated_at))
 
+(defn unsubmitted->draft [tx user-id]
+  (-> (sql/update :reservations)
+      (sql/set {:status "draft"})
+      (sql/where [:and
+                  [:= :status "unsubmitted"]
+                  [:= :user_id user-id]])
+      sql/format
+      (->> (jdbc/execute! tx))))
+
 (defn get-drafts [tx user-id ids]
   (-> (draft-sqlmap tx user-id)
       (sql/merge-where [:in :id ids])
@@ -149,10 +184,12 @@
         (sql/merge-where [:= :orders.customer_order_id id]))
     :Contract
     (sql/merge-where sqlmap [:= :reservations.contract_id id])
-    (:Pickup :Return :Visit)
+    (:Pickup :Return)
     (sql/merge-where sqlmap [:in :reservations.id (:reservation-ids value)])
-    :CurrentUser
+    (:CurrentUser :UnsubmittedOrder)
     (sql/merge-where sqlmap [:= :reservations.status "unsubmitted"])
+    :DraftOrder
+    (sql/merge-where sqlmap [:= :reservations.status "draft"])
     sqlmap))
 
 (defn get-multiple
