@@ -79,7 +79,6 @@ Feature: Search results (and caching)
       | category |
       | Video    |
       | Beamers  |
-    And I pry
 
     When I click on "Beamers" within breadcrumbs
     Then the title of the page is "Beamers"
