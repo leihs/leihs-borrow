@@ -61,7 +61,7 @@
       sql/format
       (->> (jdbc/query tx))
       first
-      log/spy))
+      ))
 
 (defn equal-condition [a1 a2]
   [:and ["@>" a1 a2] ["<@" a1 a2]])

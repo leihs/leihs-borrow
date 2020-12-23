@@ -25,7 +25,8 @@
 
 (defn wrap-resolver-with-target-user-id [resolver]
   (fn [{{:keys [tx target-user-id]
-         {auth-user-id :id} :authenticated-entity} :request 
+         {auth-user-id :id} :authenticated-entity
+         :as request} :request 
         container ::lacinia/container-type-name
         :as context}
        args
@@ -37,19 +38,38 @@
                (remove nil?)
                distinct)
           target-user-id*
-          (cond
-            (> (count distinct-user-ids) 1)
-              (throw (ex-info "User ID inconsistency found!" {}))
-            (and user-id
-                 (not= user-id auth-user-id)
-                 (not (delegations/member? tx auth-user-id user-id)))
-              (throw (ex-info "User ID not authorized!" {}))
-            :else (or user-id auth-user-id))]
+          (or target-user-id
+              (cond
+                (> (count distinct-user-ids) 1)
+                (throw (ex-info "User ID inconsistency found!" {}))
+                (and user-id
+                     (not= user-id auth-user-id)
+                     (not (delegations/member? tx auth-user-id user-id)))
+                (throw (ex-info "User ID not authorized!" {}))
+                :else (or user-id auth-user-id)))]
       (resolver (assoc-in context
                           [:request :target-user-id]
                           target-user-id*)
                 args
                 value))))
+
+(defn wrap-debug [resolver]
+  (fn [{{:keys [tx target-user-id] :as request} :request 
+        container ::lacinia/container-type-name
+        :as context}
+        args
+        value]
+    ; (log/debug container)
+    ; (log/debug target-user-id)
+    ; (log/debug context)
+    ; (log/debug args)
+    ; (log/debug value)
+    (let [result (resolver context args value)]
+      result
+      #_(resolve/with-context result
+        {:request (assoc request
+                         :target-user-id
+                         "71015732-d9d5-5f55-b1a9-b3bba392c3a8")}))))
 
 (def resolvers
   (-> queries/resolvers
@@ -58,7 +78,8 @@
                                  wrap-resolver-with-camelCase
                                  wrap-resolver-with-kebab-case
                                  wrap-resolver-with-dates-validation
-                                 wrap-resolver-with-target-user-id))))
+                                 wrap-resolver-with-target-user-id
+                                 #_wrap-debug))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
