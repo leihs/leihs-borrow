@@ -10,7 +10,6 @@
             [leihs.borrow.graphql.scalars :as scalars]
             [leihs.borrow.graphql.resolvers :as resolvers]
             [leihs.borrow.authenticate :as authenticate]
-            [leihs.borrow.resources.delegations :as delegations]
             [leihs.core.ds :as ds]
             [leihs.core.graphql.helpers :as helpers]
             [leihs.core.ring-exception :refer [get-cause]]))
@@ -35,26 +34,19 @@
 (def schema (load-schema))
 
 (defn exec-query
-  [query-string {{{user-id :userId :as vars} :variables} :body
-                 {auth-user-id :id} :authenticated-entity
-                 :keys [tx]
-                 :as request}]
+  [query-string request]
   (log/debug "graphql query" query-string
-             "with variables" vars)
-  (when (and user-id
-             (not= user-id auth-user-id)
-             (not (delegations/member? tx auth-user-id user-id)))
-   (throw (ex-info "User ID not authorized!" {})))
-  (let [target-user-id (or user-id auth-user-id)
-        merge-context (-> request
-                          (assoc :target-user-id target-user-id)
-                          (->> (hash-map :request))
-                          (cond-> @lacinia-enable-timing
-                            (assoc ::lacinia/enable-timing? true)))]
-    (lacinia/execute schema
-                     query-string
-                     vars
-                     merge-context)))
+             "with variables" (-> request
+                                  :body
+                                  :variables))
+  (lacinia/execute schema
+                   query-string
+                   (-> request
+                       :body
+                       :variables)
+                   (cond-> {:request request}
+                     @lacinia-enable-timing
+                     (assoc ::lacinia/enable-timing? true))))
 
 (def keys-order [:error :data :extensions])
 
