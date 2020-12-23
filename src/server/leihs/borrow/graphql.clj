@@ -10,6 +10,7 @@
             [leihs.borrow.graphql.scalars :as scalars]
             [leihs.borrow.graphql.resolvers :as resolvers]
             [leihs.borrow.authenticate :as authenticate]
+            [leihs.borrow.resources.delegations :as delegations]
             [leihs.core.ds :as ds]
             [leihs.core.graphql.helpers :as helpers]
             [leihs.core.ring-exception :refer [get-cause]]))
@@ -34,12 +35,16 @@
 (def schema (load-schema))
 
 (defn exec-query
-  [query-string
-   {{{user-id :userId :as vars} :variables} :body
-    {auth-user-id :id} :authenticated-entity
-    :as request}]
+  [query-string {{{user-id :userId :as vars} :variables} :body
+                 {auth-user-id :id} :authenticated-entity
+                 :keys [tx]
+                 :as request}]
   (log/debug "graphql query" query-string
              "with variables" vars)
+  (when (and user-id
+             (not= user-id auth-user-id)
+             (not (delegations/member? tx auth-user-id user-id)))
+   (throw (ex-info "User ID not authorized!" {})))
   (let [target-user-id (or user-id auth-user-id)
         merge-context (-> request
                           (assoc :target-user-id target-user-id)
