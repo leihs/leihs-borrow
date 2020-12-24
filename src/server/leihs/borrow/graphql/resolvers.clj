@@ -5,6 +5,7 @@
             [com.walmartlabs.lacinia.resolve :as resolve]
             [leihs.borrow.graphql.mutations :as mutations]
             [leihs.borrow.graphql.queries :as queries]
+            [leihs.core.core :refer [spy-with]]
             [leihs.core.graphql.helpers :refer [transform-resolvers
                                                 wrap-resolver-with-error
                                                 wrap-resolver-with-kebab-case
@@ -51,25 +52,12 @@
                           [:request :target-user-id]
                           target-user-id*)
                 args
-                value))))
+                value)))) 
 
 (defn wrap-debug [resolver]
-  (fn [{{:keys [tx target-user-id] :as request} :request 
-        container ::lacinia/container-type-name
-        :as context}
-        args
-        value]
-    ; (log/debug container)
-    ; (log/debug target-user-id)
-    ; (log/debug context)
-    ; (log/debug args)
-    ; (log/debug value)
-    (let [result (resolver context args value)]
-      result
-      #_(resolve/with-context result
-        {:request (assoc request
-                         :target-user-id
-                         "71015732-d9d5-5f55-b1a9-b3bba392c3a8")}))))
+  (fn [context args value]
+    (resolve/with-context (resolver context args value)
+      {:test "test"})))
 
 (def resolvers
   (-> queries/resolvers
@@ -79,7 +67,7 @@
                                  wrap-resolver-with-kebab-case
                                  wrap-resolver-with-dates-validation
                                  wrap-resolver-with-target-user-id
-                                 #_wrap-debug))))
+                                 wrap-debug))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)
