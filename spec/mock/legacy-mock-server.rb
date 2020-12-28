@@ -3,6 +3,7 @@ require 'json'
 require 'pry'
 require 'sinatra'
 
+require_relative 'spec/refresh_timeout.rb'
 require_relative 'spec/models/filter_available.rb'
 
 set :show_exceptions, false
@@ -98,6 +99,7 @@ get '/borrow/models/availability' do
        quantity: 2 }]
   else
     Mock::Spec::FilterAvailable.availability(params) or
+      Mock::Spec::RefreshTimeout.availability(params) or
       raise("Unknown model IDs: #{params[:model_ids]}")
   end.to_json
 end

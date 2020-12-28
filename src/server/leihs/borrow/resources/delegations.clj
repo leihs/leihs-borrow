@@ -1,6 +1,7 @@
 (ns leihs.borrow.resources.delegations
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.sql :as sql]))
 
@@ -46,7 +47,7 @@
       first))
 
 (defn get-multiple
-  [{{tx :tx user-id :target-user-id} :request} _ _]
+  [{{tx :tx} :request user-id ::target-user/id} _ _]
   (-> (sql/select [:users.id :id] [:firstname :name] :delegator_user_id)
       (sql/from :users)
       (sql/join [:delegations_users :du]

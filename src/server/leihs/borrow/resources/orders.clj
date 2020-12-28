@@ -10,6 +10,7 @@
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.resolve :as resolve]
             [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.mails :as mails]
             [leihs.borrow.time :as time]
             [leihs.borrow.resources.helpers :as helpers]
@@ -36,7 +37,7 @@
   (update row :state upper-case))
 
 (defn get-one-by-pool
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    _
    {pool-order-id :order-id}]
   (-> (sql/select :orders.id
@@ -53,7 +54,7 @@
       first))
 
 (defn get-one
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    {:keys [id]}
    _]
   (-> (multiple-base-sqlmap user-id)
@@ -61,13 +62,13 @@
       sql/format
       (->> (jdbc/query tx))
       first
-      log/spy))
+      ))
 
 (defn equal-condition [a1 a2]
   [:and ["@>" a1 a2] ["<@" a1 a2]])
 
 (defn get-connection-sql-map
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    {:keys [order-by states]}
    value]
   (-> (multiple-base-sqlmap user-id)
@@ -118,7 +119,7 @@
       :updated_at))
 
 (defn get-unsubmitted
-  [{{:keys [tx] user-id :target-user-id} :request :as context} _ _]
+  [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
   (let [rs  (-> (reservations/unsubmitted-sqlmap tx user-id)
                 sql/format
                 (reservations/query tx))]
@@ -129,7 +130,7 @@
                                  (map :id))}))
 
 (defn get-draft
-  [{{:keys [tx] user-id :target-user-id} :request :as context} _ _]
+  [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
   (let [rs  (-> (reservations/draft-sqlmap tx user-id)
                 sql/format
                 (reservations/query tx))]
@@ -139,7 +140,7 @@
                               (map :id <>))}))
 
 (defn submit
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [purpose title]}
    _]
   (let [reservations (reservations/for-customer-order tx user-id)]
@@ -204,13 +205,19 @@
         :result)))
 
 (defn refresh-timeout
-  "Always returns the valid until date. If the unsubmitted order is not
-  timed-out or it is timed-out, but all the reservations have still valid
-  availability, then the valid until date will be updated as a side-effect."
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  "If any of the unsubmitted reservations has an invalid start date,
+  then make them all draft. The unsubmitted order returned is {} in this case.
+  Otherwise, if the unsubmitted order is not timed-out or it is timed-out,
+  but all the reservations have still valid availability, then the valid
+  until date is updated as a side-effect. The unsubmitted order is returned
+  in any case."
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    args
    value]
-  (if (or (not (timeout? tx user-id))
-          (not (reservations/unsubmitted-with-invalid-availability? context)))
-    (reservations/touch-unsubmitted! tx user-id))
-  {:unsubmitted-order (get-unsubmitted context args value)})
+  (if (reservations/some-unsubmitted-with-invalid-start-date? context)
+    (do (reservations/unsubmitted->draft tx user-id)
+        {:unsubmitted-order {}})
+    (do (if (or (not (timeout? tx user-id))
+                (not (reservations/some-unsubmitted-with-invalid-availability? context)))
+          (reservations/touch-unsubmitted! tx user-id))
+        {:unsubmitted-order (get-unsubmitted context args value)})))

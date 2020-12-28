@@ -10,6 +10,7 @@
             [logbug.debug :as debug]
             [leihs.core.sql :as sql]
             [leihs.core.core :refer [spy-with]]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.entitlements :as entitlements]
@@ -43,7 +44,7 @@
       :count))
 
 (defn total-borrowable-quantities
-  [{{:keys [tx] user-id :target-user-id} :request} _ {model-id :id}]
+  [{{:keys [tx]} :request user-id ::target-user/id} _ {model-id :id}]
   (let [pools (pools/accessible-to-user tx user-id)]
     (map (fn [pool]
            {:inventory-pool pool
@@ -86,7 +87,7 @@
        (sql/merge-where [:= :items.parent_id nil]))))
 
 (defn reservable?
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    _
    value]
   (-> base-sqlmap
@@ -127,7 +128,7 @@
 (defn available-quantity-in-date-range
   "If the available quantity was already computed through the enclosing
   resolver, then just return it. Otherwise fetch from legacy and compute."
-  [{{tx :tx user-id :target-user-id} :request :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [inventory-pool-ids
            start-date
            end-date
@@ -160,7 +161,7 @@
 
 (defn merge-available-quantities
   [models
-   {{tx :tx user-id :target-user-id} :request :as context}
+   {{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [start-date end-date]}
    value]
   (let [pool-ids (map :id (pools/to-reserve-from tx
@@ -194,7 +195,7 @@
          models)))
 
 (defn get-availability
-  [{{tx :tx user-id :target-user-id} :request :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [start-date end-date inventory-pool-ids]}
    value]
   (let [pools (pools/get-multiple context {:ids inventory-pool-ids} nil)]
@@ -236,7 +237,7 @@
       (merge-category-ids-conditions category-ids))))
 
 (defn get-multiple-sqlmap
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [ids
            category-id
            limit
@@ -274,7 +275,7 @@
         (sql/offset offset))))
 
 (defn get-favorites-sqlmap
-  [{{user-id :target-user-id} :request :as context}
+  [{user-id ::target-user/id :as context}
    args
    value]
   (-> (get-multiple-sqlmap context
@@ -286,7 +287,7 @@
                        [:= :favorite_models.user_id user-id]])))
 
 (defn favorited?
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    _
    value]
   (-> (sql/select

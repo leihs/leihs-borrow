@@ -2,6 +2,7 @@
   (:require [leihs.core.sql :as sql]
             [leihs.core.database.helpers :as database]
             [leihs.core.ds :as ds]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [com.walmartlabs.lacinia :as lacinia]
             [clojure.java.jdbc :as jdbc]
@@ -39,7 +40,8 @@
       sqlmap)))
 
 (defn get-visits-sqlmap
-  [{{:keys [tx] user-id :target-user-id} :request
+  [{{:keys [tx]} :request
+    user-id ::target-user/id
     container ::lacinia/container-type-name}
    {:keys [limit order-by]}
    value]

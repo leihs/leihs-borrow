@@ -83,9 +83,13 @@
                            :language {:type :Language
                                       :resolve :language}}}
            :UnsubmittedOrder {:fields {:validUntil {:type :DateTime}
-                                       :reservations {:type (list :Reservation)}
+                                       :reservations {:type (list (non-null :Reservation))
+                                                      :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                                      :resolve :reservations}
                                        :invalidReservationIds {:type (list (non-null :UUID))}}}
-           :DraftOrder {:fields {:reservations {:type (list :Reservation)}
+           :DraftOrder {:fields {:reservations {:type (list (non-null :Reservation))
+                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                                :resolve :reservations}
                                  :invalidReservationIds {:type (list (non-null :UUID))}}}
            :CurrentUser {:fields {:id {:type (non-null :UUID)
                                        :description "Same as user ID"}

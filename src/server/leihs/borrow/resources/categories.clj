@@ -4,6 +4,7 @@
             [hugsql.core :as hugsql]
             [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.paths :refer [path]]
             [leihs.borrow.resources.images :as images]
             [leihs.borrow.resources.models :as models]))
@@ -31,7 +32,7 @@
 
   (and-pool-ids-snip {:pool-ids ["foo"]}))
 
-(defn get-multiple [{{:keys [tx] user-id :target-user-id} :request}
+(defn get-multiple [{{:keys [tx]} :request user-id ::target-user/id}
                     {:keys [ids pool-ids raise-if-not-all-ids-found]}
                     _]
   (let [categories
@@ -55,7 +56,7 @@
           {}))
       categories)))
 
-(defn get-roots [{{:keys [tx] user-id :target-user-id} :request}
+(defn get-roots [{{:keys [tx]} :request user-id ::target-user/id}
                  {:keys [limit pool-ids]}
                  _]
   (-> {:limit (cond->> (str limit) limit (str "LIMIT "))
@@ -67,7 +68,7 @@
       reservable-root-categories-sqlvec
       (->> (jdbc/query tx))))
 
-(defn get-children [{{:keys [tx] user-id :target-user-id} :request}
+(defn get-children [{{:keys [tx]} :request user-id ::target-user/id}
                     {:keys [pool-ids]}
                     value]
   (-> {:category-id (:id value)
