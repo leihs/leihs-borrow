@@ -1,6 +1,7 @@
 (ns leihs.borrow.resources.reservations
   (:refer-clojure :exclude [count])
   (:require [leihs.borrow.time :as time]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.models :as models]
             [leihs.borrow.resources.inventory-pools :as pools]
             [leihs.borrow.resources.delegations :as delegations]
@@ -193,8 +194,9 @@
     sqlmap))
 
 (defn get-multiple
-  [{{:keys [tx] user-id :target-user-id} :request
+  [{{:keys [tx]} :request
     container ::lacinia/container-type-name
+    user-id ::target-user/id
     :as context}
    {:keys [order-by]}
    value]

@@ -10,6 +10,7 @@
             [logbug.debug :as debug]
             [leihs.core.sql :as sql]
             [leihs.core.core :refer [spy-with]]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.entitlements :as entitlements]
@@ -127,7 +128,7 @@
 (defn available-quantity-in-date-range
   "If the available quantity was already computed through the enclosing
   resolver, then just return it. Otherwise fetch from legacy and compute."
-  [{{tx :tx user-id :target-user-id} :request :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [inventory-pool-ids
            start-date
            end-date

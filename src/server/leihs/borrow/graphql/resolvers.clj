@@ -3,6 +3,7 @@
   (:require [clojure.tools.logging :as log]
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.resolve :as resolve]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.graphql.mutations :as mutations]
             [leihs.borrow.graphql.queries :as queries]
             [leihs.core.core :refer [spy-with]]
@@ -25,17 +26,18 @@
       (resolver context args value))))
 
 (defn wrap-resolver-with-target-user-id [resolver]
-  (fn [{{:keys [tx target-user-id]
+  (fn [{{:keys [tx]
          {auth-user-id :id} :authenticated-entity
          :as request} :request 
         container ::lacinia/container-type-name
+        target-user-id ::target-user/id
         :as context}
        args
        value]
     (let [[user-id :as distinct-user-ids]
           (->> [(and (#{:CurrentUser :User} container) (:id value))
-                (:user-id value)
-                (:user-id args)]
+                (:userId value)
+                (:userId args)]
                (remove nil?)
                distinct)
           target-user-id*
@@ -48,26 +50,24 @@
                      (not (delegations/member? tx auth-user-id user-id)))
                 (throw (ex-info "User ID not authorized!" {}))
                 :else (or user-id auth-user-id)))]
-      (resolver (assoc-in context
-                          [:request :target-user-id]
-                          target-user-id*)
-                args
-                value)))) 
+      (resolve/with-context
+        (resolver (assoc context ::target-user/id target-user-id*)
+                  args
+                  value)
+        {::target-user/id target-user-id*})))) 
 
 (defn wrap-debug [resolver]
   (fn [context args value]
-    (resolve/with-context (resolver context args value)
-      {:test "test"})))
+    (resolver context args value)))
 
 (def resolvers
   (-> queries/resolvers
       (merge mutations/resolvers)
       (transform-resolvers (comp wrap-resolver-with-error
+                                 wrap-resolver-with-target-user-id
                                  wrap-resolver-with-camelCase
                                  wrap-resolver-with-kebab-case
-                                 wrap-resolver-with-dates-validation
-                                 wrap-resolver-with-target-user-id
-                                 wrap-debug))))
+                                 wrap-resolver-with-dates-validation))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

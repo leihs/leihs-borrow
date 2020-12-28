@@ -10,6 +10,7 @@
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.resolve :as resolve]
             [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.mails :as mails]
             [leihs.borrow.time :as time]
             [leihs.borrow.resources.helpers :as helpers]
@@ -118,7 +119,7 @@
       :updated_at))
 
 (defn get-unsubmitted
-  [{{:keys [tx] user-id :target-user-id} :request :as context} _ _]
+  [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
   (let [rs  (-> (reservations/unsubmitted-sqlmap tx user-id)
                 sql/format
                 (reservations/query tx))]
