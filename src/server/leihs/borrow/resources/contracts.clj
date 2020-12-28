@@ -5,6 +5,7 @@
             [com.walmartlabs.lacinia :as lacinia]
             [leihs.core.core :refer [spy-with]]
             [leihs.core.sql :as sql]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]))
 
@@ -33,7 +34,8 @@
                (sql/merge-where [:= :orders.customer_order_id id]))
     sqlmap))
 
-(defn get-connection-sql-map [{{:keys [tx] user-id :target-user-id } :request
+(defn get-connection-sql-map [{{:keys [tx]} :request
+                               user-id ::target-user/id
                                container ::lacinia/container-type-name}
                               {:keys [states order-by]}
                               value]
@@ -49,7 +51,7 @@
         (sql/order-by (helpers/treat-order-arg order-by :contracts)))))
 
 (defn get-one
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    {:keys [id]} 
    {:keys [contract-id]}]
   (-> (sql/select :contracts.*)

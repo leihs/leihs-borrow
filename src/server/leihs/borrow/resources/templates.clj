@@ -7,6 +7,7 @@
             [leihs.core.sql :as sql]
             [leihs.core.core :refer [spy-with]]
             [leihs.borrow.db :refer [query]]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.inventory-pools :as pools]
             [leihs.borrow.resources.models :as models]
             [leihs.borrow.resources.reservations :as reservations]
@@ -34,7 +35,7 @@
 (defn get-one [{{:keys [tx]} :request} {:keys [id]} _]
   (get-one-by-id tx id))
 
-(defn get-multiple [{{tx :tx user-id :target-user-id} :request} _ _]
+(defn get-multiple [{{tx :tx} :request user-id ::target-user/id} _ _]
   (-> base-sqlmap
       (sql/merge-join :inventory_pools_model_groups
                       [:=

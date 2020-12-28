@@ -116,7 +116,7 @@
             ")"))]))
 
 (defn some-unsubmitted-with-invalid-start-date?
-  [{{:keys [tx] user-id :target-user-id} :request :as context}]
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}]
   (-> (unsubmitted-sqlmap tx user-id)
       (sql/merge-join :inventory_pools
                       [:=
@@ -130,7 +130,7 @@
       not))
 
 (defn some-unsubmitted-with-invalid-availability?
-  [{{:keys [tx] user-id :target-user-id} :request :as context}]
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}]
   (->> user-id
        (for-customer-order tx)
        (with-invalid-availability context)
@@ -207,7 +207,7 @@
       sql/format
       (query tx)))
 
-(defn delete [{{:keys [tx] user-id :target-user-id} :request}
+(defn delete [{{:keys [tx]} :request user-id ::target-user/id}
               {:keys [ids]}
               _]
   (-> (sql/delete-from [:reservations :r])
@@ -246,7 +246,7 @@
         (conj result (assoc pool-avail :quantity desired-quantity))))))
 
 (defn create-draft
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [model-id start-date end-date quantity inventory-pool-id] :as args}
    _]
   (when-not (models/reservable? context args {:id model-id})
@@ -271,7 +271,7 @@
         (query tx))))
 
 (defn create
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [model-id start-date end-date quantity inventory-pool-ids]
     exclude-reservation-ids :exclude-reservation-ids 
     :or {exclude-reservation-ids []}
@@ -327,7 +327,7 @@
              flatten)))))
 
 (defn add-to-cart
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [ids]}
    _]
   (let [drafts (get-drafts tx user-id ids)]

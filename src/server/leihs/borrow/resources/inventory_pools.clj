@@ -3,6 +3,7 @@
             [clojure.java.jdbc :as jdbc]
             [com.walmartlabs.lacinia :as lacinia]
             [hugsql.core :as hugsql]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.settings :refer [settings!]]
             [leihs.core.sql :as sql]))
@@ -42,7 +43,7 @@
        (jdbc/query tx)))
 
 (defn get-multiple
-  [{{tx :tx user-id :target-user-id} :request}
+  [{{tx :tx} :request user-id ::target-user/id}
    {:keys [order-by ids]}
    _]
   (-> base-sqlmap

@@ -37,7 +37,7 @@
   (update row :state upper-case))
 
 (defn get-one-by-pool
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    _
    {pool-order-id :order-id}]
   (-> (sql/select :orders.id
@@ -54,7 +54,7 @@
       first))
 
 (defn get-one
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    {:keys [id]}
    _]
   (-> (multiple-base-sqlmap user-id)
@@ -68,7 +68,7 @@
   [:and ["@>" a1 a2] ["<@" a1 a2]])
 
 (defn get-connection-sql-map
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    {:keys [order-by states]}
    value]
   (-> (multiple-base-sqlmap user-id)
@@ -130,7 +130,7 @@
                                  (map :id))}))
 
 (defn get-draft
-  [{{:keys [tx] user-id :target-user-id} :request :as context} _ _]
+  [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
   (let [rs  (-> (reservations/draft-sqlmap tx user-id)
                 sql/format
                 (reservations/query tx))]
@@ -140,7 +140,7 @@
                               (map :id <>))}))
 
 (defn submit
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [purpose title]}
    _]
   (let [reservations (reservations/for-customer-order tx user-id)]
@@ -211,7 +211,7 @@
   but all the reservations have still valid availability, then the valid
   until date is updated as a side-effect. The unsubmitted order is returned
   in any case."
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    args
    value]
   (if (reservations/some-unsubmitted-with-invalid-start-date? context)
