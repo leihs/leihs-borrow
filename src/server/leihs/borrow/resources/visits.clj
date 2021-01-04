@@ -20,36 +20,6 @@
   (-> (apply sql/select (columns tx))
       (sql/from :visits)))
 
-(defn get-one [{{:keys [tx] user-id :target-user-id} :request :as context}
-               {:keys [id]}
-               _]
-  (-> (base-sqlmap tx)
-      (sql/merge-where [:= :id id])
-      sql/format
-      (as-> <> (jdbc/query tx <>))
-      first
-      (#(schema/tag-with-type %
-                              (case (:type %)
-                                "hand_over" :Pickup
-                                "take_back" :Return)))
-      (->> (spy-with meta))))
-
-(defn get-multiple [{{:keys [tx] user-id :target-user-id} :request :as context}
-                    {:keys [limit order-by]}
-                    _]
-  (-> (base-sqlmap tx)
-      (sql/merge-where [:= :user_id user-id])
-      (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by)))
-      (cond-> limit (-> (sql/limit limit)))
-      sql/format
-      (as-> <> (jdbc/query tx <>))
-      (->> (map (fn [v]
-                  (schema/tag-with-type v
-                                        (case (:type v)
-                                          "hand_over" :Pickup
-                                          "take_back" :Return)))))))
-
 (defn merge-where-according-to-container
   [sqlmap container {:keys [id]}]
   (letfn [(merge-join-visits-reservations [sqlmap]
@@ -101,3 +71,26 @@
       (sql/merge-where [:= :visits.type "take_back"])
       sql/format
       (as-> <> (jdbc/query tx <>))))
+
+(defn get-one [{{:keys [tx]} :request :as context}
+               {:keys [id] :as args}
+               value]
+  (-> (get-visits-sqlmap context args value)
+      (sql/merge-where [:= :id id])
+      sql/format
+      (as-> <> (jdbc/query tx <>))
+      first
+      (#(schema/tag-with-type %
+                              (case (:type %)
+                                "hand_over" :Pickup
+                                "take_back" :Return)))))
+
+(defn get-multiple [{{:keys [tx]} :request :as context} args value]
+  (-> (get-visits-sqlmap context args value)
+      sql/format
+      (as-> <> (jdbc/query tx <>))
+      (->> (map (fn [v]
+                  (schema/tag-with-type v
+                                        (case (:type v)
+                                          "hand_over" :Pickup
+                                          "take_back" :Return)))))))

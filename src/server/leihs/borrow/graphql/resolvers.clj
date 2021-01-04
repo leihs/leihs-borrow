@@ -58,16 +58,23 @@
 
 (defn wrap-debug [resolver]
   (fn [context args value]
-    (resolver context args value)))
+    (spy-with #(map meta %)
+              (resolver context args value))))
 
 (def resolvers
   (-> queries/resolvers
       (merge mutations/resolvers)
-      (transform-resolvers (comp wrap-resolver-with-error
+      (transform-resolvers (comp #_wrap-debug
+                                 wrap-resolver-with-error
+                                 #_wrap-debug
                                  wrap-resolver-with-target-user-id
+                                 #_wrap-debug
                                  wrap-resolver-with-camelCase
+                                 #_wrap-debug
                                  wrap-resolver-with-kebab-case
-                                 wrap-resolver-with-dates-validation))))
+                                 #_wrap-debug
+                                 wrap-resolver-with-dates-validation
+                                 #_wrap-debug))))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

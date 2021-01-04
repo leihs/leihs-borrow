@@ -6,7 +6,7 @@
                                :date {:type (non-null :Date)}
                                :quantity {:type (non-null Int)}
                                :inventoryPool {:type (non-null :InventoryPool)}
-                               :reservations {:type (list :Reservation)
+                               :reservations {:type (list (non-null :Reservation))
                                               :args {:orderBy {:type (list :ReservationsOrderByInput)}}}}}}
 
  :enums {:ModelsOrderByAttributeEnum {:values [:ID :NAME]},
