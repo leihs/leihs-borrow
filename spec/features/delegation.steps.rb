@@ -1,31 +1,5 @@
-step 'there is/are :n borrowable item(s) for model :model in pool :pool' do |n, model, pool|
-  model = LeihsModel.find(product: model)
-  pool = InventoryPool.find(name: pool)
-
-  n.to_i.times do
-    FactoryBot.create(:item,
-                      is_borrowable: true,
-                      leihs_model: model,
-                      responsible: pool,
-                      owner: pool)
-  end
-end
-
 step 'I enter :term in the search field' do |term|
   fill_in('Search', with: term)
-end
-
-step 'I choose to filter by availabilty' do
-  # find('input[name="only-available"]').click
-  find('label.custom-checkbox', text: "Show available only").click
-end
-
-step 'I choose next working day as start date' do
-  fill_in('From', with: Date.today.to_s)
-end
-
-step 'I choose next next working day as end date' do
-  fill_in('Until', with: Date.tomorrow.to_s)
 end
 
 step 'I see one model with the title :name' do |name|
@@ -47,10 +21,6 @@ end
 
 step 'the end date chosen on the previous screen is pre-filled' do
   expect(find("input[name='end-date']").value).to eq Date.tomorrow.to_s
-end
-
-step 'I set the quantity to :n' do |n|
-  find("input[name='quantity']").set(n)
 end
 
 step 'I click on :text and accept the alert' do |text|
@@ -106,7 +76,7 @@ step 'I approve the order of the user/delegation' do
 end
 
 step 'I see the order :purpose under approved orders' do |purpose|
-  within find('.mt-3', text: 'Approved Orders') do
+  within find('.ui-page', text: 'Approved Orders') do
     expect(current_scope).to have_content purpose
   end
 end
@@ -172,7 +142,9 @@ step "I see :n times :name" do |n, name|
 end
 
 step "I select :name xxx" do |name|
-  find("select option", text: name).select_option
+  # WTF: this should work but throws `Selenium::WebDriver::Error::JavascriptError: TypeError: cyclic object value`
+  # find('select[name="user-id"] option', text: name).select_option
+  all('select[name="user-id"] option').select {|n| n.text.include?(name)}.first.select_option
 end
 
 step 'I click on the menu' do

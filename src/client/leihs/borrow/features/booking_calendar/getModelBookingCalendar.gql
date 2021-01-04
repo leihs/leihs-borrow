@@ -1,0 +1,31 @@
+query getModelBookingCalendar(
+  $modelId: UUID!
+  $startDate: Date
+  $endDate: Date
+  # $pools: [UUID!]!
+) {
+  model(id: $modelId) {
+    id
+    name
+    manufacturer
+
+    # availableQuantityInDateRange(startDate: $startDate, endDate: $endDate)
+
+    availability(
+      startDate: $startDate
+      endDate: $endDate
+      # inventoryPoolIds: $pools
+    ) {
+      inventoryPool {
+        id
+        name
+      }
+      dates {
+        date
+        quantity
+        startDateRestriction
+        endDateRestriction
+      }
+    }
+  }
+}

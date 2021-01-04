@@ -18,6 +18,7 @@
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.components :as ui] 
+    ["/leihs-ui-client-side-external-react" :as UI]
     [leihs.borrow.features.models.core :as models]))
 
 (set-default-translate-path :borrow.favorite-models)
@@ -27,22 +28,23 @@
 ;-; EVENTS 
 (reg-event-fx
   ::routes/models-favorites
-  (fn-traced [_ _]
-    {:dispatch [::models/get-models EXTRA-PARAMS]}))
+  (fn-traced [_ {:keys [query-params]}]
+    {:dispatch-n (list [::filters/set-multiple query-params]
+                       [::models/get-models EXTRA-PARAMS])}))
 
 (reg-event-fx
   ::clear
   (fn-traced [_ _]
     {:dispatch-n (list [::filters/clear-current]
-                       [::clear-results]
-                       [:routing/navigate [::routes/models-favorites]])}))
+                       [::models/clear-data]
+                       [:routing/navigate [::routes/models-favorites]]
+                       [::models/get-models EXTRA-PARAMS])}))
 
 (defn view []
   (let [models @(subscribe [::models/data])]
-    [:<>
-     [:header.mx-3.my-4
-      [:h1.text-3xl.font-extrabold.leading-none
-       (t :title)]]
+    [:> UI/Components.AppLayout.Page
+     {:title (t :title)}
+     
      [models/search-and-list
       #(dispatch [:routing/navigate
                   [::routes/models-favorites {:query-params %}]])

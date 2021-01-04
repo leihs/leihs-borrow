@@ -4,6 +4,7 @@
     [reagent.core :as r]
     [akiroz.re-frame.storage :refer [persist-db]]
     [re-frame.core :as rf]
+    [re-frame.db :as db]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
     [leihs.borrow.lib.re-frame :refer [reg-event-fx
@@ -15,6 +16,7 @@
     [leihs.borrow.lib.translate :refer [t]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.filters :as filters]
+    [leihs.borrow.lib.helpers :refer [spy spy-with log obj->map]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.pagination :as pagination]
     [leihs.borrow.client.routes :as routes]
@@ -32,34 +34,46 @@
     {:dispatch-n (list [::filters/set-multiple query-params]
                        [::get-models])}))
 
+(defn base-query-vars [filters]
+  (let [start-date (:start-date filters)
+        end-date (:end-date filters)
+        user-id (:user-id filters)
+        pool-id (:pool-id filters)
+        dates-valid? (<= start-date end-date)] ; if somehow end is before start, ignore it instead of error
+    (cond-> {:searchTerm (:term filters)
+             :startDate (when dates-valid? start-date)
+             :endDate (when dates-valid? end-date)
+             :onlyAvailable (when dates-valid? (:available-between? filters))
+             :quantity (:quantity filters)
+             :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
+      pool-id
+      (assoc :poolIds [pool-id])
+      user-id
+      (assoc :userId user-id))))
+
+(defn query-vars [filters extra-vars]
+  (-> filters base-query-vars (merge extra-vars)))
+
+(defn number-of-cached [db cache-key]
+  (some-> db :ls ::data (get cache-key) :edges count))
+
 (reg-event-fx
   ::get-models
-  (fn-traced [{:keys [db]} [_ extra-args]]
-    (let [filters (filters/current db)
-          start-date (:start-date filters)
-          end-date (:end-date filters)
-          user-id (or (:user-id filters) (-> db current-user/data :user :id))
-          dates-valid? (<= start-date end-date) ; if somehow end is before start, ignore it instead of error
-          query-vars (merge {:searchTerm (:term filters)
-                             :startDate (when dates-valid? start-date)
-                             :endDate (when dates-valid? end-date)
-                             :onlyAvailable (when dates-valid? (:available-between? filters))
-                             :userId user-id
-                             :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
-                            extra-args)]
-      ; NOTE: no caching yet, clear data before new search  
-      {:db (assoc-in db [::data] nil)
-       :dispatch [::re-graph/query
+  (fn-traced [{:keys [db]} [_ extra-vars]]
+    (let [q-vars (-> db filters/current (query-vars extra-vars))
+          cache-key (hash q-vars)
+          n (number-of-cached db cache-key)]
+      {:dispatch [::re-graph/query
                   query-gql
-                  query-vars
-                  [::on-fetched-models]]})))
+                  (cond-> q-vars n (assoc :first n))
+                  [::on-fetched-models cache-key]]})))
 
 (reg-event-fx
   ::on-fetched-models
-  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
+  (fn-traced [{:keys [db]} [_ cache-key {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-      {:db (assoc-in db [::data] (get-in data [:models]))})))
+      {:db (assoc-in db [:ls ::data cache-key] (get-in data [:models]))})))
 
 (reg-event-fx
   ::clear
@@ -70,18 +84,35 @@
 
 (reg-event-db
   ::clear-data
-  (fn-traced [db _] (dissoc db ::data)))
+  (fn-traced [db _] (update db :ls dissoc ::data)))
 
+(reg-event-db ::clear-data-under-key
+              (fn-traced [db [_ cache-key]]
+                (update-in db [:ls ::data] dissoc cache-key)))
+
+(reg-sub ::cache-key
+         :<- [::filters/current]
+         (fn [f [_ extra-vars]]
+           (-> f (query-vars extra-vars) hash)))
+
+(reg-sub ::data-under-cache-key
+         (fn [db [_ cache-key]]
+           (-> (get-in db [:ls ::data cache-key]))))
+
+(reg-sub ::edges
+         (fn [[_ cache-key] _]
+           (subscribe [::data-under-cache-key cache-key]))
+         (fn [d _] (:edges d)))
 
 (reg-sub ::fetching
-         (fn [db _] (get-in db [::data :fetching])))
+         (fn [[_ cache-key] _]
+           (subscribe [::data-under-cache-key cache-key]))
+         (fn [data _] (:fetching data)))
 
 (reg-sub ::has-next-page?
-         (fn [db _] (get-in db [::data :page-info :has-next-page])))
-
-(reg-sub
-  ::data
-  (fn [db] (-> (get-in db [::data :edges]))))
+         (fn [[_ cache-key] _]
+           (subscribe [::data-under-cache-key cache-key]))
+         (fn [data _] (-> data :page-info :has-next-page)))
 
 (reg-sub ::target-users
          :<- [::current-user/data]
@@ -89,12 +120,6 @@
            (let [delegations (:delegations cu)]
              (when (not-empty delegations)
                (concat [(:user cu)] delegations)))))
-
-(reg-sub ::user-id
-         :<- [::current-user/data]
-         :<- [::filters/user-id]
-         (fn [[co user-id]]
-           (or user-id (-> co :user :id))))
 
 ;-; VIEWS
 (defn form-line [name label input-props]
@@ -113,94 +138,26 @@
 (def product-card-width-in-rem 12)
 (def product-card-margins-in-rem 1)
 
-(defn search-panel [submit-fn clear-fn]
-  (let [filters @(subscribe [::filters/current])
-        target-users @(subscribe [::target-users])
-        term @(subscribe [::filters/term])
-        data @(subscribe [::data])
-        start-date @(subscribe [::filters/start-date])
-        end-date @(subscribe [::filters/end-date])
-        available-between? @(subscribe [::filters/available-between?])
-        quantity @(subscribe [::filters/quantity])
-        user-id @(subscribe [::user-id])
+(defn search-panel [submit-fn clear-fn filters cache-key]
+  (let [current-user-data @(subscribe [::current-user/data])
+        filters @(subscribe [::filters/current])
+        pools @(subscribe [::current-user/pools])
         routing @(subscribe [:routing/routing])
         on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
-
-    [:div.px-3.py-4.bg-light {:class (when on-search-view? "mb-4")
-                              :style {:box-shadow "0 0rem 2rem rgba(0, 0, 0, 0.15) inset"}}
-     [:form.form.form-compact
-      {:action "/search"
-       :on-submit (fn [event] (.preventDefault event) (submit-fn filters))}
-
-      [:div.form-group
-       [form-line :search-term (t :borrow.filter/search)
-        {:type :text
-         :value term
-         :on-change #(dispatch [::filters/set-one :term (-> % .-target .-value)])}]]
-
-      (when-not (empty? target-users)
-        [:label.row
-         [:span.text-xs.col-3.col-form-label (t :borrow.filter/for)]
-         [:div.col-9
-          [:select {:class "form-control"
-                    :default-value user-id
-                    :name :user-id
-                    :on-change #(dispatch [::filters/set-one :user-id (-> % .-target .-value)])}
-           (doall
-             (for [user target-users]
-               [:option {:value (:id user) :key (:id user)}
-                (:name user)]))]]])
-
-      [:div.form-group
-       [:div.row
-        [:span.text-xs.col-3.col-form-label (t :borrow.filter/time-span)]
-        [:div.col-9
-         [:label.custom-control.custom-checkbox
-          [:input.custom-control-input
-           {:type :checkbox
-            :name :only-available
-            :checked available-between?
-            :on-change (fn [_]
-                         (dispatch [::filters/set-one :available-between? (not available-between?)]))}]
-          [:span.custom-control-label (t :borrow.filter/show-only-available)]]]]]
-
-
-      [:div {:class (if-not available-between? "d-none")}
-       [:div.form-group
-        [form-line :start-date (t :borrow.filter/from)
-         {:type :date
-          :required true
-          :disabled (not available-between?)
-          :value start-date
-          :on-change #(dispatch [::filters/set-one :start-date (-> % .-target .-value)])}]]
-
-       [:div.form-group
-        [form-line :end-date (t :borrow.filter/until)
-         {:type :date
-          :required true
-          :disabled (not available-between?)
-          :min start-date
-          :value end-date
-          :on-change #(dispatch [::filters/set-one :end-date (-> % .-target .-value)])}]]
-
-       [:div.form-group
-        [form-line :quantity (t :borrow.filter/quantity)
-         {:type :number
-          :min 1
-          :value quantity
-          :on-change #(dispatch [::filters/set-one :quantity (-> % .-target .-value)])}]]]
-
-      [:button.btn.btn-success.dont-invert.rounded-pill
-       {:type :submit
-        :class :mt-2}
-       (t :borrow.filter/get-results)]
-
-      [:button.btn.btn-secondary.dont-invert.rounded-pill.mx-1
-       {:type :button
-        :disabled (not (or (seq filters) (seq data)))
-        :on-click clear-fn
-        :class :mt-2}
-       (t :borrow.filter/clear)]]]))
+    [:> UI/Components.ModelFilterForm
+     {:className (str "mt-3 mb-3" (when on-search-view? ""))
+      :initialTerm (:term filters)
+      :initialUserId (:user-id filters)
+      :initialPoolId (:pool-id filters)
+      :initialAvailableBetween (:available-between? filters)
+      :initialStartDate (:start-date filters)
+      :initialEndDate (:end-date filters)
+      :initialQuantity (:quantity filters)
+      :user (:user current-user-data)
+      :delegations (:delegations current-user-data)
+      :pools pools
+      :onSubmit #(submit-fn (obj->map %))
+      :onClear clear-fn}]))
 
 (defn models-list [models]
   (let
@@ -218,22 +175,16 @@
                         :subCaption (:manufacturer model)
                         :href  (routing/path-for ::routes/models-show
                                                  :model-id (:id model))})))]
-    [:div.mx-1.mt-2
-     [:> UI/Components.CategoryList {:list models-list}]
+    [:<>
+     [:> UI/Components.ModelList {:list models-list}]
      (when debug? [:p (pr-str @(subscribe [::data]))])]))
 
-(defn load-more [extra-args]
-  (let [fetching-more? @(subscribe [::fetching])
-        has-next-page? @(subscribe [::has-next-page?])
+(defn load-more [cache-key extra-vars]
+  (let [fetching-more? @(subscribe [::fetching cache-key])
+        has-next-page? @(subscribe [::has-next-page? cache-key])
         filters @(subscribe [::filters/current])
-        term (:term filters)
-        start-date (:start-date filters)
-        end-date (:end-date filters)
-        user-id (:user-id filters)
-        dates-valid? (<= start-date end-date) ; if somehow end is before start, ignore it instead of error
-        only-available? (:only-available? filters)]
-    [:div
-     [:hr]
+        dates-valid? (<= (:start-date filters) (:end-date filters))]
+    [:<>
      (if (and fetching-more? dates-valid?)
        [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
        (when has-next-page?
@@ -241,31 +192,27 @@
           [:button.border.border-black.p-2.rounded
            {:on-click #(dispatch [::pagination/get-more
                                   query-gql
-                                  (merge {:searchTerm term
-                                          :startDate start-date
-                                          :endDate end-date
-                                          :onlyAvailable only-available?
-                                          :userId user-id
-                                          :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
-                                         extra-args)
-                                  [::data]
+                                  (query-vars filters extra-vars)
+                                  [:ls ::data cache-key]
                                   [:models]])}
            (t :borrow.pagination/load-more)]]))]))
 
-(defn search-and-list [submit-fn clear-fn extra-params]
-  (let [models @(subscribe [::data])]
+(defn search-and-list [submit-fn clear-fn extra-vars]
+  (let [cache-key @(subscribe [::cache-key extra-vars])
+        models @(subscribe [::edges cache-key])
+        filters @(subscribe [::filters/current])]
     [:<>
-     [search-panel submit-fn clear-fn]
+     ^{:key cache-key} [search-panel submit-fn clear-fn filters cache-key]
      (cond
        (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
        (empty? models) [:p.p-6.w-full.text-center (t :borrow.pagination/nothing-found)]
        :else
        [:<>
         [models-list models]
-        [load-more extra-params]])]))
+        [load-more cache-key extra-vars]])]))
 
 (defn view []
   [search-and-list
    #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
-   #(dispatch [::clear %])
+   #(dispatch [::clear])
    nil])

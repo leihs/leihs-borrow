@@ -5,11 +5,12 @@
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.executor :as executor]
             [leihs.core.sql :as sql]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.models :as models]))
 
 (defn create
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    {model-id :id}
    _]
   (-> (sql/insert-into :favorite_models)
@@ -21,7 +22,7 @@
   (models/get-one-by-id tx model-id))
 
 (defn delete
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    {model-id :id}
    _]
   (-> (sql/delete-from :favorite_models)

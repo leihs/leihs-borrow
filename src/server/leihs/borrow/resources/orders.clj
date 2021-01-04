@@ -1,6 +1,7 @@
 (ns leihs.borrow.resources.orders
   (:refer-clojure :exclude [resolve])
-  (:require [leihs.core.sql :as sql]
+  (:require [leihs.core.core :refer [spy-with]]
+            [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]
             [leihs.core.database.helpers :as database]
             [clojure.string :refer [upper-case]]
@@ -9,6 +10,7 @@
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.resolve :as resolve]
             [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.mails :as mails]
             [leihs.borrow.time :as time]
             [leihs.borrow.resources.helpers :as helpers]
@@ -18,53 +20,58 @@
 (def distinct-states-sql-expr
   (sql/raw "array_agg(DISTINCT upper(orders.state))"))
 
-(defn multiple-base-sqlmap [tx user-id]
-  (let [common-columns [:id :purpose :created_at :updated_at]]
-    (-> (sql/select :orders_union.id
-                    :orders_union.purpose
-                    [distinct-states-sql-expr :state]
-                    (helpers/date-time-created-at :orders_union)
-                    (helpers/date-time-updated-at :orders_union))
-        (sql/from
-          [{:union [(-> (apply sql/select common-columns)
-                        (sql/from :customer_orders)
-                        (sql/where [:= :user_id user-id]))
-                    (-> (apply sql/select common-columns)
-                        (sql/from :orders)
-                        (sql/where [:= :user_id user-id])
-                        (sql/merge-where [:= :customer_order_id nil]))]}
-           :orders_union])
-        (sql/join :orders
-                  [:or
-                   [:= :orders_union.id :orders.customer_order_id]
-                   [:= :orders_union.id :orders.id]])
-        (assoc :group-by [:orders_union.id
-                          :orders_union.purpose
-                          :orders_union.created_at
-                          :orders_union.updated_at]))))
+(defn multiple-base-sqlmap [user-id]
+  (-> (sql/select :customer_orders.id
+                  :customer_orders.purpose
+                  :customer_orders.title
+                  [distinct-states-sql-expr :state]
+                  (helpers/date-time-created-at :customer_orders)
+                  (helpers/date-time-updated-at :customer_orders))
+      (sql/from :customer_orders)
+      (sql/join :orders
+                [:= :customer_orders.id :orders.customer_order_id])
+      (sql/where [:= :customer_orders.user_id user-id])
+      (assoc :group-by [:customer_orders.id])))
 
 (defn pool-order-row [row]
   (update row :state upper-case))
 
-(defn get-one
-  [{{:keys [tx] user-id :target-user-id} :request}
-   {:keys [id]}
-   _]
-  (-> (sql/select :*)
-      (sql/from [(multiple-base-sqlmap tx user-id) :tmp])
-      (sql/merge-where [:= :id id])
+(defn get-one-by-pool
+  [{{:keys [tx]} :request user-id ::target-user/id}
+   _
+   {pool-order-id :order-id}]
+  (-> (sql/select :orders.id
+                  :orders.purpose
+                  :orders.inventory_pool_id
+                  :orders.customer_order_id
+                  [(sql/call :upper :orders.state) :state]
+                  (helpers/date-time-created-at :orders)
+                  (helpers/date-time-updated-at :orders))
+      (sql/from :orders)
+      (sql/merge-where [:= :id pool-order-id])
       sql/format
       (->> (jdbc/query tx))
       first))
+
+(defn get-one
+  [{{:keys [tx]} :request user-id ::target-user/id}
+   {:keys [id]}
+   _]
+  (-> (multiple-base-sqlmap user-id)
+      (sql/merge-where [:= :customer_orders.id id])
+      sql/format
+      (->> (jdbc/query tx))
+      first
+      ))
 
 (defn equal-condition [a1 a2]
   [:and ["@>" a1 a2] ["<@" a1 a2]])
 
 (defn get-connection-sql-map
-  [{{:keys [tx] user-id :target-user-id} :request}
+  [{{:keys [tx]} :request user-id ::target-user/id}
    {:keys [order-by states]}
    value]
-  (-> (multiple-base-sqlmap tx user-id)
+  (-> (multiple-base-sqlmap user-id)
       (cond-> states
         (sql/having (equal-condition
                       distinct-states-sql-expr
@@ -73,7 +80,8 @@
                            (map #(sql/call :cast (name %) :text))
                            sql/array))))
       (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by)))))
+        (sql/order-by
+          (helpers/treat-order-arg order-by :customer_orders)))))
 
 (defn get-connection [context args value]
   (connections/wrap get-connection-sql-map
@@ -91,14 +99,9 @@
                         (helpers/date-time-updated-at)))]
     (-> (apply sql/select columns)
         (sql/from :orders)
-        ; An old pool order without customer order become
-        ; customer order itself and contains itself as a
-        ; sub-order too.
-        (sql/where [:or
-                    [:= :customer_order_id (:id value)]
-                    [:= :id (:id value)]])
+        (sql/where [:= :customer_order_id (:id value)])
         (cond-> (seq order-by)
-          (sql/order-by (helpers/treat-order-arg order-by)))
+          (sql/order-by (helpers/treat-order-arg order-by :orders)))
         sql/format
         (as-> <>
           (jdbc/query tx
@@ -116,7 +119,7 @@
       :updated_at))
 
 (defn get-unsubmitted
-  [{{:keys [tx] user-id :target-user-id} :request :as context} _ _]
+  [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
   (let [rs  (-> (reservations/unsubmitted-sqlmap tx user-id)
                 sql/format
                 (reservations/query tx))]
@@ -127,7 +130,7 @@
                                  (map :id))}))
 
 (defn get-draft
-  [{{:keys [tx] user-id :target-user-id} :request :as context} _ _]
+  [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
   (let [rs  (-> (reservations/draft-sqlmap tx user-id)
                 sql/format
                 (reservations/query tx))]
@@ -137,8 +140,8 @@
                               (map :id <>))}))
 
 (defn submit
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
-   {:keys [purpose]}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+   {:keys [purpose title]}
    _]
   (let [reservations (reservations/for-customer-order tx user-id)]
     (if (empty? reservations)
@@ -147,6 +150,7 @@
       (throw (ex-info "Some reserved quantities are not available anymore." {})))
     (let [customer-order (-> (sql/insert-into :customer_orders)
                              (sql/values [{:purpose purpose
+                                           :title title
                                            :user_id user-id}])
                              (sql/returning :id
                                             :purpose
@@ -201,12 +205,19 @@
         :result)))
 
 (defn refresh-timeout
-  "Always returns the valid until date. If the unsubmitted order is not
-  timed-out, then it will be updated as a side-effect."
-  [{{:keys [tx] user-id :target-user-id} :request :as context}
+  "If any of the unsubmitted reservations has an invalid start date,
+  then make them all draft. The unsubmitted order returned is {} in this case.
+  Otherwise, if the unsubmitted order is not timed-out or it is timed-out,
+  but all the reservations have still valid availability, then the valid
+  until date is updated as a side-effect. The unsubmitted order is returned
+  in any case."
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    args
    value]
-  (if (or (not (timeout? tx user-id))
-          (not (reservations/unsubmitted-with-invalid-availability? context)))
-    (reservations/touch-unsubmitted! tx user-id))
-  {:unsubmitted-order (get-unsubmitted context args value)})
+  (if (reservations/some-unsubmitted-with-invalid-start-date? context)
+    (do (reservations/unsubmitted->draft tx user-id)
+        {:unsubmitted-order {}})
+    (do (if (or (not (timeout? tx user-id))
+                (not (reservations/some-unsubmitted-with-invalid-availability? context)))
+          (reservations/touch-unsubmitted! tx user-id))
+        {:unsubmitted-order (get-unsubmitted context args value)})))

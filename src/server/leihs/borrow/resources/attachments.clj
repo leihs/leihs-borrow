@@ -23,7 +23,7 @@
     (hash-map :attachment-id <>)
     (path :attachment <>)
     (str <> "/" (:filename attachment))
-    (assoc attachment :url <>)))
+    (assoc attachment :attachment-url <>)))
 
 (defn get-multiple [{{:keys [tx]} :request} _ value]
   (-> attachment-base-query

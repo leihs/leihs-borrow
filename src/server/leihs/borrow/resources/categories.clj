@@ -4,36 +4,81 @@
             [hugsql.core :as hugsql]
             [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.paths :refer [path]]
             [leihs.borrow.resources.images :as images]
             [leihs.borrow.resources.models :as models]))
 
 (hugsql/def-sqlvec-fns "sql/root_categories.sql")
 (hugsql/def-sqlvec-fns "sql/child_categories.sql")
+(hugsql/def-sqlvec-fns "sql/reservable_categories.sql")
+(hugsql/def-sqlvec-fns "sql/with_all_reservable_categories_snip.sql")
 
 (comment
-  (->> {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"}
-       all-reservable-root-categories-sqlvec
+  (->> {:limit nil
+        :with-all-reservable-categories
+        (with-all-reservable-categories-snip
+          {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
+           :and-pool-ids
+           (and-pool-ids-snip {:pool-ids
+                               ["8d3631ee-818b-56d2-9d08-b9369d62d1e1"]})})}
+       reservable-root-categories-sqlvec
        (jdbc/query (ds/get-ds)))
+
   (->> {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
         :category-id "94915209-2723-530a-92f8-76c0e8ac7ca4"}
-       all-reservable-child-categories-sqlvec
-       (jdbc/query (ds/get-ds))))
+       reservable-child-categories-sqlvec
+       (jdbc/query (ds/get-ds)))
 
-(defn get-roots [{{:keys [tx] user-id :target-user-id} :request}
-                 {:keys [limit]}
+  (and-pool-ids-snip {:pool-ids ["foo"]}))
+
+(defn get-multiple [{{:keys [tx]} :request user-id ::target-user/id}
+                    {:keys [ids pool-ids raise-if-not-all-ids-found]}
+                    _]
+  (let [categories
+        (-> (cond-> {:with-all-reservable-categories
+                     (with-all-reservable-categories-snip
+                       (cond-> {:user-id user-id}
+                         (seq pool-ids)
+                         (assoc :and-pool-ids
+                                (and-pool-ids-snip {:pool-ids pool-ids}))))}
+              (seq ids)
+              (assoc :where-ids (where-ids-snip {:ids ids})))
+            reservable-categories-sqlvec
+            (->> (jdbc/query tx)))]
+    (if (and (seq ids)
+             raise-if-not-all-ids-found
+             (not-every? #(some (set [%]) (map :id categories))
+                         ids))
+      (throw
+        (ex-info
+          "Not all categories where found among the reservable ones."
+          {}))
+      categories)))
+
+(defn get-roots [{{:keys [tx]} :request user-id ::target-user/id}
+                 {:keys [limit pool-ids]}
                  _]
-  (-> {:user-id user-id
-       :limit (cond->> (str limit) limit (str "LIMIT "))}
-      all-reservable-root-categories-sqlvec
+  (-> {:limit (cond->> (str limit) limit (str "LIMIT "))
+       :with-all-reservable-categories
+        (with-all-reservable-categories-snip
+          (cond-> {:user-id user-id}
+            (seq pool-ids)
+            (assoc :and-pool-ids (and-pool-ids-snip {:pool-ids pool-ids}))))}
+      reservable-root-categories-sqlvec
       (->> (jdbc/query tx))))
 
-(defn get-children [{{:keys [tx] user-id :target-user-id} :request}
-                    _
+(defn get-children [{{:keys [tx]} :request user-id ::target-user/id}
+                    {:keys [pool-ids]}
                     value]
-  (->> {:user-id user-id :category-id (:id value)}
-       all-reservable-child-categories-sqlvec
-       (jdbc/query tx)))
+  (-> {:category-id (:id value)
+       :with-all-reservable-categories
+       (with-all-reservable-categories-snip
+         (cond-> {:user-id user-id}
+           (seq pool-ids)
+           (assoc :and-pool-ids (and-pool-ids-snip {:pool-ids pool-ids}))))}
+      reservable-child-categories-sqlvec
+      (->> (jdbc/query tx))))
 
 (def base-sqlmap
   (-> (sql/select :model_groups.id [:model_groups.name :name])

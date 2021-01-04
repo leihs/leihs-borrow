@@ -15,7 +15,8 @@
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.lib.filters :as filters]
-    [leihs.borrow.features.current-user.core :as current-user]))
+    [leihs.borrow.features.current-user.core :as current-user]
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.templates)
 
@@ -43,13 +44,12 @@
   (let [data @(subscribe [::data])
         errors @(subscribe [::errors])
         is-loading? (not (or data errors))]
-    [:section.mx-3.my-4
+    [:> UI/Components.AppLayout.Page
+     {:title (t :title)}
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
        errors [ui/error-view errors]
        :else
        [:<>
-        [:header.mb-3
-         [:h1.text-3xl.font-extrabold.leading-tight (t :title)]]
         [:pre.text-xs {:style {:white-space :pre-wrap}}
          (js/JSON.stringify (clj->js data) 0 2)]])]))

@@ -29,7 +29,7 @@ Capybara.register_driver :firefox do |app|
   # profile["intl.accept_languages"] = "en"
 
   opts = Selenium::WebDriver::Firefox::Options.new(
-    binary: ENV['FIREFOX_ESR_60_PATH'],
+    binary: accepted_firefox_path,
     profile: profile,
     log_level: :trace)
 

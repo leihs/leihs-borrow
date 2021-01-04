@@ -1,10 +1,10 @@
 GIT
   remote: git://github.com/leihs/turnip.git
-  revision: c2411d1f14e47bf1862651372c15db8ba4f43275
+  revision: bd4451ed9e57a74eb8f2ad27475c69946e4e0b85
   branch: ambiguous-steps
   specs:
-    turnip (3.1.0)
-      gherkin (~> 5.0)
+    turnip (4.2.0)
+      cucumber-gherkin (~> 14.0)
       rspec (>= 3.0, < 4.0)
 
 GIT
@@ -78,7 +78,11 @@ GEM
     coderay (1.1.2)
     concurrent-ruby (1.1.5)
     crass (1.0.4)
-    diff-lcs (1.3)
+    cucumber-gherkin (14.2.0)
+      cucumber-messages (~> 12.4, >= 12.4.0)
+    cucumber-messages (12.4.0)
+      protobuf-cucumber (~> 3.10, >= 3.10.8)
+    diff-lcs (1.4.4)
     edn (1.1.1)
     erubi (1.8.0)
     exiftool (1.2.1)
@@ -95,7 +99,6 @@ GEM
       faraday (>= 0.7.4, < 1.0)
     geckodriver-helper (0.21.0)
       archive-zip (~> 0.7)
-    gherkin (5.1.0)
     globalid (0.4.2)
       activesupport (>= 4.2.0)
     graphlient (0.3.6)
@@ -118,6 +121,7 @@ GEM
     marcel (0.3.3)
       mimemagic (~> 0.3.2)
     method_source (0.9.2)
+    middleware (0.1.0)
     mimemagic (0.3.3)
     mini_mime (1.0.2)
     mini_portile2 (2.4.0)
@@ -137,6 +141,11 @@ GEM
     nokogiri (1.10.4)
       mini_portile2 (~> 2.4.0)
     pg (1.1.4)
+    protobuf-cucumber (3.10.8)
+      activesupport (>= 3.2)
+      middleware
+      thor
+      thread_safe
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
@@ -172,19 +181,19 @@ GEM
       thor (>= 0.19.0, < 2.0)
     rake (12.3.3)
     regexp_parser (1.7.1)
-    rspec (3.8.0)
-      rspec-core (~> 3.8.0)
-      rspec-expectations (~> 3.8.0)
-      rspec-mocks (~> 3.8.0)
-    rspec-core (3.8.2)
-      rspec-support (~> 3.8.0)
-    rspec-expectations (3.8.4)
+    rspec (3.9.0)
+      rspec-core (~> 3.9.0)
+      rspec-expectations (~> 3.9.0)
+      rspec-mocks (~> 3.9.0)
+    rspec-core (3.9.3)
+      rspec-support (~> 3.9.3)
+    rspec-expectations (3.9.2)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.8.0)
-    rspec-mocks (3.8.1)
+      rspec-support (~> 3.9.0)
+    rspec-mocks (3.9.1)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.8.0)
-    rspec-support (3.8.2)
+      rspec-support (~> 3.9.0)
+    rspec-support (3.9.3)
     rubyzip (2.3.0)
     selenium-webdriver (3.142.7)
       childprocess (>= 0.5, < 4.0)

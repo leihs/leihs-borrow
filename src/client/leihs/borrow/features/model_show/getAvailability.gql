@@ -1,0 +1,26 @@
+query getAvailability(
+  $modelId: UUID!, 
+  $startDate: Date, 
+  $endDate: Date, 
+  $userId: UUID,
+  $poolIds: [UUID!]
+) {
+  model(id: $modelId) {
+    availability(
+      startDate: $startDate
+      endDate: $endDate
+      inventoryPoolIds: $poolIds
+    ) {
+      inventoryPool {
+        id
+        name
+      }
+      dates {
+        date
+        quantity
+        startDateRestriction
+        endDateRestriction
+      }
+    }
+  }
+}

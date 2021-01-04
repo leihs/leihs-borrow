@@ -1,12 +1,13 @@
 (ns leihs.borrow.resources.delegations
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.sql :as sql]))
 
 (defn responsible
   [{{tx :tx} :request} _ {responsible-id :delegator-user-id}]
-  (-> (sql/select :*)
+  (-> (sql/select :users.*)
       (sql/from :users)
       (sql/where [:= :users.id responsible-id])
       sql/format
@@ -15,7 +16,7 @@
 
 (defn get-members
   [{{tx :tx} :request} _ {:keys [id]}]
-  (-> (sql/select :*)
+  (-> (sql/select :users.*)
       (sql/from :users)
       (sql/join [:delegations_users :du]
                 [:= :du.user_id :users.id])
@@ -38,7 +39,7 @@
 
 (defn get-one
   [{{tx :tx} :request} {:keys [id]} _]
-  (-> (sql/select :id [:firstname :name] :delegator_user_id)
+  (-> (sql/select [:users.id :id] [:firstname :name] :delegator_user_id)
       (sql/from :users)
       (sql/where [:= :users.id id])
       sql/format
@@ -46,8 +47,8 @@
       first))
 
 (defn get-multiple
-  [{{tx :tx user-id :target-user-id} :request} _ _]
-  (-> (sql/select :id [:firstname :name] :delegator_user_id)
+  [{{tx :tx} :request user-id ::target-user/id} _ _]
+  (-> (sql/select [:users.id :id] [:firstname :name] :delegator_user_id)
       (sql/from :users)
       (sql/join [:delegations_users :du]
                 [:= :du.delegation_id :users.id])

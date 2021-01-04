@@ -1,16 +1,9 @@
-query getModelShow(
-  $modelId: UUID!, 
-  $startDate: Date, 
-  $endDate: Date, 
-  $userId: UUID,
-  $bothDatesGiven: Boolean!
-) {
+query getModelShow($modelId: UUID!) {
   model(id: $modelId) {
     id
     name
     manufacturer
     description
-    availableQuantityInDateRange(startDate: $startDate, endDate: $endDate, userId: $userId) @include(if: $bothDatesGiven)
     isFavorited
     images {
       id
@@ -23,12 +16,14 @@ query getModelShow(
     attachments {
       id
       filename
-      url
+      attachmentUrl
       size
       # content_type # FIXME: include this field when API bug is fixed
     }
     properties {
-      id key value
+      id
+      key
+      value
     }
     recommends(first: 12) {
       edges {
@@ -43,6 +38,11 @@ query getModelShow(
         }
       }
     }
+    totalBorrowableQuantities {
+      inventoryPool {
+        id
+      }
+      quantity
+    }
   }
 }
-

@@ -31,9 +31,13 @@
                                :state {:type (non-null String)}
                                :inventoryPool {:type (non-null :InventoryPool)
                                                :resolve :inventory-pool}
+                                :reservations {:type (list (non-null :Reservation))
+                                               :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                               :resolve :reservations}
                                :purpose {:type (non-null String)}
                                :note {:type String}}}
            :Template {:fields {:id {:type (non-null :UUID)}
+                               :borrowUrl {:type (non-null String) :resolve :url}
                                :name {:type (non-null String)}
                                :inventoryPool {:type (non-null :InventoryPool)
                                                :resolve :inventory-pool}
@@ -44,7 +48,9 @@
                                            :resolve :model}
                                    :quantity {:type (non-null Int)}}}
            :InventoryPool {:fields {:id {:type (non-null :UUID)}
+                                    :borrowUrl {:type (non-null String) :resolve :url}
                                     :description {:type String}
+                                    :isActive {:type (non-null Boolean)}
                                     :email {:type (non-null String)}
                                     :name {:type (non-null String)}
                                     :shortname {:type (non-null String)}
@@ -58,14 +64,14 @@
                                  :suspendedUntil {:type (non-null :Date)}
                                  :suspendedReason {:type String}}}
            :Delegation {:fields {:id {:type (non-null :UUID)}
+                                 :borrowUrl {:type (non-null String) :resolve :url}
                                  :name {:type (non-null String)}
                                  :responsible {:type (non-null :User)
                                                :resolve :responsible}
                                  :members {:type (list (non-null :User))
                                            :resolve :members}}}
-           :Language {:fields {:id {:type :UUID}
-                               :name {:type String}
-                               :localeName {:type String}
+           :Language {:fields {:name {:type String}
+                               :locale {:type String}
                                :default {:type Boolean}
                                :active {:type Boolean}}}
            :User {:description "A `User` represents a human agent that can log into and use the system."
@@ -76,13 +82,21 @@
                            :name {:type String}
                            :login {:type String}
                            :contracts {:type :ContractsConnection
+                                       :args {:first {:type Int}
+                                              :after {:type String}
+                                              :states {:type (list :ContractStateEnum)}
+                                              :orderBy {:type (list :ContractsOrderByInput)}}
                                        :resolve :contracts-connection}
                            :language {:type :Language
                                       :resolve :language}}}
            :UnsubmittedOrder {:fields {:validUntil {:type :DateTime}
-                                       :reservations {:type (list :Reservation)}
+                                       :reservations {:type (list (non-null :Reservation))
+                                                      :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                                      :resolve :reservations}
                                        :invalidReservationIds {:type (list (non-null :UUID))}}}
-           :DraftOrder {:fields {:reservations {:type (list :Reservation)}
+           :DraftOrder {:fields {:reservations {:type (list (non-null :Reservation))
+                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                                :resolve :reservations}
                                  :invalidReservationIds {:type (list (non-null :UUID))}}}
            :CurrentUser {:fields {:id {:type (non-null :UUID)
                                        :description "Same as user ID"}
@@ -116,6 +130,7 @@
                               :startDateRestriction {:type :startDateRestrictionEnum}
                               :endDateRestriction {:type :endDateRestrictionEnum}}}
            :Model {:fields {:id {:type (non-null :UUID)}
+                            :borrowUrl {:type (non-null String) :resolve :url}
                             :name {:type (non-null String)
                                    :description "A name consists of product name and its version."}
                             :manufacturer {:type String}
@@ -129,6 +144,8 @@
                                                   :endDate {:type (non-null :Date)}}
                                            :type (list :ModelInventoryPoolAvailability)
                                            :resolve :model-availability}
+                            :totalBorrowableQuantities {:type (list :TotalBorrowableQuantity)
+                                                        :resolve :total-borrowable-quantities}
                             :availableQuantityInDateRange {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
                                                                   :startDate {:type (non-null :Date)}
                                                                   :endDate {:type (non-null :Date)}
@@ -145,7 +162,7 @@
                             :properties {:type (list :Property)
                                          :resolve :properties}
                             :recommends {; NOTE: args must match those needed for the :ModelsConnection, does not happen automatically!
-                                         :args {:first {:type Int}} 
+                                         :args {:first {:type Int}}
                                          :type :ModelsConnection
                                          :resolve :models-connection}}}
            :ModelsConnection {:fields {:totalCount {:type Int}
@@ -170,8 +187,10 @@
                                :value {:type (non-null String)}}}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                                      :dates {:type (list :DayData)}}}
+           :TotalBorrowableQuantity {:fields {:inventoryPool {:type (non-null :InventoryPool)}
+                                              :quantity {:type (non-null Int)}}}
            :Attachment {:fields {:id {:type (non-null :UUID)}
-                                 :url {:type (non-null String)}
+                                 :attachmentUrl {:type (non-null String)}
                                  :contentType {:type (non-null String)}
                                  :filename {:type (non-null String)}
                                  :size {:type (non-null Int)}}}
@@ -188,10 +207,12 @@
                                 :filename {:type (non-null String)}
                                 :size {:type (non-null Int)}}}
            :Category {:fields {:id {:type (non-null :UUID)}
+                               :borrowUrl {:type (non-null String) :resolve :url}
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
-                                          :args {:userId {:type :UUID}}
+                                          :args {:userId {:type :UUID}
+                                                 :poolIds {:type (list (non-null :UUID))}}
                                           :resolve :child-categories}
                                :models {:type :ModelsConnection
                                         :description "Includes only direct ones or all from self and the descendent sub-categories."
@@ -212,6 +233,8 @@
                                   :status {:type (non-null :ReservationStateEnum)}
                                   :user {:type (non-null :User)
                                          :resolve :user}
+                                  :poolOrder {:type :PoolOrder :resolve :pool-order}
+                                  :contract {:type :Contract :resolve :contract}
                                   :endDate {:type (non-null :Date)}
                                   :createdAt {:type (non-null :DateTime)}
                                   :updatedAt {:type (non-null :DateTime)}}}
@@ -220,18 +243,52 @@
                                                 :resolve :inventory-pool}
                                 :state {:type (non-null :PoolOrderStateEnum)}
                                 :rejectedReason {:type String}
-                                :reservations {:type (list :Reservation)
+                                :reservations {:type (list (non-null :Reservation))
                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                                :resolve :reservations}
+                                :order {:type :Order, :resolve :order}
+                                :contracts {:type :ContractsConnection
+                                            :args {:first {:type Int}
+                                                   :after {:type String}
+                                                   :states {:type (list :ContractStateEnum)}
+                                                   :orderBy {:type (list :ContractsOrderByInput)}}
+                                            :resolve :contracts-connection}
+                                :pickups {:resolve :pickups
+                                          :args {:limit {:type Int}
+                                                 :orderBy {:type (list :VisitsOrderByInput)}}
+                                          :type (list :Pickup)}
+                                :returns {:resolve :returns
+                                          :args {:limit {:type Int}
+                                                 :orderBy {:type (list :VisitsOrderByInput)}}
+                                          :type (list :Return)}
                                 :createdAt {:type (non-null :DateTime)}
                                 :updatedAt {:type (non-null :DateTime)}}}
            :Order {:fields {:id {:type (non-null :UUID)}
+                            :borrowUrl {:type (non-null String) :resolve :url}
                             :purpose {:type (non-null String)}
-                            :state {:type (list :PoolOrderStateEnum)
+                            :title {:type (non-null String)}
+                            :state {:type (list (non-null :PoolOrderStateEnum))
                                     :description "List of distinct states of all the sub-orders."}
+                            :pickups {:resolve :pickups
+                                      :args {:limit {:type Int}
+                                             :orderBy {:type (list :VisitsOrderByInput)}}
+                                      :type (list :Pickup)}
+                            :returns {:resolve :returns
+                                      :args {:limit {:type Int}
+                                             :orderBy {:type (list :VisitsOrderByInput)}}
+                                      :type (list :Return)}
                             :subOrdersByPool {:type (list :PoolOrder)
                                               :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
                                               :resolve :pool-orders}
+                            :contracts {:type :ContractsConnection
+                                        :args {:first {:type Int}
+                                               :after {:type String}
+                                               :states {:type (list :ContractStateEnum)}
+                                               :orderBy {:type (list :ContractsOrderByInput)}}
+                                        :resolve :contracts-connection}
+                            :reservations {:type (list (non-null :Reservation))
+                                           :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                           :resolve :reservations}
                             :createdAt {:type (non-null :DateTime)}
                             :updatedAt {:type (non-null :DateTime)}}
                    :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}
@@ -241,7 +298,7 @@
                              :quantity {:type (non-null Int)}
                              :inventoryPool {:type (non-null :InventoryPool)
                                              :resolve :inventory-pool}
-                             :reservations {:type (list :Reservation)
+                             :reservations {:type (list (non-null :Reservation))
                                             :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                             :resolve :reservations}
                              :isApproved {:type (non-null Boolean)}}}
@@ -251,7 +308,7 @@
                              :quantity {:type (non-null Int)}
                              :inventoryPool {:type (non-null :InventoryPool)
                                              :resolve :inventory-pool}
-                             :reservations {:type (list :Reservation)
+                             :reservations {:type (list (non-null :Reservation))
                                             :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                             :resolve :reservations}}} 
            :RefreshTimeoutResult {:fields {:unsubmittedOrder {:type :UnsubmittedOrder}}}}
@@ -291,6 +348,10 @@
            :delegation {:args {:id {:type (non-null :UUID)}}
                         :resolve :delegation
                         :type (non-null :Delegation)}
+           :contract {:args {:id {:type (non-null :UUID)}
+                             :userId {:type :UUID}}
+                      :resolve :contract
+                      :type (non-null :Contract)}
            :order {:args {:id {:type (non-null :UUID)}
                           :userId {:type :UUID}}
                    :resolve :order
@@ -310,6 +371,14 @@
                     :args {:limit {:type Int}
                            :orderBy {:type (list :VisitsOrderByInput)}}
                     :type (list :Visit)}
+           :pickups {:resolve :pickups
+                     :args {:limit {:type Int}
+                            :orderBy {:type (list :VisitsOrderByInput)}}
+                     :type (list :Pickup)}
+           :returns {:resolve :returns
+                     :args {:limit {:type Int}
+                            :orderBy {:type (list :VisitsOrderByInput)}}
+                     :type (list :Return)}
            :model {:args {:id {:type (non-null :UUID)}}
                    :resolve :model
                    :type (non-null :Model)}
@@ -327,7 +396,8 @@
                            :isFavorited {:type Boolean}
                            :onlyAvailable {:type Boolean}
                            :quantity {:type :Int}
-                           :userId {:type :UUID}}
+                           :userId {:type :UUID}
+                           :poolIds {:type (list (non-null :UUID))}}
                     :type :ModelsConnection
                     :resolve :models-connection}
            :inventoryPool {:resolve :inventory-pool
@@ -340,10 +410,21 @@
                              :parentId {:type :UUID}}
                       :resolve :category
                       :type :Category}
+           :categories {:resolve :categories
+                        :args {:ids {:type (list (non-null :UUID))}
+                               :userId {:type :UUID}
+                               :poolIds {:type (list (non-null :UUID))}
+                               :raiseIfNotAllIdsFound {:description "This is used in case of fetching the categories present in the URL. If not all categories are found among the reservable ones, then the path itself is invalid."
+                                                       :type Boolean}}
+                        :type (list (non-null :Category))}
            :rootCategories {:resolve :root-categories
                             :args {:limit {:type Int}
-                                   :userId {:type :UUID}}
-                            :type (list (non-null :Category))}}
+                                   :userId {:type :UUID}
+                                   :poolIds {:type (list (non-null :UUID))}}
+                            :type (list (non-null :Category))}
+           :testing {:resolve :testing-query
+                     :args {:sleepSecs {:type Int}}
+                     :type String}}
 
  :mutations {:createReservation {:args {:startDate {:type (non-null :Date)}
                                         :endDate {:type (non-null :Date)}
@@ -363,6 +444,7 @@
                                       :resolve :delete-reservations
                                       :type (list (non-null :UUID))}
              :submitOrder {:args {:purpose {:type (non-null String)}
+                                  :title {:type (non-null String)}
                                   :userId {:type :UUID}}
                            :resolve :submit-order
                            :type (non-null :Order)}
@@ -378,4 +460,7 @@
                                     :startDate {:type (non-null :Date)}
                                     :endDate {:type (non-null :Date)}}
                              :resolve :apply-template
-                             :type (list :Reservation)}}}
+                             :type (list :Reservation)}
+             :testing {:resolve :testing-mutate
+                       :args {:sleepSecs {:type Int}}
+                       :type String}}}

@@ -1,4 +1,4 @@
-export DATABASE_URL="postgresql://localhost:5432/leihs_prod?max-pool-size=5" # for rails/DB
+export DATABASE_URL="${DATABASE_URL:-"postgresql://localhost:5432/leihs?max-pool-size=5"}" # for rails/DB
 export LEIHS_DATABASE_URL="jdbc:${DATABASE_URL}"                             # for clj/server
 
 export LEIHS_LEGACY_PORT=3210                                                # to start for dev

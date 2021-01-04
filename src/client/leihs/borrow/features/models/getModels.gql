@@ -2,21 +2,24 @@ query getModels(
   $searchTerm: String
   $startDate: Date!
   $endDate: Date!
+  $first: Int
   $afterCursor: String
   $bothDatesGiven: Boolean!
   $onlyAvailable: Boolean
   $categoryId: UUID
   $isFavorited: Boolean
   $quantity: Int
-  $userId: UUID!
+  $userId: UUID
+  $poolIds: [UUID!]
 ) {
   models(
     searchTerm: $searchTerm
-    first: 20
+    first: $first
     after: $afterCursor
     onlyAvailable: $onlyAvailable
     quantity: $quantity
     userId: $userId
+    poolIds: $poolIds
     categoryId: $categoryId
     isFavorited: $isFavorited
   ) {

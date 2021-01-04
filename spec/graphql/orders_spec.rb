@@ -3,8 +3,8 @@ require_relative 'graphql_helper'
 
 describe 'orders' do
   before :example do
-    FactoryBot.create(:settings,
-                      deliver_received_order_notifications: true)
+    Settings.first.update(deliver_received_order_notifications: true,
+                          external_base_url: LEIHS_BORROW_HTTP_BASE_URL)
   end
 
   let(:user) do
@@ -24,7 +24,8 @@ describe 'orders' do
   let(:inventory_pool_2) do
     FactoryBot.create(
       :inventory_pool,
-      id: '4e2f1362-0891-4df7-b760-16a2a8d3373f'
+      id: '4e2f1362-0891-4df7-b760-16a2a8d3373f',
+      is_active: false
     )
   end
 
@@ -104,9 +105,15 @@ describe 'orders' do
         ) {
           submitOrder(
             purpose: $purpose
+            title: $purpose
           ) {
             purpose
             state
+            reservations(
+              orderBy: [{attribute: ID, direction: ASC}]
+            ) { 
+              id
+            }
             subOrdersByPool(
               orderBy: [{attribute: INVENTORY_POOL_ID, direction: ASC}]
             ) {
@@ -115,7 +122,7 @@ describe 'orders' do
               }
               reservations(
                 orderBy: [{attribute: ID, direction: ASC}]
-              ){
+              ) {
                 id
                 status
               }
@@ -136,6 +143,11 @@ describe 'orders' do
         submitOrder: {
           purpose: purpose,
           state: ['SUBMITTED'],
+          reservations: [
+            { id: '100ffcc9-5401-415b-9185-5fffa8e5c526' },
+            { id: '20fbda2e-9265-4728-8e70-418c2b348d8a' },
+            { id: 'bf7080fb-2118-472e-8cff-50a51d648389' }
+          ],
           subOrdersByPool: [
             { inventoryPool: { id: '4e2f1362-0891-4df7-b760-16a2a8d3373f' },
               reservations: [
@@ -185,6 +197,7 @@ describe 'orders' do
         ) {
           submitOrder(
             purpose: $purpose
+            title: $purpose
           ) {
             purpose
           }
@@ -218,6 +231,7 @@ describe 'orders' do
 
     purpose = Faker::Lorem.sentence
 
+    order = nil
     database.transaction do
       order = FactoryBot.create(:order,
                                 id: '84391a0b-2a55-43f9-bf6d-bb144a2aaf96',
@@ -257,59 +271,30 @@ describe 'orders' do
 
     q = <<-GRAPHQL
       query {
-        order(id: "84391a0b-2a55-43f9-bf6d-bb144a2aaf96") {
-          state
-        }
-      }
-    GRAPHQL
-
-    result = query(q, user.id).deep_symbolize_keys
-    expect(result.dig(:data, :order, :state).to_set).to eq \
-      Set['SUBMITTED', 'APPROVED']
-    expect(result[:errors]).to be_nil
-  end
-
-  it 'an old pool order without customer order' do
-    purpose = Faker::Lorem.sentence
-
-    order = FactoryBot.create(:order, purpose: Faker::Lorem.sentence)
-    pool_order_1 = FactoryBot.create(:pool_order,
-                                     id: 'f8ce9934-6848-44a6-854a-c92802bdbed2',
-                                     order: order,
-                                     inventory_pool: inventory_pool_1,
-                                     user: user,
-                                     state: 'approved',
-                                     purpose: purpose)
-    pool_order_1.update(customer_order_id: nil)
-    order.delete
-
-    q = <<-GRAPHQL
-      query {
-        order(id: "f8ce9934-6848-44a6-854a-c92802bdbed2") {
-          id
-          purpose
+        order(id: "#{order.id}") {
+          borrowUrl
           state
           subOrdersByPool {
-            id
-            state
+            inventoryPool {
+              id
+              isActive
+            }
           }
         }
       }
     GRAPHQL
 
     result = query(q, user.id).deep_symbolize_keys
-
-    expect(result[:data]).to eq({
-      order: {
-        id: 'f8ce9934-6848-44a6-854a-c92802bdbed2',
-        purpose: purpose,
-        state: ['APPROVED'],
-        subOrdersByPool: [
-          { id: 'f8ce9934-6848-44a6-854a-c92802bdbed2',
-            state: 'APPROVED' }
-        ]
-      }
-    })
+    expect(result).to eq(
+      { data:
+       { order:
+         { borrowUrl: "#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/orders/#{order.id}",
+           state: ["APPROVED", "SUBMITTED"],
+           subOrdersByPool: [
+             {inventoryPool: {id: inventory_pool_1.id, isActive: true}},
+             {inventoryPool: {id: inventory_pool_2.id, isActive: false}}
+           ]}}}
+    )
     expect(result[:errors]).to be_nil
   end
 

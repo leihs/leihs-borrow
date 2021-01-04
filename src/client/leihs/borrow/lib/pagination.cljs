@@ -1,7 +1,7 @@
 (ns leihs.borrow.lib.pagination
   (:require [re-frame.core :as rf]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
-            [leihs.borrow.lib.helpers :refer [spy]]
+            [leihs.borrow.lib.helpers :refer [spy log]]
             [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                                reg-event-db
                                                reg-sub
@@ -10,14 +10,17 @@
                                                dispatch]]
             [re-graph.core :as re-graph]))
 
+(def PER-PAGE 20)
+
 (reg-event-fx
   ::get-more
-  (fn-traced [{:keys [db]} [_ query query-vars db-path data-path]]
+  (fn-traced [{:keys [db]} [_ query q-vars db-path data-path]]
     (let [page-info (get-in db (conj db-path :page-info))
           has-next? (get page-info :has-next-page)
-          query-vars (merge {:after-cursor (get page-info :end-cursor)}
-                            query-vars)]
-      (when (spy has-next?)
+          query-vars (merge {:afterCursor (get page-info :end-cursor)
+                             :first PER-PAGE}
+                            q-vars)]
+      (when has-next?
         {:dispatch-n (list [::fetching db-path true]
                            [::re-graph/query
                             query

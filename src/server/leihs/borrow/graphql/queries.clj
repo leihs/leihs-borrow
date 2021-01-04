@@ -16,12 +16,16 @@
     [leihs.borrow.resources.users :as users]
     [leihs.borrow.resources.visits :as visits]
     [leihs.borrow.resources.templates :as templates]
+    [leihs.borrow.resources.shared.core :as shared]
+    [leihs.borrow.testing :as testing]
     ))
 
 (def resolvers
   {:attachments attachments/get-multiple
    :available-quantity-in-date-range models/available-quantity-in-date-range
    :category categories/get-one
+   :categories categories/get-multiple
+   :contract contracts/get-one
    :contracts-connection contracts/get-connection
    :cover-image images/get-cover
    :current-user users/get-current
@@ -44,10 +48,13 @@
    :models-connection models/get-connection
    :order orders/get-one
    :orders-connection orders/get-connection
+   :pickups visits/get-pickups
+   :pool-order orders/get-one-by-pool
    :pool-orders orders/get-multiple-by-pool
    :properties properties/get-multiple
    :reservations reservations/get-multiple
    :responsible delegations/responsible
+   :returns visits/get-returns
    :root-categories categories/get-roots
    :suspensions suspensions/get-multiple
    :thumbnails images/get-multiple-thumbnails
@@ -60,4 +67,7 @@
    :template templates/get-one
    :templates templates/get-multiple
    :template-lines templates/get-lines
+   :testing-query testing/query
+   :total-borrowable-quantities models/total-borrowable-quantities
+   :url shared/url
    })

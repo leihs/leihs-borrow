@@ -1,0 +1,44 @@
+generate_tasks:
+  include_match: spec\/features\/(.*)(\.feature|_spec\.rb)$
+task_defaults:
+  include:
+    - cider-ci/bundle-ruby_task-component.yml
+    - cider-ci/environment_variables.yml
+    - cider-ci/database_task-component.yml
+    - cider-ci/uberjar_task-component.yml
+    - cider-ci/service_task-component.yml
+    - cider-ci/legacy_service-task_component.yml
+  traits:
+    JDK 8: true
+    Leiningen 2: true
+    Firefox ESR 60: true
+  ports:
+    LEIHS_LEGACY_HTTP_PORT:
+      min: 3200
+      max: 3299
+    LEIHS_BORROW_HTTP_PORT:
+      min: 3200
+      max: 3299
+  git_options:
+    submodules:
+      include_match: ^.*$
+  trial_attachments:
+    screenshots:
+      include_match: tmp\/(.*-|)screenshots\/.*\.png$
+      content_type: image/png
+    logs:
+      include_match: '^logs?\/.+\.log$'
+      content_type: text/plain
+  scripts:
+    test:
+      start_when:
+        borrow service is running:
+          script_key: borrow-service-is-running
+        ruby is bundled:
+          script_key: bundle-ruby
+      body: |
+        #!/usr/bin/env bash
+        set -eux
+        export PATH=~/.rubies/$RUBY/bin:$PATH
+        mkdir -p log
+        xvfb-run -a -e log/xvfb.log bundle exec rspec $CIDER_CI_TASK_FILE

@@ -22,7 +22,8 @@
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.components :as ui]
     [leihs.borrow.ui.icons :as icons]
-    [leihs.borrow.features.current-user.core :as current-user]))
+    [leihs.borrow.features.current-user.core :as current-user]
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
 
@@ -403,7 +404,9 @@
                 (:name user)]))]]]]])))
 
 (defn view []
-  (let [state (reagent/atom {:purpose ""})]
+  (let [purpose (reagent/atom "")
+        title (reagent/atom "")
+        linked? (reagent/atom true)]
     (fn []
       (let [data @(subscribe [::data])
             invalid-res-ids (set (:invalid-reservation-ids data))
@@ -412,32 +415,42 @@
             grouped-reservations @(subscribe [::reservations-grouped])
             summary @(subscribe [::order-summary])
             is-loading? (not (or data errors))]
-        [:div.p-2
+        [:> UI/Components.AppLayout.Page
+         {:title (t :order-overview)}
          [search-panel]
-         [:h1.mt-3.font-bold.text-3xl (t :order-overview)]
 
          (cond
            is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
            errors [ui/error-view errors]
            (empty? grouped-reservations)
-           [:div.bg-content-muted.text-center.my-4.px-2.py-4.rounded-lg
-            [:div.text-base (t :empty-order)] 
-            [:a.d-inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-pill.px-4.py-2.my-4 
-             {:href (routing/path-for ::routes/home)}
-             (t :borrow-items)]]
+           [:> UI/Components.AppLayout.CallToAction 
+            {:actions [{:children (t :borrow-items) :href (routing/path-for ::routes/home)}]}
+            (t :empty-order)]
 
            :else
            [:<>
             [:div
-             [:div.mt-2.mb-4.flex
-              [:div.flex-grow
-               [:input.text-xl.w-100
-                {:name :purpose
-                 :value (:purpose @state)
-                 :on-change (fn [e] (swap! state assoc :purpose (-> e .-target .-value)))
-                 :placeholder (t :order-name)}]]
-              [:div.flex-none.px-1
-               [:button.rounded.border.border-gray-600.px-2.text-color-muted (t :edit)]]]
+             [:label.row
+              [:span.text-xs.col-3.col-form-label (t :order-title)]
+              [:div.mt-2.mb-4.flex
+               [:div.flex-grow
+                [:input.text-xl.w-100
+                 {:name :title
+                  :value @title
+                  :on-change (fn [e] (reset! title (-> e .-target .-value)))
+                  :placeholder (t :order-title-placeholder)}]]]]
+
+             [:label.row
+              [:span.text-xs.col-3.col-form-label (t :order-purpose)]
+              [:div.mt-2.mb-4.flex
+               [:div.flex-grow
+                [:textarea.text-xl.w-100
+                 {:name :purpose
+                  :value (or (and @linked? @title) @purpose)
+                  :on-change (fn [e]
+                               (reset! purpose (-> e .-target .-value))
+                               (reset! linked? false))
+                  :placeholder (t :order-purpose-placeholder)}]]]]
 
              (doall
                (for [[grouped-key res-lines] grouped-reservations]
@@ -463,9 +476,9 @@
 
              [:div
               [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
-               {:disabled (or (empty? (:purpose @state))
+               {:disabled (or (empty? @purpose)
                               (not (empty? invalid-res-ids)))
-                :on-click #(dispatch [::submit-order @state])}
+                :on-click #(dispatch [::submit-order {:purpose @purpose, :title @title}])}
                (t :confirm-order)]
               [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl
                {:on-click #(dispatch [::delete-reservations (map :id reservations)])}

@@ -20,7 +20,8 @@
                            :until "Until"
                            :quantity "Quantity"
                            :get-results "Get Results"
-                           :clear "Clear"}
+                           :clear "Clear"
+                           :pools {:all "All inventory pools"}}
                   :home-page {:title "Home"}
                   :logout "Logout"
                   :model-show {:loading "Loading model"
@@ -49,9 +50,15 @@
                                   :order-overview "Order Overview"
                                   :empty-order "Your order is empty"
                                   :borrow-items "Borrow Items"
-                                  :order-name "Name Your Order"}
+                                  :order-title "Order Name"
+                                  :order-title-placeholder "Name Your Order"
+                                  :order-purpose "Order Purpose"
+                                  :order-purpose-placeholder "Enter a purpose"
+                                  }
                   :templates {:title "Templates"
                               :some-not-reservable "Some models are not reservable!"}
+                  :visits {:pickups {:title "Pickups"}
+                           :returns {:title "Rückgaben"}}
                   }}
  :de-CH {:borrow {:all "Alle"
                   :about-page {:title "Übersicht"
@@ -75,7 +82,8 @@
                            :until "Bis"
                            :quantity "Anzahl"
                            :get-results "Resultate anzeigen"
-                           :clear "Löschen"}
+                           :clear "Löschen"
+                           :pools {:all "Allen Geräteparks"}}
                   :home-page {:title "Home"}
                   :logout "Abmelden"
                   :model-show {:loading "Modell wird geladen"
@@ -104,7 +112,12 @@
                                   :order-overview "Bestellübersicht"
                                   :empty-order "Deine Bestellung ist leer"
                                   :borrow-items "Gegenstände ausleihen"
-                                  :order-name "Benenne deine Bestellung"}
+                                  :order-title "Name der Bestellung"
+                                  :order-title-placeholder "Benenne deine Bestellung"
+                                  :order-purpose "Zweck der Bestellung"
+                                  :order-purpose-placeholder "Gebe einen Zweck ein"}
                   :templates {:title "Vorlagen"
                               :some-not-reservable "Some models are not reservable!"}
+                  :visits {:pickups {:title "Abholungen"}
+                           :returns {:title "Rückgaben"}}
                   }}}

@@ -17,7 +17,7 @@
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.features.current-user.core :as current-user]
-    #_[leihs.borrow.components :as ui]))
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.customer-orders)
 
@@ -93,8 +93,7 @@
 (defn search-panel []
   (let [user-id @(subscribe [::user-id])
         target-users @(subscribe [::target-users])]
-    [:div.px-3.py-4.bg-light {:class "mb-4"
-                              :style {:box-shadow "0 0rem 2rem rgba(0, 0, 0, 0.15) inset"}}
+    [:div.px-3.py-4.bg-light {:class "mt-3 mb-3"}
      [:div.form.form-compact
       [:label.row
        [:span.text-xs.col-3.col-form-label (t :!borrow.filter/for)]
@@ -120,9 +119,8 @@
         rejected-orders @(subscribe [::rejected-orders])
         approved-orders @(subscribe [::approved-orders])]
 
-    [:section.mx-3.my-4
-     [:header.mb-3
-      [:h1.text-3xl.font-extrabold.leading-none (t :title)]]
+    [:> UI/Components.AppLayout.Page
+     {:title (t :title)}
      [search-panel]
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]

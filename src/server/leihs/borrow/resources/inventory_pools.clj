@@ -1,7 +1,9 @@
 (ns leihs.borrow.resources.inventory-pools
   (:require [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
+            [com.walmartlabs.lacinia :as lacinia]
             [hugsql.core :as hugsql]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.settings :refer [settings!]]
             [leihs.core.sql :as sql]))
@@ -12,7 +14,7 @@
   (-> (sql/select :inventory_pools.*)
       (sql/modifiers :distinct)
       (sql/from :inventory_pools)
-      (sql/merge-where [:= :inventory_pools.is_active true])))
+      (sql/where [:= :inventory_pools.is_active true])))
 
 (defn accessible-to-user-condition [sqlmap user-id]
   (-> sqlmap
@@ -21,6 +23,12 @@
                        :access_rights.inventory_pool_id
                        :inventory_pools.id])
       (sql/merge-where [:= :access_rights.user_id user-id])))
+
+(defn accessible-to-user [tx user-id]
+  (-> base-sqlmap
+      (accessible-to-user-condition user-id)
+      sql/format
+      (->> (jdbc/query tx))))
 
 (defn with-workdays-sqlmap [sqlmap]
   (-> sqlmap
@@ -35,7 +43,7 @@
        (jdbc/query tx)))
 
 (defn get-multiple
-  [{{tx :tx user-id :target-user-id} :request}
+  [{{tx :tx} :request user-id ::target-user/id}
    {:keys [order-by ids]}
    _]
   (-> base-sqlmap
@@ -43,34 +51,43 @@
       (cond-> (seq ids)
         (-> (sql/merge-where [:in :inventory_pools.id ids])))
       (cond-> (seq order-by)
-        (-> (sql/order-by (helpers/treat-order-arg order-by))
+        (-> (sql/order-by (helpers/treat-order-arg order-by :inventory_pools))
             (sql/merge-order-by [:inventory_pools.name :asc])))
       sql/format
       (->> (jdbc/query tx))))
 
-(defn get-by-id [tx id]
-  (-> base-sqlmap
-      with-workdays-sqlmap
-      (sql/merge-where [:= :inventory_pools.id id])
-      sql/format
-      (->> (jdbc/query tx))
-      first))
+(defn get-by-id
+  ([tx id]
+   (get-by-id tx id false))
+  ([tx id include-inactives]
+   (-> base-sqlmap
+       (cond-> include-inactives
+         (sql/where [:in :inventory_pools.is_active [true, false]]))
+       with-workdays-sqlmap
+       (sql/merge-where [:= :inventory_pools.id id])
+       sql/format
+       (->> (jdbc/query tx))
+       first)))
 
 (defn get-one [context {:keys [id]} value]
   (get-by-id (-> context :request :tx)
-             (or id (:inventory-pool-id value))))
+             (or id (:inventory-pool-id value))
+             (= (::lacinia/container-type-name context) :PoolOrder)))
 
 (defn has-reservable-items? [{{:keys [tx]} :request} _ {:keys [id]}]
-  (-> (sql/select :*)
-      (sql/from :items)
-      (sql/where [:and
-                  [:= :inventory_pool_id id]
-                  :is_borrowable
-                  [:is :parent_id nil]])
-      sql/format
-      (->> (jdbc/query tx))
-      empty?
-      not))
+  (-> (sql/select
+        (sql/call :exists
+                  (-> (sql/select :*)
+                      (sql/from :items)
+                      (sql/where [:and
+                                  [:= :inventory_pool_id id]
+                                  [:is :retired nil]
+                                  :is_borrowable
+                                  [:is :parent_id nil]]))))
+    sql/format
+    (->> (jdbc/query tx))
+    first
+    :exists))
 
 (defn maximum-reservation-time [{{:keys [tx]} :request} _ _]
   (-> tx settings! :maximum_reservation_time))

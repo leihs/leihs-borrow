@@ -58,7 +58,7 @@ step "there is a default language :lang with locale name :l_name" do |lang, l_na
     FactoryBot.create(:language,
                       name: lang,
                       default: true,
-                      locale_name: l_name)
+                      locale: l_name)
   end
 end
 
@@ -66,7 +66,7 @@ step "there is a language :lang with locale name :l_name" do |lang, l_name|
   unless Language.find(name: lang)
     FactoryBot.create(:language,
                       name: lang,
-                      locale_name: l_name)
+                      locale: l_name)
   end
 end
 
@@ -90,6 +90,16 @@ step "the user is inventory manager of pool :name" do |name|
                     user_id: @user.id,
                     inventory_pool_id: pool.id,
                     role: :inventory_manager)
+end
+
+step "the user is customer of pool :name" do |name|
+  pool = InventoryPool.find(name: name) ||
+    FactoryBot.create(:inventory_pool, name: name)
+
+  FactoryBot.create(:direct_access_right,
+                    user_id: @user.id,
+                    inventory_pool_id: pool.id,
+                    role: :customer)
 end
 
 step "the delegation :delegation is customer of pool :name" do |delegation, name|
@@ -160,7 +170,7 @@ step "there is a room :room for building :building" do |room, building|
 end
 
 step 'there is an inventory pool :name' do |name|
-  FactoryBot.create(:inventory_pool, name: name)
+  @pool = FactoryBot.create(:inventory_pool, name: name)
 end
 
 step 'there is a model :name' do |name|
@@ -177,7 +187,7 @@ step "there are meta mail templates" do
      [:reminder, :user]].each do |tmpl, type|
        FactoryBot.create(:mail_template,
                          is_template_template: true,
-                         language_id: lang.id,
+                         language_locale: lang.locale,
                          name: tmpl,
                          type: type,
                          format: :text,
@@ -186,4 +196,33 @@ step "there are meta mail templates" do
                          updated_at: DateTime.now)
      end
   end
+end
+
+step 'there is/are :n borrowable item(s) for model :model in pool :pool' do |n, model, pool|
+  model = LeihsModel.find(product: model)
+  pool = InventoryPool.find(name: pool)
+
+  n.to_i.times do
+    FactoryBot.create(:item,
+                      is_borrowable: true,
+                      leihs_model: model,
+                      responsible: pool,
+                      owner: pool)
+  end
+end
+
+step 'there is a category :name' do |name|
+  @category = FactoryBot.create(:category, name: name)
+end
+
+step 'the :model_name model belongs to category :cat_name' do |model_name, cat_name|
+  cat = Category.find(name: cat_name)
+  model = LeihsModel.find(product: model_name)
+  cat.add_direct_model(model)
+end
+
+step 'parent of category :child_name is category :parent_name' do |child_name, parent_name|
+  parent = Category.find(name: parent_name)
+  child = Category.find(name: child_name)
+  parent.add_child(child)
 end

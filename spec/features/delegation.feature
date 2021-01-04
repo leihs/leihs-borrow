@@ -27,7 +27,7 @@ Feature: Delegations
     # make a reservation
     When I click on the model with the title "Kamera"
     Then the show page of the model "Kamera" was loaded
-    And I click on "Order" and accept the alert
+    And I click on "Add" and accept the alert
 
     # check the cart
     When I click on the menu

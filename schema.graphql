@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Sep 18 2020 16:40:14 GMT+0200 (Central European Summer Time)
+# timestamp: Mon Dec 21 2020 16:13:18 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -7,11 +7,11 @@ schema {
 }
 
 type Attachment {
+  attachmentUrl: String!
   contentType: String!
   filename: String!
   id: UUID!
   size: Int!
-  url: String!
 }
 
 type Availability {
@@ -19,7 +19,8 @@ type Availability {
 }
 
 type Category {
-  children(userId: UUID): [Category]
+  borrowUrl: String!
+  children(poolIds: [UUID!], userId: UUID): [Category]
   id: UUID!
   images: [Image]
 
@@ -44,6 +45,7 @@ type Contract {
   inventoryPool: InventoryPool!
   note: String
   purpose: String!
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   state: String!
 }
 
@@ -102,6 +104,7 @@ type DayData {
 }
 
 type Delegation {
+  borrowUrl: String!
   id: UUID!
   members: [User!]
   name: String!
@@ -110,7 +113,7 @@ type Delegation {
 
 type DraftOrder {
   invalidReservationIds: [UUID!]
-  reservations: [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
 }
 
 enum endDateRestrictionEnum {
@@ -128,10 +131,12 @@ type Image {
 }
 
 type InventoryPool {
+  borrowUrl: String!
   description: String
   email: String!
   hasReservableItems: Boolean!
   id: UUID!
+  isActive: Boolean!
   maximumReservationTime: Int
   name: String!
   shortname: String!
@@ -150,8 +155,7 @@ input InventoryPoolsOrderByInput {
 type Language {
   active: Boolean
   default: Boolean
-  id: UUID
-  localeName: String
+  locale: String
   name: String
 }
 
@@ -159,6 +163,7 @@ type Model {
   attachments: [Attachment]
   availability(endDate: Date!, inventoryPoolIds: [UUID!], startDate: Date!): [ModelInventoryPoolAvailability]
   availableQuantityInDateRange(endDate: Date!, excludeReservationIds: [UUID!], inventoryPoolIds: [UUID!], startDate: Date!, userId: UUID): Int!
+  borrowUrl: String!
   coverImage: Image
   description: String
   id: UUID!
@@ -171,6 +176,7 @@ type Model {
   name: String!
   properties: [Property]
   recommends(first: Int): ModelsConnection
+  totalBorrowableQuantities: [TotalBorrowableQuantity]
 }
 
 type ModelEdge {
@@ -221,18 +227,25 @@ type MutationRoot {
   deleteReservationLines(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
   refreshTimeout: RefreshTimeoutResult
-  submitOrder(purpose: String!, userId: UUID): Order!
+  submitOrder(purpose: String!, title: String!, userId: UUID): Order!
+  testing(sleepSecs: Int): String
   unfavoriteModel(id: UUID!): Model!
 }
 
 type Order {
+  borrowUrl: String!
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   id: UUID!
+  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   purpose: String!
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+  returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
 
   """List of distinct states of all the sub-orders."""
-  state: [PoolOrderStateEnum]
+  state: [PoolOrderStateEnum!]
   subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
+  title: String!
   updatedAt: DateTime!
 }
 
@@ -267,12 +280,24 @@ type PageInfo {
   hasNextPage: Boolean
 }
 
+type Pickup {
+  date: Date!
+  id: UUID!
+  inventoryPool: InventoryPool!
+  quantity: Int!
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+}
+
 type PoolOrder {
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   id: UUID!
   inventoryPool: InventoryPool!
+  order: Order
+  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   rejectedReason: String
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+  returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
   state: PoolOrderStateEnum!
   updatedAt: DateTime!
 }
@@ -301,14 +326,26 @@ type Property {
 
 """Root of all queries."""
 type QueryRoot {
+  categories(
+    ids: [UUID!]
+    poolIds: [UUID!]
+
+    """
+    This is used in case of fetching the categories present in the URL. If not
+    all categories are found among the reservable ones, then the path itself is invalid.
+    """
+    raiseIfNotAllIdsFound: Boolean
+    userId: UUID
+  ): [Category!]
   category(id: UUID!, parentId: UUID): Category
+  contract(id: UUID!, userId: UUID): Contract!
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   currentUser(userId: UUID): CurrentUser!
   delegation(id: UUID!): Delegation!
   inventoryPool(id: UUID!): InventoryPool
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   model(id: UUID!): Model!
-  models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], quantity: Int, searchTerm: String, userId: UUID): ModelsConnection
+  models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], poolIds: [UUID!], quantity: Int, searchTerm: String, userId: UUID): ModelsConnection
   order(id: UUID!, userId: UUID): Order!
   orders(
     after: String
@@ -321,11 +358,13 @@ type QueryRoot {
     states: [PoolOrderStateEnum]
     userId: UUID
   ): OrdersConnection
-  rootCategories(limit: Int, userId: UUID): [Category!]
+  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
+  returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
+  rootCategories(limit: Int, poolIds: [UUID!], userId: UUID): [Category!]
   template(id: UUID!): Template!
   templates: [Template!]
+  testing(sleepSecs: Int): String
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
-  visits(limit: Int, orderBy: [VisitsOrderByInput]): [Visit]
 }
 
 type RefreshTimeoutResult {
@@ -333,11 +372,13 @@ type RefreshTimeoutResult {
 }
 
 type Reservation {
+  contract: Contract
   createdAt: DateTime!
   endDate: Date!
   id: UUID!
   inventoryPool: InventoryPool!
   model: Model!
+  poolOrder: PoolOrder
   startDate: Date!
   status: ReservationStateEnum!
   updatedAt: DateTime!
@@ -363,6 +404,14 @@ enum ReservationStateEnum {
   CLOSED
 }
 
+type Return {
+  date: Date!
+  id: UUID!
+  inventoryPool: InventoryPool!
+  quantity: Int!
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+}
+
 enum startDateRestrictionEnum {
   CLOSE_TIME
   VISITS_CAPACITY_REACHED
@@ -377,6 +426,7 @@ type Suspension {
 }
 
 type Template {
+  borrowUrl: String!
   id: UUID!
   inventoryPool: InventoryPool!
   lines: [TemplateLine!]
@@ -397,9 +447,14 @@ type Thumbnail {
   size: Int!
 }
 
+type TotalBorrowableQuantity {
+  inventoryPool: InventoryPool!
+  quantity: Int!
+}
+
 type UnsubmittedOrder {
   invalidReservationIds: [UUID!]
-  reservations: [Reservation]
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   validUntil: DateTime
 }
 
@@ -407,7 +462,7 @@ type UnsubmittedOrder {
 A `User` represents a human agent that can log into and use the system.
 """
 type User {
-  contracts: ContractsConnection
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   email: String
   firstname: String
   id: UUID!
@@ -427,16 +482,6 @@ input UsersOrderByInput {
 }
 
 scalar UUID
-
-type Visit {
-  date: Date!
-  id: UUID!
-  inventoryPool: InventoryPool!
-  isApproved: Boolean!
-  quantity: Int!
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation]
-  visitType: VisitTypeEnum!
-}
 
 enum VisitsOrderByAttributeEnum {
   DATE

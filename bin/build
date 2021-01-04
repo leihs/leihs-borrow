@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+set -euo
+
+### VARIABLES and PWD #########################################################
+
+set -x
+
+PROJECT_NAME="leihs-borrow"
+
+PROJECT_DIR="$(realpath $(dirname ${BASH_SOURCE})/..)"
+UI_DIR="${PROJECT_DIR}/leihs-ui"
+ARTEFACT_PATH="$PROJECT_DIR/target/$PROJECT_NAME.jar"
+DIGEST="$(git log -n 1 HEAD --pretty=%T)"
+TMPDIR="${TMPDIR:-/tmp/}"
+LOCAL_CACHED_ARTEFACT_PATH="${TMPDIR}${PROJECT_NAME}_${DIGEST}.jar"
+S3_CACHED_ARTEFACT_NAME="${PROJECT_NAME}_${DIGEST}.tgz"
+BUILD_CACHE_DISABLED="${BUILD_CACHE_DISABLED:-NO}"
+
+set +x
+
+cd "${PROJECT_DIR}"
+echo "PWD: $PWD"
+
+if [ $BUILD_CACHE_DISABLED == "YES" ] ||  [ $BUILD_CACHE_DISABLED == "NO" ]; then
+  echo "BUILD_CACHE_DISABLED=$BUILD_CACHE_DISABLED"
+else
+  echo 'BUILD_CACHE_DISABLED must be initially unset, or "YES", or "NO"'
+  exit 1
+fi
+
+
+### functions #################################################################
+
+function build {
+  ${UI_DIR}/bin/build
+  ${PROJECT_DIR}/bin/build-core
+}
+
+function copy_locally_cached_artefact {
+  mkdir -p $(dirname $ARTEFACT_PATH)
+  cp "$LOCAL_CACHED_ARTEFACT_PATH" "$ARTEFACT_PATH"
+}
+
+
+### MAIN ######################################################################
+
+if [ $BUILD_CACHE_DISABLED == "YES" ]; then
+
+  echo "INFO: BUILD_CACHE_DISABLED is YES, building and nothing else"
+  build
+
+else
+
+  source ${UI_DIR}/bin/require-clean-working-tree
+  require-clean-working-tree
+
+  if [ -e $LOCAL_CACHED_ARTEFACT_PATH ]; then
+
+    echo "INFO: locally cached artefact found, copying "
+    copy_locally_cached_artefact
+
+  else
+
+    # RUBY on CI for ${UI_DIR}/bin/s3-cache-helper
+    RUBY="${RUBY:-EMPTY}"
+    if [ "${RUBY}" != 'EMPTY' ]; then
+      export PATH=~/.rubies/$RUBY/bin:$PATH
+    fi
+
+    echo "INFO: trying to download $S3_CACHED_ARTEFACT_NAME from S3 cache"
+    ${UI_DIR}/bin/s3-cache-helper download -n "$S3_CACHED_ARTEFACT_NAME" -p "$LOCAL_CACHED_ARTEFACT_PATH"
+    if [ -e $LOCAL_CACHED_ARTEFACT_PATH ]; then
+      echo "INFO: artefact found, copying"
+      copy_locally_cached_artefact
+    else
+      echo "INFO: no cached artefact found: building and caching ..."
+      build
+      cp "$ARTEFACT_PATH" "$LOCAL_CACHED_ARTEFACT_PATH"
+      ${UI_DIR}/bin/s3-cache-helper upload -n "$S3_CACHED_ARTEFACT_NAME" -p "$LOCAL_CACHED_ARTEFACT_PATH"
+    fi
+  fi
+fi
+
+cd -
+
+# vi: ft=sh

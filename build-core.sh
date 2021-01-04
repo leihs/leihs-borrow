@@ -7,6 +7,7 @@ java -version 2>&1 | grep -E '(java|openjdk) version "1.8.' || {
 
 npm ci || npm i
 npx shadow-cljs release app
+# npx shadow-cljs release app --debug
 
 export LEIN_SNAPSHOTS_IN_RELEASE=Yes
 bin/boot show -e

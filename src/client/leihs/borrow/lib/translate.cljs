@@ -17,7 +17,7 @@
   {:tongue/fallback :en-GB})
 
 (def translate
-  (-> dicts 
+  (-> dicts
       (merge dicts-extensions)
       tongue/build-translate))
 
@@ -34,7 +34,7 @@
         (str pre* "/" k*)))))
 
 (defn locale-to-use []
-  (or (current-user/locale-name-to-use @db/app-db)
+  (or (current-user/locale-to-use @db/app-db)
       :en-GB))
 
 (defn apply-default-path [[a1 & as]]

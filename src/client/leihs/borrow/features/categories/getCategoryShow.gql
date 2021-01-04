@@ -1,15 +1,9 @@
 query getCategoryShow(
   $categoryId: UUID!,
   $parentId: UUID,
-  $afterCursor: String,
-  $userId: UUID
 ) {
   category(id: $categoryId, parentId: $parentId) {
     id
     name
-    children(userId: $userId) {
-      id
-      name
-    }
   }
 }

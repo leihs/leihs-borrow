@@ -7,8 +7,7 @@ query getCurrentUser {
       name
     }
     languageToUse {
-      id
-      localeName
+      locale
     }
     delegations {
       id

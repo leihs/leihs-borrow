@@ -4,6 +4,7 @@ mutation createReservationForModel(
   $startDate: Date!
   $quantity: Int!
   $userId: UUID
+  $poolIds: [UUID!]
 ) {
   createReservation(
     modelId: $modelId
@@ -11,6 +12,7 @@ mutation createReservationForModel(
     startDate: $startDate
     quantity: $quantity
     userId: $userId
+    inventoryPoolIds: $poolIds
   ) {
     id
   }

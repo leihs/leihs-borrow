@@ -1,9 +1,11 @@
 mutation submitOrder(
   $purpose: String!,
+  $title: String!,
   $userId: UUID
 ) {
    submitOrder(
     purpose: $purpose,
+    title: $title,
     userId: $userId
   ) {
     id

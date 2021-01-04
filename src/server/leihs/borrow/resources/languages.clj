@@ -4,10 +4,10 @@
             [leihs.core.sql :as sql]
             [leihs.borrow.resources.users :as users]))
 
-(defn get-by-id [tx id]
+(defn get-by-locale [tx locale]
   (-> (sql/select :*)
       (sql/from :languages)
-      (sql/where [:= :id id])
+      (sql/where [:= :locale locale])
       sql/format
       (->> (jdbc/query tx))
       first))
@@ -23,12 +23,12 @@
 (defn one-to-use [{{:keys [tx]} :request} _ {user-id :id}]
   (or (some->> user-id
                (users/get-by-id tx)
-               :language_id
-               (get-by-id tx))
+               :language_locale
+               (get-by-locale tx))
       (default tx)))
 
-(defn get-one [{{:keys [tx]} :request} _ {:keys [language-id]}]
-  (get-by-id tx language-id))
+(defn get-one [{{:keys [tx]} :request} _ {:keys [language-locale]}]
+  (get-by-locale tx language-locale))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

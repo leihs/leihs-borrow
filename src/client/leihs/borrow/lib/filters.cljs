@@ -15,19 +15,26 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
-    [leihs.core.core :refer [flip]]
+    [leihs.core.core :refer [flip presence]]
     [leihs.borrow.lib.localstorage :as ls]
-    [leihs.borrow.components :as ui]
+    [leihs.borrow.lib.helpers :refer [spy spy-with log]]
     [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.components :as ui]
     [leihs.borrow.features.current-user.core :as current-user]))
 
 (def BOOLEANS #{:available-between?})
+(def INTEGERS #{:quantity})
 
-(defn massage-values [fs]
-  (->> fs
+(defn massage-values [m]
+  (->> m
        (map (fn [[k v]]
-              [k (cond-> v (BOOLEANS k) js/JSON.parse)]))
+              [k (cond (BOOLEANS k) (js/JSON.parse v)
+                       (INTEGERS k) (js/Number v)
+                       :else v)]))
+       (into {})))
+
+(defn remove-blanks [m]
+  (->> m
+       (filter (fn [[_ v]] (presence v)))
        (into {})))
 
 (def filters-gql
@@ -57,7 +64,10 @@
 (reg-event-db
   ::set-multiple
   [(path current-path)]
-  (fn-traced [old [_ filters]] (merge old (massage-values filters))))
+  (fn-traced [old [_ filters]]
+    (if (empty? filters)
+      old
+      (-> filters massage-values remove-blanks))))
 
 (reg-event-db
   ::set-one
@@ -65,11 +75,20 @@
     (assoc-in db (conj current-path key) value)))
 
 (reg-event-db
+  ::set-pool-id
+  [(path current-path)]
+  (fn-traced [old [_ value]]
+    (if (#{"all" nil} value)
+      (dissoc old :pool-id)
+      (assoc old :pool-id value))))
+
+(reg-event-db
   ::clear-current
   (fn-traced [db _]
     (assoc-in db
               current-path
-              {:user-id (-> db current-user/data :user :id)})))
+              {:user-id (-> db current-user/data :user :id)
+               :quantity 1})))
 
 (defn get-from-current [db k]
   (get-in db (conj current-path k)))
@@ -106,8 +125,13 @@
   ::user-id
   (fn [db _] (get-from-current db :user-id)))
 
+(reg-sub
+  ::pool-id
+  (fn [db _] (get-from-current db :pool-id)))
+
 (defn current [db] (get-in db current-path nil))
 (defn term [db] (get-in db (conj current-path :term)))
 (defn start-date [db] (get-in db (conj current-path :start-date)))
 (defn end-date [db] (get-in db (conj current-path :end-date)))
 (defn user-id [db] (get-in db (conj current-path :user-id)))
+(defn pool-id [db] (get-in db (conj current-path :pool-id)))

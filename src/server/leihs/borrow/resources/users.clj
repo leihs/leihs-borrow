@@ -2,6 +2,7 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as clj-str]
             [clojure.tools.logging :as log]
+            [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.core.sql :as sql]
             [leihs.core.user.queries :refer [merge-search-term-where-clause]]))
@@ -26,7 +27,7 @@
           search-term
             (merge-search-term-where-clause search-term)
           (seq order-by)
-            (-> (sql/order-by (helpers/treat-order-arg order-by)))
+            (-> (sql/order-by (helpers/treat-order-arg order-by :users)))
           offset
             (sql/offset offset)
           limit
@@ -40,11 +41,11 @@
       (->> (jdbc/query tx))
       first))
 
-(defn get-one [{{:keys [tx]} :request} _ {:keys [user-id]}]
+(defn get-one [{{:keys [tx]} :request user-id ::target-user/id} _ _]
   (get-by-id tx user-id))
 
 (defn get-current
-  [{{tx :tx user-id :target-user-id} :request} args _]
+  [{{tx :tx} :request user-id ::target-user/id} _ _]
   {:id user-id
    :user (get-by-id tx user-id)})
 
