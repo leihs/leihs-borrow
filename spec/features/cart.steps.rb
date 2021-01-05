@@ -29,9 +29,9 @@ step "the purpose contains :txt" do |txt|
   expect(find_field("Order Purpose").value).to eq txt
 end
 
-step "I navigate to the newly created order" do
+step "I have been redirected to the newly created order" do
   @order = Order.order(Sequel.desc(:created_at)).first
-  visit "/app/borrow/orders/#{@order.id}"
+  expect(current_path).to eq "/app/borrow/orders/#{@order.id}"
 end
 
 step "the newly created order has title :txt" do |txt|

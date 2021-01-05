@@ -16,7 +16,7 @@ Feature: Cart
     Then the title contains "foo"
     When I enter "baz" as title
     Then the purpose contains "foo bar"
-    When I click on "Confirm order" and accept the alert
-    And I navigate to the newly created order
-    Then the newly created order has title "baz"
+    When I click on "Confirm order"
+    Then I have been redirected to the newly created order
+    And the newly created order has title "baz"
     And the newly created order has purpose "foo bar"

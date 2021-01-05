@@ -123,11 +123,13 @@
 
 (reg-event-fx
   ::on-submit-order-result
-  (fn-traced [{:keys [_db]} [_ {:keys [data errors]}]]
+  (fn-traced [{:keys [_db]}
+              [_ {{{:keys [id]} :submit-order} :data
+                  errors :errors}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
-      {:alert (str "OK! " (pr-str data))
-       :routing/refresh-page "yes"})))
+      {:dispatch [:routing/navigate
+                  [::routes/orders-show {:order-id id}]]})))
 
 (reg-event-fx
   ::update-reservations
@@ -437,7 +439,10 @@
                 [:input.text-xl.w-100
                  {:name :title
                   :value @title
-                  :on-change (fn [e] (reset! title (-> e .-target .-value)))
+                  :on-change (fn [e]
+                               (let [v (-> e .-target .-value)]
+                                 (reset! title v)
+                                 (when @linked? (reset! purpose v))))
                   :placeholder (t :order-title-placeholder)}]]]]
 
              [:label.row
@@ -446,7 +451,7 @@
                [:div.flex-grow
                 [:textarea.text-xl.w-100
                  {:name :purpose
-                  :value (or (and @linked? @title) @purpose)
+                  :value @purpose
                   :on-change (fn [e]
                                (reset! purpose (-> e .-target .-value))
                                (reset! linked? false))

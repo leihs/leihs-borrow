@@ -38,8 +38,7 @@ Feature: Delegations
 
     # submit the order
     When I name the order as "My order"
-    And I click on "Confirm order" and accept the alert
-    Then the cart is empty
+    And I click on "Confirm order"
 
     # approve the order in legacy
     When I visit the orders page of the pool "Pool A"
