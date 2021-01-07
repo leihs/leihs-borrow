@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euxo
+# rm -rf madek-media-service
+rm -rf resources/all/public/app/borrow/js/
+rm -f resources/build-timestamp.txt

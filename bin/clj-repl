@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euxo
+rlwrap clj -R:nREPL -m nrepl.cmdline -i "$@"

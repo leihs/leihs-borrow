@@ -6,6 +6,7 @@ traits:
   JDK 8: true
   Leiningen 2: true
   npm: true
+  Clojure: true
 
 scripts:
 

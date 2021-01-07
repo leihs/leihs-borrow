@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euxo
+rm -rf resources/media-service/public/js/
+npm ci || npm i
+npx shadow-cljs compile app

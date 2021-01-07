@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euxo
+# NOTE: trouble with this on cider
+# clojure -Spom
+clojure -A:depstar:resources -m hf.depstar.uberjar leihs-borrow.jar -C -m leihs.borrow.main
