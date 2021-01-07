@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euxo
+rm -rf resources/all/public/app/borrow/js/
+npm ci || npm i
+npx shadow-cljs release app
+rm -rf resources/all/public/app/borrow/js/cljs-runtime/

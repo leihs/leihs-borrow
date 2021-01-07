@@ -1,0 +1,31 @@
+{:paths ["src/server" "src/common"
+         "resources/all" "resources/prod"]
+ :deps {shared-clj/shared-clj {:local/root "shared-clj"}
+        io.dropwizard.metrics/metrics-core {:mvn/version "3.1.2"} ; lacinia does not work with the version from shared-deps
+        better-cond {:mvn/version "2.1.0"}
+        clj-http {:mvn/version "3.10.0"}
+        clojure.java-time {:mvn/version "0.3.2"}
+        com.layerware/hugsql {:mvn/version "0.5.1"}
+        com.walmartlabs/lacinia {:mvn/version "0.37.0"}
+        org.threeten/threeten-extra {:mvn/version "1.2"}
+        threatgrid/ring-graphql-ui {:mvn/version "0.1.1"}
+        org.clojure/spec.alpha {:mvn/version "0.2.176"}}
+ :aliases
+ {;
+  :depstar {:extra-deps {seancorfield/depstar {:mvn/version "1.0.94"}}}
+  :graph {:extra-deps
+          {org.clojure/tools.deps.graph
+           {;:local/root "/Users/thomas/Programming/CLOJURE/tools.deps.graph"
+            :git/url  "https://github.com/DrTom/tools.deps.graph.git"
+            :sha "809d5981b6c6ec7267328b74f8dd61630df01daf" }}
+          :main-opts ["-m" "clojure.tools.deps.graph"]}
+  :nREPL {:extra-deps {nrepl/nrepl {:mvn/version "0.7.0"}}}
+  :outdated {:extra-deps {olical/depot {:mvn/version "1.8.4"}}
+             :main-opts ["-m" "depot.outdated.main"]}
+  :resources {:extra-paths ["resources/all" "resources/prod"]}
+  :test {:extra-paths ["test"]
+         :extra-deps {com.cognitect/test-runner
+                      {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                       :sha "209b64504cb3bd3b99ecfec7937b358a879f55c1"}}
+         :main-opts ["-m" "cognitect.test-runner"]}}
+ }

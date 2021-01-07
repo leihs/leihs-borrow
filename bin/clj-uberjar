@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euxo
+clojure -Spom
+clojure -A:depstar:resources -m hf.depstar.uberjar leihs-borrow.jar -C -m leihs.borrow.main

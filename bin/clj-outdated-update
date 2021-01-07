@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euxo
+clojure -Aoutdated -a outdated --update
+$(dirname "$0")/clj-deps-graph

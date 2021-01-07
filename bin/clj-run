@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo
+clj -m madek.media-service.main "$@"

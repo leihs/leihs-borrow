@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euxo
+clj -A:graph --output-format svg "$@"

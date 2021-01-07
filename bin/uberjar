@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euxo
+rm -f leihs-borrow.jar
+./bin/clean
+echo $(date -u +"%Y-%m-%dT%H:%M:%SZ") > resources/build-timestamp.txt
+./bin/cljs-release-app
+./bin/clj-uberjar
+./bin/clean
