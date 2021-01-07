@@ -21,12 +21,6 @@ export LEIN_SNAPSHOTS_IN_RELEASE=Yes
 # bin/boot show -e
 # bin/boot uberjar
 
-if ! test $(which clojure); then
-  curl -O https://download.clojure.org/install/linux-install-1.10.1.763.sh
-  chmod +x linux-install-1.10.1.763.sh
-  sudo ./linux-install-1.10.1.763.sh
-fi
-
 bin/uberjar
 
 cd -
