@@ -4,6 +4,7 @@
 .rebel_readline_history
 .shadow-cljs
 .calva
+deps.svg
 leihs-borrow.jar
 log
 resources/all/public/app/borrow/js
