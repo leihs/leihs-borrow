@@ -14,7 +14,7 @@
 (defn url
   "This function assumes the following convention in the paths map:
   \"orders\" {[\"/\" :order-id] ::orders-show}"
-  [{{:keys [tx]} :request :as context} _ {:keys [id]}]
+  [{{settings :settings} :request :as context} _ {:keys [id]}]
   (let [type-name (-> context
                       ::lacinia/container-type-name
                       name)
@@ -27,5 +27,5 @@
                        string/lower-case
                        (str "-id")
                        keyword)]
-    (str (:external_base_url (settings/get tx))
+    (str (:external_base_url settings)
          (path path-name {path-param id}))))
