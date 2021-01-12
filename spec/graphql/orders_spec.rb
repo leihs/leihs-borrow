@@ -101,7 +101,8 @@ describe 'orders' do
 
       q = <<-GRAPHQL
         mutation(
-          $purpose: String!
+          $purpose: NonEmptyText!
+          $title: NonEmptyText!
         ) {
           submitOrder(
             purpose: $purpose
@@ -193,7 +194,8 @@ describe 'orders' do
 
       q = <<-GRAPHQL
         mutation(
-          $purpose: String!
+          $purpose: NonEmptyText!
+          $title: NonEmptyText!
         ) {
           submitOrder(
             purpose: $purpose

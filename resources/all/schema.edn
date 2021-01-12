@@ -1,6 +1,8 @@
 {:scalars {:UUID {:parse :uuid-parse :serialize :uuid-serialize}
            :DateTime {:parse :date-time-parse :serialize :date-time-serialize}
-           :Date {:parse :date-parse :serialize :date-serialize}}
+           :Date {:parse :date-parse :serialize :date-serialize}
+           :NonEmptyText {:parse :non-empty-text-parse
+                          :serialize :non-empty-text-serialize}}
 
  :enums {:ModelsOrderByAttributeEnum {:values [:ID :NAME]},
          :UsersOrderByAttributeEnum {:values [:ID]},
@@ -258,8 +260,8 @@
                                 :updatedAt {:type (non-null :DateTime)}}}
            :Order {:fields {:id {:type (non-null :UUID)}
                             :borrowUrl {:type (non-null String) :resolve :url}
-                            :purpose {:type (non-null String)}
-                            :title {:type (non-null String)}
+                            :purpose {:type (non-null :NonEmptyText)}
+                            :title {:type (non-null :NonEmptyText)}
                             :state {:type (list (non-null :PoolOrderStateEnum))
                                     :description "List of distinct states of all the sub-orders."}
                             :pickups {:resolve :pickups
@@ -426,8 +428,8 @@
              :deleteReservationLines {:args {:ids {:type (list (non-null :UUID))}}
                                       :resolve :delete-reservations
                                       :type (list (non-null :UUID))}
-             :submitOrder {:args {:purpose {:type (non-null String)}
-                                  :title {:type (non-null String)}
+             :submitOrder {:args {:purpose {:type (non-null :NonEmptyText)}
+                                  :title {:type (non-null :NonEmptyText)}
                                   :userId {:type :UUID}}
                            :resolve :submit-order
                            :type (non-null :Order)}

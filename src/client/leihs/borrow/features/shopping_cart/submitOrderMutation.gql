@@ -1,6 +1,6 @@
 mutation submitOrder(
-  $purpose: String!,
-  $title: String!,
+  $purpose: NonEmptyText!,
+  $title: NonEmptyText!,
   $userId: UUID
 ) {
    submitOrder(

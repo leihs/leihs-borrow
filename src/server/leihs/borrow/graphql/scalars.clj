@@ -1,7 +1,7 @@
 (ns leihs.borrow.graphql.scalars
   (:require java-time
             [clojure.tools.logging :as log]
-            [leihs.core.core :refer [spy-with]])
+            [leihs.core.core :refer [spy-with presence]])
   (:import [java.util UUID]
            [java.time.format DateTimeFormatter]
            [java.time ZoneOffset]))
@@ -28,15 +28,21 @@
            .toString)
        (catch Throwable _ nil)))
 
+(defn validate-non-empty-text [x]
+  (when-not (re-matches #"^\s*$" x) x))
+
 (def scalars
   {:uuid-parse #(UUID/fromString %)
    :uuid-serialize str
    :date-parse date-parse
    :date-serialize date-serialize
    :date-time-parse date-time
-   :date-time-serialize date-time})
+   :date-time-serialize date-time
+   :non-empty-text-parse validate-non-empty-text
+   :non-empty-text-serialize validate-non-empty-text})
 
 (comment
+  (re-matches #"^\s*$" "     ")
   (->> "2011-12-03T10:15:30Z"
        (java-time/instant DateTimeFormatter/ISO_INSTANT)
        (java-time/format DateTimeFormatter/ISO_INSTANT))

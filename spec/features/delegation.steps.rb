@@ -58,8 +58,8 @@ step 'the reservation for model :name was deleted from the cart' do |name|
   expect(page).not_to have_selector('.flex-row', text: name)
 end
 
-step 'I name the order as :purpose' do |purpose|
-  fill_in('purpose', with: purpose)
+step 'I name the order as :title' do |title|
+  fill_in('title', with: title)
 end
 
 step 'the cart is empty' do
