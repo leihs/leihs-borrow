@@ -18,8 +18,7 @@ step 'there is a user without password' do
 end
 
 step 'there is an initial admin' do
-  @initial_admin = FactoryBot.create(:user, is_admin: true)
-  FactoryBot.create(:system_admin, user_id: @initial_admin.id)
+  @initial_admin = FactoryBot.create(:user, is_admin: true, is_system_admin: true)
 end
 
 step 'there is a leihs admin' do
@@ -34,14 +33,9 @@ step 'the user is leihs admin' do
   User.where(id: @user.id).update(is_admin: true)
 end
 
-step 'the user is sysadmin' do
-  FactoryBot.create(:system_admin, user_id: @user.id)
-end
-
 step "there is a user with an ultimate access" do
-  @user = FactoryBot.create(:user, is_admin: true)
+  @user = FactoryBot.create(:user, is_admin: true, is_system_admin: true)
   ip = FactoryBot.create(:inventory_pool, id: IP_UUID)
-  FactoryBot.create(:system_admin, user_id: @user.id)
   FactoryBot.create(:procurement_admin, user_id: @user.id)
   FactoryBot.create(:direct_access_right,
                     user: @user,
@@ -149,7 +143,6 @@ end
 step "the user has no access whatsoever" do
   AccessRight.where(user_id: @user.id).delete
   User.where(id: @user.id).update(is_admin: false)
-  SystemAdmin.where(user_id: @user.id).delete
   ProcurementRequester.where(user_id: @user.id).delete
   ProcurementAdmin.where(user_id: @user.id).delete
   ProcurementInspector.where(user_id: @user.id).delete
