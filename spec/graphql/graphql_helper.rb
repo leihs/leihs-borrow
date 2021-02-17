@@ -9,17 +9,18 @@ class GraphqlQuery
     @query = query
     @variables = variables
     @user_id = user_id
-    @cookies = get_cookies(user_id)
+    @csrf_token = get_csrf_token
+    @cookies = get_cookies(user_id, @csrf_token)
   end
 
   def perform
     @response = Faraday.post("#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/graphql") do |req|
       req.headers['Accept'] = 'application/json'
       req.headers['Content-Type'] = 'application/json'
-      req.headers['X-CSRF-Token'] = @cookies['leihs-anti-csrf-token']
+      req.headers['X-CSRF-Token'] = @csrf_token
       req.body = { query: @query, variables: @variables }.to_json
-
-      cookies = { "leihs-anti-csrf-token" => @cookies['leihs-anti-csrf-token'] }
+      
+      cookies = { "leihs-anti-csrf-token" => @csrf_token }
 
       if @cookies['leihs-user-session']
         cookies.merge!("leihs-user-session" => @cookies['leihs-user-session'])
@@ -35,10 +36,18 @@ class GraphqlQuery
     JSON.parse @response.body
   end
 
-  def get_cookies(user_id)
+  def get_csrf_token
+    r = Faraday.get("#{LEIHS_BORROW_HTTP_BASE_URL}/sign-in")
+    r.body.match(/name="csrf-token" value="(.*?)"\/>/)[1]
+  end
+
+  def get_cookies(user_id, csrf_token)
     resp = if user = User.find(id: user_id)
              Faraday.post("#{LEIHS_BORROW_HTTP_BASE_URL}/sign-in",
-                          { user: user.email, password: 'password' })
+                          { user: user.email, password: 'password' }) do |req|
+                            req.headers['X-CSRF-Token'] = csrf_token
+                            req.headers['Cookie'] = "leihs-anti-csrf-token=#{csrf_token}"
+                          end
            else
              Faraday.post("#{LEIHS_BORROW_HTTP_BASE_URL}")
            end

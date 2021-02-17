@@ -3,4 +3,12 @@ projects:
     schemaPath: schema.graphql
     extensions:
       endpoints:
-        dev: "http://localhost:3250/app/borrow/graphql"
+        dev:
+          url: "http://localhost:3250/app/borrow/graphql"
+          headers:
+            # NOTE: we're outside a browser, so we just need to send the same value as a header and a cookie!
+            "X-CSRF-Token": "00000000-0000-0000-0000-000000000000"
+            "Cookie": "leihs-anti-csrf-token=00000000-0000-0000-0000-000000000000"
+
+
+
