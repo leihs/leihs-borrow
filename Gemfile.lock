@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/leihs/turnip.git
-  revision: bd4451ed9e57a74eb8f2ad27475c69946e4e0b85
+  revision: d13e3d09e257be57e6a7c3750a6bed89392cd137
   branch: ambiguous-steps
   specs:
     turnip (4.2.0)
@@ -122,7 +122,8 @@ GEM
       mimemagic (~> 0.3.2)
     method_source (0.9.2)
     middleware (0.1.0)
-    mimemagic (0.3.3)
+    mimemagic (0.3.7)
+      nokogiri (~> 1.11.2)
     mini_mime (1.0.2)
     mini_portile2 (2.4.0)
     minitest (5.12.0)
@@ -237,6 +238,7 @@ DEPENDENCIES
   faraday
   geckodriver-helper (= 0.21.0)
   graphlient
+  mimemagic (= 0.3.7)
   money-rails (~> 1.4)
   pg
   pg_tasks!
@@ -250,4 +252,4 @@ DEPENDENCIES
   uuidtools
 
 BUNDLED WITH
-   1.17.2
+   1.17.3
