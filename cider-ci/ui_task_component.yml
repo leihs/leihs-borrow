@@ -3,7 +3,7 @@ traits:
   S3-Cache: true
 
 scripts:
-  prepare-shared-ui:
+  prepare-shared-ui-borrow:
     exclusive_executor_resource: build-leihs-ui
     environment_variables:
       RUBY: '{{RUBY_ENGINE}}-{{RUBY_VERSION}}'
@@ -36,7 +36,7 @@ scripts:
         s3-cache-helper download -n "$S3_CACHED_ARTEFACT" -p "$LOCAL_CACHED_ARTEFACT"
         # build the artefact if it was not downloaded
         if [ ! -f ${LOCAL_CACHED_ARTEFACT} ]; then
-          ./scripts/prepare-shared-ui.sh
+          ./scripts/prepare-shared-ui.sh || exit 1
           tar -cvz -f "$LOCAL_CACHED_ARTEFACT" $ARTEFACT_PATHS
           s3-cache-helper upload -n "$S3_CACHED_ARTEFACT" -p "$LOCAL_CACHED_ARTEFACT"
         fi

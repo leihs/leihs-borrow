@@ -272,7 +272,7 @@ jobs:
             test:
               start_when:
                 shared ui was built:
-                  script_key: prepare-shared-ui
+                  script_key: prepare-shared-ui-borrow
               body: |
                 npm install --silent --no-audit
                 npx shadow-cljs release app
