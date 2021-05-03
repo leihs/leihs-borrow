@@ -7,8 +7,7 @@
             [leihs.core.ds :as ds]))
 
 (defn init []
-  (log/debug "translations init")
-  (def tx (ds/get-ds)))
+  (defonce tx (ds/get-ds)))
 
 (def trans-map (-> "src/client/leihs/borrow/lib/translate.edn"
                    slurp
@@ -49,11 +48,13 @@
         (-> (sql/insert-into :default_translations)
             (sql/values [{:key k, :translation translation, :language_locale (name locale)}])
             sql/format
-            log/spy
             (->> (jdbc/execute! tx)))))))
 
 (defn reload []
+  (log/info "Reloading translations...")
+  (init)
   (delete-all-borrow)
-  (insert-all-borrow))
+  (insert-all-borrow)
+  (log/info "Reloading translations done."))
 
 (comment (reload))
