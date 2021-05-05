@@ -16,6 +16,7 @@
                                        subscribe
                                        dispatch]]
     [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.translate :as translate]
     [leihs.borrow.client.routes :as routes]
 
     [leihs.borrow.features.about-page.core :as about-page]
@@ -135,6 +136,7 @@
 
 (defn ^:export main []
   ; start the app framework; NOTE: order is important!
+  (translate/fetch)
   (re-graph/init)
   (dispatch [::load-app])
   (dispatch [:routing/init-routing routes/routes-map])

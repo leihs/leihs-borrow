@@ -2,6 +2,7 @@
   (:require-macros [leihs.borrow.lib.translate])
   (:require [tongue.core :as tongue]
             [re-frame.db :as db]
+            [ajax.core :refer [GET]]
             [shadow.resource :as rc]
             [cljs.tools.reader.edn :as edn]
             [leihs.borrow.features.current-user.core :as current-user]
@@ -47,6 +48,11 @@
   (apply translate
          (locale-to-use)
          (apply-default-path args)))
+
+(defn fetch []
+  (GET (str js/window.location.origin "/translations")
+       {:format :json
+        :handler #(js/console.log %)}))
 
 (comment
   ((resolve 'drop-first-char) "Foo")
