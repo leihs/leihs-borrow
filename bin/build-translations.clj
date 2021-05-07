@@ -1,0 +1,43 @@
+(require '[clojure.edn :as edn]
+         '[clojure.string :as string])
+
+(def trans-map (-> "src/client/leihs/borrow/lib/translate.edn"
+                   slurp
+                   edn/read-string))
+
+(defn keys-in
+  "Returns a sequence of all key paths in a given map using DFS walk."
+  [m]
+  (letfn [(children [node]
+            (let [v (get-in m node)]
+              (if (map? v)
+                (map (fn [x] (conj node x)) (keys v))
+                [])))
+          (branch? [node] (-> (children node) seq boolean))]
+    (->> (keys m)
+         (map vector)
+         (mapcat #(tree-seq branch? children %)))))
+
+(defn translation-key-paths-with-vals [m]
+  (->> (keys-in m)
+       (map (fn [k-path]
+              (let [v (get-in m k-path)]
+                (if (map? v)
+                  nil
+                  (vector k-path v)))))
+       (remove nil?)))
+
+(defn dump []
+  (with-open [w (clojure.java.io/writer "bin/translations.sql")]
+    (let [delete-statement "DELETE FROM default_translations WHERE key like 'borrow.%';\n"]
+      (print delete-statement)
+      (.write w delete-statement))
+    (doseq [[locale t-map] trans-map]
+      (doseq [[k-path translation] (translation-key-paths-with-vals t-map)]
+        (let [k (->> k-path (map name) (string/join "."))
+              insert-statement (str "INSERT INTO default_translations (key, translation, language_locale) "
+                                    "VALUES ('" k "', '" translation "', '" (name locale) "');\n")]
+          (print insert-statement)
+          (.write w insert-statement))))))
+
+(dump)

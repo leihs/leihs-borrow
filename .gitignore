@@ -1,13 +1,14 @@
+.calva
 .cpcache
 .nrepl-history
 .nrepl-port
 .rebel_readline_history
 .shadow-cljs
-.calva
+/leihs-ui.tgz
+bin/translations.sql
 log
+node_modules
 resources/all/public/app/borrow/js
 scratch*
 target
-node_modules
 tmp/
-/leihs-ui.tgz
