@@ -7,7 +7,7 @@ scripts:
       #!/usr/bin/env bash
       set -eux
       source shared-clj/clojure/bin/activate
-      clj -M bin/build-translations.clj
+      clojure -M bin/build-translations.clj
       psql -d "$DATABASE_NAME" < bin/translations.sql
 
   #restore-translations:
