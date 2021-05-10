@@ -1,9 +1,8 @@
 (require '[clojure.edn :as edn]
          '[clojure.string :as string])
 
-(def trans-map (-> "src/client/leihs/borrow/lib/translate.edn"
-                   slurp
-                   edn/read-string))
+(load-file "src/server/leihs/borrow/resources/translations/definitions.clj")
+(require '[leihs.borrow.resources.translations.definitions :refer [definitions]])
 
 (defn keys-in
   "Returns a sequence of all key paths in a given map using DFS walk."
@@ -32,7 +31,7 @@
     (let [delete-statement "DELETE FROM default_translations WHERE key like 'borrow.%';\n"]
       (print delete-statement)
       (.write w delete-statement))
-    (doseq [[locale t-map] trans-map]
+    (doseq [[locale t-map] definitions]
       (doseq [[k-path translation] (translation-key-paths-with-vals t-map)]
         (let [k (->> k-path (map name) (string/join "."))
               insert-statement (str "INSERT INTO default_translations (key, translation, language_locale) "

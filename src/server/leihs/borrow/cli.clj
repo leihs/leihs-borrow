@@ -71,7 +71,7 @@
          env-or-default
          boolean)
     :parse-fn boolean]
-   ["-t" "--load-translations LEIHS_BORROW_LOAD_TRANSLATIONS"
+   ["-s" "--load-translations LEIHS_BORROW_LOAD_TRANSLATIONS"
     (str "default: " (:LEIHS_BORROW_LOAD_TRANSLATIONS defaults))
     :default
     (->> :LEIHS_BORROW_LOAD_TRANSLATIONS

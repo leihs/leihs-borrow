@@ -15,7 +15,7 @@
             [leihs.borrow.graphql.connections :as graphql-connections]
             [leihs.borrow.legacy :as legacy]
             [leihs.borrow.routes :as routes]
-            [leihs.borrow.translations :as translations]
+            [leihs.borrow.resources.translations.core :as translations]
             [logbug.catcher :as catcher]
             [signal.handler]
             ))
