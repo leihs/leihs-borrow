@@ -1,8 +1,7 @@
 (ns app
   (:require [clojure.repl :as repl]
             [clojure.tools.namespace.repl :as ctnr]
-            app-setup
-            translations))
+            app-setup))
 
 (ctnr/disable-reload!)
 
@@ -22,11 +21,6 @@
           (ns-resolve 'init)
           (apply [])))
 
-(defn translations []
-  (-> (find-ns 'translations)
-      (ns-resolve 'init)
-      (apply [])))
-
 (defn refresh
   "Refresh the actual app."
   []
@@ -37,5 +31,4 @@
   (stop)
   (refresh)
   (scratch)
-  (translations)
   nil)

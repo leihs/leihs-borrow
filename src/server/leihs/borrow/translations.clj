@@ -1,13 +1,10 @@
-(ns translations
+(ns leihs.borrow.translations
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
             [clojure.edn :as edn]
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]))
-
-(defn init []
-  (defonce tx (ds/get-ds)))
 
 (def trans-map (-> "src/client/leihs/borrow/lib/translate.edn"
                    slurp
@@ -35,13 +32,13 @@
                   (vector k-path v)))))
        (remove nil?)))
 
-(defn delete-all-borrow []
+(defn delete-all-borrow [tx]
   (-> (sql/delete-from :default_translations)
       (sql/where ["~~*" :key "borrow.%"])
       sql/format
       (->> (jdbc/execute! tx))))
 
-(defn insert-all-borrow []
+(defn insert-all-borrow [tx]
   (doseq [[locale t-map] trans-map]
     (doseq [[k-path translation] (translation-key-paths-with-vals t-map)]
       (let [k (->> k-path (map name) (string/join "."))]
@@ -52,9 +49,9 @@
 
 (defn reload []
   (log/info "Reloading translations...")
-  (init)
-  (delete-all-borrow)
-  (insert-all-borrow)
+  (let [tx (ds/get-ds)]
+    (delete-all-borrow tx)
+    (insert-all-borrow tx))
   (log/info "Reloading translations done."))
 
 (comment (reload))

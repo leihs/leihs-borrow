@@ -15,6 +15,7 @@
             [leihs.borrow.graphql.connections :as graphql-connections]
             [leihs.borrow.legacy :as legacy]
             [leihs.borrow.routes :as routes]
+            [leihs.borrow.translations :as translations]
             [logbug.catcher :as catcher]
             [signal.handler]
             ))
@@ -50,7 +51,6 @@
       (ds/init (:database-url options)
                (:health-check-registry status)))
     (when (:load-translations options)
-      (require 'translations)
       (translations/reload))
     (let [app-handler (routes/init)]
       (http-server/start (:http-base-url options) app-handler))

@@ -69,17 +69,6 @@
   (comp (dev)
         (boot.task.built-in/repl)))
 
-(deftask translations []
-  "Reload translations from src/client/leihs/borrow/lib/translate.edn into the DB."
-  (comp (dev)
-        (with-pass-thru _
-          (require 'leihs.borrow.main)
-          (->> *args*
-               (cons "run")
-               (apply (resolve 'leihs.borrow.main/-main)))
-          (require 'translations)
-          ((resolve 'translations/reload)))))
-
 (deftask reset
   "Reset changed namespaces using clojure.tools.namespace."
   []
