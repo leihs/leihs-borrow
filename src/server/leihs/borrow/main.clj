@@ -49,6 +49,9 @@
     (let [status (status/init)]
       (ds/init (:database-url options)
                (:health-check-registry status)))
+    (when (:load-translations options)
+      (require 'translations)
+      (translations/reload))
     (let [app-handler (routes/init)]
       (http-server/start (:http-base-url options) app-handler))
     nil))
