@@ -5,9 +5,7 @@ scripts:
       uberjar has been built:
         script_key: build-borrow-uberjar
       database has been created:
-        script_key: create-database
-      translations have been dumped and restored:
-        script_key: dump-and-restore-translations
+        script_key: prepare-database
     body: |
       set -euxo 
       cd $LEIHS_BORROW_DIR
