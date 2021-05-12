@@ -30,6 +30,9 @@
               body: |
                 #!/usr/bin/env bash
                 set -eux
+                git fetch --all --quiet
+                git submodule update --quiet --init --recursive
+
                 source shared-clj/clojure/bin/activate
                 export FILE=./bin/translations-check.sql
                 ./bin/build-translations
