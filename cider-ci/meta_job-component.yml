@@ -3,6 +3,9 @@
         max_trials: 1
         traits:
           Ruby: true
+        git_options:
+          submodules:
+            include_match: ^.*$
 
       tasks:
         database-submodule-consistency:
@@ -12,8 +15,6 @@
               body: |
                 #!/usr/bin/env bash
                 set -exu
-                git fetch --all --quiet
-                git submodule update --quiet --init --recursive
 
                 v_db_top=$(git submodule status database | cut -f 2 -d ' ')
                 v_db_legacy=$(git submodule status --recursive | grep spec/support/legacy-api/database | cut -f 2 -d ' ')
@@ -30,9 +31,6 @@
               body: |
                 #!/usr/bin/env bash
                 set -eux
-                git fetch --all --quiet
-                git submodule update --quiet --init --recursive
-
                 source shared-clj/clojure/bin/activate
                 export FILE=./bin/translations-check.sql
                 ./bin/build-translations
