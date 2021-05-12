@@ -12,7 +12,7 @@ scripts:
       psql -d "$DATABASE_NAME" -f database/db/structure.sql
       DATABASE_NAME="$DATABASE_NAME" ./database/scripts/restore-seeds
       source shared-clj/clojure/bin/activate
-      clojure -M bin/build-translations.clj
+      ./bin/build-translations
       psql -d "$DATABASE_NAME" < bin/translations.sql
 
   delete-database:
