@@ -3,9 +3,6 @@
         max_trials: 1
         traits:
           Ruby: true
-        git_options:
-          submodules:
-            include_match: ^.*$
 
       tasks:
         database-submodule-consistency:
@@ -26,17 +23,3 @@
 
                 # TESTS (FAIL-FIRST)
                 test $v_db_legacy == $v_db_top
-
-        translations-file-up-to-date:
-          name: "Translations sql file has to be up-to-date with translations edn file."
-          scripts:
-            test:
-              body: |
-                #!/usr/bin/env bash
-                set -eux
-                source shared-clj/clojure/bin/activate
-                export FILE=./bin/translations-check.sql
-                ./bin/build-translations
-                if ! cmp -s bin/translations.sql $FILE; then
-                  echo "File `translations.sql` is not up-to-date. Execute `./bin/build-translations.clj`"
-                fi
