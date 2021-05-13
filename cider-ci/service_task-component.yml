@@ -7,7 +7,7 @@ scripts:
       database has been created:
         script_key: create-database
       translations has been dump and loaded:
-        script_key: load-translations
+        script_key: dump-and-load-translations
         states: [passed]
     body: |
       set -euxo 

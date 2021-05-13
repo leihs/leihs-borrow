@@ -3,15 +3,14 @@ traits:
 
 scripts:
 
-  load-translations:
+  dump-and-load-translations:
     start_when:
       database has been created:
         script_key: create-database
         states: [passed]
-      build has run:
-        script_key: build-borrow-uberjar
-        states: [passed]
     body: |
       #!/usr/bin/env bash
       set -eux
+      source shared-clj/clojure/bin/activate
+      ./bin/build-translations
       psql -d "$DATABASE_NAME" < bin/translations.sql
