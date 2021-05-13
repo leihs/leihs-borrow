@@ -39,7 +39,7 @@ scripts:
       -b tcp://localhost:${LEIHS_LEGACY_HTTP_PORT}
     start_when:
       database has been created:
-        script_key: prepare-database
+        script_key: create-database
         states: [passed]
       gems are bundled:
         script_key: legacy-bundle-rspec-ruby
