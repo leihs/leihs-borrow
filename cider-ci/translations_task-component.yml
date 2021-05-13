@@ -11,6 +11,8 @@ scripts:
     body: |
       #!/usr/bin/env bash
       set -eux
+      git fetch --all --quiet
+      git submodule update --quiet --init --recursive
       source shared-clj/clojure/bin/activate
       ./bin/build-translations
       psql -d "$DATABASE_NAME" < bin/translations.sql
