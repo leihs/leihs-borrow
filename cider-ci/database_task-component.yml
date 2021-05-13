@@ -12,18 +12,6 @@ scripts:
       psql -d "$DATABASE_NAME" -f database/db/structure.sql
       DATABASE_NAME="$DATABASE_NAME" ./database/scripts/restore-seeds
 
-  dump-and-load-translations:
-    start_when:
-      database has been created:
-        script_key: create-database
-        states: [passed]
-    body: |
-      #!/usr/bin/env bash
-      set -eux
-      source shared-clj/clojure/bin/activate
-      ./bin/build-translations
-      psql -d "$DATABASE_NAME" < bin/translations.sql
-
   delete-database:
     body: |
       #!/usr/bin/env bash
