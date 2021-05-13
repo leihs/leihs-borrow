@@ -35,6 +35,7 @@ fi
 function build {
   ${UI_DIR}/bin/build
   ${PROJECT_DIR}/bin/build-core
+  ${PROJECT_DIR}/bin/build-translations
 }
 
 function pack {
