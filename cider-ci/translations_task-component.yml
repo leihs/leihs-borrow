@@ -11,6 +11,7 @@ scripts:
     body: |
       #!/usr/bin/env bash
       set -eux
+      cd ${LEIHS_BORROW_DIR}
       git fetch --all --quiet
       git submodule update --quiet --init --recursive
       source shared-clj/clojure/bin/activate
