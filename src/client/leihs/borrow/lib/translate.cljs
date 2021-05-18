@@ -18,7 +18,7 @@
   "Fetch translations from server, store them under window property,
   build the translate function using the translations and call the callback."
   [callback]
-  (GET (str js/window.location.origin "/translations")
+  (GET (str js/window.location.origin "/my/user/me/translations")
        {:format :json
         :params {:prefix "borrow"}
         :handler #(do (set! js/window.leihsBorrowTranslations
