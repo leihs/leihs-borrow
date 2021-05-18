@@ -6,9 +6,6 @@ scripts:
         script_key: build-borrow-uberjar
       database has been created:
         script_key: create-database
-      translations has been dump and loaded:
-        script_key: dump-and-load-translations
-        states: [passed]
     body: |
       set -euxo 
       cd $LEIHS_BORROW_DIR

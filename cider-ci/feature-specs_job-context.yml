@@ -37,6 +37,8 @@ task_defaults:
           script_key: borrow-service-is-running
         ruby is bundled:
           script_key: bundle-ruby
+        translations have been dumped:
+          script_key: dump-translations
       body: |
         #!/usr/bin/env bash
         set -eux
