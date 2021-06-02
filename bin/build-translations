@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+source shared-clj/clojure/bin/activate
+clojure -M bin/build-translations.clj

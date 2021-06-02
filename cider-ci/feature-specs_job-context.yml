@@ -6,6 +6,7 @@ task_defaults:
     - cider-ci/environment_variables.yml
     - cider-ci/database_task-component.yml
     - cider-ci/uberjar_task-component.yml
+    - cider-ci/translations_task-component.yml
     - cider-ci/service_task-component.yml
     - cider-ci/legacy_service-task_component.yml
   traits:
@@ -36,6 +37,8 @@ task_defaults:
           script_key: borrow-service-is-running
         ruby is bundled:
           script_key: bundle-ruby
+        translations have been dumped:
+          script_key: dump-translations
       body: |
         #!/usr/bin/env bash
         set -eux
