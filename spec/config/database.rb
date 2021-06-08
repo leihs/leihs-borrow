@@ -42,7 +42,7 @@ def clean_db
 
   database[sql]
     .map { |r| r[:table_name] }
-    .reject { |tn| ['schema_migrations', 'default_translations'].include?(tn) }
+    .reject { |tn| ['schema_migrations', 'translations_default'].include?(tn) }
     .join(', ')
     .tap { |tables| database.run " TRUNCATE TABLE #{tables} CASCADE; " }
 end

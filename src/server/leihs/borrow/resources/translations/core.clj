@@ -32,7 +32,7 @@
        (remove nil?)))
 
 (defn delete-all-borrow [tx]
-  (-> (sql/delete-from :default_translations)
+  (-> (sql/delete-from :translations_default)
       (sql/where ["~~*" :key "borrow.%"])
       sql/format
       (->> (jdbc/execute! tx))))
@@ -41,7 +41,7 @@
   (doseq [[locale t-map] definitions]
     (doseq [[k-path translation] (translation-key-paths-with-vals t-map)]
       (let [k (->> k-path (map name) (string/join "."))]
-        (-> (sql/insert-into :default_translations)
+        (-> (sql/insert-into :translations_default)
             (sql/values [{:key k, :translation translation, :language_locale (name locale)}])
             sql/format
             (->> (jdbc/execute! tx)))))))
