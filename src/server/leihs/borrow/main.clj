@@ -50,7 +50,7 @@
     (let [status (status/init)]
       (ds/init (:database-url options)
                (:health-check-registry status)))
-    (when (:load-translations options)
+    (when (log/spy :info (:load-translations options))
       (translations/reload))
     (let [app-handler (routes/init)]
       (http-server/start (:http-base-url options) app-handler))
