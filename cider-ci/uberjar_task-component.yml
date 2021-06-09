@@ -1,25 +1,35 @@
+name: Build borrow uberjar
+
 include:
-- path: cider-ci/install-ruby_task-component.yml
-  submodule: [leihs-ui]
+  - path: cider-ci/install-ruby_task-component.yml
+    submodule: [leihs-ui]
+  - path: cider-ci/install-nodejs_task-component.yml
+    submodule: [leihs-ui]
 
 traits:
   JDK 8: true
   Leiningen 2: true
-  npm: true
+
+environment_variables:
+  NVM_NODEJS_VERSION: '14'
 
 scripts:
-
   build-leihs-ui-for-borrow:
     start_when:
-      install-ruby-passed: {script_key: install-ruby}
-    timeout: 10 minutes
-    body: ${LEIHS_BORROW_DIR}/leihs-ui/bin/build
+      install-ruby-passed: { script_key: install-ruby }
+      install-nodejs-passed: { script_key: install-nodejs }
+    timeout: 15 minutes
     exclusive_executor_resource: build-leihs-ui
+    body: |
+      . ~/.nvm/nvm.sh && nvm use "$NVM_NODEJS_VERSION"
+      ${LEIHS_BORROW_DIR}/leihs-ui/bin/build
 
   build-borrow-uberjar:
-    timeout: 10 Minutes
+    timeout: 15 minutes
     exclusive_executor_resource: build-leihs-borrow-jar
     start_when:
       shared ui was built:
-        script_key:  build-leihs-ui-for-borrow
-    body: ${LEIHS_BORROW_DIR}/bin/build
+        script_key: build-leihs-ui-for-borrow
+    body: |
+      . ~/.nvm/nvm.sh && nvm use "$NVM_NODEJS_VERSION"
+      ${LEIHS_BORROW_DIR}/bin/build
