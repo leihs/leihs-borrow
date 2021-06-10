@@ -14,7 +14,8 @@
    :LEIHS_DATABASE_URL "jdbc:postgresql://leihs:leihs@localhost:5432/leihs?min-pool-size=1&max-pool-size=5"
    :LEIHS_LEGACY_HTTP_BASE_URL "http://localhost:3210"
    :LEIHS_BORROW_LACINIA_ENABLE_TIMING false
-   :LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT 50}) 
+   :LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT 50
+   :LEIHS_BORROW_LOAD_TRANSLATIONS false}) 
 
 (defn- get-from-env
   [kw]
@@ -67,6 +68,13 @@
     (str "default: " (:LEIHS_BORROW_LACINIA_ENABLE_TIMING defaults))
     :default
     (->> :LEIHS_BORROW_LACINIA_ENABLE_TIMING
+         env-or-default
+         boolean)
+    :parse-fn boolean]
+   ["-s" "--load-translations LEIHS_BORROW_LOAD_TRANSLATIONS"
+    (str "default: " (:LEIHS_BORROW_LOAD_TRANSLATIONS defaults))
+    :default
+    (->> :LEIHS_BORROW_LOAD_TRANSLATIONS
          env-or-default
          boolean)
     :parse-fn boolean]

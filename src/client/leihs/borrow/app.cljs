@@ -16,6 +16,7 @@
                                        subscribe
                                        dispatch]]
     [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.translate :as translate]
     [leihs.borrow.client.routes :as routes]
 
     [leihs.borrow.features.about-page.core :as about-page]
@@ -134,12 +135,13 @@
                (.getElementById js/document "app")))
 
 (defn ^:export main []
-  ; start the app framework; NOTE: order is important!
-  (re-graph/init)
-  (dispatch [::load-app])
-  (dispatch [:routing/init-routing routes/routes-map])
-
-  ; start the ui
-  (mount-root))
+  (translate/fetch-and-init
+    (fn callback []
+      ; start the app framework; NOTE: order is important!
+      (re-graph/init)
+      (dispatch [::load-app])
+      (dispatch [:routing/init-routing routes/routes-map])
+      ; start the ui
+      (mount-root))))
 
 (main)

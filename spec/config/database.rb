@@ -42,7 +42,7 @@ def clean_db
 
   database[sql]
     .map { |r| r[:table_name] }
-    .reject { |tn| tn == 'schema_migrations' }
+    .reject { |tn| ['schema_migrations', 'translations_default'].include?(tn) }
     .join(', ')
     .tap { |tables| database.run " TRUNCATE TABLE #{tables} CASCADE; " }
 end
@@ -51,6 +51,7 @@ RSpec.configure do |config|
   config.before(:example)  do
     clean_db
     system("DATABASE_NAME=#{http_uri.basename} ./database/scripts/restore-seeds")
+    system("psql -d #{http_uri.basename} < ./bin/translations.sql > /dev/null")
   end
   # config.after(:suite) do
   #   clean_db

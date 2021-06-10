@@ -2,24 +2,32 @@
   (:require-macros [leihs.borrow.lib.translate])
   (:require [tongue.core :as tongue]
             [re-frame.db :as db]
+            [ajax.core :refer [GET]]
             [shadow.resource :as rc]
             [cljs.tools.reader.edn :as edn]
+            [leihs.borrow.lib.helpers :as h]
             [leihs.borrow.features.current-user.core :as current-user]
             [clojure.string :as string]))
 
 (def ^:dynamic *default-path* "Default path to use for locating a key.")
 
-(def dicts
-  "Read in from an external source"
-  (edn/read-string (rc/inline "leihs/borrow/lib/translate.edn")))
-
 (def dicts-extensions
   {:tongue/fallback :en-GB})
 
-(def translate
-  (-> dicts
-      (merge dicts-extensions)
-      tongue/build-translate))
+(defn fetch-and-init
+  "Fetch translations from server, store them under window property,
+  build the translate function using the translations and call the callback."
+  [callback]
+  (GET (str js/window.location.origin "/my/user/me/translations")
+       {:format :json
+        :params {:prefix "borrow"}
+        :handler #(do (set! js/window.leihsBorrowTranslations
+                            (h/keywordize-keys %))
+                      (def translate
+                        (-> js/window.leihsBorrowTranslations
+                            (merge dicts-extensions)
+                            tongue/build-translate))
+                      (callback))}))
 
 (defn drop-first-char [s]
   (->> s (drop 1) string/join))
