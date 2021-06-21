@@ -1,15 +1,16 @@
 (ns leihs.borrow.graphql
-  (:require [clojure.edn :as edn]
+  (:require [clj-logging-config.log4j :as logging-config]
+            [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.parser :as graphql-parser]
+            [com.walmartlabs.lacinia.resolve :as graphql-resolve]
             [com.walmartlabs.lacinia.schema :as graphql-schema]
             [com.walmartlabs.lacinia.util :as graphql-util]
-            [leihs.borrow.graphql.scalars :as scalars]
             [leihs.borrow.graphql.resolvers :as resolvers]
-            [leihs.borrow.authenticate :as authenticate]
+            [leihs.borrow.graphql.scalars :as scalars]
             [leihs.core.ds :as ds]
             [leihs.core.graphql.helpers :as helpers]
             [leihs.core.ring-exception :refer [get-cause]]))
@@ -33,43 +34,6 @@
 
 (def schema (load-schema))
 
-(defn exec-query
-  [query-string request]
-  (log/debug "graphql query" query-string
-             "with variables" (-> request
-                                  :body
-                                  :variables))
-  (lacinia/execute schema
-                   query-string
-                   (-> request
-                       :body
-                       :variables)
-                   (cond-> {:request request}
-                     @lacinia-enable-timing
-                     (assoc ::lacinia/enable-timing? true))))
-
-(def keys-order [:error :data :extensions])
-
-(defn rearrange-keys [m]
-  (into (sorted-map-by #(- (.indexOf keys-order %1)
-                           (.indexOf keys-order %2)))
-        m))
-
-(defn base-handler
-  [{{query :query} :body, :as request}]
-  (binding [ds/after-tx nil]
-    (let [result (-> query 
-                     (exec-query request)
-                     (cond->
-                       @lacinia-enable-timing
-                       helpers/attach-overall-timing)
-                     rearrange-keys)
-          resp {:body result
-                :after-tx ds/after-tx}]
-      (if (:errors result)
-        (do (log/debug result) (assoc resp :graphql-error true))
-        resp))))
-
 (defn parse-query-with-exception-handling
   [schema query]
   (try (graphql-parser/parse-query schema query)
@@ -89,6 +53,43 @@
        graphql-parser/operations
        :operations
        (= #{:__schema})))
+
+(defn exec-query
+  [query-string request]
+  (log/debug "graphql query" query-string
+             "with variables" (-> request
+                                  :body
+                                  :variables))
+  (if (or (:authenticated-entity request) (schema? query-string))
+    (lacinia/execute schema
+                     query-string
+                     (-> request
+                         :body
+                         :variables)
+                     (cond-> {:request request}
+                       @lacinia-enable-timing
+                       (assoc ::lacinia/enable-timing? true)))
+    (helpers/error-as-graphql-object 401 "No authenticated user.")))
+
+(def keys-order [:error :data :extensions])
+
+(defn rearrange-keys [m]
+  (into (sorted-map-by #(- (.indexOf keys-order %1)
+                           (.indexOf keys-order %2)))
+        m))
+
+(defn base-handler
+  [{{query :query} :body, :as request}]
+  (binding [ds/after-tx nil]
+    (let [result (-> query 
+                     (exec-query request)
+                     (cond-> @lacinia-enable-timing helpers/attach-overall-timing)
+                     rearrange-keys)
+          resp {:body result
+                :after-tx ds/after-tx}]
+      (if (:errors result)
+        (do (log/debug result) (assoc resp :graphql-error true))
+        resp))))
 
 (defn mutation? [query]
   (->> query
@@ -118,9 +119,7 @@
   [{{query :query} :body, :as request}]
   (if (schema? query)
     (base-handler request)
-    (-> handler-with-operation-type-check
-        authenticate/wrap-base
-        (apply [request]))))
+    (handler-with-operation-type-check request)))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

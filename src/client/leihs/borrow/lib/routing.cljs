@@ -63,7 +63,10 @@
   (fn-traced [{:keys [db]} [_ token]]
     (let [{:keys [routes]} (:routing/routing db)
           bidi-match (bidi-match-route-with-query-params routes token)]
-      {:db (assoc-in db [:routing/routing :bidi-match] bidi-match)
+      {:db (-> db
+               (assoc-in [:routing/routing :bidi-match] bidi-match)
+               (assoc-in [:meta :app :fatal-errors] nil)
+               (dissoc ::requests/retry-mutation))
        :dispatch-n (list [::requests/abort-running-queries] 
                          [::scroll-to-top true]
                          [(:handler bidi-match) bidi-match]

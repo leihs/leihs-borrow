@@ -50,7 +50,7 @@
   ::on-fetched-data
   (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
     (if errors
-      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
+      {:db (update-in db [:meta :app :fatal-errors] (fnil into []) errors)}
       {:dispatch-n (let [user-data (:current-user data)
                          response-user-id (-> user-data :user :id)
                          ls-user-id  (-> db :ls ::data :user :id)]
