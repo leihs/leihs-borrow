@@ -15,6 +15,8 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
+    [leihs.borrow.lib.helpers :refer [spy]]
+    [leihs.borrow.lib.requests :as requests]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.translate :as translate]
     [leihs.borrow.client.routes :as routes]
@@ -72,7 +74,8 @@
   (let [errors @(subscribe [:app/fatal-errors])]
     [:> UI/Components.AppLayout.MainView
      {:navbar (r/as-element [main-nav/navbar])}
-     (when errors [uic/fatal-error-screen errors])
+     [uic/error-screen errors]
+     [requests/retry-banner]
      [routing/routed-view views]]))
 
 (defn- route-is-loading-view

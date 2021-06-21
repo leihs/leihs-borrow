@@ -1,42 +1,30 @@
 (ns leihs.borrow.routes
   (:refer-clojure :exclude [str keyword replace])
-  (:require
-    [leihs.core.http-cache-buster2 :as cache-buster :refer [wrap-resource]]
-    [bidi.bidi :as bidi]
-    [cheshire.core :refer [parse-string]]
-    [clojure.string :refer [starts-with? replace]]
-    [clojure.tools.logging :as log]
-    [leihs.borrow.authenticate :as authenticate]
-    [leihs.borrow.client.routes :as client-routes]
-    [leihs.borrow.graphql :as graphql]
-    [leihs.borrow.html :as html]
-    [leihs.borrow.resources.images :as images]
-    [leihs.borrow.resources.attachments :as attachments]
-    [leihs.borrow.paths :refer [path paths]]
-    [leihs.core.anti-csrf.back :as anti-csrf]
-    [leihs.core.auth.session :as session]
-    [leihs.core.core :refer [presence]]
-    [leihs.core.ds :as datasource]
-    [leihs.core.locale :as locale]
-    [leihs.core.ring-exception :as ring-exception]
-    [leihs.core.routes :as core-routes]
-    [leihs.core.routing.back :as core-routing]
-    [leihs.core.settings :as settings]
-    [leihs.core.sign-out.back :as sign-out]
-    [leihs.core.status :as status]
-    [ring-graphql-ui.core :refer [wrap-graphiql]]
-    [ring.middleware.content-type :refer [wrap-content-type]]
-    [ring.middleware.accept]
-    [ring.middleware.cookies :refer [wrap-cookies]]
-    [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
-    [ring.middleware.multipart-params :refer [wrap-multipart-params]]
-    [ring.middleware.params :refer [wrap-params]]
-    [ring.middleware.reload :refer [wrap-reload]]
-    [ring.util.response :refer [redirect status]]
-    [clojure.tools.logging :as logging]
-    [clj-logging-config.log4j :as logging-config]
-    [logbug.debug :as debug :refer [I>]]
-    [logbug.ring :refer [wrap-handler-with-logging]]))
+  (:require [leihs.borrow.authenticate :as authenticate]
+            [leihs.borrow.client.routes :as client-routes]
+            [leihs.borrow.graphql :as graphql]
+            [leihs.borrow.html :as html]
+            [leihs.borrow.paths :refer [paths]]
+            [leihs.borrow.resources.attachments :as attachments]
+            [leihs.borrow.resources.images :as images]
+            [leihs.core.anti-csrf.back :as anti-csrf]
+            [leihs.core.auth.session :as session]
+            [leihs.core.ds :as datasource]
+            [leihs.core.http-cache-buster2 :as cache-buster :refer [wrap-resource]]
+            [leihs.core.ring-exception :as ring-exception]
+            [leihs.core.routes :as core-routes]
+            [leihs.core.routing.back :as core-routing]
+            [leihs.core.settings :as settings]
+            [leihs.core.status :as status]
+            [logbug.debug :as debug :refer [I>]]
+            [logbug.ring :refer [wrap-handler-with-logging]]
+            [ring-graphql-ui.core :refer [wrap-graphiql]]
+            ring.middleware.accept
+            [ring.middleware.content-type :refer [wrap-content-type]]
+            [ring.middleware.cookies :refer [wrap-cookies]]
+            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
+            [ring.middleware.multipart-params :refer [wrap-multipart-params]]
+            [ring.middleware.params :refer [wrap-params]]))
 
 (def resolve-table
   (merge core-routes/resolve-table
@@ -80,7 +68,8 @@
 
 (defn init []
   (core-routing/init paths resolve-table)
-  (-> ;wrap-handler-with-logging
+  ; (-> wrap-handler-with-logging
+  (I> wrap-handler-with-logging
       dispatch-to-handler
       anti-csrf/wrap
       ; locale/wrap

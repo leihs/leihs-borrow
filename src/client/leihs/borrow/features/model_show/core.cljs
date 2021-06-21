@@ -17,7 +17,7 @@
     #_[leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.components :as ui]
     [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.ui.icons :as icons]
     ["/leihs-ui-client-side-external-react" :as UI]
     ["date-fns" :as datefn]
@@ -184,18 +184,19 @@
 
 (reg-event-fx
   ::model-create-reservation
-  (fn-traced
-    [_ [_ args]] {:dispatch
-       [::re-graph/mutate
-        (rc/inline
-          "leihs/borrow/features/model_show/createReservationMutation.gql") args
-        [::on-mutation-result args]]}))
+  (fn-traced [_ [_ args]]
+    {:dispatch
+     [::re-graph/mutate
+      (rc/inline
+        "leihs/borrow/features/model_show/createReservationMutation.gql") args
+      [::on-mutation-result args]]}))
 
 (reg-event-fx
   ::on-mutation-result
   (fn-traced [{:keys [db]} [_ args {:keys [data errors]}]]
     (if errors
-      {:alert (str "FAIL! " (pr-str errors))}
+      {:db (assoc-in db [:meta :app :fatal-errors] errors)
+       :alert (str "FAIL! " (pr-str errors))}
       {:alert (str "OK! " (pr-str data))
        :dispatch [::reset-availability-and-fetch
                   (:modelId args)
