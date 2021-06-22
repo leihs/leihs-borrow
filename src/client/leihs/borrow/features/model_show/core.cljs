@@ -198,11 +198,7 @@
       {:db (assoc-in db [:meta :app :fatal-errors] errors)
        :alert (str "FAIL! " (pr-str errors))}
       {:alert (str "OK! " (pr-str data))
-       :dispatch [::reset-availability-and-fetch
-                  (:modelId args)
-                  (:userId args)
-                  (:startDate args)
-                  (:endDate args)]})))
+       :dispatch [::fetch-availability (:startDate args) (:endDate args)]}))) 
 
 (defn order-panel
   [model filters]
