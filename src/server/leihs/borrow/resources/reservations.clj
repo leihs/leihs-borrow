@@ -18,11 +18,16 @@
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]))
 
-(doseq [s [::model_id ::inventory_pool_id ::start_date ::end_date]]
+(doseq [s [::inventory_pool_id ::start_date ::end_date]]
   (spec/def s (comp not nil?)))
 
 (spec/def ::reservation
-  (spec/keys :req-un [::model_id ::inventory_pool_id ::start_date ::end_date]))
+  (spec/keys :req-un [::model_id
+                      ::option_id
+                      ::item_id
+                      ::inventory_pool_id
+                      ::start_date
+                      ::end_date]))
 
 (defn columns [tx]
   (as-> (database/columns tx "reservations") <>

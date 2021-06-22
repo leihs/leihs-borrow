@@ -124,6 +124,18 @@
                               :quantity {:type (non-null Int)}
                               :startDateRestriction {:type :startDateRestrictionEnum}
                               :endDateRestriction {:type :endDateRestrictionEnum}}}
+           :Item {:fields {:id {:type (non-null :UUID)}
+                           :inventoryCode {:type (non-null String)}
+                           :model {:type (non-null :Model) :resolve :model}}}
+           :Option {:fields {:id {:type (non-null :UUID)}
+                             :inventoryCode {:type (non-null String)}
+                             :inventoryPool {:type (non-null :InventoryPool)}
+                             :manufacturer {:type String}
+                             :product {:type (non-null String)}
+                             :version {:type String}
+                             :name {:type (non-null String)
+                                    :description "A name consists of product name and its version."}
+                             :price {:type Float}}}
            :Model {:fields {:id {:type (non-null :UUID)}
                             :borrowUrl {:type (non-null String) :resolve :url}
                             :name {:type (non-null String)
@@ -220,8 +232,9 @@
                                :images {:type (list :Image)
                                         :resolve :images}}}
            :Reservation {:fields {:id {:type (non-null :UUID)}
-                                  :model {:type (non-null :Model)
-                                          :resolve :model}
+                                  :item {:type :Item :resolve :item}
+                                  :model {:type :Model :resolve :model}
+                                  :option {:type :Option :resolve :option}
                                   :inventoryPool {:type (non-null :InventoryPool)
                                                   :resolve :inventory-pool}
                                   :startDate {:type (non-null :Date)}

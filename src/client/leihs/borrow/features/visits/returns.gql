@@ -7,7 +7,15 @@ query {
       name
     }
     reservations {
-      model {
+      id
+      item {
+        inventoryCode
+        model {
+          name
+        }
+      }
+      option {
+        inventoryCode
         name
       }
       poolOrder {

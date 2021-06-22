@@ -10,6 +10,9 @@ query {
       model {
         name
       }
+      option {
+        name
+      }
       poolOrder {
         order {
           id

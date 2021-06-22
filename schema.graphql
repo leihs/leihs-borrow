@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Wed Feb 17 2021 11:36:53 GMT+0100 (Central European Standard Time)
+# timestamp: Tue Jun 22 2021 14:52:55 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -152,6 +152,12 @@ input InventoryPoolsOrderByInput {
   direction: OrderByDirectionEnum!
 }
 
+type Item {
+  id: UUID!
+  inventoryCode: String!
+  model: Model!
+}
+
 type Language {
   active: Boolean
   default: Boolean
@@ -233,6 +239,19 @@ type MutationRoot {
 }
 
 scalar NonEmptyText
+
+type Option {
+  id: UUID!
+  inventoryCode: String!
+  inventoryPool: InventoryPool!
+  manufacturer: String
+
+  """A name consists of product name and its version."""
+  name: String!
+  price: Float
+  product: String!
+  version: String
+}
 
 type Order {
   borrowUrl: String!
@@ -379,7 +398,9 @@ type Reservation {
   endDate: Date!
   id: UUID!
   inventoryPool: InventoryPool!
-  model: Model!
+  item: Item
+  model: Model
+  option: Option
   poolOrder: PoolOrder
   startDate: Date!
   status: ReservationStateEnum!

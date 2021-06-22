@@ -7,8 +7,10 @@
     [leihs.borrow.resources.delegations :as delegations]
     [leihs.borrow.resources.images :as images]
     [leihs.borrow.resources.inventory-pools :as inventory-pools]
+    [leihs.borrow.resources.items :as items]
     [leihs.borrow.resources.languages :as languages]
     [leihs.borrow.resources.models :as models]
+    [leihs.borrow.resources.options :as options]
     [leihs.borrow.resources.orders :as orders]
     [leihs.borrow.resources.properties :as properties]
     [leihs.borrow.resources.reservations :as reservations]
@@ -39,6 +41,7 @@
    :inventory-pools inventory-pools/get-multiple
    :is-favorited-model models/favorited?
    :is-reservable-model models/reservable?
+   :item items/get-one
    :language languages/get-one
    :language-to-use languages/one-to-use
    :maximum-reservation-time inventory-pools/maximum-reservation-time
@@ -46,6 +49,7 @@
    :model models/get-one
    :model-availability models/get-availability
    :models-connection models/get-connection
+   :option options/get-one
    :order orders/get-one
    :orders-connection orders/get-connection
    :pickups visits/get-pickups

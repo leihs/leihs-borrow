@@ -68,8 +68,8 @@
 
 (defn init []
   (core-routing/init paths resolve-table)
-  ; (-> wrap-handler-with-logging
-  (I> wrap-handler-with-logging
+  (-> 
+  ; (I> wrap-handler-with-logging
       dispatch-to-handler
       anti-csrf/wrap
       ; locale/wrap
