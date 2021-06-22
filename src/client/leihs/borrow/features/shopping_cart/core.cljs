@@ -77,17 +77,18 @@
                 {:ids ids}
                 [::on-delete-reservations]]}))
 
-(reg-event-db
+(reg-event-fx
   ::on-delete-reservations
-  (fn-traced [db [_ {{ids :delete-reservation-lines} :data errors :errors}]]
+  (fn-traced [{:keys [db]} [_ {{ids :delete-reservation-lines} :data errors :errors}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
-      (update-in db
-                 [::data :reservations]
-                 (partial filter #(->> %
-                                       :id
-                                       ((set ids))
-                                       not))))))
+      {:db (update-in db
+                      [::data :reservations]
+                      (partial filter #(->> %
+                                            :id
+                                            ((set ids))
+                                            not)))
+       :dispatch [:leihs.borrow.features.shopping-cart.timeout/refresh]})))
 
 (reg-event-fx
   ::edit-reservation
