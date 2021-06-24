@@ -52,6 +52,7 @@
    :option options/get-one
    :order orders/get-one
    :orderless-pickups visits/get-orderless-pickups
+   :orderless-returns visits/get-orderless-returns
    :orders-connection orders/get-connection
    :pickups visits/get-pickups
    :pool-order orders/get-one-by-pool

@@ -212,17 +212,24 @@
       sql/format
       (query tx)))
 
-(defn get-orderless-pickups
+(defn get-orderless-visits
   [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [order-by]}
-   value]
+   value
+   status]
   (-> (base-sqlmap tx user-id)
-      (sql/merge-where [:= :reservations.status "approved"])
+      (sql/merge-where [:= :reservations.status status])
       (sql/merge-where [:= :reservations.order_id nil])
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by :reservations)))
       sql/format
       (query tx)))
+
+(def get-orderless-pickups
+  #(get-orderless-visits %1 %2 %3 "approved"))
+
+(def get-orderless-returns
+  #(get-orderless-visits %1 %2 %3 "signed"))
 
 (defn delete [{{:keys [tx]} :request user-id ::target-user/id}
               {:keys [ids]}

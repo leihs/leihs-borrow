@@ -55,7 +55,11 @@
 
 (defn get-orderless-pickups [context args value]
   (let [rs (reservations/get-orderless-pickups context args value)]
-    (log/spy {:reservations rs, :quantity (reduce + (map :quantity rs))})))
+    {:reservations rs, :quantity (reduce + (map :quantity rs))}))
+
+(defn get-orderless-returns [context args value]
+  (let [rs (reservations/get-orderless-returns context args value)]
+    {:reservations rs, :quantity (reduce + (map :quantity rs))}))
 
 (defn get-pickups [{{:keys [tx]} :request :as context}
                    args
