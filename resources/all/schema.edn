@@ -300,6 +300,8 @@
                             :createdAt {:type (non-null :DateTime)}
                             :updatedAt {:type (non-null :DateTime)}}
                    :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}
+           :OrderlessPickups {:fields {:quantity {:type (non-null Int)}
+                                       :reservations {:type (list (non-null :Reservation))}}}
            :Pickup {:fields {:id {:type (non-null :UUID)}
                              :date {:type (non-null :Date)}
                              :quantity {:type (non-null Int)}
@@ -361,6 +363,7 @@
                           :userId {:type :UUID}}
                    :resolve :order
                    :type (non-null :Order)}
+           :orderlessPickups {:resolve :orderless-pickups :type (non-null :OrderlessPickups)}
            :orders {:resolve :orders-connection
                     :args {:first {:type Int}
                            :after {:type String}

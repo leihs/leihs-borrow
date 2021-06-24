@@ -212,6 +212,18 @@
       sql/format
       (query tx)))
 
+(defn get-orderless-pickups
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+   {:keys [order-by]}
+   value]
+  (-> (base-sqlmap tx user-id)
+      (sql/merge-where [:= :reservations.status "approved"])
+      (sql/merge-where [:= :reservations.order_id nil])
+      (cond-> (seq order-by)
+        (sql/order-by (helpers/treat-order-arg order-by :reservations)))
+      sql/format
+      (query tx)))
+
 (defn delete [{{:keys [tx]} :request user-id ::target-user/id}
               {:keys [ids]}
               _]

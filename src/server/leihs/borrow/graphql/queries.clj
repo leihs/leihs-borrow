@@ -51,6 +51,7 @@
    :models-connection models/get-connection
    :option options/get-one
    :order orders/get-one
+   :orderless-pickups visits/get-orderless-pickups
    :orders-connection orders/get-connection
    :pickups visits/get-pickups
    :pool-order orders/get-one-by-pool

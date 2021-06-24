@@ -4,6 +4,7 @@
             [leihs.core.ds :as ds]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
+            [leihs.borrow.resources.reservations :as reservations]
             [com.walmartlabs.lacinia :as lacinia]
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]))
@@ -51,6 +52,10 @@
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by :visits)))
       (cond-> limit (-> (sql/limit limit)))))
+
+(defn get-orderless-pickups [context args value]
+  (let [rs (reservations/get-orderless-pickups context args value)]
+    (log/spy {:reservations rs, :quantity (reduce + (map :quantity rs))})))
 
 (defn get-pickups [{{:keys [tx]} :request :as context}
                    args
