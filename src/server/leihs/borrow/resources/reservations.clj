@@ -184,10 +184,14 @@
     :PoolOrder
     (sql/merge-where sqlmap [:= :reservations.order_id id])
     :Order
-    (-> sqlmap
-        (sql/merge-join :orders
-                        [:= :reservations.order_id :orders.id])
-        (sql/merge-where [:= :orders.customer_order_id id]))
+    (if (:order-id value)
+      (-> sqlmap
+          (sql/merge-join :orders
+                          [:= :reservations.order_id :orders.id])
+          (sql/merge-where [:= :orders.customer_order_id id]))
+      (-> sqlmap
+          (sql/merge-where [:= :reservations.user_id (:user-id (log/spy value))])
+          (sql/merge-where [:in :reservations.status ["approved" "signed" "closed"]])))
     :Contract
     (sql/merge-where sqlmap [:= :reservations.contract_id id])
     (:Pickup :Return)

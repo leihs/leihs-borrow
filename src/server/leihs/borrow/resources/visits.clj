@@ -27,16 +27,16 @@
     (case container
       :PoolOrder
       (-> sqlmap
-          merge-join-visits-reservations
+          (sql/merge-join
+            :reservations
+            (sql/raw "ARRAY[reservations.id] <@ visits.reservation_ids"))
           (sql/merge-where [:= :reservations.order_id id])
           (sql/modifiers :distinct))
       :Order
       (-> sqlmap
-          merge-join-visits-reservations
-          (sql/merge-join :orders
-                          [:= :reservations.order_id :orders.id])
-          (sql/merge-where [:= :orders.customer_order_id id])
-          (sql/modifiers :distinct))
+          (sql/merge-join
+            :unified_customer_orders
+            (sql/raw "visits.reservation_ids <@ unified_customer_orders.reservation_ids")))
       sqlmap)))
 
 (defn get-visits-sqlmap

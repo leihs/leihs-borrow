@@ -273,8 +273,8 @@
                                 :updatedAt {:type (non-null :DateTime)}}}
            :Order {:fields {:id {:type (non-null :UUID)}
                             :borrowUrl {:type (non-null String) :resolve :url}
-                            :purpose {:type (non-null :NonEmptyText)}
-                            :title {:type (non-null :NonEmptyText)}
+                            :purpose {:type :NonEmptyText}
+                            :title {:type :NonEmptyText}
                             :state {:type (list (non-null :PoolOrderStateEnum))
                                     :description "List of distinct states of all the sub-orders."}
                             :pickups {:resolve :pickups
