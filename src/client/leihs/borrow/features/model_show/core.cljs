@@ -236,7 +236,6 @@
     
     (when (seq pools)
       [:div.border-b-2.border-gray-300.mt-4.pb-4
-       [:h3.font-bold.text-lg.Xtext-color-muted.mb-2 "Make a reservation"]
        [:div.d-flex.mx-n2
         [:> UI/Components.BookingCalendar
          {:initialOpen true,
@@ -281,65 +280,14 @@
     [:section.mx-3.my-4
      (cond
        is-loading?
-         [:div [:div [ui/spinner-clock]]
-          [:pre (t :loading) [:samp model-id] "…"]]
+       [:div [:div [ui/spinner-clock]]
+        [:pre (t :loading) [:samp model-id] "…"]]
        errors [ui/error-view errors]
        :else
-         [:<>
-          [:header.d-flex.align-items-center
-           [:h1.w-100.text-3xl.font-extrabold.leading-none (:name model)
-            (if-let [manufacturer (:manufacturer model)]
-              [:<> " " [:br]
-                  [:small.font-normal.text-gray-600.leading-none manufacturer]])]
-           [:span.flex-shrink-1.text-4xl.ml-2.pr-2
-            [:button
-             {:on-click
-                #(dispatch
-                    [(if (:is-favorited model)
-                       ::unfavorite-model
-                       ::favorite-model) (:id model)])}
-             (if (:is-favorited model)
-               icons/favorite-yes-icon
-               icons/favorite-no-icon)]]]
-          ; FIXME: show all images not just the first one
-          (if-let [first-image (first (:images model))]
-            [:div.flex.justify-center.py-4.mt-4.border-b-2.border-gray-300
-             [:div [:img {:src (:image-url first-image)}]]])
-          [order-panel model filters]
-          ; [order-panel-1 model filters]
-          (if-let [description (:description model)]
-            [:p.py-4.border-b-2.border-gray-300.text-base.preserve-linebreaks
-             description])
-          (if-let [attachments (:attachments model)]
-            [:<>
-             [:ul.list-inside.list-disc.text-blue-600
-              (doall
-                (for [a attachments]
-                  [:<> {:key (:id a)}
-                   [:li.border-b-2.border-gray-300.py-2
-                    [:a.text-blue-500 {:href (:attachment-url a)} (:filename a)]
-                    [:small.text-gray-600
-                     (str " (" (ui/decorate-file-size (:size a)) ")")]]]))]])
-          (if-let [fields (not-empty (map vector (:properties model)))]
-            [:dl.pb-4.mb-4.mt-4.border-b-2.border-gray-300
-             (doall
-               (for [[field] fields]
-                 [:<> {:key (:id field)} [:dt.font-bold (:key field)]
-                  [:dd.pl-6 (:value field)]]))])
-          (if-let [recommends (-> model :recommends :edges not-empty)]
-            (let [recommends-models (doall
-                                     (for [m recommends]
-                                       (let [model (:node m)]
-                                         {:id (:id model)
-                                          :imgSrc (or (get-in model [:cover-image :image-url])
-                                                      (get-in model [:images 0 :image-url]))
-                                          :caption (:name model)
-                                          :subCaption (:manufacturer model)
-                                          :href  (routing/path-for ::routes/models-show
-                                                                   :model-id (:id model))})))]
-              [:> UI/Components.AppLayout.SubSection
-               {:title (t :compatibles)}
-               [:> UI/Components.ModelList {:list recommends-models}]])) 
-          
-          #_[:p.debug (pr-str model)]
-          ])] ))
+         [:> UI/Components.ModelShow {:model (h/camel-case-keys model)
+                                      :currentFilters (h/camel-case-keys filters)
+                                      :onClickFavorite #(dispatch
+                                                         [(if (:is-favorited model)
+                                                            ::unfavorite-model
+                                                            ::favorite-model) (:id model)])
+                                      :orderPanelTmp  (reagent/as-element [order-panel model filters])}])] ))
