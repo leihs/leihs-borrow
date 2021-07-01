@@ -1,0 +1,133 @@
+// See https://go.microsoft.com/fwlink/?LinkId=733558
+// for the documentation about the tasks.json format
+
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "App Development",
+      "detail": "run all preparation steps and then start all services",
+      "dependsOn": [
+        "Development Preparations Steps",
+        "Frontend Development Services"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Development Preparations Steps",
+      "dependsOn": ["prepare ui"],
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Frontend Development Services",
+      "detail": "start all services (assumes preparations steps already ran)",
+      "dependsOn": [
+        "backend-dev",
+        "frontend-dev",
+        "legacy-dev",
+        "leihs-ui",
+        "storybook"
+      ],
+      "problemMatcher": []
+    },
+
+    {
+      "label": "backend-dev",
+      "type": "shell",
+      "command": "./scripts/start-backend-dev",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true,
+        "group": "dev"
+      }
+    },
+    {
+      "label": "frontend-dev",
+      "type": "shell",
+      "command": "./scripts/start-frontend-dev",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true,
+        "group": "dev"
+      }
+    },
+    {
+      "label": "legacy-dev",
+      "type": "shell",
+      "command": "./scripts/start-legacy-dev",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true,
+        "group": "dev"
+      }
+    },
+    {
+      "label": "leihs-ui",
+      "type": "shell",
+      "command": "cd leihs-ui && npm run watch:lib",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true,
+        "group": "dev"
+      }
+    },
+    {
+      "label": "storybook",
+      "type": "shell",
+      "command": "cd leihs-ui && npm run storybook",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true,
+        "group": "dev"
+      }
+    },
+    {
+      "label": "prepare ui",
+      "type": "shell",
+      "command": "./scripts/prepare-shared-ui.sh",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "close": true,
+        "clear": true,
+        "group": "dev"
+      }
+    }
+  ]
+}

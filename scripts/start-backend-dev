@@ -4,4 +4,7 @@
 
 # git submodule update --init --recursive
 export LEIHS_LEGACY_HTTP_BASE_URL="http://localhost:3210"
-bin/boot --offline focus
+
+# try with the local cache, if it doesnt work then download from the network
+bin/boot --offline focus \
+  || bin/boot focus

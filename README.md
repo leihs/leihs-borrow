@@ -4,19 +4,31 @@
 
 quickstart:
 
-```sh
-git submodule update --init --recursive --force # ensure correct version of shared code (ui/react and clojurescript)
-export DATABASE_URL="postgresql://localhost:5432/leihs?max-pool-size=5" && export LEIHS_DATABASE_URL="jdbc:${DATABASE_URL}"
-./scripts/start-backend-dev
-# in another shell:
+```shell
+# DB config:
+echo 'DATABASE_URL=postgresql://localhost:5432/leihs?max-pool-size=5' > .env.local
+
+# preparation steps:
+# ensure correct version of shared code (ui/react and clojurescript)
+git submodule update --init --recursive --force
 ./scripts/prepare-shared-ui.sh
+
+# In VS Code, do "Run Task" > "App Development" or manually start the following:
+# (when resuming work, preparation steps can be skipped by running the task "Frontend Development Services")
+
+# run in a shell:
+./scripts/start-backend-dev
+
+# run in another shell:
 ./scripts/start-frontend-dev
-# in another shell:
-export DATABASE_URL="postgresql://localhost:5432/leihs?max-pool-size=5" && export LEIHS_DATABASE_URL="jdbc:${DATABASE_URL}"
+
+# run in another shell:
 ./scripts/start-legacy-dev
-# in another shell:
+
+# run in another shell:
 cd leihs-ui && npm run watch:lib
-# in another shell:
+
+# run in another shell:
 cd leihs-ui && npm run storybook
 
 # open in browser:

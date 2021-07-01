@@ -12,3 +12,6 @@ resources/all/public/app/borrow/js
 scratch*
 target
 tmp/
+
+# local env files
+/.env*
