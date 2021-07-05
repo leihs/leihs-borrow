@@ -1,5 +1,4 @@
 jobs:
-
   build-borrow-uberjar:
     name: Build prod ready uberjar
     run_when: &ON_BRANCH_UPDATE
@@ -38,15 +37,9 @@ jobs:
       any branch is pushed: { type: branch, include_match: ^.*$ }
     include: cider-ci/meta_job-component.yml
 
-
-  good-to-merge:
-    name: Good To Merge
-    priority: 99 # no tasks here anyways
-    description: |
-      This job depends on all other tests and checks
-      and it will pass if and only if all dependencies have passed.
-      Status of this job is **used by github's "branch protection"**!
-    depends_on: &GOOD_TO_MERGE_DEPENDENCIES
+  all-ok:
+    name: 'All Tests OK'
+    depends_on: &ALLOK_DEPS
       meta was successful:
         type: job
         job_key: meta
@@ -72,6 +65,17 @@ jobs:
         type: job
         submodule: ['database']
         states: [passed]
+    run_when: *ALLOK_DEPS
+    task: 'echo ALL OK'
+
+  good-to-merge:
+    name: '⚑ Good To Merge'
+    priority: 99 # no tasks here anyways
+    description: |
+      This job depends on all other tests and checks
+      and it will pass if and only if all dependencies have passed.
+      Status of this job is **used by github's "branch protection"**!
+    depends_on: &GOOD_TO_MERGE_DEPENDENCIES
+      all passed: { type: job, job_key: all-ok, states: [passed] }
     run_when: *GOOD_TO_MERGE_DEPENDENCIES
     context: { include: cider-ci/good-to-merge_job-context.yml }
-
