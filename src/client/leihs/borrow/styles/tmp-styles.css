@@ -1,3 +1,7 @@
+/* NOTE: this file can be used to (temporarly!) include styles in borrow that are not (yet) in the leihs-ui/theme */
+
+/* TODO: remove all of this (its the old reset, bootstrap should be sufficient but some view might need to be adjusted */
+
 body {
   margin: 0;
   padding: 0;
