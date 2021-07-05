@@ -28,7 +28,8 @@
                   [distinct-states-sql-expr :state]
                   (helpers/date-time-created-at :unified_customer_orders)
                   (helpers/date-time-updated-at :unified_customer_orders)
-                  :unified_customer_orders.origin_table)
+                  :unified_customer_orders.origin_table
+                  :unified_customer_orders.reservation_ids)
       (sql/from :unified_customer_orders)
       (sql/left-join :orders
                      [:= :unified_customer_orders.id :orders.customer_order_id])
@@ -39,7 +40,8 @@
                         :unified_customer_orders.title
                         :unified_customer_orders.created_at
                         :unified_customer_orders.updated_at
-                        :unified_customer_orders.origin_table])))
+                        :unified_customer_orders.origin_table
+                        :unified_customer_orders.reservation_ids])))
 
 (defn pool-order-row [row]
   (update row :state upper-case))
