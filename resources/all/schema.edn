@@ -26,9 +26,9 @@
                                :state {:type (non-null String)}
                                :inventoryPool {:type (non-null :InventoryPool)
                                                :resolve :inventory-pool}
-                                :reservations {:type (list (non-null :Reservation))
-                                               :args {:orderBy {:type (list :ReservationsOrderByInput)}}
-                                               :resolve :reservations}
+                               :reservations {:type (list (non-null :Reservation))
+                                              :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                              :resolve :reservations}
                                :purpose {:type (non-null String)}
                                :note {:type String}}}
            :Template {:fields {:id {:type (non-null :UUID)}

@@ -19,7 +19,61 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
       # updatedAt
       reservations {
         id
-        # status
+        status
+        startDate
+        endDate
+        model {
+          id
+          name
+        }
+      }
+    }
+    reservations {
+      id
+      status
+      startDate
+      endDate
+      model {
+        id
+        name
+      }
+    }
+    contracts {
+      edges {
+        node {
+          id
+          note
+          reservations {
+            id
+            status
+            startDate
+            endDate
+            model {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+    pickups {
+      date
+      reservations {
+        id
+        status
+        startDate
+        endDate
+        model {
+          id
+          name
+        }
+      }
+    }
+    returns {
+      date
+      reservations {
+        id
+        status
         startDate
         endDate
         model {
