@@ -17,7 +17,7 @@
 
     {
       "label": "Development Preparations Steps",
-      "dependsOn": ["prepare ui"],
+      "dependsOn": ["migrate DB", "prepare ui"],
       "problemMatcher": []
     },
 
@@ -28,7 +28,8 @@
         "backend-dev",
         "frontend-dev",
         "legacy-dev",
-        "leihs-ui",
+        "leihs-ui: watch lib",
+        "leihs-ui: watch theme",
         "storybook"
       ],
       "problemMatcher": []
@@ -83,9 +84,25 @@
       }
     },
     {
-      "label": "leihs-ui",
+      "label": "leihs-ui: watch lib",
       "type": "shell",
       "command": "cd leihs-ui && npm run watch:lib",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "clear": true,
+        "group": "dev"
+      }
+    },
+    {
+      "label": "leihs-ui: watch theme",
+      "type": "shell",
+      "command": "cd leihs-ui && npm run watch:theme",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
@@ -122,11 +139,56 @@
       "presentation": {
         "echo": true,
         "focus": true,
-        "panel": "shared",
+        "panel": "dedicated",
         "showReuseMessage": false,
-        "close": true,
+        "close": false,
         "clear": true,
-        "group": "dev"
+        "group": "dev-prepare"
+      }
+    },
+    {
+      "label": "build lib",
+      "type": "shell",
+      "command": "cd leihs-ui && npm run build:ssr",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": false,
+        "clear": true,
+        "group": "dev-prepare"
+      }
+    },
+    {
+      "label": "build theme",
+      "type": "shell",
+      "command": "cd leihs-ui && npm run build:theme",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": false,
+        "clear": true,
+        "group": "dev-prepare"
+      }
+    },
+    {
+      "label": "migrate DB",
+      "type": "shell",
+      "command": "./scripts/migrate-db-dev",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": false,
+        "clear": true,
+        "group": "dev-prepare"
       }
     }
   ]
