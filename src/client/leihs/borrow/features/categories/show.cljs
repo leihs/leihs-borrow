@@ -19,6 +19,7 @@
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.pagination :as pagination]
     [leihs.borrow.components :as ui]
+    [leihs.borrow.lib.helpers :as h]
     ["/leihs-ui-client-side-external-react" :as UI]
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.features.models.core :as models]))
@@ -101,24 +102,6 @@
   ::errors
   (fn [db [_ id]] (get-in db [::errors id])))
 
-(defn breadcrumbs [cat-ancestors]
-  [:div#breadcrumbs
-   (interpose
-     " > "
-     (loop [ancs cat-ancestors, bc-links []]
-       (if (empty? ancs)
-         bc-links
-         (recur (butlast ancs)
-                (let [href (->> ancs
-                                (map :id)
-                                (join "/")
-                                (routing/path-for ::routes/categories-show
-                                                  :categories-path)
-                                str)
-                      link [:a {:href href}
-                            (-> ancs last :name)]]
-                  (cons link bc-links))))))])
-
 (defn view []
   (let [routing @(subscribe [:routing/routing])
         categories-path (get-in routing [:bidi-match :route-params :categories-path])
@@ -139,23 +122,28 @@
                     [:pre "loading category" [:samp category-id] "…"]]
        errors [ui/error-view errors]
        :else
+
        [:> UI/Components.AppLayout.Page {:title (:name category)}
-        (when-not (empty? cat-ancestors)
-          [breadcrumbs cat-ancestors])
-        [:ul#children.font-semibold.my-3
-         (doall
-           (for [{:keys [id] :as child} children]
-             [:<> {:key id}
-              [:li.d-inline-block.mb-2.mr-1
-               [:a.text-color-content.border.rounded.py-1.px-2.mb-1
-                {:class "text-gray-800 bg-content border-gray-800 hover:bg-gray-200"
-                 :href (-> js/window .-location .-pathname (str "/" id))}
-                (:name child)]]]))]
-        [models/search-and-list
-         #(dispatch [:routing/navigate
-                     [::routes/categories-show 
-                      {:categories-path categories-path :query-params %}]])
-         #(dispatch [::clear
-                     {:categories-path categories-path}
-                     {:categoryId category-id}])
-         extra-args]])]))
+
+        [:> UI/Components.CategoryShowPage
+          ;;  FIXME: include `url` in API!
+          {:ancestorCats (h/camel-case-keys cat-ancestors)
+           :childCats (h/camel-case-keys (for [cat children]
+            ;; FIXME: get current url from router!
+            (merge cat {:url (-> js/window .-location .-pathname (str "/" (:id cat)))})))
+
+           ;; FIXME: either add url to all ancestor cats OR extend router to take list of ids (instead of prejoined path)
+           :getPathForCategory (fn [path] (routing/path-for ::routes/categories-show :categories-path path))}
+
+          ; TMP: search panel and model list as children
+          (r/as-element
+            [models/search-and-list
+            #(dispatch [:routing/navigate
+                        [::routes/categories-show
+                          {:categories-path categories-path :query-params %}]])
+            #(dispatch [::clear
+                        {:categories-path categories-path}
+                        {:categoryId category-id}])
+            extra-args])]])]))
+
+

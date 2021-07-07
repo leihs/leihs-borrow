@@ -33,5 +33,4 @@
       [:> UI/Components.AppLayout.Page
        {:title (t :title)}
 
-       [:div.pb-8
-        (categories/categories-list cats)]])))
+       (categories/categories-list cats)])))
