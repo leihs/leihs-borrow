@@ -9,7 +9,7 @@ step 'I see model :model_name' do |model_name|
 end
 
 step 'I click on :name within breadcrumbs' do |name|
-  within '#breadcrumbs' do
+  within '.ui-category-breadcrumbs' do
     click_on(name)
   end
 end
