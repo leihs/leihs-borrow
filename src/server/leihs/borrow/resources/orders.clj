@@ -166,6 +166,10 @@
                                             :purpose
                                             (helpers/date-time-created-at)
                                             (helpers/date-time-updated-at)
+                                            [(sql/array (->> reservations
+                                                             (map :id)
+                                                             (map #(sql/call :cast % :uuid))))
+                                             :reservation_ids]
                                             ["customer_orders" :origin_table])
                              sql/format
                              (->> (jdbc/query tx))
