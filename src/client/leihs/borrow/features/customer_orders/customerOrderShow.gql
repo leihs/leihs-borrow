@@ -26,6 +26,9 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
           id
           name
         }
+        inventoryPool {
+          name
+        }
       }
     }
     reservations {
@@ -35,6 +38,9 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
       endDate
       model {
         id
+        name
+      }
+      inventoryPool {
         name
       }
     }
@@ -52,6 +58,9 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
               id
               name
             }
+            inventoryPool {
+              name
+            }
           }
         }
       }
@@ -67,6 +76,9 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
           id
           name
         }
+        inventoryPool {
+          name
+        }
       }
     }
     returns {
@@ -78,6 +90,9 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
         endDate
         model {
           id
+          name
+        }
+        inventoryPool {
           name
         }
       }
