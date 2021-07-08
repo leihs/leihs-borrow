@@ -24,7 +24,7 @@
                       (str "-show")
                       (->> (keyword "leihs.borrow.client.routes")))
         path-param (-> type-name
-                       string/lower-case
+                       csk/->kebab-case
                        (str "-id")
                        keyword)]
     (str (:external_base_url settings)
