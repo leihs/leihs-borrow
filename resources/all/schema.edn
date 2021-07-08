@@ -234,6 +234,7 @@
            :Reservation {:fields {:id {:type (non-null :UUID)}
                                   :item {:type :Item :resolve :item}
                                   :model {:type :Model :resolve :model}
+                                  :quantity {:type (non-null Int)}
                                   :option {:type :Option :resolve :option}
                                   :inventoryPool {:type (non-null :InventoryPool)
                                                   :resolve :inventory-pool}

@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Jun 24 2021 17:00:12 GMT+0200 (Central European Summer Time)
+# timestamp: Thu Jul 08 2021 17:36:51 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -402,6 +402,7 @@ type Reservation {
   model: Model
   option: Option
   poolOrder: PoolOrder
+  quantity: Int!
   startDate: Date!
   status: ReservationStateEnum!
   updatedAt: DateTime!
