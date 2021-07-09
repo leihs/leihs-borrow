@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Jul 08 2021 17:36:51 GMT+0200 (Central European Summer Time)
+# timestamp: Fri Jul 09 2021 14:31:56 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -258,6 +258,7 @@ type Order {
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   id: UUID!
+  isCustomerOrder: Boolean!
   pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   purpose: NonEmptyText
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]

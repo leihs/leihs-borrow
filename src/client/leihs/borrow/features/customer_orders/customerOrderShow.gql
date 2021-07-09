@@ -4,6 +4,7 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
     borrowUrl
     purpose
     title
+    isCustomerOrder
     state
     subOrdersByPool {
       id

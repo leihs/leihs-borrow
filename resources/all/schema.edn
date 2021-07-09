@@ -298,6 +298,7 @@
                             :reservations {:type (list (non-null :Reservation))
                                            :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                            :resolve :reservations}
+                            :isCustomerOrder {:type (non-null Boolean)}
                             :createdAt {:type (non-null :DateTime)}
                             :updatedAt {:type (non-null :DateTime)}}
                    :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}
