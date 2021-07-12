@@ -26,12 +26,14 @@
                                    [:= :reservations.contract_id :contracts.id])
                    (sql/merge-where [:= :reservations.order_id id]))
     :Order (-> sqlmap
-               (sql/modifiers :distinct)
                (sql/merge-join :reservations
                                [:= :reservations.contract_id :contracts.id])
-               (sql/merge-join :orders
-                               [:= :reservations.order_id :orders.id])
-               (sql/merge-where [:= :orders.customer_order_id id]))
+               (sql/merge-join :unified_customer_orders
+                               ["<@"
+                                (sql/raw "ARRAY[reservations.id]")
+                                :unified_customer_orders.reservation_ids])
+               (sql/merge-where [:= :unified_customer_orders.id id])
+               (sql/group :contracts.id))
     sqlmap))
 
 (defn get-connection-sql-map [{{:keys [tx]} :request

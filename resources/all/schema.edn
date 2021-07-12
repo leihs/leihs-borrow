@@ -26,9 +26,9 @@
                                :state {:type (non-null String)}
                                :inventoryPool {:type (non-null :InventoryPool)
                                                :resolve :inventory-pool}
-                                :reservations {:type (list (non-null :Reservation))
-                                               :args {:orderBy {:type (list :ReservationsOrderByInput)}}
-                                               :resolve :reservations}
+                               :reservations {:type (list (non-null :Reservation))
+                                              :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                              :resolve :reservations}
                                :purpose {:type (non-null String)}
                                :note {:type String}}}
            :Template {:fields {:id {:type (non-null :UUID)}
@@ -234,6 +234,7 @@
            :Reservation {:fields {:id {:type (non-null :UUID)}
                                   :item {:type :Item :resolve :item}
                                   :model {:type :Model :resolve :model}
+                                  :quantity {:type (non-null Int)}
                                   :option {:type :Option :resolve :option}
                                   :inventoryPool {:type (non-null :InventoryPool)
                                                   :resolve :inventory-pool}
@@ -273,8 +274,8 @@
                                 :updatedAt {:type (non-null :DateTime)}}}
            :Order {:fields {:id {:type (non-null :UUID)}
                             :borrowUrl {:type (non-null String) :resolve :url}
-                            :purpose {:type (non-null :NonEmptyText)}
-                            :title {:type (non-null :NonEmptyText)}
+                            :purpose {:type :NonEmptyText}
+                            :title {:type :NonEmptyText}
                             :state {:type (list (non-null :PoolOrderStateEnum))
                                     :description "List of distinct states of all the sub-orders."}
                             :pickups {:resolve :pickups
@@ -297,6 +298,7 @@
                             :reservations {:type (list (non-null :Reservation))
                                            :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                            :resolve :reservations}
+                            :isCustomerOrder {:type (non-null Boolean)}
                             :createdAt {:type (non-null :DateTime)}
                             :updatedAt {:type (non-null :DateTime)}}
                    :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}

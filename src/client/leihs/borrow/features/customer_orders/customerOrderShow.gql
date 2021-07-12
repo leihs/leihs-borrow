@@ -1,31 +1,100 @@
 query customerOrderShow($id: UUID!, $userId: UUID) {
   order(id: $id, userId: $userId) {
     id
+    borrowUrl
     purpose
     title
+    isCustomerOrder
     state
-    createdAt
-    updatedAt
     subOrdersByPool {
       id
+      inventoryPool {
+        ...poolProps
+      }
       state
       rejectedReason
-      inventoryPool {
-        id
-        name
-        isActive
-      }
-      # createdAt
-      # updatedAt
       reservations {
+        ...reservationProps
+      }
+      order {
         id
-        # status
-        startDate
-        endDate
-        model {
-          id
-          name
-        }
+        title
+        purpose
+      }
+      contracts {
+        ...contractsConnectionProps
+      }
+      pickups {
+        ...pickupProps
+      }
+      returns {
+        ...returnProps
+      }
+      createdAt
+      updatedAt
+    }
+    pickups {
+      ...pickupProps
+    }
+    returns {
+      ...returnProps
+    }
+    contracts {
+      ...contractsConnectionProps
+    }
+    reservations {
+      ...reservationProps
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+fragment poolProps on InventoryPool {
+  id
+  # borrowUrl
+  # description
+  # isActive
+  # email
+  name
+  # shortname
+  # hasReservableItems
+  # maximumReservationTime
+}
+
+fragment reservationProps on Reservation {
+  id
+  # status
+  # startDate
+  # endDate
+  model {
+    id
+    name
+  }
+  # quantity
+  # inventoryPool {
+  #   ...poolProps
+  # }
+}
+
+fragment pickupProps on Pickup {
+  date
+  reservations {
+    ...reservationProps
+  }
+}
+
+fragment returnProps on Return {
+  ...pickupProps
+}
+
+fragment contractsConnectionProps on ContractsConnection {
+  edges {
+    node {
+      id
+      note
+      reservations {
+        ...reservationProps
       }
     }
   }
