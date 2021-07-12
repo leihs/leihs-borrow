@@ -1,47 +1,61 @@
-query getCurrentUser {
+query getCurrentUserProfilePage {
   currentUser {
     user {
-      id
-      firstname
-      lastname
-      login
-      email
+      ...userDataProps
+
+      contracts(orderBy: { attribute: CREATED_AT, direction: DESC }) {
+        edges {
+          node {
+            id
+            compactId
+            state
+            createdAt
+            inventoryPool {
+              ...poolProps
+              isActive
+            }
+          }
+        }
+      }
     }
-    languageToUse {
-      locale
-    }
+
     delegations {
       id
       name
+      responsible {
+        name
+      }
     }
-    inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
-      id
-      name
+
+    # NOTE: those are not in the design spec, but should also be listed
+    inventoryPools(orderBy: [{ attribute: SHORTNAME, direction: ASC }]) {
+      ...poolProps
     }
     suspensions {
+      id
+      suspendedUntil
+      suspendedReason
       inventoryPool {
-        id
+        ...poolProps
       }
-    }
-    unsubmittedOrder {
-      reservations {
-        id
-        model {
-          id
-          name
-        }
-      }
-      invalidReservationIds
-    }
-    draftOrder {
-      reservations {
-        id
-        model {
-          id
-          name
-        }
-      }
-      invalidReservationIds
     }
   }
+}
+
+fragment userDataProps on User {
+  id
+  name
+  login
+  email
+  secondaryEmail
+  badgeId
+  phone
+  organization
+  orgId
+}
+
+fragment poolProps on InventoryPool {
+  id
+  shortname
+  name
 }
