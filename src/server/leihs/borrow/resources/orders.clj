@@ -18,20 +18,30 @@
             [leihs.borrow.resources.reservations :as reservations]))
 
 (def distinct-states-sql-expr
-  (sql/raw "array_agg(DISTINCT upper(orders.state))"))
+  (sql/raw "ARRAY_AGG(DISTINCT UPPER(COALESCE(orders.state, 'APPROVED')))"))
 
 (defn multiple-base-sqlmap [user-id]
-  (-> (sql/select :customer_orders.id
-                  :customer_orders.purpose
-                  :customer_orders.title
+  (-> (sql/select :unified_customer_orders.id
+                  :unified_customer_orders.user_id
+                  :unified_customer_orders.purpose
+                  :unified_customer_orders.title
                   [distinct-states-sql-expr :state]
-                  (helpers/date-time-created-at :customer_orders)
-                  (helpers/date-time-updated-at :customer_orders))
-      (sql/from :customer_orders)
-      (sql/join :orders
-                [:= :customer_orders.id :orders.customer_order_id])
-      (sql/where [:= :customer_orders.user_id user-id])
-      (assoc :group-by [:customer_orders.id])))
+                  (helpers/date-time-created-at :unified_customer_orders)
+                  (helpers/date-time-updated-at :unified_customer_orders)
+                  [(sql/call :is-not-null :unified_customer_orders.origin_table) :is_customer_order]
+                  :unified_customer_orders.reservation_ids)
+      (sql/from :unified_customer_orders)
+      (sql/left-join :orders
+                     [:= :unified_customer_orders.id :orders.customer_order_id])
+      (sql/where [:= :unified_customer_orders.user_id user-id])
+      (assoc :group-by [:unified_customer_orders.id
+                        :unified_customer_orders.user_id
+                        :unified_customer_orders.purpose
+                        :unified_customer_orders.title
+                        :unified_customer_orders.created_at
+                        :unified_customer_orders.updated_at
+                        :unified_customer_orders.origin_table
+                        :unified_customer_orders.reservation_ids])))
 
 (defn pool-order-row [row]
   (update row :state upper-case))
@@ -58,7 +68,7 @@
    {:keys [id]}
    _]
   (-> (multiple-base-sqlmap user-id)
-      (sql/merge-where [:= :customer_orders.id id])
+      (sql/merge-where [:= :unified_customer_orders.id id])
       sql/format
       (->> (jdbc/query tx))
       first
@@ -81,7 +91,7 @@
                            sql/array))))
       (cond-> (seq order-by)
         (sql/order-by
-          (helpers/treat-order-arg order-by :customer_orders)))))
+          (helpers/treat-order-arg order-by :unified_customer_orders)))))
 
 (defn get-connection [context args value]
   (connections/wrap get-connection-sql-map
@@ -155,7 +165,12 @@
                              (sql/returning :id
                                             :purpose
                                             (helpers/date-time-created-at)
-                                            (helpers/date-time-updated-at))
+                                            (helpers/date-time-updated-at)
+                                            [(sql/array (->> reservations
+                                                             (map :id)
+                                                             (map #(sql/call :cast % :uuid))))
+                                             :reservation_ids]
+                                            ["customer_orders" :origin_table])
                              sql/format
                              (->> (jdbc/query tx))
                              first

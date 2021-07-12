@@ -18,7 +18,7 @@
       (sql/from :visits)))
 
 (defn merge-where-according-to-container
-  [sqlmap container {:keys [id]}]
+  [sqlmap container {:keys [id] :as value}]
   (letfn [(merge-join-visits-reservations [sqlmap]
             (sql/merge-join
               sqlmap
@@ -27,16 +27,19 @@
     (case container
       :PoolOrder
       (-> sqlmap
-          merge-join-visits-reservations
+          (sql/merge-join
+            :reservations
+            (sql/raw "ARRAY[reservations.id] <@ visits.reservation_ids"))
           (sql/merge-where [:= :reservations.order_id id])
           (sql/modifiers :distinct))
       :Order
       (-> sqlmap
-          merge-join-visits-reservations
-          (sql/merge-join :orders
-                          [:= :reservations.order_id :orders.id])
-          (sql/merge-where [:= :orders.customer_order_id id])
-          (sql/modifiers :distinct))
+          (sql/merge-where ["<@"
+                            :visits.reservation_ids,
+                            (->> value
+                                 :reservation-ids
+                                 (map #(sql/call :cast % :uuid))
+                                 sql/array)]))
       sqlmap)))
 
 (defn get-visits-sqlmap
