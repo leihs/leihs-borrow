@@ -6,10 +6,10 @@
 
  :enums {:ModelsOrderByAttributeEnum {:values [:ID :NAME]},
          :UsersOrderByAttributeEnum {:values [:ID]},
-         :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME]},
+         :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME :SHORTNAME]},
          :ReservationsOrderByAttributeEnum {:values [:ID]},
          :PoolOrdersOrderByAttributeEnum {:values [:INVENTORY_POOL_ID :ID]},
-         :ContractsOrderByAttributeEnum {:values [:ID]},
+         :ContractsOrderByAttributeEnum {:values [:ID :CREATED_AT]},
          :OrdersOrderByAttributeEnum {:values [:ID :CREATED_AT]},
          :VisitsOrderByAttributeEnum {:values [:DATE]},
          :OrderByDirectionEnum {:values [:ASC :DESC]}
@@ -24,11 +24,13 @@
                                :compactId {:type (non-null :UUID)
                                            :description "A short, human-readable string to identify contracts instead of the much longer UUID. The format is optimized to be communicated verbally."}
                                :state {:type (non-null String)}
+                               :createdAt {:type (non-null :DateTime)}
                                :inventoryPool {:type (non-null :InventoryPool)
                                                :resolve :inventory-pool}
                                :reservations {:type (list (non-null :Reservation))
                                               :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                               :resolve :reservations}
+                               :printUrl {:type (non-null String) :resolve :print-url}
                                :purpose {:type (non-null String)}
                                :note {:type String}}}
            :Template {:fields {:id {:type (non-null :UUID)}
@@ -70,12 +72,17 @@
                                :default {:type Boolean}
                                :active {:type Boolean}}}
            :User {:description "A `User` represents a human agent that can log into and use the system."
-                  :fields {:email {:type String}
+                  :fields {:id {:type (non-null :UUID)}
                            :firstname {:type String}
-                           :id {:type (non-null :UUID)}
                            :lastname {:type String}
                            :name {:type String}
                            :login {:type String}
+                           :email {:type String}
+                           :secondaryEmail {:type String}
+                           :phone {:type String}
+                           :badgeId {:type String}
+                           :organization {:type (non-null String)}
+                           :orgId {:type String}
                            :contracts {:type :ContractsConnection
                                        :args {:first {:type Int}
                                               :after {:type String}

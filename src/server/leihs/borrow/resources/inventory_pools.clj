@@ -72,7 +72,8 @@
 (defn get-one [context {:keys [id]} value]
   (get-by-id (-> context :request :tx)
              (or id (:inventory-pool-id value))
-             (= (::lacinia/container-type-name context) :PoolOrder)))
+             (contains? #{:PoolOrder :Contract :Reservation}
+                        (::lacinia/container-type-name context))))
 
 (defn has-reservable-items? [{{:keys [tx]} :request} _ {:keys [id]}]
   (-> (sql/select

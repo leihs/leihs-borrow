@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Jul 09 2021 14:31:56 GMT+0200 (Central European Summer Time)
+# timestamp: Mon Jul 12 2021 17:24:54 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -41,9 +41,11 @@ type Contract {
   longer UUID. The format is optimized to be communicated verbally.
   """
   compactId: UUID!
+  createdAt: DateTime!
   id: UUID!
   inventoryPool: InventoryPool!
   note: String
+  printUrl: String!
   purpose: String!
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   state: String!
@@ -62,6 +64,7 @@ type ContractsConnection {
 
 enum ContractsOrderByAttributeEnum {
   ID
+  CREATED_AT
 }
 
 input ContractsOrderByInput {
@@ -145,6 +148,7 @@ type InventoryPool {
 enum InventoryPoolsOrderByAttributeEnum {
   ID
   NAME
+  SHORTNAME
 }
 
 input InventoryPoolsOrderByInput {
@@ -487,6 +491,7 @@ type UnsubmittedOrder {
 A `User` represents a human agent that can log into and use the system.
 """
 type User {
+  badgeId: String
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   email: String
   firstname: String
@@ -495,6 +500,10 @@ type User {
   lastname: String
   login: String
   name: String
+  orgId: String
+  organization: String!
+  phone: String
+  secondaryEmail: String
 }
 
 enum UsersOrderByAttributeEnum {

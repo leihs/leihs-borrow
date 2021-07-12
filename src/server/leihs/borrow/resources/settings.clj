@@ -9,3 +9,10 @@
       sql/format
       (->> (jdbc/query tx))
       first))
+
+(defn get-system-and-security [tx]
+  (-> (sql/select :*)
+      (sql/from :system_and_security_settings)
+      sql/format
+      (->> (jdbc/query tx))
+      first))

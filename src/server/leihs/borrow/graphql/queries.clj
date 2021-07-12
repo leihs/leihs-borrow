@@ -55,6 +55,7 @@
    :pickups visits/get-pickups
    :pool-order orders/get-one-by-pool
    :pool-orders orders/get-multiple-by-pool
+   :print-url contracts/print-url
    :properties properties/get-multiple
    :reservations reservations/get-multiple
    :responsible delegations/responsible

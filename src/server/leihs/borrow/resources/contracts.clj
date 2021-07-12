@@ -1,16 +1,23 @@
 (ns leihs.borrow.resources.contracts
   (:require [clojure.java.jdbc :as jdbc]
-            [clojure.tools.logging :as log]
             [clojure.string :refer [lower-case]]
             [com.walmartlabs.lacinia :as lacinia]
-            [leihs.core.core :refer [spy-with]]
-            [leihs.core.sql :as sql]
+            [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
-            [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]))
+            [leihs.borrow.resources.settings :as settings]
+            [leihs.core.database.helpers :as database]
+            [leihs.core.sql :as sql]))
 
-(defn base-sqlmap [user-id]
-  (-> (sql/select :contracts.*)
+(defn columns [tx]
+  (as-> (database/columns tx "contracts") <>
+    (remove #{:created_at :updated_at} <>)
+    (conj <>
+          (helpers/date-time-created-at :contracts)
+          (helpers/date-time-updated-at :contracts))))
+
+(defn base-sqlmap [tx user-id]
+  (-> (apply sql/select (columns tx))
       (sql/from :contracts)
       (sql/where [:= :contracts.user_id user-id])))
 
@@ -41,7 +48,7 @@
                                container ::lacinia/container-type-name}
                               {:keys [states order-by]}
                               value]
-  (-> (base-sqlmap user-id)
+  (-> (base-sqlmap tx user-id)
       (cond-> value
         (!where-or-merge-where-according-to-container container value))
       (cond-> states
@@ -52,14 +59,17 @@
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by :contracts)))))
 
+(defn print-url [{{:keys [tx]} :request} _ {:keys [id]}]
+  (str (:external_base_url (settings/get-system-and-security tx))
+       "/borrow/user/contracts/"
+       id))
+
 (defn get-one
   [{{:keys [tx]} :request user-id ::target-user/id}
    {:keys [id]} 
    {:keys [contract-id]}]
-  (-> (sql/select :contracts.*)
-      (sql/from :contracts)
+  (-> (base-sqlmap tx user-id)
       (sql/merge-where [:= :contracts.id (or id contract-id)])
-      (sql/merge-where [:= :contracts.user_id user-id])
       sql/format
       (->> (jdbc/query tx))
       first))
