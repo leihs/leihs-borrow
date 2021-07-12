@@ -185,9 +185,12 @@
     (sql/merge-where sqlmap [:= :reservations.order_id id])
     :Order
     (-> sqlmap
-        (sql/merge-join :orders
-                        [:= :reservations.order_id :orders.id])
-        (sql/merge-where [:= :orders.customer_order_id id]))
+        (sql/merge-where ["<@"
+                          (sql/raw "ARRAY[reservations.id]")
+                          (->> value
+                               :reservation-ids
+                               (map #(sql/call :cast % :uuid))
+                               sql/array)]))
     :Contract
     (sql/merge-where sqlmap [:= :reservations.contract_id id])
     (:Pickup :Return)

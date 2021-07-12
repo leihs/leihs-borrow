@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Tue Jun 22 2021 14:52:55 GMT+0200 (Central European Summer Time)
+# timestamp: Fri Jul 09 2021 14:31:56 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -258,15 +258,16 @@ type Order {
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   id: UUID!
+  isCustomerOrder: Boolean!
   pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
-  purpose: NonEmptyText!
+  purpose: NonEmptyText
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
 
   """List of distinct states of all the sub-orders."""
   state: [PoolOrderStateEnum!]
   subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
-  title: NonEmptyText!
+  title: NonEmptyText
   updatedAt: DateTime!
 }
 
@@ -402,6 +403,7 @@ type Reservation {
   model: Model
   option: Option
   poolOrder: PoolOrder
+  quantity: Int!
   startDate: Date!
   status: ReservationStateEnum!
   updatedAt: DateTime!
