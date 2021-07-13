@@ -44,9 +44,7 @@ describe 'currentUser' do
       ]
     )
 
-    res_model = FactoryBot.create(:leihs_model,
-                                  id: '3c83f2b8-259d-4aa6-99f7-c29c81f31b54',
-                                  product: 'Model A')
+    res_model = FactoryBot.create(:leihs_model, id: '3c83f2b8-259d-4aa6-99f7-c29c81f31b54')
     res = FactoryBot.create(:reservation,
                             id: '770632c4-f268-4ed6-bcc0-c8bc032bc9b5',
                             leihs_model: res_model,
