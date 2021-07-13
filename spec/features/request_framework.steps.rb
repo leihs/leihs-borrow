@@ -13,7 +13,7 @@ step 'I clear the browser cookies' do
 end
 
 step "I click on Add and I approve the dialog" do
-  accept_alert { click_on("Add") }
+  accept_alert { click_on("Hinzufügen") }
 end
 
 step "I click on retry and I approve the dialog" do
