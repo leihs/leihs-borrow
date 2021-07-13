@@ -4,11 +4,13 @@ traits:
 scripts:
 
   dump-translations:
+    start_when:
+      uberjar has been built:
+        script_key: build-borrow-uberjar
     body: |
       #!/usr/bin/env bash
       set -eux
       cd ${LEIHS_BORROW_DIR}
       git fetch --all --quiet
       git submodule update --quiet --init --recursive
-      source shared-clj/clojure/bin/activate
-      ./bin/build-translations
+      unzip -o target/leihs-borrow.jar sql/translations.sql -d resources/all

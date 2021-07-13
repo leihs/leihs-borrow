@@ -5,10 +5,10 @@
 .rebel_readline_history
 .shadow-cljs
 /leihs-ui.tgz
-bin/translations.sql
 log
 node_modules
 resources/all/public/app/borrow/js
+resources/all/sql/translations.sql
 scratch*
 target
 tmp/

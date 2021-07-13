@@ -29,6 +29,13 @@
   (with-pass-thru _
     (set-env! :resource-paths #(conj % "resources/prod"))))
 
+(deftask dump-translations
+  "Dump translations.sql to resources."
+  []
+  (with-pass-thru _
+    (require '[leihs.borrow.resources.translations.core :as translations])
+    ((resolve 'translations/dump))))
+
 (deftask uberjar
   "Build an uberjar of the application."
   []
@@ -36,6 +43,7 @@
         (javac :options ["-release" "1.8" "-target" "1.8" "-source" "1.8" "-Xlint:-options"])
         (aot)
         (uber)
+        (dump-translations)
         (sift :add-resource #{"resources/all" "resources/prod"})
         (jar)
         (target)))
