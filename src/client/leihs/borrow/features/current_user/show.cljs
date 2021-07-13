@@ -14,6 +14,8 @@
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.components :as ui]
+    [leihs.borrow.lib.helpers :as h]
+    ["/leihs-ui-client-side-external-react" :as UI]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.features.current-user.core :as core]
     [leihs.borrow.client.routes :as routes]))
@@ -49,7 +51,6 @@
        (not data) [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
        errors [ui/error-view errors]
        :else [:<>
-              [:header.mb-3
-               [:h1.text-3xl.font-extrabold.leading-tight (t :title)]
-               [:pre.text-xs {:style {:white-space :pre-wrap}}
-                (js/JSON.stringify (clj->js data) 0 2)]]])]))
+              [:> UI/Components.AppLayout.Page {:title (t :title)}
+                [:> UI/Components.UserProfilePage {:currentUser (h/camel-case-keys (:current-user data))}]]
+              ])]))
