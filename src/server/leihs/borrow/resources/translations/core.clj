@@ -8,6 +8,7 @@
             [leihs.borrow.resources.translations.definitions :refer [definitions]]))
 
 (def loaded? (atom false))
+(def sql-dump-path "resources/all/sql/translations.sql")
 
 (defn keys-in
   "Returns a sequence of all key paths in a given map using DFS walk."
@@ -54,5 +55,19 @@
       (insert-all-borrow tx))
     (reset! loaded? true)
     (log/info "Reloading translations done.")))
+
+(defn dump []
+  (let [f (or (System/getenv "FILE") sql-dump-path)]
+    (with-open [w (clojure.java.io/writer f)]
+      (let [delete-statement "DELETE FROM translations_default WHERE key like 'borrow.%';\n"]
+        (print delete-statement)
+        (.write w delete-statement))
+      (doseq [[locale t-map] definitions]
+        (doseq [[k-path translation] (translation-key-paths-with-vals t-map)]
+          (let [k (->> k-path (map name) (string/join "."))
+                insert-statement (str "INSERT INTO translations_default (key, translation, language_locale) "
+                                      "VALUES ('" k "', '" translation "', '" (name locale) "');\n")]
+            (print insert-statement)
+            (.write w insert-statement)))))))
 
 (comment (reload))
