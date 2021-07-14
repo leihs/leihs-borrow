@@ -14,7 +14,7 @@
            :content "width=device-width, initial-scale=1, shrink-to-fit=no"}]
 
    (hiccup.page/include-css (cache-buster/cache-busted-path "/app/borrow/css/styles/tmp-styles.css"))
-   (hiccup.page/include-css (cache-buster/cache-busted-path "/app/borrow/css/theme/bootstrap-leihs-mobile.css"))])
+   (hiccup.page/include-css (cache-buster/cache-busted-path "/app/borrow/css/theme-mobile/bootstrap-leihs-mobile.css"))])
 
 (defn not-found-handler [_request]
   {:status 404
