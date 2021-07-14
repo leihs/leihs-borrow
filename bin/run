@@ -1,0 +1,20 @@
+#!/bin/bash -eu
+
+BORROW_DIR="$(dirname ${BASH_SOURCE})/.."
+cd "${BORROW_DIR}"
+echo "PWD: $PWD"
+
+if ! ./bin/build; then
+  cd leihs-ui
+  ./bin/build || bin/build-core
+  cd -
+  bin/build-core
+fi
+
+# FIXME: should be part of bin/build-core
+bin/build-translations
+
+java -jar target/leihs-borrow.jar run "$@"
+
+cd -
+
