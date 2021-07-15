@@ -17,6 +17,8 @@ Feature: Request framework
     And I sleep "0.25"
     And I clear the browser cookies
     And I sleep "0.25"
+    And I click on "Gegenstand hinzufügen"
+    And the order panel is shown
     And I click on Add and I approve the dialog
     ########################################################
     Then I see one retry banner

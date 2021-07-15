@@ -12,7 +12,7 @@ step 'I click on the model with the title :name' do |name|
 end
 
 step 'the show page of the model :name was loaded' do |name|
-  find('header', text: name)
+  find('h1', text: name)
 end
 
 step 'the start date chosen on the previous screen is pre-filled' do
@@ -87,32 +87,33 @@ end
 
 step 'the search filters are persisted in the url' do
   p_hash = Rack::Utils.parse_nested_query(URI.parse(current_url).query)
-  expect(p_hash).to eq({
-    "available-between?"=>"true",
-    "quantity" => "1",
-    "start-date" => Date.today.to_s,
-    "end-date" => Date.tomorrow.to_s,
-    "term" => "Kamera",
-    "user-id" => @user.id
-  })
+  expect(p_hash).to eq(
+    {
+      'available-between?' => 'true',
+      'quantity' => '1',
+      'start-date' => Date.today.to_s,
+      'end-date' => Date.tomorrow.to_s,
+      'term' => 'Kamera',
+      'user-id' => @user.id
+    }
+  )
 end
 
-step "I clear ls from the borrow app-db" do
+step 'I clear ls from the borrow app-db' do
   find('.ui-menu-icon').click
   click_on('Clear :ls')
 end
 
 step 'I visit the url with query params for dates as before but :m_name as term' do |m_name|
-  visit \
-    "/app/borrow/" \
-    "?available-between%3F=true" \
-    "&start-date=#{Date.today}" \
-    "&end-date=#{Date.tomorrow}" \
-    "&term=#{m_name}"
+  visit '/app/borrow/' \
+          '?available-between%3F=true' \
+          "&start-date=#{Date.today}" \
+          "&end-date=#{Date.tomorrow}" \
+          "&term=#{m_name}"
 end
 
 step 'I click on :label for the model :name' do |label, name|
-  find(".flex-row", text: name).click_button("Edit")
+  find('.flex-row', text: name).click_button('Edit')
 end
 
 step 'I increase the start date by 1 day for the model :name' do |name|
@@ -128,12 +129,12 @@ step 'the reservation data was updated successfully for model :name' do |name|
     s = Date.tomorrow.strftime('%-m/%-d/%Y')
     e = (Date.tomorrow + 1.day).strftime('%-m/%-d/%Y')
     expect(current_scope).to have_content(/#{s}...#{e}/)
-      expect(current_scope).to have_content('4 Items')
+    expect(current_scope).to have_content('4 Items')
   end
 end
 
-step "I see :n times :name" do |n, name|
-  pre = find("pre", match: :first).text
+step 'I see :n times :name' do |n, name|
+  pre = find('pre', match: :first).text
   o = JSON.parse(pre).deep_symbolize_keys
   rs = o[:"sub-orders-by-pool"].first[:reservations]
   expect(rs.count).to eq n.to_i
@@ -141,12 +142,20 @@ step "I see :n times :name" do |n, name|
   expect(rs.map { |r| r[:model][:id] }.uniq).to eq [m.id]
 end
 
-step "I select :name xxx" do |name|
-  # WTF: this should work but throws `Selenium::WebDriver::Error::JavascriptError: TypeError: cyclic object value`
-  # find('select[name="user-id"] option', text: name).select_option
-  all('select[name="user-id"] option').select {|n| n.text.include?(name)}.first.select_option
+step 'I select :name xxx' do |name|
+  all(
+    # WTF: this should work but throws `Selenium::WebDriver::Error::JavascriptError: TypeError: cyclic object value`
+    # find('select[name="user-id"] option', text: name).select_option
+    'select[name="user-id"] option'
+  )
+    .select { |n| n.text.include?(name) }.first
+    .select_option
 end
 
 step 'I click on the menu' do
   find('nav .ui-menu-icon').click
+end
+
+step 'the order panel is shown' do
+  find('.ui-booking-calendar')
 end

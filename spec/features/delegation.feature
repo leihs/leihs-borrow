@@ -27,6 +27,8 @@ Feature: Delegations
     # make a reservation
     When I click on the model with the title "Kamera"
     Then the show page of the model "Kamera" was loaded
+    And I click on "Gegenstand hinzufügen"
+    Then the order panel is shown
     And I click on "Hinzufügen" and accept the alert
 
     # check the cart
