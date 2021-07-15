@@ -32,9 +32,9 @@ cd leihs-ui && npm run watch:lib
 cd leihs-ui && npm run storybook
 
 # open in browser:
-open "http://localhost:3210/" # sign in
-open "http://localhost:9009/" # storybook
-open "http://localhost:3250/" # borrow app
+open "http://localhost:3210/borrow"       # sign in / old borrow
+open "http://localhost:3250/app/borrow/"  # new borrow
+open "http://localhost:9009/"             # storybook
 ```
 
 ### Graph*i*QL (GraphQL console)
