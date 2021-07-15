@@ -23,7 +23,7 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
   ::routes/home
-  (fn-traced [_ [_ {:keys [query-params]}]] 
+  (fn-traced [_ [_ {:keys [query-params]}]]
     {:dispatch-n (list [::filters/init]
                        [::filters/set-multiple query-params]
                        [::categories/fetch-index 4])}))
@@ -34,7 +34,7 @@
           cats-url (routing/path-for ::routes/categories-index)
           favs @(subscribe [::categories/categories-index])
           filters @(subscribe [::filters/current])]
-      
+
       [:> UI/Components.AppLayout.Page
 
        ^{:key (hash filters)}
@@ -46,8 +46,7 @@
 
        [:> UI/Components.AppLayout.SubSection
         {:title (t :borrow.categories/title)
-         :titleHref cats-url
-         :moreLink {:href cats-url :children (t :borrow/all)}}
-        (categories/categories-list (take 4 cats))]
-       
+         :titleHref cats-url}
+        (categories/categories-list cats)]
+
        ])))
