@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Jul 12 2021 17:24:54 GMT+0200 (Central European Summer Time)
+# timestamp: Thu Jul 15 2021 13:08:55 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -219,6 +219,7 @@ input ModelsOrderByInput {
 type MutationRoot {
   addToCart(ids: [UUID!], userId: UUID): [Reservation]
   applyTemplate(endDate: Date!, id: UUID!, startDate: Date!): [Reservation]
+  cancelOrder(id: UUID!): Order!
   createReservation(
     endDate: Date!
     excludeReservationIds: [UUID!]
@@ -342,6 +343,7 @@ enum PoolOrderStateEnum {
   SUBMITTED
   APPROVED
   REJECTED
+  CANCELED
 }
 
 type Property {

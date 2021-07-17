@@ -79,10 +79,21 @@
   (-> (base-sqlmap tx user-id)
       (sql/merge-where [:= :reservations.status "draft"])))
 
-(defn for-customer-order [tx user-id]
+(defn unsubmitted [tx user-id]
   (-> (unsubmitted-sqlmap tx user-id)
       sql/format
       (query tx)))
+
+; (defn for-customer-order [tx user-id]
+;   (-> (unsubmitted-sqlmap tx user-id)
+;       sql/format
+;       (query tx)))
+
+; (defn for-order [tx user-id order-id]
+;   (-> (base-sqlmap tx user-id)
+;       (sql/merge-where [:= :reservations.order_id id])
+;       sql/format
+;       (query tx)))
 
 (defn with-invalid-availability [context reservations]
   (->> reservations
@@ -137,7 +148,7 @@
 (defn some-unsubmitted-with-invalid-availability?
   [{{:keys [tx]} :request user-id ::target-user/id :as context}]
   (->> user-id
-       (for-customer-order tx)
+       (unsubmitted tx)
        (with-invalid-availability context)
        empty?
        not))

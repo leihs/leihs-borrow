@@ -26,7 +26,7 @@ FactoryBot.define do
                name: "British English",
                default: true)
     end
-
+    organization { Faker::Lorem.characters(number: 8) }
 
     transient do
       access_rights { [] }

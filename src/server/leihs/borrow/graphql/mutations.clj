@@ -8,6 +8,7 @@
 (def resolvers
   {:add-to-cart reservations/add-to-cart
    :apply-template templates/apply
+   :cancel-order orders/cancel
    :create-reservation reservations/create
    :favorite-model favorites/create
    :delete-reservations reservations/delete

@@ -218,6 +218,96 @@ describe 'orders' do
     end
   end
 
+  context 'cancel' do
+    it 'succeeds' do
+      o, po1, r = nil
+      database.transaction do
+        o = FactoryBot.create(:order, user: user)
+        po1 = FactoryBot.create(:pool_order,
+                                user: user,
+                                inventory_pool: inventory_pool_1,
+                                state: :submitted,
+                                order: o)
+        r = FactoryBot.create(:reservation,
+                              user: user,
+                              order: po1,
+                              status: :submitted,
+                              inventory_pool: inventory_pool_1)
+        po2 = FactoryBot.create(:pool_order,
+                                user: user,
+                                inventory_pool: inventory_pool_2,
+                                state: :submitted,
+                                order: o)
+        r = FactoryBot.create(:reservation,
+                              user: user,
+                              order: po2,
+                              status: :submitted,
+                              inventory_pool: inventory_pool_2)
+      end
+
+      q = <<-GRAPHQL
+        mutation($id: UUID!) {
+          cancelOrder(id: $id) {
+            id
+            state
+          }
+        }
+      GRAPHQL
+
+      vars = { id: o.id }
+
+      result = query(q, user.id, vars).deep_symbolize_keys
+      expect(result[:data]).to eq({
+        cancelOrder: {
+          id: o.id,
+          state: ["CANCELED"]
+        }
+      })
+    end
+
+    it 'fails' do
+      o, po1, r = nil
+      database.transaction do
+        o = FactoryBot.create(:order, user: user)
+        po1 = FactoryBot.create(:pool_order,
+                                user: user,
+                                inventory_pool: inventory_pool_1,
+                                state: :submitted,
+                                order: o)
+        r = FactoryBot.create(:reservation,
+                              user: user,
+                              order: po1,
+                              status: :submitted,
+                              inventory_pool: inventory_pool_1)
+        po2 = FactoryBot.create(:pool_order,
+                                user: user,
+                                inventory_pool: inventory_pool_2,
+                                state: :rejected,
+                                order: o)
+        r = FactoryBot.create(:reservation,
+                              user: user,
+                              order: po2,
+                              status: :rejected,
+                              inventory_pool: inventory_pool_2)
+      end
+
+      q = <<-GRAPHQL
+        mutation($id: UUID!) {
+          cancelOrder(id: $id) {
+            id
+            state
+          }
+        }
+      GRAPHQL
+
+      vars = { id: o.id }
+
+      result = query(q, user.id, vars).deep_symbolize_keys
+      expect(result[:errors].map { |e| e[:message] })
+        .to include "Some pool orders don't have submitted state."
+    end
+  end
+
   it 'get one' do
     model_1.add_item(
       FactoryBot.create(:item,

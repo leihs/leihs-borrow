@@ -14,7 +14,7 @@
          :VisitsOrderByAttributeEnum {:values [:DATE]},
          :OrderByDirectionEnum {:values [:ASC :DESC]}
          :ContractStateEnum {:values [:OPEN :CLOSED]}
-         :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED]}
+         :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED :CANCELED]}
          :VisitTypeEnum {:values [:PICKUP :RETURN]}
          :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}
          :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
@@ -454,6 +454,9 @@
                                   :title {:type (non-null :NonEmptyText)}
                                   :userId {:type :UUID}}
                            :resolve :submit-order
+                           :type (non-null :Order)}
+             :cancelOrder {:args {:id {:type (non-null :UUID)}}
+                           :resolve :cancel-order
                            :type (non-null :Order)}
              :favoriteModel {:args {:id {:type (non-null :UUID)}}
                              :resolve :favorite-model

@@ -1,21 +1,17 @@
 (ns leihs.borrow.resources.orders
   (:refer-clojure :exclude [resolve])
-  (:require [leihs.core.core :refer [spy-with]]
-            [leihs.core.sql :as sql]
-            [leihs.core.ds :as ds]
-            [leihs.core.database.helpers :as database]
+  (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :refer [upper-case]]
-            [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log]
-            [com.walmartlabs.lacinia :as lacinia]
-            [com.walmartlabs.lacinia.resolve :as resolve]
-            [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
+            [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.mails :as mails]
-            [leihs.borrow.time :as time]
             [leihs.borrow.resources.helpers :as helpers]
+            [leihs.borrow.resources.reservations :as reservations]
             [leihs.borrow.resources.settings :as settings]
-            [leihs.borrow.resources.reservations :as reservations]))
+            [leihs.core.database.helpers :as database]
+            [leihs.core.ds :as ds]
+            [leihs.core.sql :as sql]))
 
 (def distinct-states-sql-expr
   (sql/raw "ARRAY_AGG(DISTINCT UPPER(COALESCE(orders.state, 'APPROVED')))"))
@@ -63,16 +59,18 @@
       (->> (jdbc/query tx))
       first))
 
-(defn get-one
-  [{{:keys [tx]} :request user-id ::target-user/id}
-   {:keys [id]}
-   _]
+(defn get-one-by-id [tx user-id id]
   (-> (multiple-base-sqlmap user-id)
       (sql/merge-where [:= :unified_customer_orders.id id])
       sql/format
       (->> (jdbc/query tx))
-      first
-      ))
+      first))
+
+(defn get-one
+  [{{:keys [tx]} :request user-id ::target-user/id}
+   {:keys [id]}
+   _]
+  (get-one-by-id tx user-id id))
 
 (defn equal-condition [a1 a2]
   [:and ["@>" a1 a2] ["<@" a1 a2]])
@@ -99,24 +97,34 @@
                     args
                     value)) 
 
+(defn orders-columns [tx]
+  (as-> (database/columns tx "orders") <>
+    (remove #{:created_at :updated_at} <>)
+    (conj <>
+          (helpers/date-time-created-at)
+          (helpers/date-time-updated-at))))
+
+(defn pool-orders-sqlmap [tx customer-order-id]
+  (-> (apply sql/select (orders-columns tx))
+      (sql/from :orders)
+      (sql/where [:= :customer_order_id customer-order-id])))
+
+(defn pool-orders [tx customer-order-id]
+  (-> (pool-orders-sqlmap tx customer-order-id)
+      sql/format
+      (->> (jdbc/query tx))))
+
 (defn get-multiple-by-pool [{{:keys [tx]} :request :as context}
                             {:keys [order-by]}
                             value]
-  (let [columns (as-> (database/columns tx "orders") <>
-                  (remove #{:created_at :updated_at} <>)
-                  (conj <>
-                        (helpers/date-time-created-at)
-                        (helpers/date-time-updated-at)))]
-    (-> (apply sql/select columns)
-        (sql/from :orders)
-        (sql/where [:= :customer_order_id (:id value)])
-        (cond-> (seq order-by)
-          (sql/order-by (helpers/treat-order-arg order-by :orders)))
-        sql/format
-        (as-> <>
-          (jdbc/query tx
-                      <>
-                      {:row-fn pool-order-row})))))
+  (-> (pool-orders-sqlmap tx (:id value)) 
+      (cond-> (seq order-by)
+        (sql/order-by (helpers/treat-order-arg order-by :orders)))
+      sql/format
+      (as-> <>
+        (jdbc/query tx
+                    <>
+                    {:row-fn pool-order-row}))))
 
 (defn valid-until [tx user-id]
   (-> (reservations/unsubmitted-sqlmap tx user-id)
@@ -153,7 +161,7 @@
   [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [purpose title]}
    _]
-  (let [reservations (reservations/for-customer-order tx user-id)]
+  (let [reservations (reservations/unsubmitted tx user-id)]
     (if (empty? reservations)
       (throw (ex-info "User does not have any unsubmitted reservations." {})))
     (if-not (empty? (reservations/with-invalid-availability context reservations))
@@ -201,6 +209,26 @@
                    (conj mails #(mails/send-received context order))))
           (do (set! ds/after-tx mails)
               customer-order))))))
+
+(defn cancel
+  [{{:keys [tx]} :request user-id ::target-user/id} {:keys [id]} _]
+  (let [customer-order (get-one-by-id tx user-id id)
+        pool-orders (pool-orders tx id)]
+    (when-not (:is_customer_order customer-order)
+      (throw (ex-info "The order is not a customer order." {})))
+    (when-not (->> pool-orders (map :state) (every? #{"submitted"}))
+      (throw (ex-info "Some pool orders don't have submitted state." {})))
+    (-> (sql/update :reservations)
+        (sql/set {:status "canceled"})
+        (sql/where [:in :order_id (map :id pool-orders)])
+        sql/format
+        (->> (jdbc/execute! tx)))
+    (-> (sql/update :orders)
+        (sql/set {:state "canceled"})
+        (sql/where [:= :customer_order_id id])
+        sql/format
+        (->> (jdbc/execute! tx)))
+    (get-one-by-id tx user-id id)))
 
 (defn timeout? [tx user-id]
   (let [minutes (:timeout_minutes (settings/get tx))]
