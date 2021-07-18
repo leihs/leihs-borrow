@@ -49,6 +49,6 @@ fragment modelListProps on Model {
     id
     imageUrl
   }
-  availableQuantityInDateRange(startDate: $startDate, endDate: $endDate, userId: $userId)
+  availableQuantityInDateRange(startDate: $startDate, endDate: $endDate, userId: $userId, inventoryPoolIds: $poolIds)
     @include(if: $bothDatesGiven)
 }

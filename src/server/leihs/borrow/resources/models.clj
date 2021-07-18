@@ -1,24 +1,24 @@
 (ns leihs.borrow.resources.models
-  (:require [clojure.spec.alpha :as spec]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
+            [camel-snake-kebab.core :as csk]
             [clojure.java.jdbc :as jdbc]
+            [clojure.set :as set]
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.executor :as executor]
-            [wharf.core :refer [transform-keys]]
-            [camel-snake-kebab.core :as csk]
-            [java-time :refer [interval local-date before?] :as jt]
-            [logbug.debug :as debug]
-            [leihs.core.sql :as sql]
-            [leihs.core.core :refer [spy-with]]
+            [java-time :as jt :refer [before? local-date]]
+            [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
-            [leihs.borrow.graphql.connections :refer [row-cursor cursored-sqlmap] :as connections]
             [leihs.borrow.resources.availability :as availability]
+            [leihs.borrow.resources.categories.descendents :as descendents]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.inventory-pools :as pools]
-            [leihs.borrow.resources.inventory-pools.visits-restrictions :as restrict]
-            [leihs.borrow.resources.categories.descendents :as descendents])
-  (:import (java.time.format DateTimeFormatter)))
+            [leihs.borrow.resources.inventory-pools.visits-restrictions
+             :as
+             restrict]
+            [leihs.core.sql :as sql]
+            [wharf.core :refer [transform-keys]])
+  (:import java.time.format.DateTimeFormatter))
 
 (def base-sqlmap
   (-> (sql/select
@@ -162,12 +162,14 @@
 (defn merge-available-quantities
   [models
    {{tx :tx} :request user-id ::target-user/id :as context}
-   {:keys [start-date end-date]}
+   {:keys [start-date end-date inventory-pool-ids] :as args}
    value]
-  (let [pool-ids (map :id (pools/to-reserve-from tx
-                                                 user-id
-                                                 start-date
-                                                 end-date))]
+  (let [pool-ids (-> (pools/to-reserve-from tx user-id start-date end-date)
+                     (->> (map :id))
+                     (cond-> (not (empty? inventory-pool-ids))
+                       (-> set
+                           (set/intersection (set inventory-pool-ids))
+                           vec)))]
     (map (if (or (before?
                    (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
                    (local-date))
