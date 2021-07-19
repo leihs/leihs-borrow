@@ -19,6 +19,7 @@
                   :unified_customer_orders.purpose
                   :unified_customer_orders.title
                   :unified_customer_orders.state
+                  :unified_customer_orders.rental_state
                   (helpers/date-time-created-at :unified_customer_orders)
                   (helpers/date-time-updated-at :unified_customer_orders)
                   [(sql/call := :unified_customer_orders.origin_table "customer_orders")

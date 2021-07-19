@@ -15,6 +15,7 @@
          :OrderByDirectionEnum {:values [:ASC :DESC]}
          :ContractStateEnum {:values [:OPEN :CLOSED]}
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED :CANCELED]}
+         :RentalStateEnum {:values [:OPEN :CLOSED]}
          :VisitTypeEnum {:values [:PICKUP :RETURN]}
          :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}
          :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
@@ -285,6 +286,8 @@
                             :title {:type :NonEmptyText}
                             :state {:type (list (non-null :PoolOrderStateEnum))
                                     :description "List of distinct states of all the sub-orders."}
+                            :rentalState {:type (non-null :RentalStateEnum)
+                                          :description "OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest"}
                             :pickups {:resolve :pickups
                                       :args {:limit {:type Int}
                                              :orderBy {:type (list :VisitsOrderByInput)}}
