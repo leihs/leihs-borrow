@@ -21,7 +21,8 @@
                   :unified_customer_orders.state
                   (helpers/date-time-created-at :unified_customer_orders)
                   (helpers/date-time-updated-at :unified_customer_orders)
-                  [(sql/call :is-not-null :unified_customer_orders.origin_table) :is_customer_order]
+                  [(sql/call := :unified_customer_orders.origin_table "customer_orders")
+                   :is_customer_order]
                   :unified_customer_orders.reservation_ids)
       (sql/from :unified_customer_orders)
       (sql/where [:= :unified_customer_orders.user_id user-id])))
