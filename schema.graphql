@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Jul 15 2021 13:08:55 GMT+0200 (Central European Summer Time)
+# timestamp: Mon Jul 19 2021 13:36:55 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -266,6 +266,11 @@ type Order {
   isCustomerOrder: Boolean!
   pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   purpose: NonEmptyText
+
+  """
+  OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest
+  """
+  rentalState: RentalStateEnum!
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
 
@@ -397,6 +402,11 @@ type QueryRoot {
 
 type RefreshTimeoutResult {
   unsubmittedOrder: UnsubmittedOrder
+}
+
+enum RentalStateEnum {
+  OPEN
+  CLOSED
 }
 
 type Reservation {
