@@ -378,6 +378,7 @@
                            :after {:type String}
                            :states {:type (list :PoolOrderStateEnum)
                                     :description "Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument."}
+                           :rentalState {:type :RentalStateEnum}
                            :userId {:type :UUID}
                            :orderBy {:type (list :OrdersOrderByInput)}}
                     :type :OrdersConnection}

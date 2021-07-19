@@ -66,7 +66,7 @@
 
 (defn get-connection-sql-map
   [{{:keys [tx]} :request user-id ::target-user/id}
-   {:keys [order-by states]}
+   {:keys [order-by states rental-state]}
    value]
   (-> (multiple-base-sqlmap user-id)
       (cond-> states
@@ -76,6 +76,8 @@
                                 set
                                 (map #(sql/call :cast (name %) :text))
                                 sql/array))))
+      (cond-> (log/spy rental-state)
+        (sql/merge-where [:= :unified_customer_orders.rental_state (name rental-state)]))
       (cond-> (seq order-by)
         (sql/order-by
           (helpers/treat-order-arg order-by :unified_customer_orders)))))

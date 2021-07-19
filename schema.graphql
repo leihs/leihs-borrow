@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Jul 19 2021 13:36:55 GMT+0200 (Central European Summer Time)
+# timestamp: Mon Jul 19 2021 13:42:08 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -384,6 +384,7 @@ type QueryRoot {
     after: String
     first: Int
     orderBy: [OrdersOrderByInput]
+    rentalState: RentalStateEnum
 
     """
     Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument.
