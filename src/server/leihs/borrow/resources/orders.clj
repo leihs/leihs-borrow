@@ -13,31 +13,18 @@
             [leihs.core.ds :as ds]
             [leihs.core.sql :as sql]))
 
-(def distinct-states-sql-expr
-  (sql/raw "ARRAY_AGG(DISTINCT UPPER(COALESCE(orders.state, 'APPROVED')))"))
-
 (defn multiple-base-sqlmap [user-id]
   (-> (sql/select :unified_customer_orders.id
                   :unified_customer_orders.user_id
                   :unified_customer_orders.purpose
                   :unified_customer_orders.title
-                  [distinct-states-sql-expr :state]
+                  :unified_customer_orders.state
                   (helpers/date-time-created-at :unified_customer_orders)
                   (helpers/date-time-updated-at :unified_customer_orders)
                   [(sql/call :is-not-null :unified_customer_orders.origin_table) :is_customer_order]
                   :unified_customer_orders.reservation_ids)
       (sql/from :unified_customer_orders)
-      (sql/left-join :orders
-                     [:= :unified_customer_orders.id :orders.customer_order_id])
-      (sql/where [:= :unified_customer_orders.user_id user-id])
-      (assoc :group-by [:unified_customer_orders.id
-                        :unified_customer_orders.user_id
-                        :unified_customer_orders.purpose
-                        :unified_customer_orders.title
-                        :unified_customer_orders.created_at
-                        :unified_customer_orders.updated_at
-                        :unified_customer_orders.origin_table
-                        :unified_customer_orders.reservation_ids])))
+      (sql/where [:= :unified_customer_orders.user_id user-id])))
 
 (defn pool-order-row [row]
   (update row :state upper-case))
@@ -81,12 +68,12 @@
    value]
   (-> (multiple-base-sqlmap user-id)
       (cond-> states
-        (sql/having (equal-condition
-                      distinct-states-sql-expr
-                      (->> states
-                           set
-                           (map #(sql/call :cast (name %) :text))
-                           sql/array))))
+        (sql/merge-where (equal-condition
+                           :unified_customer_orders.state
+                           (->> states
+                                set
+                                (map #(sql/call :cast (name %) :text))
+                                sql/array))))
       (cond-> (seq order-by)
         (sql/order-by
           (helpers/treat-order-arg order-by :unified_customer_orders)))))
