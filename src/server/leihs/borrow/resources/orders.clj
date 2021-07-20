@@ -20,6 +20,8 @@
                   :unified_customer_orders.title
                   :unified_customer_orders.state
                   :unified_customer_orders.rental_state
+                  (helpers/date-from-date :unified_customer_orders)
+                  (helpers/date-until-date :unified_customer_orders)
                   (helpers/date-time-created-at :unified_customer_orders)
                   (helpers/date-time-updated-at :unified_customer_orders)
                   [(sql/call := :unified_customer_orders.origin_table "customer_orders")
@@ -66,19 +68,30 @@
 
 (defn get-connection-sql-map
   [{{:keys [tx]} :request user-id ::target-user/id}
-   {:keys [order-by states rental-state]}
+   {:keys [order-by states rental-state from until]}
    value]
+  (if (= (count [from until]) 1)
+    (throw (ex-info "From and until dates must be provided together." {})))
   (-> (multiple-base-sqlmap user-id)
-      (cond-> states
+      (cond->
+        states
         (sql/merge-where (equal-condition
                            :unified_customer_orders.state
                            (->> states
                                 set
                                 (map #(sql/call :cast (name %) :text))
-                                sql/array))))
-      (cond-> (log/spy rental-state)
-        (sql/merge-where [:= :unified_customer_orders.rental_state (name rental-state)]))
-      (cond-> (seq order-by)
+                                sql/array)))
+
+        rental-state
+        (sql/merge-where [:= :unified_customer_orders.rental_state (name rental-state)])
+
+        (and from until)
+        (sql/merge-where
+          (sql/raw (str "(unified_customer_orders.from_date, unified_customer_orders.until_date)"
+                        " OVERLAPS "
+                        "('" from "', '" until "')")))
+
+        (seq order-by)
         (sql/order-by
           (helpers/treat-order-arg order-by :unified_customer_orders)))))
 

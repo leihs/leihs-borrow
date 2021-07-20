@@ -288,6 +288,8 @@
                                     :description "List of distinct states of all the sub-orders."}
                             :rentalState {:type (non-null :RentalStateEnum)
                                           :description "OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest"}
+                            :fromDate {:type (non-null :Date)}
+                            :untilDate {:type (non-null :Date)}
                             :pickups {:resolve :pickups
                                       :args {:limit {:type Int}
                                              :orderBy {:type (list :VisitsOrderByInput)}}
@@ -379,6 +381,10 @@
                            :states {:type (list :PoolOrderStateEnum)
                                     :description "Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument."}
                            :rentalState {:type :RentalStateEnum}
+                           :from {:type :Date
+                                  :description "The `from` and `until` args select rentals based on time interval intersection."}
+                           :until {:type :Date
+                                   :description "The `from` and `until` args select rentals based on time interval intersection."}
                            :userId {:type :UUID}
                            :orderBy {:type (list :OrdersOrderByInput)}}
                     :type :OrdersConnection}
