@@ -385,6 +385,8 @@
                                   :description "The `from` and `until` args select rentals based on time interval intersection."}
                            :until {:type :Date
                                    :description "The `from` and `until` args select rentals based on time interval intersection."}
+                           :poolIds {:type (list (non-null :UUID))}
+                           :searchTerm {:type :NonEmptyText}
                            :userId {:type :UUID}
                            :orderBy {:type (list :OrdersOrderByInput)}}
                     :type :OrdersConnection}

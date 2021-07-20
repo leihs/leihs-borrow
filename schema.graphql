@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Jul 19 2021 13:42:08 GMT+0200 (Central European Summer Time)
+# timestamp: Tue Jul 20 2021 12:44:44 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -262,6 +262,7 @@ type Order {
   borrowUrl: String!
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
+  fromDate: Date!
   id: UUID!
   isCustomerOrder: Boolean!
   pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
@@ -278,6 +279,7 @@ type Order {
   state: [PoolOrderStateEnum!]
   subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
   title: NonEmptyText
+  untilDate: Date!
   updatedAt: DateTime!
 }
 
@@ -383,13 +385,25 @@ type QueryRoot {
   orders(
     after: String
     first: Int
+
+    """
+    The `from` and `until` args select rentals based on time interval intersection.
+    """
+    from: Date
     orderBy: [OrdersOrderByInput]
+    poolIds: [UUID!]
     rentalState: RentalStateEnum
+    searchTerm: NonEmptyText
 
     """
     Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument.
     """
     states: [PoolOrderStateEnum]
+
+    """
+    The `from` and `until` args select rentals based on time interval intersection.
+    """
+    until: Date
     userId: UUID
   ): OrdersConnection
   pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]

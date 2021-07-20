@@ -68,7 +68,7 @@
 
 (defn get-connection-sql-map
   [{{:keys [tx]} :request user-id ::target-user/id}
-   {:keys [order-by states rental-state from until]}
+   {:keys [order-by states rental-state from until pool-ids search-term]}
    value]
   (if (= (count [from until]) 1)
     (throw (ex-info "From and until dates must be provided together." {})))
@@ -90,6 +90,16 @@
           (sql/raw (str "(unified_customer_orders.from_date, unified_customer_orders.until_date)"
                         " OVERLAPS "
                         "('" from "', '" until "')")))
+
+        (not (empty? pool-ids))
+        (sql/merge-where ["<@"
+                          (->> pool-ids (map #(sql/call :cast % :uuid)) sql/array)
+                          :unified_customer_orders.inventory_pool_ids])
+
+        search-term
+        (sql/merge-where ["~~*"
+                          :unified_customer_orders.searchable
+                          (str "%" search-term "%")])
 
         (seq order-by)
         (sql/order-by
