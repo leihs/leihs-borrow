@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Tue Jul 20 2021 12:44:44 GMT+0200 (Central European Summer Time)
+# timestamp: Tue Jul 20 2021 14:05:09 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -405,6 +405,8 @@ type QueryRoot {
     """
     until: Date
     userId: UUID
+    withPickups: Boolean
+    withReturns: Boolean
   ): OrdersConnection
   pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]

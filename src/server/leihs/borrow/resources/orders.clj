@@ -68,7 +68,7 @@
 
 (defn get-connection-sql-map
   [{{:keys [tx]} :request user-id ::target-user/id}
-   {:keys [order-by states rental-state from until pool-ids search-term]}
+   {:keys [order-by states rental-state from until pool-ids search-term with-pickups with-returns]}
    value]
   (if (= (count [from until]) 1)
     (throw (ex-info "From and until dates must be provided together." {})))
@@ -100,6 +100,12 @@
         (sql/merge-where ["~~*"
                           :unified_customer_orders.searchable
                           (str "%" search-term "%")])
+
+        (not (nil? with-pickups))
+        (sql/merge-where [:= :unified_customer_orders.with_pickups with-pickups])
+
+        (not (nil? with-returns))
+        (sql/merge-where [:= :unified_customer_orders.with_returns with-returns])
 
         (seq order-by)
         (sql/order-by
