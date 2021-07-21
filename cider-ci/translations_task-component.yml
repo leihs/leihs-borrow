@@ -2,7 +2,6 @@ traits:
   PostgreSQL: true
 
 scripts:
-
   dump-translations:
     start_when:
       uberjar has been built:
@@ -13,4 +12,3 @@ scripts:
       cd ${LEIHS_BORROW_DIR}
       git fetch --all --quiet
       git submodule update --quiet --init --recursive
-      unzip -o target/leihs-borrow.jar sql/translations.sql -d resources/all
