@@ -32,7 +32,7 @@
             (sql/raw "ARRAY[reservations.id] <@ visits.reservation_ids"))
           (sql/merge-where [:= :reservations.order_id id])
           (sql/modifiers :distinct))
-      :Order
+      :Rental
       (-> sqlmap
           (sql/merge-where ["<@"
                             :visits.reservation_ids,

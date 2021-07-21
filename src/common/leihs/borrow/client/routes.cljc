@@ -20,8 +20,8 @@
              ["/" :model-id] ::models-show}
    "order" {"" ::shopping-cart
             "/draft" ::draft-order}
-   "orders" {"/" ::orders-index
-             ["/" :order-id] ::orders-show}
+   "rentals" {"/" ::orders-index
+              ["/" :order-id] ::orders-show}
    "templates" {"/" ::templates-index
                 ["/" :template-id] ::templates-show}
    "pickups" {"" ::pickups-index
