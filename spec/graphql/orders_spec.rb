@@ -380,7 +380,7 @@ describe 'orders' do
     expect(result).to eq(
       { data:
        { rental:
-         { borrowUrl: "#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/orders/#{order.id}",
+         { borrowUrl: "#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/rentals/#{order.id}",
            state: ["APPROVED", "SUBMITTED"],
            subOrdersByPool: [
              {inventoryPool: {id: inventory_pool_1.id, isActive: true}},
