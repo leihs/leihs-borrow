@@ -23,7 +23,7 @@
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/orders-index
+  ::routes/rentals-index
   (fn-traced [{:keys [db]} [_ _]]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
@@ -68,7 +68,7 @@
 (defn order-line [order]
   (let
     [label (:purpose order)
-     href (routing/path-for ::routes/orders-show :order-id (:id order))]
+     href (routing/path-for ::routes/rentals-show :rental-id (:id order))]
     [:<>
      [:a {:href href} 
       label " "
@@ -105,7 +105,7 @@
                                (dispatch [::filters/set-one
                                           :user-id
                                           (-> ev .-target .-value)])
-                               (dispatch [::routes/orders-index]))}
+                               (dispatch [::routes/rentals-index]))}
          (doall
            (for [user target-users]
              [:option {:value (:id user) :key (:id user)}

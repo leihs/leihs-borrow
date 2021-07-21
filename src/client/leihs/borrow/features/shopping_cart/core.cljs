@@ -130,7 +130,7 @@
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
       {:dispatch [:routing/navigate
-                  [::routes/orders-show {:order-id id}]]})))
+                  [::routes/rentals-show {:rental-id id}]]})))
 
 (reg-event-fx
   ::update-reservations

@@ -1,16 +1,16 @@
 query customerOrdersIndex($userId: UUID) {
-  submittedOrders: orders(userId: $userId states: [SUBMITTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+  submittedOrders: rentals(userId: $userId states: [SUBMITTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
     ...OrderConProps
   }
-  rejectedOrders: orders(userId: $userId states: [REJECTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+  rejectedOrders: rentals(userId: $userId states: [REJECTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
     ...OrderConProps
   }
-  approvedOrders: orders(userId: $userId states: [APPROVED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+  approvedOrders: rentals(userId: $userId states: [APPROVED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
     ...OrderConProps
   }
 }
 
-fragment OrderConProps on OrdersConnection {
+fragment OrderConProps on RentalsConnection {
   edges {
     node {
       ...orderProps
@@ -18,7 +18,7 @@ fragment OrderConProps on OrdersConnection {
   }
 }
 
-fragment orderProps on Order {
+fragment orderProps on Rental {
   id
   state
   purpose

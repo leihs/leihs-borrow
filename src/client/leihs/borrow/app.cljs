@@ -107,8 +107,8 @@
             ::routes/models-show model-show/view
             ::routes/models-favorites favorite-models/view
             ::routes/shopping-cart shopping-cart/view
-            ::routes/orders-index customer-orders-index/view
-            ::routes/orders-show customer-orders-show/view
+            ::routes/rentals-index customer-orders-index/view
+            ::routes/rentals-show customer-orders-show/view
             ::routes/inventory-pools-show pools-show/view
             ::routes/inventory-pools-index pools-index/view
             ::routes/templates-show templates-show/view
