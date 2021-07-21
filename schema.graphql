@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Tue Jul 20 2021 14:05:09 GMT+0200 (Central European Summer Time)
+# timestamp: Wed Jul 21 2021 11:37:09 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -302,6 +302,8 @@ type OrdersConnection {
 enum OrdersOrderByAttributeEnum {
   ID
   CREATED_AT
+  FROM_DATE
+  UNTIL_DATE
 }
 
 input OrdersOrderByInput {
