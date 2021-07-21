@@ -85,7 +85,10 @@ fragment pickupProps on Pickup {
 }
 
 fragment returnProps on Return {
-  ...pickupProps
+  date
+  reservations {
+    ...reservationProps
+  }
 }
 
 fragment contractsConnectionProps on ContractsConnection {
