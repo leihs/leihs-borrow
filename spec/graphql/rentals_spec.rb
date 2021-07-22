@@ -106,6 +106,31 @@ describe 'rentals' do
     o
   end
 
+  def create_customer_order_without_contract
+    i = FactoryBot.create(:item,
+                          leihs_model: model_1,
+                          is_borrowable: true,
+                          responsible: inventory_pool_1)
+
+    o = FactoryBot.create(:order,
+                          id: 'c18014e3-917c-4ae3-8277-b3130739302a',
+                          user: user)
+
+    po = FactoryBot.create(:pool_order,
+                           user: user,
+                           inventory_pool: inventory_pool_1,
+                           order: o,
+                           state: 'submitted')
+
+    r1 = FactoryBot.create(:reservation,
+                           leihs_model: model_1,
+                           inventory_pool: inventory_pool_1,
+                           status: 'submitted',
+                           order_id: po.id, 
+                           user: user)
+    o
+  end
+
   def create_hand_over_reservation
     i = FactoryBot.create(:item,
                           leihs_model: model_1,
@@ -120,14 +145,34 @@ describe 'rentals' do
     r1
   end
 
+  def create_draft_reservation
+    r1 = FactoryBot.create(:reservation,
+                           inventory_pool: inventory_pool_1,
+                           status: 'draft',
+                           user: user)
+    r1
+  end
+
+  def create_unsubmitted_reservation
+    r1 = FactoryBot.create(:reservation,
+                           inventory_pool: inventory_pool_1,
+                           status: 'unsubmitted',
+                           user: user)
+    r1
+  end
+
   def uuid(*args)
     t = ['customer_order', *args].join('_')
     database["SELECT uuid_generate_v5(uuid_ns_dns(), '#{t}') AS r"].first[:r]
   end
 
   it 'index' do
+    create_draft_reservation
+    create_unsubmitted_reservation
+
     coc = create_orderless_contract
     ccowc = create_customer_order_with_contract
+    ccowoc = create_customer_order_without_contract
     chor = create_hand_over_reservation
 
     q = <<-GRAPHQL
@@ -145,8 +190,10 @@ describe 'rentals' do
 
     result = query(q, user.id).deep_symbolize_keys
     r_ids = result.dig(:data, :rentals, :edges).map{|e| e[:node]}.map{|e| e[:id]}
+    expect(r_ids.count).to eq 4
     expect(r_ids).to include uuid(coc.id)
     expect(r_ids).to include uuid(chor.user_id, chor.inventory_pool_id)
     expect(r_ids).to include ccowc.id
+    expect(r_ids).to include ccowoc.id
   end
 end
