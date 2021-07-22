@@ -6,6 +6,8 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
     title
     isCustomerOrder
     state
+    fromDate
+    untilDate
     subOrdersByPool {
       id
       inventoryPool {
