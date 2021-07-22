@@ -1,5 +1,6 @@
 (ns leihs.borrow.features.customer-orders.show
   (:require
+    ["date-fns" :as datefn]
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as reagent]
     [re-frame.core :as rf]
@@ -32,7 +33,6 @@
 (reg-event-db
   ::on-fetched-data
   (fn-traced [db [_ order-id {:keys [data errors]}]]
-    (log data)
     (-> db
         (update-in , [::data order-id ] (fnil identity {}))
         (cond-> errors (assoc-in , [::errors order-id] errors))
@@ -43,6 +43,12 @@
 
 (reg-sub ::errors
          (fn [db [_ id]] (get-in db [::errors id])))
+
+(reg-sub ::total-days
+         (fn [[_ id] _] (rf/subscribe [::data id]))
+         (fn [d _] (datefn/differenceInDays
+                     (datefn/parseISO (:until-date d))
+                     (datefn/parseISO (:from-date d)))))
 
 (defn reservation-line [quantity line]
   (let
@@ -70,6 +76,7 @@
   (let [routing @(subscribe [:routing/routing])
         order-id (get-in routing [:bidi-match :route-params :rental-id])
         order @(subscribe [::data order-id])
+        total-days @(subscribe [::total-days order-id])
         errors @(subscribe [::errors order-id])
         is-loading? (not (or order errors))]
 
@@ -94,6 +101,7 @@
                    [reservation-line r]))]))
 
         [:h2.font-bold.text-xl [:mark "Order Data"]]
+        [:small.d-block.mt-2.text-muted.text-base total-days]
 
         [:pre.text-xs {:style {:white-space :pre-wrap}} (js/JSON.stringify (clj->js order) 0 2)]
 
