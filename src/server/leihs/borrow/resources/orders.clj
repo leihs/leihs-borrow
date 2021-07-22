@@ -11,7 +11,10 @@
             [leihs.borrow.resources.settings :as settings]
             [leihs.core.database.helpers :as database]
             [leihs.core.ds :as ds]
-            [leihs.core.sql :as sql]))
+            [leihs.core.sql :as sql])
+  (:import [java.util UUID]
+           [java.time.format DateTimeFormatter]
+           [java.time ZoneOffset]))
 
 (defn multiple-base-sqlmap [user-id]
   (-> (sql/select :unified_customer_orders.id
@@ -29,6 +32,13 @@
                   :unified_customer_orders.reservation_ids)
       (sql/from :unified_customer_orders)
       (sql/where [:= :unified_customer_orders.user_id user-id])))
+
+(defn row-fn [r]
+  (let [from (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (:from_date r))
+        until (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (:until_date r))]
+    (assoc r
+           :total-days
+           (java-time/time-between from until :days))))
 
 (defn pool-order-row [row]
   (update row :state upper-case))
@@ -54,7 +64,7 @@
   (-> (multiple-base-sqlmap user-id)
       (sql/merge-where [:= :unified_customer_orders.id id])
       sql/format
-      (->> (jdbc/query tx))
+      (as-> <> (jdbc/query tx <> {:row-fn row-fn}))
       first))
 
 (defn get-one
@@ -115,7 +125,8 @@
   (connections/wrap get-connection-sql-map
                     context
                     args
-                    value)) 
+                    value
+                    #(map row-fn %))) 
 
 (defn orders-columns [tx]
   (as-> (database/columns tx "orders") <>

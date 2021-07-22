@@ -8,6 +8,7 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
     state
     fromDate
     untilDate
+    totalDays
     subOrdersByPool {
       id
       inventoryPool {

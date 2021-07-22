@@ -290,6 +290,7 @@
                                           :description "OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest"}
                             :fromDate {:type (non-null :Date)}
                             :untilDate {:type (non-null :Date)}
+                            :totalDays {:type (non-null Int)}
                             :pickups {:resolve :pickups
                                       :args {:limit {:type Int}
                                              :orderBy {:type (list :VisitsOrderByInput)}}
