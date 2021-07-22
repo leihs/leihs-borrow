@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Jul 22 2021 16:22:13 GMT+0200 (Central European Summer Time)
+# timestamp: Thu Jul 22 2021 16:42:59 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -380,6 +380,7 @@ type Rental {
   id: UUID!
   isCustomerOrder: Boolean!
   pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
+  poolOrdersCount: Int!
   purpose: NonEmptyText
   rejectedPoolOrdersCount: Int
 

@@ -294,6 +294,7 @@
                             :approvedPoolOrdersCount {:type Int :resolve :approved-pool-orders-count}
                             :rejectedPoolOrdersCount {:type Int :resolve :rejected-pool-orders-count}
                             :submittedPoolOrdersCount {:type Int :resolve :submitted-pool-orders-count}
+                            :poolOrdersCount {:type (non-null Int) :resolve :pool-orders-count}
                             :pickups {:resolve :pickups
                                       :args {:limit {:type Int}
                                              :orderBy {:type (list :VisitsOrderByInput)}}

@@ -56,6 +56,7 @@
    :pickups visits/get-pickups
    :pool-order orders/get-one-by-pool
    :pool-orders orders/get-multiple-by-pool
+   :pool-orders-count orders/pool-orders-count
    :print-url contracts/print-url
    :properties properties/get-multiple
    :rejected-pool-orders-count orders/rejected-pool-orders-count

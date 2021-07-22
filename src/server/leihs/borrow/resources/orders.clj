@@ -41,27 +41,6 @@
            :total-days
            (java-time/time-between from until :days))))
 
-(defn pool-orders-count [tx origin-table customer-order-id state]
-  (when (= origin-table "customer_orders")
-    (-> (sql/select :*)
-        (sql/from :orders)
-        (sql/where [:= :customer_order_id customer-order-id])
-        (sql/merge-where [:= :state state])
-        (->> (jdbc/query tx))
-        count)))
-
-(defn approved-pool-orders-count
-  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
-  (pool-orders-count tx origin-table id "approved"))
-
-(defn rejected-pool-orders-count
-  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
-  (pool-orders-count tx origin-table id "rejected"))
-
-(defn submitted-pool-orders-count
-  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
-  (pool-orders-count tx origin-table id "submitted"))
-
 (defn pool-order-row [row]
   (update row :state upper-case))
 
@@ -166,6 +145,31 @@
   (-> (pool-orders-sqlmap tx customer-order-id)
       sql/format
       (->> (jdbc/query tx))))
+
+(defn pool-orders-for-state-count [tx customer-order-id state]
+  (-> (pool-orders-sqlmap tx customer-order-id)
+      (sql/merge-where [:= :state state])
+      (->> (jdbc/query tx))
+      count))
+
+(defn pool-orders-count 
+  [{{:keys [tx]} :request} _ {:keys [id]}]
+  (count (pool-orders tx id)))
+
+(defn approved-pool-orders-count
+  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  (when (= origin-table "customer_orders")
+    (pool-orders-for-state-count tx id "approved")))
+
+(defn rejected-pool-orders-count
+  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  (when (= origin-table "customer_orders")
+    (pool-orders-for-state-count tx id "rejected")))
+
+(defn submitted-pool-orders-count
+  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  (when (= origin-table "customer_orders")
+    (pool-orders-for-state-count tx id "submitted")))
 
 (defn get-multiple-by-pool [{{:keys [tx]} :request :as context}
                             {:keys [order-by]}
