@@ -29,6 +29,7 @@
                   (helpers/date-time-updated-at :unified_customer_orders)
                   [(sql/call := :unified_customer_orders.origin_table "customer_orders")
                    :is_customer_order]
+                  :unified_customer_orders.origin_table
                   :unified_customer_orders.reservation_ids)
       (sql/from :unified_customer_orders)
       (sql/where [:= :unified_customer_orders.user_id user-id])))
@@ -39,6 +40,27 @@
     (assoc r
            :total-days
            (java-time/time-between from until :days))))
+
+(defn pool-orders-count [tx origin-table customer-order-id state]
+  (when (= origin-table "customer_orders")
+    (-> (sql/select :*)
+        (sql/from :orders)
+        (sql/where [:= :customer_order_id customer-order-id])
+        (sql/merge-where [:= :state state])
+        (->> (jdbc/query tx))
+        count)))
+
+(defn approved-pool-orders-count
+  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  (pool-orders-count tx origin-table id "approved"))
+
+(defn rejected-pool-orders-count
+  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  (pool-orders-count tx origin-table id "rejected"))
+
+(defn submitted-pool-orders-count
+  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  (pool-orders-count tx origin-table id "submitted"))
 
 (defn pool-order-row [row]
   (update row :state upper-case))

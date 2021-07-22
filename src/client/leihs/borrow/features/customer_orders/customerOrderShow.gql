@@ -9,6 +9,9 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
     fromDate
     untilDate
     totalDays
+    approvedPoolOrdersCount
+    rejectedPoolOrdersCount
+    submittedPoolOrdersCount
     subOrdersByPool {
       id
       inventoryPool {

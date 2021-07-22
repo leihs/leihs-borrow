@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Jul 22 2021 15:45:53 GMT+0200 (Central European Summer Time)
+# timestamp: Thu Jul 22 2021 16:22:13 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -372,6 +372,7 @@ type RefreshTimeoutResult {
 }
 
 type Rental {
+  approvedPoolOrdersCount: Int
   borrowUrl: String!
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
@@ -380,6 +381,7 @@ type Rental {
   isCustomerOrder: Boolean!
   pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   purpose: NonEmptyText
+  rejectedPoolOrdersCount: Int
 
   """
   OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest
@@ -391,6 +393,7 @@ type Rental {
   """List of distinct states of all the sub-orders."""
   state: [PoolOrderStateEnum!]
   subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
+  submittedPoolOrdersCount: Int
   title: NonEmptyText
   totalDays: Int!
   untilDate: Date!

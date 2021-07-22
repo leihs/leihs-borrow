@@ -23,7 +23,8 @@
     ))
 
 (def resolvers
-  {:attachments attachments/get-multiple
+  {:approved-pool-orders-count orders/approved-pool-orders-count
+   :attachments attachments/get-multiple
    :available-quantity-in-date-range models/available-quantity-in-date-range
    :category categories/get-one
    :categories categories/get-multiple
@@ -57,10 +58,12 @@
    :pool-orders orders/get-multiple-by-pool
    :print-url contracts/print-url
    :properties properties/get-multiple
+   :rejected-pool-orders-count orders/rejected-pool-orders-count
    :reservations reservations/get-multiple
    :responsible delegations/responsible
    :returns visits/get-returns
    :root-categories categories/get-roots
+   :submitted-pool-orders-count orders/submitted-pool-orders-count
    :suspensions suspensions/get-multiple
    :thumbnails images/get-multiple-thumbnails
    :unsubmitted-order orders/get-unsubmitted
