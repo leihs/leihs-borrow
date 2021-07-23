@@ -11,6 +11,8 @@ FactoryBot.define do
     user
     inventory_pool
     leihs_model
+    start_date { Date.tomorrow.to_s }
+    end_date { (Date.tomorrow + 1.day).to_s }
     status { 'unsubmitted' }
     created_at { DateTime.now } 
     updated_at { DateTime.now }
