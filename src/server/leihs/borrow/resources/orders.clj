@@ -149,6 +149,7 @@
 (defn pool-orders-for-state-count [tx customer-order-id state]
   (-> (pool-orders-sqlmap tx customer-order-id)
       (sql/merge-where [:= :state state])
+      sql/format
       (->> (jdbc/query tx))
       count))
 
