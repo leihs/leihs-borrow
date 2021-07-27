@@ -11,33 +11,67 @@
             [leihs.borrow.resources.settings :as settings]
             [leihs.core.database.helpers :as database]
             [leihs.core.ds :as ds]
-            [leihs.core.sql :as sql]))
-
-(def distinct-states-sql-expr
-  (sql/raw "ARRAY_AGG(DISTINCT UPPER(COALESCE(orders.state, 'APPROVED')))"))
+            [leihs.core.sql :as sql])
+  (:import [java.util UUID]
+           [java.time.format DateTimeFormatter]
+           [java.time ZoneOffset]))
 
 (defn multiple-base-sqlmap [user-id]
   (-> (sql/select :unified_customer_orders.id
                   :unified_customer_orders.user_id
                   :unified_customer_orders.purpose
                   :unified_customer_orders.title
-                  [distinct-states-sql-expr :state]
+                  :unified_customer_orders.state
+                  :unified_customer_orders.rental_state
+                  (helpers/date-from-date :unified_customer_orders)
+                  (helpers/date-until-date :unified_customer_orders)
                   (helpers/date-time-created-at :unified_customer_orders)
                   (helpers/date-time-updated-at :unified_customer_orders)
-                  [(sql/call :is-not-null :unified_customer_orders.origin_table) :is_customer_order]
+                  [(sql/call := :unified_customer_orders.origin_table "customer_orders")
+                   :is_customer_order]
+                  :unified_customer_orders.origin_table
                   :unified_customer_orders.reservation_ids)
       (sql/from :unified_customer_orders)
-      (sql/left-join :orders
-                     [:= :unified_customer_orders.id :orders.customer_order_id])
-      (sql/where [:= :unified_customer_orders.user_id user-id])
-      (assoc :group-by [:unified_customer_orders.id
-                        :unified_customer_orders.user_id
-                        :unified_customer_orders.purpose
-                        :unified_customer_orders.title
-                        :unified_customer_orders.created_at
-                        :unified_customer_orders.updated_at
-                        :unified_customer_orders.origin_table
-                        :unified_customer_orders.reservation_ids])))
+      (sql/where [:= :unified_customer_orders.user_id user-id])))
+
+(defn row-fn [r]
+  (let [from (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (:from_date r))
+        until (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (:until_date r))]
+    (assoc r
+           :total-days
+           (java-time/time-between from until :days))))
+
+(defn total-rental-quantity
+  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  (-> (sql/select :*)
+      (sql/from :reservations)
+      (sql/where [:in :id reservation-ids])
+      sql/format
+      (->> (jdbc/query tx)
+           (map :quantity)
+           (apply +))))
+
+(defn pickup-rental-quantity
+  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  (-> (sql/select :*)
+      (sql/from :reservations)
+      (sql/where [:in :id reservation-ids])
+      (sql/merge-where [:= :status "approved"])
+      sql/format
+      (->> (jdbc/query tx)
+           (map :quantity)
+           (apply +))))
+
+(defn return-rental-quantity
+  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  (-> (sql/select :*)
+      (sql/from :reservations)
+      (sql/where [:in :id reservation-ids])
+      (sql/merge-where [:= :status "signed"])
+      sql/format
+      (->> (jdbc/query tx)
+           (map :quantity)
+           (apply +))))
 
 (defn pool-order-row [row]
   (update row :state upper-case))
@@ -63,7 +97,7 @@
   (-> (multiple-base-sqlmap user-id)
       (sql/merge-where [:= :unified_customer_orders.id id])
       sql/format
-      (->> (jdbc/query tx))
+      (as-> <> (jdbc/query tx <> {:row-fn row-fn}))
       first))
 
 (defn get-one
@@ -77,17 +111,46 @@
 
 (defn get-connection-sql-map
   [{{:keys [tx]} :request user-id ::target-user/id}
-   {:keys [order-by states]}
+   {:keys [order-by states rental-state from until pool-ids search-term with-pickups with-returns]}
    value]
+  (if (= (count [from until]) 1)
+    (throw (ex-info "From and until dates must be provided together." {})))
   (-> (multiple-base-sqlmap user-id)
-      (cond-> states
-        (sql/having (equal-condition
-                      distinct-states-sql-expr
-                      (->> states
-                           set
-                           (map #(sql/call :cast (name %) :text))
-                           sql/array))))
-      (cond-> (seq order-by)
+      (cond->
+        states
+        (sql/merge-where (equal-condition
+                           :unified_customer_orders.state
+                           (->> states
+                                set
+                                (map #(sql/call :cast (name %) :text))
+                                sql/array)))
+
+        rental-state
+        (sql/merge-where [:= :unified_customer_orders.rental_state (name rental-state)])
+
+        (and from until)
+        (sql/merge-where
+          (sql/raw (str "(unified_customer_orders.from_date, unified_customer_orders.until_date)"
+                        " OVERLAPS "
+                        "('" from "', '" until "')")))
+
+        (not (empty? pool-ids))
+        (sql/merge-where ["<@"
+                          (->> pool-ids (map #(sql/call :cast % :uuid)) sql/array)
+                          :unified_customer_orders.inventory_pool_ids])
+
+        search-term
+        (sql/merge-where ["~~*"
+                          :unified_customer_orders.searchable
+                          (str "%" search-term "%")])
+
+        (not (nil? with-pickups))
+        (sql/merge-where [:= :unified_customer_orders.with_pickups with-pickups])
+
+        (not (nil? with-returns))
+        (sql/merge-where [:= :unified_customer_orders.with_returns with-returns])
+
+        (seq order-by)
         (sql/order-by
           (helpers/treat-order-arg order-by :unified_customer_orders)))))
 
@@ -95,7 +158,8 @@
   (connections/wrap get-connection-sql-map
                     context
                     args
-                    value)) 
+                    value
+                    #(map row-fn %))) 
 
 (defn orders-columns [tx]
   (as-> (database/columns tx "orders") <>
@@ -113,6 +177,32 @@
   (-> (pool-orders-sqlmap tx customer-order-id)
       sql/format
       (->> (jdbc/query tx))))
+
+(defn pool-orders-for-state-count [tx customer-order-id state]
+  (-> (pool-orders-sqlmap tx customer-order-id)
+      (sql/merge-where [:= :state state])
+      sql/format
+      (->> (jdbc/query tx))
+      count))
+
+(defn pool-orders-count 
+  [{{:keys [tx]} :request} _ {:keys [id]}]
+  (count (pool-orders tx id)))
+
+(defn approved-pool-orders-count
+  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  (when (= origin-table "customer_orders")
+    (pool-orders-for-state-count tx id "approved")))
+
+(defn rejected-pool-orders-count
+  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  (when (= origin-table "customer_orders")
+    (pool-orders-for-state-count tx id "rejected")))
+
+(defn submitted-pool-orders-count
+  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  (when (= origin-table "customer_orders")
+    (pool-orders-for-state-count tx id "submitted")))
 
 (defn get-multiple-by-pool [{{:keys [tx]} :request :as context}
                             {:keys [order-by]}

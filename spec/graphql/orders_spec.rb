@@ -363,7 +363,7 @@ describe 'orders' do
 
     q = <<-GRAPHQL
       query {
-        order(id: "#{order.id}") {
+        rental(id: "#{order.id}") {
           borrowUrl
           state
           subOrdersByPool {
@@ -379,8 +379,8 @@ describe 'orders' do
     result = query(q, user.id).deep_symbolize_keys
     expect(result).to eq(
       { data:
-       { order:
-         { borrowUrl: "#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/orders/#{order.id}",
+       { rental:
+         { borrowUrl: "#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/rentals/#{order.id}",
            state: ["APPROVED", "SUBMITTED"],
            subOrdersByPool: [
              {inventoryPool: {id: inventory_pool_1.id, isActive: true}},
@@ -481,7 +481,7 @@ describe 'orders' do
 
     q = <<-GRAPHQL
       query {
-        orders(
+        rentals(
           states: [APPROVED, SUBMITTED]
           orderBy: [{attribute: ID, direction: ASC}]
         ) {
@@ -496,11 +496,11 @@ describe 'orders' do
     GRAPHQL
 
     result = query(q, user.id).deep_symbolize_keys
-    result.dig(:data, :orders, :edges).each do |o|
+    result.dig(:data, :rentals, :edges).each do |o|
       o[:node][:state] = o[:node][:state].to_set
     end
     expect(result[:data]).to eq({
-      orders: {
+      rentals: {
         edges: [
           { node: { id: '84391a0b-2a55-43f9-bf6d-bb144a2aaf96',
                     state: Set['SUBMITTED', 'APPROVED'] } }

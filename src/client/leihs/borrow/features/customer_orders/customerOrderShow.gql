@@ -1,11 +1,20 @@
 query customerOrderShow($id: UUID!, $userId: UUID) {
-  order(id: $id, userId: $userId) {
+  rental(id: $id, userId: $userId) {
     id
     borrowUrl
     purpose
     title
     isCustomerOrder
     state
+    fromDate
+    untilDate
+    totalDays
+    approvedPoolOrdersCount
+    rejectedPoolOrdersCount
+    submittedPoolOrdersCount
+    totalQuantity
+    pickupQuantity
+    returnQuantity
     subOrdersByPool {
       id
       inventoryPool {
@@ -85,7 +94,10 @@ fragment pickupProps on Pickup {
 }
 
 fragment returnProps on Return {
-  ...pickupProps
+  date
+  reservations {
+    ...reservationProps
+  }
 }
 
 fragment contractsConnectionProps on ContractsConnection {

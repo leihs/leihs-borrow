@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Jul 15 2021 13:08:55 GMT+0200 (Central European Summer Time)
+# timestamp: Fri Jul 23 2021 16:02:03 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -219,7 +219,7 @@ input ModelsOrderByInput {
 type MutationRoot {
   addToCart(ids: [UUID!], userId: UUID): [Reservation]
   applyTemplate(endDate: Date!, id: UUID!, startDate: Date!): [Reservation]
-  cancelOrder(id: UUID!): Order!
+  cancelOrder(id: UUID!): Rental!
   createReservation(
     endDate: Date!
     excludeReservationIds: [UUID!]
@@ -238,7 +238,7 @@ type MutationRoot {
   deleteReservationLines(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
   refreshTimeout: RefreshTimeoutResult
-  submitOrder(purpose: NonEmptyText!, title: NonEmptyText!, userId: UUID): Order!
+  submitOrder(purpose: NonEmptyText!, title: NonEmptyText!, userId: UUID): Rental!
   testing(sleepSecs: Int): String
   unfavoriteModel(id: UUID!): Model!
 }
@@ -258,48 +258,9 @@ type Option {
   version: String
 }
 
-type Order {
-  borrowUrl: String!
-  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
-  createdAt: DateTime!
-  id: UUID!
-  isCustomerOrder: Boolean!
-  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
-  purpose: NonEmptyText
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
-  returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
-
-  """List of distinct states of all the sub-orders."""
-  state: [PoolOrderStateEnum!]
-  subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
-  title: NonEmptyText
-  updatedAt: DateTime!
-}
-
 enum OrderByDirectionEnum {
   ASC
   DESC
-}
-
-type OrderEdge {
-  cursor: String!
-  node: Order!
-}
-
-type OrdersConnection {
-  edges: [OrderEdge]
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-enum OrdersOrderByAttributeEnum {
-  ID
-  CREATED_AT
-}
-
-input OrdersOrderByInput {
-  attribute: OrdersOrderByAttributeEnum!
-  direction: OrderByDirectionEnum!
 }
 
 type PageInfo {
@@ -320,7 +281,7 @@ type PoolOrder {
   createdAt: DateTime!
   id: UUID!
   inventoryPool: InventoryPool!
-  order: Order
+  order: Rental
   pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   rejectedReason: String
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
@@ -374,19 +335,30 @@ type QueryRoot {
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   model(id: UUID!): Model!
   models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], poolIds: [UUID!], quantity: Int, searchTerm: String, userId: UUID): ModelsConnection
-  order(id: UUID!, userId: UUID): Order!
-  orders(
+  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
+  rental(id: UUID!, userId: UUID): Rental!
+  rentals(
     after: String
     first: Int
-    orderBy: [OrdersOrderByInput]
 
     """
-    Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument.
+    The `from` and `until` args select rentals based on time interval intersection.
     """
+    from: Date
+    orderBy: [RentalsOrderByInput]
+    poolIds: [UUID!]
+    rentalState: RentalStateEnum
+    searchTerm: NonEmptyText
     states: [PoolOrderStateEnum]
+
+    """
+    The `from` and `until` args select rentals based on time interval intersection.
+    """
+    until: Date
     userId: UUID
-  ): OrdersConnection
-  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
+    withPickups: Boolean
+    withReturns: Boolean
+  ): RentalsConnection
   returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
   rootCategories(limit: Int, poolIds: [UUID!], userId: UUID): [Category!]
   template(id: UUID!): Template!
@@ -397,6 +369,67 @@ type QueryRoot {
 
 type RefreshTimeoutResult {
   unsubmittedOrder: UnsubmittedOrder
+}
+
+type Rental {
+  approvedPoolOrdersCount: Int
+  borrowUrl: String!
+  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
+  createdAt: DateTime!
+  fromDate: Date!
+  id: UUID!
+  isCustomerOrder: Boolean!
+  pickupQuantity: Int!
+  pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
+  poolOrdersCount: Int!
+  purpose: NonEmptyText
+  rejectedPoolOrdersCount: Int
+
+  """
+  OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest
+  """
+  rentalState: RentalStateEnum!
+  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+  returnQuantity: Int!
+  returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
+
+  """List of distinct states of all the sub-orders."""
+  state: [PoolOrderStateEnum!]
+  subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
+  submittedPoolOrdersCount: Int
+  title: NonEmptyText
+  totalDays: Int!
+  totalQuantity: Int!
+  untilDate: Date!
+  updatedAt: DateTime!
+}
+
+type RentalEdge {
+  cursor: String!
+  node: Rental!
+}
+
+type RentalsConnection {
+  edges: [RentalEdge]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+enum RentalsOrderByAttributeEnum {
+  ID
+  CREATED_AT
+  FROM_DATE
+  UNTIL_DATE
+}
+
+input RentalsOrderByInput {
+  attribute: RentalsOrderByAttributeEnum!
+  direction: OrderByDirectionEnum!
+}
+
+enum RentalStateEnum {
+  OPEN
+  CLOSED
 }
 
 type Reservation {

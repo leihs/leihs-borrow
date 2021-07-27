@@ -194,7 +194,7 @@
   (case container
     :PoolOrder
     (sql/merge-where sqlmap [:= :reservations.order_id id])
-    :Order
+    :Rental
     (-> sqlmap
         (sql/merge-where ["<@"
                           (sql/raw "ARRAY[reservations.id]")

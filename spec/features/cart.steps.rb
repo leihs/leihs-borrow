@@ -31,7 +31,7 @@ end
 
 step "I have been redirected to the newly created order" do
   @order = Order.order(Sequel.desc(:created_at)).first
-  expect(current_path).to eq "/app/borrow/orders/#{@order.id}"
+  expect(current_path).to eq "/app/borrow/rentals/#{@order.id}"
 end
 
 step "the newly created order has title :txt" do |txt|

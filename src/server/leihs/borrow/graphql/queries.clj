@@ -23,7 +23,8 @@
     ))
 
 (def resolvers
-  {:attachments attachments/get-multiple
+  {:approved-pool-orders-count orders/approved-pool-orders-count
+   :attachments attachments/get-multiple
    :available-quantity-in-date-range models/available-quantity-in-date-range
    :category categories/get-one
    :categories categories/get-multiple
@@ -53,14 +54,19 @@
    :order orders/get-one
    :orders-connection orders/get-connection
    :pickups visits/get-pickups
+   :pickup-rental-quantity orders/pickup-rental-quantity
    :pool-order orders/get-one-by-pool
    :pool-orders orders/get-multiple-by-pool
+   :pool-orders-count orders/pool-orders-count
    :print-url contracts/print-url
    :properties properties/get-multiple
+   :rejected-pool-orders-count orders/rejected-pool-orders-count
    :reservations reservations/get-multiple
    :responsible delegations/responsible
    :returns visits/get-returns
+   :return-rental-quantity orders/return-rental-quantity
    :root-categories categories/get-roots
+   :submitted-pool-orders-count orders/submitted-pool-orders-count
    :suspensions suspensions/get-multiple
    :thumbnails images/get-multiple-thumbnails
    :unsubmitted-order orders/get-unsubmitted
@@ -72,5 +78,6 @@
    :template-lines templates/get-lines
    :testing-query testing/query
    :total-borrowable-quantities models/total-borrowable-quantities
+   :total-rental-quantity orders/total-rental-quantity
    :url shared/url
    })

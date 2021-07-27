@@ -1,12 +1,13 @@
 (ns leihs.borrow.features.customer-orders.show
   (:require
+    ["date-fns" :as datefn]
     [day8.re-frame.tracing :refer-macros [fn-traced]]
     #_[reagent.core :as reagent]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
     [shadow.resource :as rc]
     [leihs.borrow.components :as ui]
-    [leihs.borrow.lib.helpers :refer [spy]]
+    [leihs.borrow.lib.helpers :refer [spy log]]
     [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                        reg-event-db
                                        reg-sub
@@ -21,9 +22,9 @@
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/orders-show
+  ::routes/rentals-show
   (fn-traced [{:keys [db]} [_ args]]
-    (let [order-id (spy (get-in args [:route-params :order-id]))]
+    (let [order-id (get-in args [:route-params :rental-id])]
       {:dispatch [::re-graph/query
                   (rc/inline "leihs/borrow/features/customer_orders/customerOrderShow.gql")
                   {:id order-id, :userId (filters/user-id db)}
@@ -35,13 +36,19 @@
     (-> db
         (update-in , [::data order-id ] (fnil identity {}))
         (cond-> errors (assoc-in , [::errors order-id] errors))
-        (assoc-in , [::data order-id] (:order data)))))
+        (assoc-in , [::data order-id] (:rental data)))))
 
 (reg-sub ::data
          (fn [db [_ id]] (get-in db [::data id])))
 
 (reg-sub ::errors
          (fn [db [_ id]] (get-in db [::errors id])))
+
+(reg-sub ::total-days
+         (fn [[_ id] _] (rf/subscribe [::data id]))
+         (fn [d _] (datefn/differenceInDays
+                     (datefn/parseISO (:until-date d))
+                     (datefn/parseISO (:from-date d)))))
 
 (defn reservation-line [quantity line]
   (let
@@ -67,15 +74,16 @@
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])
-        order-id (get-in routing [:bidi-match :route-params :order-id])
+        order-id (get-in routing [:bidi-match :route-params :rental-id])
         order @(subscribe [::data order-id])
+        total-days @(subscribe [::total-days order-id])
         errors @(subscribe [::errors order-id])
         is-loading? (not (or order errors))]
 
     [:> UI/Components.AppLayout.Page
      {:title (if order (str "Order “" (:purpose order) "”") "…")
       :subTitle (if order (str "from: " (ui/format-date :short (:created-at order))) "…")
-      :backLink {:href (routing/path-for ::routes/orders-index) :children "All Orders"}}
+      :backLink {:href (routing/path-for ::routes/rentals-index) :children "All Orders"}}
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
        errors [ui/error-view errors]
@@ -93,6 +101,7 @@
                    [reservation-line r]))]))
 
         [:h2.font-bold.text-xl [:mark "Order Data"]]
+        [:small.d-block.mt-2.text-muted.text-base total-days]
 
         [:pre.text-xs {:style {:white-space :pre-wrap}} (js/JSON.stringify (clj->js order) 0 2)]
 

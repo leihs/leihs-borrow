@@ -192,7 +192,7 @@ describe 'contracts' do
 
         q = <<~QUERY
         {
-          order(id: "#{order.id}") {
+          rental(id: "#{order.id}") {
             contracts(orderBy: [{attribute: ID, direction: ASC}]) {
               edges {
                 node {
@@ -234,7 +234,7 @@ describe 'contracts' do
 
         result = query(q, user.id)
         expect_graphql_result(result, {
-          order: {
+          rental: {
             contracts: {
               edges: [
                 { node: {

@@ -10,11 +10,12 @@
          :ReservationsOrderByAttributeEnum {:values [:ID]},
          :PoolOrdersOrderByAttributeEnum {:values [:INVENTORY_POOL_ID :ID]},
          :ContractsOrderByAttributeEnum {:values [:ID :CREATED_AT]},
-         :OrdersOrderByAttributeEnum {:values [:ID :CREATED_AT]},
+         :RentalsOrderByAttributeEnum {:values [:ID :CREATED_AT, :FROM_DATE, :UNTIL_DATE]},
          :VisitsOrderByAttributeEnum {:values [:DATE]},
          :OrderByDirectionEnum {:values [:ASC :DESC]}
          :ContractStateEnum {:values [:OPEN :CLOSED]}
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED :CANCELED]}
+         :RentalStateEnum {:values [:OPEN :CLOSED]}
          :VisitTypeEnum {:values [:PICKUP :RETURN]}
          :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}
          :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
@@ -182,8 +183,8 @@
            :ModelsConnection {:fields {:totalCount {:type Int}
                                        :edges {:type (list :ModelEdge)}
                                        :pageInfo {:type (non-null :PageInfo)}}}
-           :OrdersConnection {:fields {:totalCount {:type (non-null Int)}
-                                       :edges {:type (list :OrderEdge)}
+           :RentalsConnection {:fields {:totalCount {:type (non-null Int)}
+                                       :edges {:type (list :RentalEdge)}
                                        :pageInfo {:type (non-null :PageInfo)}}}
            :ContractsConnection {:fields {:totalCount {:type (non-null Int)}
                                           :edges {:type (list :ContractEdge)}
@@ -192,7 +193,7 @@
                                    :cursor {:type (non-null String)}}}
            :ModelEdge {:fields {:node {:type (non-null :Model)}
                                 :cursor {:type (non-null String)}}}
-           :OrderEdge {:fields {:node {:type (non-null :Order)}
+           :RentalEdge {:fields {:node {:type (non-null :Rental)}
                                 :cursor {:type (non-null String)}}}
            :PageInfo {:fields {:endCursor {:type String}
                                :hasNextPage {:type Boolean}}}
@@ -262,7 +263,7 @@
                                 :reservations {:type (list (non-null :Reservation))
                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                                :resolve :reservations}
-                                :order {:type :Order, :resolve :order}
+                                :order {:type :Rental, :resolve :order}
                                 :contracts {:type :ContractsConnection
                                             :args {:first {:type Int}
                                                    :after {:type String}
@@ -279,12 +280,24 @@
                                           :type (list :Return)}
                                 :createdAt {:type (non-null :DateTime)}
                                 :updatedAt {:type (non-null :DateTime)}}}
-           :Order {:fields {:id {:type (non-null :UUID)}
+           :Rental {:fields {:id {:type (non-null :UUID)}
                             :borrowUrl {:type (non-null String) :resolve :url}
                             :purpose {:type :NonEmptyText}
                             :title {:type :NonEmptyText}
                             :state {:type (list (non-null :PoolOrderStateEnum))
                                     :description "List of distinct states of all the sub-orders."}
+                            :rentalState {:type (non-null :RentalStateEnum)
+                                          :description "OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest"}
+                            :fromDate {:type (non-null :Date)}
+                            :untilDate {:type (non-null :Date)}
+                            :totalDays {:type (non-null Int)}
+                            :approvedPoolOrdersCount {:type Int :resolve :approved-pool-orders-count}
+                            :rejectedPoolOrdersCount {:type Int :resolve :rejected-pool-orders-count}
+                            :submittedPoolOrdersCount {:type Int :resolve :submitted-pool-orders-count}
+                            :poolOrdersCount {:type (non-null Int) :resolve :pool-orders-count}
+                            :totalQuantity {:type (non-null Int) :resolve :total-rental-quantity}
+                            :pickupQuantity {:type (non-null Int) :resolve :pickup-rental-quantity}
+                            :returnQuantity {:type (non-null Int) :resolve :return-rental-quantity}
                             :pickups {:resolve :pickups
                                       :args {:limit {:type Int}
                                              :orderBy {:type (list :VisitsOrderByInput)}}
@@ -307,8 +320,7 @@
                                            :resolve :reservations}
                             :isCustomerOrder {:type (non-null Boolean)}
                             :createdAt {:type (non-null :DateTime)}
-                            :updatedAt {:type (non-null :DateTime)}}
-                   :descripton "An order purely from the point of view of the customer. It may be divided into multiple sub-orders by inventory pool when submitting."}
+                            :updatedAt {:type (non-null :DateTime)}}}
            :Pickup {:fields {:id {:type (non-null :UUID)}
                              :date {:type (non-null :Date)}
                              :quantity {:type (non-null Int)}
@@ -335,7 +347,7 @@
                                                    :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :ContractsOrderByInput {:fields {:attribute {:type (non-null :ContractsOrderByAttributeEnum)}
                                                   :direction {:type (non-null :OrderByDirectionEnum)}}}
-                 :OrdersOrderByInput {:fields {:attribute {:type (non-null :OrdersOrderByAttributeEnum)}
+                 :RentalsOrderByInput {:fields {:attribute {:type (non-null :RentalsOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :VisitsOrderByInput {:fields {:attribute {:type (non-null :VisitsOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
@@ -366,18 +378,26 @@
                              :userId {:type :UUID}}
                       :resolve :contract
                       :type (non-null :Contract)}
-           :order {:args {:id {:type (non-null :UUID)}
-                          :userId {:type :UUID}}
-                   :resolve :order
-                   :type (non-null :Order)}
-           :orders {:resolve :orders-connection
-                    :args {:first {:type Int}
-                           :after {:type String}
-                           :states {:type (list :PoolOrderStateEnum)
-                                    :description "Finds orders where the list of distinct states of the pool orders set-equals the distinct values of this argument."}
-                           :userId {:type :UUID}
-                           :orderBy {:type (list :OrdersOrderByInput)}}
-                    :type :OrdersConnection}
+           :rental {:args {:id {:type (non-null :UUID)}
+                           :userId {:type :UUID}}
+                    :resolve :order
+                    :type (non-null :Rental)}
+           :rentals {:resolve :orders-connection
+                     :args {:first {:type Int}
+                            :after {:type String}
+                            :states {:type (list :PoolOrderStateEnum)}
+                            :rentalState {:type :RentalStateEnum}
+                            :from {:type :Date
+                                   :description "The `from` and `until` args select rentals based on time interval intersection."}
+                            :until {:type :Date
+                                    :description "The `from` and `until` args select rentals based on time interval intersection."}
+                            :poolIds {:type (list (non-null :UUID))}
+                            :searchTerm {:type :NonEmptyText}
+                            :withPickups {:type :Boolean}
+                            :withReturns {:type :Boolean}
+                            :userId {:type :UUID}
+                            :orderBy {:type (list :RentalsOrderByInput)}}
+                     :type :RentalsConnection}
            :pickups {:resolve :pickups
                      :args {:limit {:type Int}
                             :orderBy {:type (list :VisitsOrderByInput)}}
@@ -454,10 +474,10 @@
                                   :title {:type (non-null :NonEmptyText)}
                                   :userId {:type :UUID}}
                            :resolve :submit-order
-                           :type (non-null :Order)}
+                           :type (non-null :Rental)}
              :cancelOrder {:args {:id {:type (non-null :UUID)}}
                            :resolve :cancel-order
-                           :type (non-null :Order)}
+                           :type (non-null :Rental)}
              :favoriteModel {:args {:id {:type (non-null :UUID)}}
                              :resolve :favorite-model
                              :type (non-null :Model)}
