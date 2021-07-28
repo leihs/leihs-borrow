@@ -41,24 +41,24 @@
 
 (reg-sub ::errors (fn [db _] (::errors db)))
 
-(reg-sub 
-  ::submitted-orders 
+(reg-sub
+  ::submitted-orders
   :<- [::data]
   (fn [data _]
     (->> (get-in data [:submitted-orders :edges])
-         (map :node) 
+         (map :node)
          not-empty)))
 
-(reg-sub 
-  ::rejected-orders 
+(reg-sub
+  ::rejected-orders
   :<- [::data]
   (fn [data _]
     (->> (get-in data [:rejected-orders :edges])
          (map :node)
          not-empty)))
 
-(reg-sub 
-  ::approved-orders 
+(reg-sub
+  ::approved-orders
   :<- [::data]
   (fn [data _]
     (->> (get-in data [:approved-orders :edges])
@@ -70,12 +70,16 @@
     [label (:purpose order)
      href (routing/path-for ::routes/rentals-show :rental-id (:id order))]
     [:<>
-     [:a {:href href} 
+     [:a {:href href}
       label " "
-      [:span.text-color-muted (ui/format-date :short (:created-at order))]]]))
+      [:span.text-color-muted (ui/format-date :short (:created-at order))]
+      [:span.text-color-muted (:name (:inventory-pool (:reservationorder)))]]]))
 
 (defn orders-list [orders]
-  [:ul (doall (for [order orders] [:li {:key (:id order)} [order-line order]]))])
+  [:ul
+    (doall (for [order orders]
+      [:li.border-bottom.py-2 {:key (:id order)}
+        [order-line order]]))])
 
 (reg-sub ::target-users
          :<- [::current-user/data]
@@ -111,6 +115,28 @@
              [:option {:value (:id user) :key (:id user)}
               (:name user)]))]]]]]))
 
+(defn dummy-component [props]
+  (let [
+    submitted-orders (:submittedOrders props)
+    rejected-orders (:rejectedOrders props)
+    approved-orders (:approvedOrders props)]
+    [:<>
+      (when-not (empty? submitted-orders)
+        [:div.mt-3
+          [:h2.text-xl.font-semibold (t :active-orders)]
+          [orders-list submitted-orders ""]])
+
+      (when-not (empty? rejected-orders)
+        [:div.mt-3
+          [:h2.text-xl.font-semibold (t :rejected-orders)]
+          [orders-list rejected-orders]])
+
+      (when-not (empty? approved-orders)
+        [:div.mt-3
+          [:h2.text-xl.font-semibold (t :approved-orders)]
+          [orders-list approved-orders ""]])])
+)
+
 (defn view []
   (let [data @(subscribe [::data])
         errors @(subscribe [::errors])
@@ -120,6 +146,7 @@
         approved-orders @(subscribe [::approved-orders])]
 
     [:> UI/Components.AppLayout.Page
+
      {:title (t :title)}
      [search-panel]
      (cond
@@ -127,23 +154,9 @@
        errors [ui/error-view errors]
        :else
        [:<>
-        (when-not (empty? submitted-orders)
-          [:div.mt-3
-           [:h2.text-xl.font-semibold (t :active-orders)]
-           [orders-list submitted-orders ""]])
+        [dummy-component {
+          :submittedOrders submitted-orders
+          :rejectedOrders rejected-orders
+          :approvedOrders approved-orders}]
 
-        (when-not (empty? rejected-orders)
-          [:div.mt-3
-           [:h2.text-xl.font-semibold (t :rejected-orders)]
-           [orders-list rejected-orders]])
-
-        (when-not (empty? approved-orders)
-          [:div.mt-3
-           [:h2.text-xl.font-semibold (t :approved-orders)]
-           [orders-list approved-orders ""]])
-
-        #_[:pre {:style {:white-space :pre-wrap}} (pr-str rejected-orders)]
-
-        #_[:pre {:style {:white-space :pre-wrap}} (pr-str approved-orders)]
-
-        #_[:p.debug (pr-str data)]])]))
+        [:> UI/Components.DebugProps {:data data :errors errors}]])]))

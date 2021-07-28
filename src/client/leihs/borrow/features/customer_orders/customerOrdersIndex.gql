@@ -1,11 +1,23 @@
 query customerOrdersIndex($userId: UUID) {
-  submittedOrders: rentals(userId: $userId states: [SUBMITTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+  submittedOrders: rentals(
+    userId: $userId
+    states: [SUBMITTED]
+    orderBy: [{ attribute: CREATED_AT, direction: DESC }]
+  ) {
     ...OrderConProps
   }
-  rejectedOrders: rentals(userId: $userId states: [REJECTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+  rejectedOrders: rentals(
+    userId: $userId
+    states: [REJECTED]
+    orderBy: [{ attribute: CREATED_AT, direction: DESC }]
+  ) {
     ...OrderConProps
   }
-  approvedOrders: rentals(userId: $userId states: [APPROVED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
+  approvedOrders: rentals(
+    userId: $userId
+    states: [APPROVED]
+    orderBy: [{ attribute: CREATED_AT, direction: DESC }]
+  ) {
     ...OrderConProps
   }
 }
@@ -24,7 +36,17 @@ fragment orderProps on Rental {
   purpose
   createdAt
   updatedAt
+  reservations {
+    id
+    status
+    quantity
+    inventoryPool {
+      id
+      name
+    }
+  }
   subOrdersByPool {
     id
+    state
   }
 }

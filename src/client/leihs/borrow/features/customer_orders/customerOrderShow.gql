@@ -61,10 +61,10 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
 
 fragment poolProps on InventoryPool {
   id
-  # borrowUrl
-  # description
-  # isActive
-  # email
+  borrowUrl
+  description
+  isActive
+  email
   name
   # shortname
   # hasReservableItems
@@ -73,17 +73,17 @@ fragment poolProps on InventoryPool {
 
 fragment reservationProps on Reservation {
   id
-  # status
-  # startDate
-  # endDate
+  status
+  startDate
+  endDate
   model {
     id
     name
   }
-  # quantity
-  # inventoryPool {
-  #   ...poolProps
-  # }
+  quantity
+  inventoryPool {
+    ...poolProps
+  }
 }
 
 fragment pickupProps on Pickup {
