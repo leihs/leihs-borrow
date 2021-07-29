@@ -25,14 +25,16 @@ step 'I see one retry banner' do
 end
 
 step 'I see one login banner' do
-  within('section form') do
+  banner = all('section form').first
+  within(banner) do
     expect(current_scope).to have_selector('input#inputEmail')
     expect(current_scope).to have_selector('input#inputPassword')
   end
 end
 
 step 'I login in via the login banner' do
-  within('section form') do
+  banner = all('section form').first
+  within(banner) do
     find('input#inputEmail').set(@user.email)
     find('input#inputPassword').set('password')
     click_on('Submit')
