@@ -51,11 +51,11 @@
   (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil into []) errors)}
-      {:dispatch-n (let [user-data (:current-user data)
-                         response-user-id (-> user-data :user :id)
+      {:dispatch-n (let [current-user-data (:current-user data)
+                         response-user-id (-> current-user-data :user :id)
                          ls-user-id  (-> db :ls ::data :user :id)]
                      (list (when (not= response-user-id ls-user-id) [::ls/clear])
-                           [::set user-data]))})))
+                           [::set current-user-data]))})))
 
 (reg-event-db
   ::set
@@ -71,14 +71,18 @@
 (reg-sub ::data
          (fn [db _] (get-in db [:ls ::data])))
 
-(reg-sub ::pools
+(reg-sub ::user-data
          :<- [::data]
-         (fn [cu _] (:inventory-pools cu)))
+         (fn [cu _] (:user cu)))
+
+(reg-sub ::pools
+         :<- [::user-data]
+         (fn [u _] (:inventory-pools u)))
 
 (reg-sub ::delegations
-         :<- [::data]
-         (fn [cu _] (:delegations cu)))
+         :<- [::user-data]
+         (fn [u _] (:delegations u)))
 
 (reg-sub ::suspensions
-         :<- [::data]
-         (fn [cu _] (:suspensions cu)))
+         :<- [::user-data]
+         (fn [u _] (:suspensions u)))

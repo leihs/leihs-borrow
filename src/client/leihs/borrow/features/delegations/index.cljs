@@ -33,7 +33,7 @@
   (fn-traced [db [_ {:keys [data errors]}]]
     (-> db
         (cond-> errors (assoc ::errors errors))
-        (assoc ::data (-> data :current-user :delegations)))))
+        (assoc ::data (-> data :current-user :user :delegations)))))
 
 (reg-sub ::data
          (fn [db _] (::data db)))

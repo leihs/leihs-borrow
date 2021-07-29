@@ -115,7 +115,7 @@
          (fn [data _] (-> data :page-info :has-next-page)))
 
 (reg-sub ::target-users
-         :<- [::current-user/data]
+         :<- [::current-user/user-data]
          (fn [cu]
            (let [delegations (:delegations cu)]
              (when (not-empty delegations)
@@ -140,6 +140,7 @@
 
 (defn search-panel [submit-fn clear-fn filters cache-key]
   (let [current-user-data @(subscribe [::current-user/data])
+        user-data (:user current-user-data)
         filters @(subscribe [::filters/current])
         pools @(subscribe [::current-user/pools])
         routing @(subscribe [:routing/routing])
@@ -153,8 +154,8 @@
       :initialStartDate (:start-date filters)
       :initialEndDate (:end-date filters)
       :initialQuantity (:quantity filters)
-      :user (:user current-user-data)
-      :delegations (:delegations current-user-data)
+      :user user-data
+      :delegations (:delegations user-data)
       :pools pools
       :onSubmit #(submit-fn (obj->map %))
       :onClear clear-fn}]))

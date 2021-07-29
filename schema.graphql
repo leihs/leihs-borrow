@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Jul 23 2021 16:02:03 GMT+0200 (Central European Summer Time)
+# timestamp: Wed Jul 28 2021 10:43:51 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -78,20 +78,13 @@ enum ContractStateEnum {
 }
 
 type CurrentUser {
-  delegations: [Delegation!]
-  draftOrder: DraftOrder
-  favoriteModels(after: String, endDate: Date, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: Date): ModelsConnection
-
   """Same as user ID"""
   id: UUID!
-  inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
 
   """
   This is the language to use for translations. It takes into account user's preferred language, the default one, etc.
   """
   languageToUse: Language!
-  suspensions: [Suspension]
-  unsubmittedOrder: UnsubmittedOrder
   user: User
 }
 
@@ -528,9 +521,13 @@ A `User` represents a human agent that can log into and use the system.
 type User {
   badgeId: String
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
+  delegations: [Delegation!]
+  draftOrder: DraftOrder
   email: String
+  favoriteModels(after: String, endDate: Date, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: Date): ModelsConnection
   firstname: String
   id: UUID!
+  inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   language: Language
   lastname: String
   login: String
@@ -539,6 +536,8 @@ type User {
   organization: String!
   phone: String
   secondaryEmail: String
+  suspensions: [Suspension]
+  unsubmittedOrder: UnsubmittedOrder
 }
 
 enum UsersOrderByAttributeEnum {

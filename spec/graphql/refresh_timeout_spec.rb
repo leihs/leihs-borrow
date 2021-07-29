@@ -39,16 +39,18 @@ describe 'refresh timeout' do
     <<-GRAPHQL
       query {
         currentUser {
-          unsubmittedOrder {
-            reservations {
-              id
+          user {
+            unsubmittedOrder {
+              reservations {
+                id
+              }
+            }
+            draftOrder {
+              reservations(orderBy: [{attribute: ID, direction: ASC}]) {
+                id
+              }
             }
           }
-          draftOrder {
-            reservations(orderBy: [{attribute: ID, direction: ASC}]) {
-              id
-            }
-         }
         }
       }
     GRAPHQL
@@ -97,12 +99,14 @@ describe 'refresh timeout' do
     q_result = query(q, user.id).deep_symbolize_keys
     expect(q_result[:data]).to eq({
       currentUser: {
-        draftOrder: { 
-          reservations: [{ id: r_invalid.id },
-                         { id: r_ok.id }]
-        },
-        unsubmittedOrder: {
-          reservations: []
+        user: {
+          draftOrder: { 
+            reservations: [{ id: r_invalid.id },
+                           { id: r_ok.id }]
+          },
+          unsubmittedOrder: {
+            reservations: []
+          }
         }
       }
     })

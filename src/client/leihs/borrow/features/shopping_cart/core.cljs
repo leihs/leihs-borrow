@@ -41,7 +41,7 @@
   (fn-traced [db [_ {:keys [data errors]}]]
     (-> db
         (assoc ::data (get-in data
-                              [:current-user :unsubmitted-order]))
+                              [:current-user :user :unsubmitted-order]))
         (assoc-in [::data :edit-mode] nil)
         (cond-> errors (assoc ::errors errors)))))
 
@@ -233,7 +233,7 @@
 
 (defn edit-reservation [res-lines]
   (let [edit-mode-data @(subscribe [::edit-mode-data])
-        current-user @(subscribe [::current-user/data])
+        current-user @(subscribe [::current-user/user-data])
         user-id (:user-id edit-mode-data)
         model (:model edit-mode-data)
         start-date (:start-date edit-mode-data)
@@ -370,14 +370,14 @@
           (t :edit)]]])]))
 
 (reg-sub ::target-users
-         :<- [::current-user/data]
+         :<- [::current-user/user-data]
          (fn [cu]
              (let [user (:user cu)
                    delegations (:delegations cu)]
                (concat [user] delegations))))
 
 (reg-sub ::user-id
-         :<- [::current-user/data]
+         :<- [::current-user/user-data]
          :<- [::filters/user-id]
          (fn [[co user-id]]
              (or user-id (-> co :user :id))))

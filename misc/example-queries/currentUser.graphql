@@ -3,9 +3,9 @@ query Query {
     user {
       firstname
       lastname
-    }
-    inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
-      name
+      inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
+        name
+      }
     }
   }
 }

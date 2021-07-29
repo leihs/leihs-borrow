@@ -35,6 +35,7 @@
 (defn get-multiple [{{:keys [tx]} :request user-id ::target-user/id}
                     {:keys [ids pool-ids raise-if-not-all-ids-found]}
                     _]
+  (log/debug user-id)
   (let [categories
         (-> (cond-> {:with-all-reservable-categories
                      (with-all-reservable-categories-snip

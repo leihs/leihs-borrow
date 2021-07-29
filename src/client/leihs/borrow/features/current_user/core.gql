@@ -5,25 +5,24 @@ query getCurrentUser {
       firstname
       lastname
       name
+      delegations {
+        id
+        name
+      }
+      inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
+        id
+        name
+        maximumReservationTime
+        hasReservableItems
+      }
+      suspensions {
+        inventoryPool {
+          id
+        }
+      }
     }
     languageToUse {
       locale
     }
-    delegations {
-      id
-      name
-    }
-    inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
-      id
-      name
-      maximumReservationTime
-      hasReservableItems
-    }
-    suspensions {
-      inventoryPool {
-        id
-      }
-    }
   }
 }
-

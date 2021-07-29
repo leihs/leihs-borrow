@@ -69,23 +69,23 @@ describe 'currentUser' do
         currentUser {
           user {
             id
-          }
-          inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
-            name
-          }
-          unsubmittedOrder {
-            validUntil
-            reservations {
-              id
-              updatedAt
+            inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
+              name
             }
-          }
-          favoriteModels {
-            totalCount
-            edges {
-              node {
-                name
-                isReservable
+            unsubmittedOrder {
+              validUntil
+              reservations {
+                id
+                updatedAt
+              }
+            }
+            favoriteModels {
+              totalCount
+              edges {
+                node {
+                  name
+                  isReservable
+                }
               }
             }
           }
@@ -97,7 +97,7 @@ describe 'currentUser' do
     result = query(q, user.id)
     timestamp = \
       result
-      .dig(:data, :currentUser, :unsubmittedOrder, :reservations)
+      .dig(:data, :currentUser, :user, :unsubmittedOrder, :reservations)
       .first[:updatedAt]
 
     valid_until = \
@@ -108,25 +108,25 @@ describe 'currentUser' do
       currentUser: {
         user: {
           id: user.id,
-        },
-        inventoryPools: [
-          { name: 'Pool A (customer)' },
-          { name: 'Pool B (customer)' },
-          { name: 'Pool C (lending manager)' }
-        ],
-        unsubmittedOrder: {
-          validUntil: valid_until,
-          reservations: [
-            { id: '770632c4-f268-4ed6-bcc0-c8bc032bc9b5',
-              updatedAt: timestamp }
-          ]
-        },
-        favoriteModels: {
-          totalCount: 2,
-          edges: [
-            { node: { name: 'Model A', isReservable: true } },
-            { node: { name: 'Model B', isReservable: false } }
-          ]
+          inventoryPools: [
+            { name: 'Pool A (customer)' },
+            { name: 'Pool B (customer)' },
+            { name: 'Pool C (lending manager)' }
+          ],
+          unsubmittedOrder: {
+            validUntil: valid_until,
+            reservations: [
+              { id: '770632c4-f268-4ed6-bcc0-c8bc032bc9b5',
+                updatedAt: timestamp }
+            ]
+          },
+          favoriteModels: {
+            totalCount: 2,
+            edges: [
+              { node: { name: 'Model A', isReservable: true } },
+              { node: { name: 'Model B', isReservable: false } }
+            ]
+          }
         }
       }
     })

@@ -12,6 +12,7 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
+    [leihs.borrow.lib.helpers :refer [log]]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.client.routes :as routes]
@@ -78,14 +79,14 @@
   [:ul (doall (for [order orders] [:li {:key (:id order)} [order-line order]]))])
 
 (reg-sub ::target-users
-         :<- [::current-user/data]
+         :<- [::current-user/user-data]
          (fn [cu]
            (let [user (:user cu)
                  delegations (:delegations cu)]
              (concat [user] delegations))))
 
 (reg-sub ::user-id
-         :<- [::current-user/data]
+         :<- [::current-user/user-data]
          :<- [::filters/user-id]
          (fn [[co user-id]]
            (or user-id (-> co :user :id))))
@@ -93,6 +94,8 @@
 (defn search-panel []
   (let [user-id @(subscribe [::user-id])
         target-users @(subscribe [::target-users])]
+    (log user-id)
+    (log target-users)
     [:div.px-3.py-4.bg-light {:class "mt-3 mb-3"}
      [:div.form.form-compact
       [:label.row

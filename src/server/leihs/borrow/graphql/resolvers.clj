@@ -35,7 +35,7 @@
        args
        value]
     (let [[user-id :as distinct-user-ids]
-          (->> [(and (#{:CurrentUser :User} container) (:id value))
+          (->> [(and (#{:User} container) (:id value))
                 (:userId value)
                 (:userId args)]
                (remove nil?)

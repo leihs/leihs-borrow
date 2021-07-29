@@ -1,31 +1,33 @@
 query getShoppingCart($userId: UUID) {
   currentUser(userId: $userId) {
-    unsubmittedOrder {
-      validUntil
-      reservations {
-        endDate
-        id
-        inventoryPool {
+    user {
+      unsubmittedOrder {
+        validUntil
+        reservations {
+          endDate
           id
-          name
-        }
-        model {
-          id
-          name
-          images {
+          inventoryPool {
             id
-            imageUrl
+            name
           }
+          model {
+            id
+            name
+            images {
+              id
+              imageUrl
+            }
+          }
+          startDate
+          status
+          user {
+            id
+          }
+          # createdAt
+          # updatedAt
         }
-        startDate
-        status
-        user {
-          id
-        }
-        # createdAt
-        # updatedAt
+        invalidReservationIds
       }
-      invalidReservationIds
     }
   }
 }
