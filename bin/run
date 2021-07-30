@@ -11,9 +11,6 @@ if ! ./bin/build; then
   bin/build-core
 fi
 
-# FIXME: should be part of bin/build-core
-bin/build-translations
-
 java -jar target/leihs-borrow.jar run "$@"
 
 cd -
