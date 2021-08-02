@@ -1,82 +1,62 @@
 (ns leihs.borrow.features.customer-orders.index
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    #_[reagent.core :as reagent]
-    [re-frame.core :as rf]
-    [re-graph.core :as re-graph]
-    [shadow.resource :as rc]
-    [leihs.borrow.components :as ui]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.helpers :refer [log]]
-    [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.lib.filters :as filters]
-    [leihs.borrow.features.current-user.core :as current-user]
-    ["/leihs-ui-client-side-external-react" :as UI]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   #_[reagent.core :as reagent]
+   #_[re-frame.core :as rf]
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]
+   [leihs.borrow.components :as ui]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.borrow.lib.helpers :as h :refer [log]]
+   #_[leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.filters :as filters]
+   [leihs.borrow.features.current-user.core :as current-user]
+   ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.customer-orders)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/rentals-index
-  (fn-traced [{:keys [db]} [_ _]]
-    {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
-                {:userId (filters/user-id db)}
-                [::on-fetched-data]]}))
+ ::routes/rentals-index
+ (fn-traced [{:keys [db]} [_ _]]
+            {:dispatch [::re-graph/query
+                        (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
+                        {:userId (filters/user-id db)}
+                        [::on-fetched-data]]}))
 
 (reg-event-db
-  ::on-fetched-data
-  (fn-traced [db [_ {:keys [data errors]}]]
-    (-> db
-        (cond-> errors (assoc ::errors errors))
-        (assoc ::data data))))
+ ::on-fetched-data
+ (fn-traced [db [_ {:keys [data errors]}]]
+            (-> db
+                (cond-> errors (assoc ::errors errors))
+                (assoc ::data data))))
 
 (reg-sub ::data (fn [db _] (::data db)))
 
 (reg-sub ::errors (fn [db _] (::errors db)))
 
-(reg-sub 
-  ::submitted-orders 
-  :<- [::data]
-  (fn [data _]
-    (->> (get-in data [:submitted-orders :edges])
-         (map :node) 
-         not-empty)))
+(reg-sub
+ ::closed-rentals
+ :<- [::data]
+ (fn [data _]
+   (->> (get-in data [:closed-rentals :edges])
+        (map :node)
+        not-empty)))
 
-(reg-sub 
-  ::rejected-orders 
-  :<- [::data]
-  (fn [data _]
-    (->> (get-in data [:rejected-orders :edges])
-         (map :node)
-         not-empty)))
-
-(reg-sub 
-  ::approved-orders 
-  :<- [::data]
-  (fn [data _]
-    (->> (get-in data [:approved-orders :edges])
-         (map :node)
-         not-empty)))
-
-(defn order-line [order]
-  (let
-    [label (:purpose order)
-     href (routing/path-for ::routes/rentals-show :rental-id (:id order))]
-    [:<>
-     [:a {:href href} 
-      label " "
-      [:span.text-color-muted (ui/format-date :short (:created-at order))]]]))
-
-(defn orders-list [orders]
-  [:ul (doall (for [order orders] [:li {:key (:id order)} [order-line order]]))])
+(reg-sub
+ ::open-rentals
+ :<- [::data]
+ (fn [data _]
+   (->> (get-in data [:open-rentals :edges])
+        (map :node)
+        not-empty)))
 
 (reg-sub ::target-users
          :<- [::current-user/user-data]
@@ -110,17 +90,16 @@
                                           (-> ev .-target .-value)])
                                (dispatch [::routes/rentals-index]))}
          (doall
-           (for [user target-users]
-             [:option {:value (:id user) :key (:id user)}
-              (:name user)]))]]]]]))
+          (for [user target-users]
+            [:option {:value (:id user) :key (:id user)}
+             (:name user)]))]]]]]))
 
 (defn view []
   (let [data @(subscribe [::data])
         errors @(subscribe [::errors])
         is-loading? (not (or data errors))
-        submitted-orders @(subscribe [::submitted-orders])
-        rejected-orders @(subscribe [::rejected-orders])
-        approved-orders @(subscribe [::approved-orders])]
+        open-rentals @(subscribe [::open-rentals])
+        closed-rentals @(subscribe [::closed-rentals])]
 
     [:> UI/Components.AppLayout.Page
      {:title (t :title)}
@@ -130,23 +109,12 @@
        errors [ui/error-view errors]
        :else
        [:<>
-        (when-not (empty? submitted-orders)
-          [:div.mt-3
-           [:h2.text-xl.font-semibold (t :active-orders)]
-           [orders-list submitted-orders ""]])
+        [:> UI/Components.UserRentalsList
+         (h/camel-case-keys
+          {:open-rentals open-rentals :closed-rentals closed-rentals})]
 
-        (when-not (empty? rejected-orders)
-          [:div.mt-3
-           [:h2.text-xl.font-semibold (t :rejected-orders)]
-           [orders-list rejected-orders]])
+        #_[:pre {:style {:white-space :pre-wrap}} (pr-str open-rentals)]
 
-        (when-not (empty? approved-orders)
-          [:div.mt-3
-           [:h2.text-xl.font-semibold (t :approved-orders)]
-           [orders-list approved-orders ""]])
-
-        #_[:pre {:style {:white-space :pre-wrap}} (pr-str rejected-orders)]
-
-        #_[:pre {:style {:white-space :pre-wrap}} (pr-str approved-orders)]
+        #_[:pre {:style {:white-space :pre-wrap}} (pr-str closed-rentals)]
 
         #_[:p.debug (pr-str data)]])]))

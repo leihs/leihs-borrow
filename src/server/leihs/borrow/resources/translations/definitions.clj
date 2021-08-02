@@ -6,10 +6,10 @@
                                  :navigation-menu "Navigation Menu"}
                     :categories {:title "Categories"}
                     :current-user {:title "Current User"}
-                    :customer-orders {:title "Orders"
-                                      :active-orders "Active Orders"
-                                      :rejected-orders "Rejected Orders"
-                                      :approved-orders "Approved Orders"}
+                    :customer-orders {:title "My Rentals"
+                                      :open-orders "Open"
+                                      :closed-orders "Completed"
+                                      :direct-rental-from-pool "Direct Rental from "}
                     :delegations {:title "Delegations"
                                   :responsible "Responsible"
                                   :members "Members"
@@ -56,22 +56,20 @@
                                     :order-title "Order Name"
                                     :order-title-placeholder "Name Your Order"
                                     :order-purpose "Order Purpose"
-                                    :order-purpose-placeholder "Enter a purpose"
-                                    }
+                                    :order-purpose-placeholder "Enter a purpose"}
                     :templates {:title "Templates"
                                 :some-not-reservable "Some models are not reservable!"}
                     :visits {:pickups {:title "Pickups"}
-                             :returns {:title "Rückgaben"}}
-                    }}
+                             :returns {:title "Rückgaben"}}}}
    :de-CH {:borrow {:all "Alle"
                     :about-page {:title "Übersicht"
                                  :navigation-menu "Navigationsmenü"}
                     :categories {:title "Kategorien"}
                     :current-user {:title "Aktueller Benutzer"}
-                    :customer-orders {:title "Bestellungen"
-                                      :active-orders "Aktive Bestellungen"
-                                      :rejected-orders "Abgelehnte Bestellungen"
-                                      :approved-orders "Genehmigte Bestellungen"}
+                    :customer-orders {:title "Meine Ausleihen"
+                                      :open-orders "Offen"
+                                      :closed-orders "Abgeschlossen"
+                                      :direct-rental-from-pool "Direktausleihe von "}
                     :delegations {:title "Delegationen"
                                   :responsible "Verantwortliche Person"
                                   :members "Mitglieder"
@@ -122,6 +120,5 @@
                     :templates {:title "Vorlagen"
                                 :some-not-reservable "Some models are not reservable!"}
                     :visits {:pickups {:title "Abholungen"}
-                             :returns {:title "Rückgaben"}}
-                    }}})
+                             :returns {:title "Rückgaben"}}}}})
 

@@ -1,30 +1,53 @@
-query customerOrdersIndex($userId: UUID) {
-  submittedOrders: rentals(userId: $userId states: [SUBMITTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
-    ...OrderConProps
+query myRentals($userId: UUID) {
+  openRentals: rentals(
+    userId: $userId
+    rentalState: OPEN
+    orderBy: [{ attribute: CREATED_AT, direction: DESC }]
+  ) {
+    ...rentalConProps
   }
-  rejectedOrders: rentals(userId: $userId states: [REJECTED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
-    ...OrderConProps
-  }
-  approvedOrders: rentals(userId: $userId states: [APPROVED] orderBy: [{ attribute: CREATED_AT, direction: DESC }]) {
-    ...OrderConProps
+  closedRentals: rentals(
+    userId: $userId
+    rentalState: CLOSED
+    orderBy: [{ attribute: CREATED_AT, direction: DESC }]
+  ) {
+    ...rentalConProps
   }
 }
 
-fragment OrderConProps on RentalsConnection {
+fragment rentalConProps on RentalsConnection {
   edges {
     node {
-      ...orderProps
+      ...rentalProps
     }
   }
 }
 
-fragment orderProps on Rental {
+fragment rentalProps on Rental {
   id
+  borrowUrl
+  isCustomerOrder
   state
+  rentalState
+  title
   purpose
+  fromDate
+  untilDate
+  totalDays
+  totalQuantity
   createdAt
   updatedAt
+  reservations {
+    id
+    status
+    quantity
+    inventoryPool {
+      id
+      name
+    }
+  }
   subOrdersByPool {
     id
+    state
   }
 }
