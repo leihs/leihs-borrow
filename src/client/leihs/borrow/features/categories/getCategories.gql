@@ -1,12 +1,8 @@
-query getCategories(
-  $userId: UUID,
-  $ids: [UUID!],
-  $poolIds: [UUID!]
-) {
+query getCategories($userId: UUID, $ids: [UUID!], $poolIds: [UUID!]) {
   categories: categories(
-    userId: $userId,
-    ids: $ids,
-    poolIds: $poolIds,
+    userId: $userId
+    ids: $ids
+    poolIds: $poolIds
     raiseIfNotAllIdsFound: true
   ) {
     id
@@ -17,6 +13,9 @@ query getCategories(
     children(userId: $userId, poolIds: $poolIds) {
       id
       name
+      images {
+        imageUrl
+      }
     }
   }
 }

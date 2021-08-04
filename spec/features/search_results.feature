@@ -19,7 +19,8 @@ Feature: Search results (and caching)
 
   Scenario: Home page
     # Show all without filtering
-    When I click button "Get Results"
+    When I click on "Zeige Suche/Filter"
+    And I click button "Get Results"
     Then I see 20 different "Beamer" models
 
     When I click 3 times on "Load more"
@@ -28,18 +29,22 @@ Feature: Search results (and caching)
     And there is no "Load more" button
 
     # Clear filters, results and cache (!)
+    # And I pry
     When I click on "Clear"
+    # And I go to the homepage
     Then I see category "Cameras"
     And I see category "Beamers"
 
-    When I click button "Get Results"
+    When I click on "Zeige Suche/Filter"
+    And I click button "Get Results"
     Then I see 20 different "Beamer" models
     And there is "Load more" button
     And I click on "Clear"
 
   Scenario: Filter with search term (and caching)
     # Filter with search term
-    When I enter "Camera" in the search field
+    When I click on "Zeige Suche/Filter"
+    And I enter "Camera" in the search field
     And I click button "Get Results"
     And I click on "Load more"
     Then I see 40 different "Camera" models
@@ -66,7 +71,8 @@ Feature: Search results (and caching)
     Then I see 40 different "Camera" models
     And there is no "Load more" button
 
-    When I select pool "Pool B"
+    When I click on "Zeige Suche/Filter"
+    And I select pool "Pool B"
     And I click button "Get Results"
     Then there are no results
     And there is no "Load more" button
@@ -82,7 +88,9 @@ Feature: Search results (and caching)
     And there are 2 borrowable items for model "Model A" in pool "Pool A"
     And there is a model "Model B"
     And there is 1 borrowable item for model "Model B" in pool "Pool A"
-    When I choose to filter by availabilty
+
+    When I click on "Zeige Suche/Filter"
+    And I choose to filter by availabilty
     And I choose next working day as start date
     And I choose next next working day as end date
     And I set the quantity to 2

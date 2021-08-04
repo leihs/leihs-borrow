@@ -1,62 +1,61 @@
 (ns leihs.borrow.app
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [reagent.core :as r]
-    [reagent.dom :as rdom]
-    [re-frame.core :as rf]
-    [leihs.borrow.lib.re-graph :as re-graph]
-    #_[shadow.resource :as rc]
-    [leihs.borrow.components :as uic]
-    [leihs.borrow.ui.main-nav :as main-nav]
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [reagent.core :as r]
+   [reagent.dom :as rdom]
+   [re-frame.core :as rf]
+   [leihs.borrow.lib.re-graph :as re-graph]
+   #_[shadow.resource :as rc]
+   [leihs.borrow.components :as uic]
+   [leihs.borrow.ui.main-nav :as main-nav]
 
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.helpers :refer [spy]]
-    [leihs.borrow.lib.requests :as requests]
-    [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.lib.translate :as translate]
-    [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.borrow.lib.helpers :refer [spy]]
+   [leihs.borrow.lib.requests :as requests]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.lib.translate :as translate]
+   [leihs.borrow.client.routes :as routes]
 
-    [leihs.borrow.features.about-page.core :as about-page]
-    [leihs.borrow.features.categories.index :as category-index]
-    [leihs.borrow.features.categories.show :as category-show]
-    [leihs.borrow.features.current-user.show :as current-user-show]
-    [leihs.borrow.features.customer-orders.index :as customer-orders-index]
-    [leihs.borrow.features.customer-orders.show :as customer-orders-show]
-    [leihs.borrow.features.delegations.index :as delegations-index]
-    [leihs.borrow.features.delegations.show :as delegations-show]
-    [leihs.borrow.features.favorite-models.core :as favorite-models]
-    [leihs.borrow.features.home-page.core :as home-page]
-    [leihs.borrow.features.model-show.core :as model-show]
-    [leihs.borrow.features.models.core :as models]
-    [leihs.borrow.features.pools.index :as pools-index]
-    [leihs.borrow.features.pools.show :as pools-show]
-    [leihs.borrow.features.shopping-cart.core :as shopping-cart]
-    [leihs.borrow.features.shopping-cart.draft :as draft-order]
-    [leihs.borrow.features.shopping-cart.timeout :as timeout]
-    [leihs.borrow.features.templates.index :as templates-index]
-    [leihs.borrow.features.templates.show :as templates-show]
-    [leihs.borrow.features.visits.pickups :as pickups-index]
-    [leihs.borrow.features.visits.returns :as returns-index]
-    ;; [leihs.borrow.shared-ui :as UI]
-    ["/leihs-ui-client-side-external-react" :as UI]
-    [leihs.borrow.testing.step-1 :as testing-step-1]
-    [leihs.borrow.testing.step-2 :as testing-step-2]
-    ))
+   [leihs.borrow.features.about-page.core :as about-page]
+   [leihs.borrow.features.categories.index :as category-index]
+   [leihs.borrow.features.categories.show :as category-show]
+   [leihs.borrow.features.current-user.show :as current-user-show]
+   [leihs.borrow.features.customer-orders.index :as customer-orders-index]
+   [leihs.borrow.features.customer-orders.show :as customer-orders-show]
+   [leihs.borrow.features.delegations.index :as delegations-index]
+   [leihs.borrow.features.delegations.show :as delegations-show]
+   [leihs.borrow.features.favorite-models.core :as favorite-models]
+   [leihs.borrow.features.home-page.core :as home-page]
+   [leihs.borrow.features.model-show.core :as model-show]
+   [leihs.borrow.features.models.core :as models]
+   [leihs.borrow.features.pools.index :as pools-index]
+   [leihs.borrow.features.pools.show :as pools-show]
+   [leihs.borrow.features.shopping-cart.core :as shopping-cart]
+   [leihs.borrow.features.shopping-cart.draft :as draft-order]
+   [leihs.borrow.features.shopping-cart.timeout :as timeout]
+   [leihs.borrow.features.templates.index :as templates-index]
+   [leihs.borrow.features.templates.show :as templates-show]
+   [leihs.borrow.features.visits.pickups :as pickups-index]
+   [leihs.borrow.features.visits.returns :as returns-index]
+;; [leihs.borrow.shared-ui :as UI]
+   ["/leihs-ui-client-side-external-react" :as UI]
+   [leihs.borrow.testing.step-1 :as testing-step-1]
+   [leihs.borrow.testing.step-2 :as testing-step-2]))
 
 ;-; INIT APP & DB
 (reg-event-fx
-  ::load-app
-  (fn-traced [{:keys [db]}]
-    {:db (-> db
+ ::load-app
+ (fn-traced [{:keys [db]}]
+            {:db (-> db
              ; NOTE: clear the routing instance on (re-)load,
              ; otherwise the event wont re-run when hot reloading!
-             (dissoc , :routing/routing)
-             (assoc , :meta {:app {:debug false}}))}))
+                     (dissoc , :routing/routing)
+                     (assoc , :meta {:app {:debug false}}))}))
 
 ;-; EVENTS
 (reg-event-db :set-debug (fn-traced [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
@@ -88,8 +87,7 @@
     [:p.mt-4
      [:button.btn.btn-lg.btn-dark.rounded-pill.px-4
       {:type :button, :on-click #(-> js/window (.-location) (.reload))}
-      "RELOAD"]]
-    ]])
+      "RELOAD"]]]])
 
 ; (defn- not-found-view [] [:h1.font-black.text-monospace.text-5xl.text-center.p-8 "404 NOT FOUND!"])
 ; (defn- wip-models-index-view [] [:h1.font-black.text-monospace.text-5xl.text-center.p-8 "WIP MODELS INDEX!"])
@@ -97,7 +95,10 @@
 ;-; CORE APP
 (def views {::routes/home home-page/view
             ::routes/about-page about-page/view
-            ::routes/categories-index category-index/view
+
+            ;; NOTE: categories index not currently used in design spec
+            ;; ::routes/categories-index category-index/view
+
             ::routes/categories-show category-show/view
             ::routes/current-user-show current-user-show/view
             ::routes/delegations-index delegations-index/view
@@ -127,8 +128,8 @@
 ; when going to '/' instead of '/borrow', do a redirect.
 ; this is only ever going to happen in development mode.
 (reg-event-fx
-  ::routes/absolute-root
-  (fn-traced [_ _] {:routing/navigate [::routes/home]}))
+ ::routes/absolute-root
+ (fn-traced [_ _] {:routing/navigate [::routes/home]}))
 
 (reg-fx :alert (fn [msg] (js/alert msg)))
 
@@ -139,12 +140,12 @@
 
 (defn ^:export main []
   (translate/fetch-and-init
-    (fn callback []
+   (fn callback []
       ; start the app framework; NOTE: order is important!
-      (re-graph/init)
-      (dispatch [::load-app])
-      (dispatch [:routing/init-routing routes/routes-map])
+     (re-graph/init)
+     (dispatch [::load-app])
+     (dispatch [:routing/init-routing routes/routes-map])
       ; start the ui
-      (mount-root))))
+     (mount-root))))
 
 (main)

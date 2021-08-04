@@ -1,28 +1,29 @@
 (ns leihs.borrow.features.categories.show
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [reagent.core :as r]
-    [re-frame.core :as rf]
-    [re-graph.core :as re-graph]
-    [shadow.resource :as rc]
-    [re-frame.std-interceptors :refer [path]]
-    [clojure.string :refer [join split #_replace-first]]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.helpers :refer [spy]]
-    [leihs.borrow.lib.localstorage :as ls]
-    [leihs.borrow.lib.filters :as filters]
-    [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.lib.pagination :as pagination]
-    [leihs.borrow.components :as ui]
-    [leihs.borrow.lib.helpers :as h]
-    ["/leihs-ui-client-side-external-react" :as UI]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.features.models.core :as models]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [reagent.core :as r]
+   [re-frame.core :as rf]
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]
+   [re-frame.std-interceptors :refer [path]]
+   [clojure.string :refer [join split #_replace-first]]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.borrow.lib.helpers :refer [spy]]
+   [leihs.borrow.lib.localstorage :as ls]
+   [leihs.borrow.lib.filters :as filters]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.lib.pagination :as pagination]
+   [leihs.borrow.components :as ui]
+   [leihs.borrow.lib.helpers :as h]
+   ["/leihs-ui-client-side-external-react" :as UI]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.features.models.core :as models]
+   [leihs.borrow.features.categories.core :as categories]))
 
 (def query
   (rc/inline "leihs/borrow/features/categories/getCategoryShow.gql"))
@@ -32,75 +33,78 @@
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/categories-show
-  (fn-traced [{:keys [db]} [_ {:keys [query-params] :as args}]]
-    (let [categories-path (get-in args [:route-params :categories-path])
-          category-ids (split categories-path #"/")
-          ancestor-ids (butlast category-ids)
-          category-id (last category-ids)
-          parent-id (last ancestor-ids)
-          user-id (filters/user-id db)]
-      {:dispatch-n (list [::filters/set-multiple query-params]
+ ::routes/categories-show
+ (fn-traced [{:keys [db]} [_ {:keys [query-params] :as args}]]
+            (let [categories-path (get-in args [:route-params :categories-path])
+                  category-ids (split categories-path #"/")
+                  ancestor-ids (butlast category-ids)
+                  category-id (last category-ids)
+                  parent-id (last ancestor-ids)
+                  ;user-id (filters/user-id db)
+                  ]
+
+              ;; FIXME: this flickers when navigation and in general should be 1 single query!
+              {:dispatch-n (list [::filters/set-multiple query-params]
 
                          ; We include the actual category itself because the
                          ; backend validates if all categories in the path
                          ; are still among the reservable ones.
-                         [::re-graph/query categories-query
-                          {:ids category-ids
-                           :poolIds (when-let [pool-id (filters/pool-id db)]
-                                      [pool-id])}
-                          [::on-fetched-categories-data]]
+                                 [::re-graph/query categories-query
+                                  {:ids category-ids
+                                   :poolIds (when-let [pool-id (filters/pool-id db)]
+                                              [pool-id])}
+                                  [::on-fetched-categories-data]]
 
                          ; We fetch the actual category again to get the correct
                          ; label in the context of the parent category.
-                         [::re-graph/query
-                          query
-                          {:categoryId category-id :parentId parent-id}
-                          [::on-fetched-category-data category-id]]
+                                 [::re-graph/query
+                                  query
+                                  {:categoryId category-id :parentId parent-id}
+                                  [::on-fetched-category-data category-id]]
 
-                         [::models/get-models {:categoryId category-id}])})))
-
-(reg-event-db
-  ::on-fetched-categories-data
-  (fn-traced [db [_ {:keys [data errors]}]]
-    (-> db
-        (cond-> errors (assoc-in [::errors] errors))
-        (update-in [:ls ::data]
-                   #(apply merge %1 %2)
-                   (->> data
-                        :categories
-                        (map #(hash-map (:id %) %)))))))
+                                 [::models/get-models {:categoryId category-id}])})))
 
 (reg-event-db
-  ::on-fetched-category-data
-  (fn-traced [db [_ category-id {:keys [data errors]}]]
-    (-> db
-        (cond-> errors
-          (assoc-in [::errors category-id] errors))
-        (update-in [:ls ::data category-id]
-                   merge
-                   (:category data)))))
+ ::on-fetched-categories-data
+ (fn-traced [db [_ {:keys [data errors]}]]
+            (-> db
+                (cond-> errors (assoc-in [::errors] errors))
+                (update-in [:ls ::data]
+                           #(apply merge %1 %2)
+                           (->> data
+                                :categories
+                                (map #(hash-map (:id %) %)))))))
+
+(reg-event-db
+ ::on-fetched-category-data
+ (fn-traced [db [_ category-id {:keys [data errors]}]]
+            (-> db
+                (cond-> errors
+                  (assoc-in [::errors category-id] errors))
+                (update-in [:ls ::data category-id]
+                           merge
+                           (:category data)))))
 
 (reg-event-fx
-  ::clear
-  (fn-traced [_ [_ nav-args extra-vars]]
-    {:dispatch-n (list [::filters/clear-current]
-                       [::models/clear-data]
-                       [:routing/navigate [::routes/categories-show nav-args]]
-                       [::models/get-models extra-vars])}))
+ ::clear
+ (fn-traced [_ [_ nav-args extra-vars]]
+            {:dispatch-n (list [::filters/clear-current]
+                               [::models/clear-data]
+                               [:routing/navigate [::routes/categories-show nav-args]]
+                               [::models/get-models extra-vars])}))
 
 (reg-sub
-  ::ancestors
-  (fn [db [_ ids]]
-    (map #(get-in db [:ls ::data %]) ids)))
+ ::ancestors
+ (fn [db [_ ids]]
+   (map #(get-in db [:ls ::data %]) ids)))
 
 (reg-sub
-  ::category-data
-  (fn [db [_ id]] (get-in db [:ls ::data id])))
+ ::category-data
+ (fn [db [_ id]] (get-in db [:ls ::data id])))
 
 (reg-sub
-  ::errors
-  (fn [db [_ id]] (get-in db [::errors id])))
+ ::errors
+ (fn [db [_ id]] (get-in db [::errors id])))
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])
@@ -113,7 +117,10 @@
         errors @(subscribe [::errors category-id])
         is-loading? (not (and category
                               (every? some? cat-ancestors)))
-        extra-args {:categoryId category-id}]
+        extra-search-args {:categoryId category-id}
+
+        ;; FIXME: get current url from router!
+        child-cats  (for [cat children] (merge cat {:url (-> js/window .-location .-pathname (str "/" (:id cat)))}))]
 
     [:<>
      (cond
@@ -123,27 +130,45 @@
        errors [ui/error-view errors]
        :else
 
-       [:> UI/Components.AppLayout.Page {:title (:name category)}
+       [:> UI/Components.AppLayout.Page
 
-        [:> UI/Components.CategoryShowPage
-          ;;  FIXME: include `url` in API!
-          {:ancestorCats (h/camel-case-keys cat-ancestors)
-           :childCats (h/camel-case-keys (for [cat children]
-            ;; FIXME: get current url from router!
-            (merge cat {:url (-> js/window .-location .-pathname (str "/" (:id cat)))})))
+        [:> UI/Components.Design.PageLayout.Header
+         {:title (:name category)
 
-           ;; FIXME: either add url to all ancestor cats OR extend router to take list of ids (instead of prejoined path)
-           :getPathForCategory (fn [path] (routing/path-for ::routes/categories-show :categories-path path))}
+          :preTitle (r/as-element
+                     [:> UI/Components.CategoryBreadcrumbs
+                      {:className "text-center"
+                       :ancestorCats (h/camel-case-keys cat-ancestors)
+                       ;; FIXME: either add url to all ancestor cats OR extend router to take list of ids (instead of prejoined path)
+                       :getPathForCategory (fn [path] (routing/path-for ::routes/categories-show :categories-path path))}])}
 
-          ; TMP: search panel and model list as children
-          (r/as-element
-            [models/search-and-list
-            #(dispatch [:routing/navigate
-                        [::routes/categories-show
+
+         [:> UI/Components.FilterBubblePanelSwitcher
+          {:labelText "Zeige Suche/Filter"}
+          [:<>
+           [:span.fs-6.text-danger "TODO: new panel design, fullscreen"]
+           (r/as-element
+            [models/search-panel
+             #(dispatch [:routing/navigate
+                         [::routes/categories-show
                           {:categories-path categories-path :query-params %}]])
-            #(dispatch [::clear
-                        {:categories-path categories-path}
-                        {:categoryId category-id}])
-            extra-args])]])]))
+             #(dispatch [::clear
+                         {:categories-path categories-path}
+                         {:categoryId category-id}])
+             extra-search-args])]]]
+
+        [:<>
+         [:> UI/Components.Design.PageLayout.Stack2
+
+          (when-not (empty? child-cats)
+            [:> UI/Components.Design.Section
+             {:title "Unterkategorien" :collapsible true}
+
+             (categories/categories-list child-cats)])
+
+          [:> UI/Components.Design.Section
+           {:title "Gegenstände" :collapsible true}
+
+           [models/search-results extra-search-args]]]]])]))
 
 

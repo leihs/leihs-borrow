@@ -16,6 +16,7 @@ Feature: Delegations
 
     # search for a model
     And I visit "/app/borrow/"
+    And I click on "Zeige Suche/Filter"
     And I enter "Kamera" in the search field
     And I select "Delegation D" xxx
     And I choose to filter by availabilty

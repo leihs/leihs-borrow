@@ -2,11 +2,10 @@ step 'there are :n different :model models with a borrowable items in :pool' do 
   pool = InventoryPool.find(name: pool)
   (1..n.to_i).each do |i|
     model = FactoryBot.create(:leihs_model, product: "#{model_name} #{i}")
-    FactoryBot.create(:item,
-                      is_borrowable: true,
-                      leihs_model: model,
-                      responsible: pool,
-                      owner: pool)
+    FactoryBot.create(
+      :item,
+      is_borrowable: true, leihs_model: model, responsible: pool, owner: pool
+    )
   end
 end
 
@@ -25,7 +24,10 @@ step 'all the :model_name models belong to the :category category' do |model_nam
 end
 
 step 'I click :n times on :txt' do |n, txt|
-  n.to_i.times { click_on(txt); sleep(1) }
+  n.to_i.times do
+    click_on(txt)
+    sleep(1)
+  end
 end
 
 step 'there is :txt button' do |txt|
@@ -36,8 +38,14 @@ step 'there is no :txt button' do |txt|
   expect(page).not_to have_content txt
 end
 
+step 'I go to the homepage' do
+  within('.ui-main-nav') { click_on('LEIHS') }
+end
+
 step 'I see category :category_name' do |category_name|
-  find('.ui-models-list-item', text: category_name)
+  within('section', text: 'Categories') do
+    expect(find('a', text: category_name))
+  end
 end
 
 step 'I enter :term in the search field' do |term|
@@ -53,9 +61,9 @@ step 'I select all pools' do
 end
 
 step 'there are no results' do
-  expect(page).not_to have_selector '.ui-models-list-item'
+  expect(page).not_to have_selector '.square-container'
 end
 
-step 'I don\'t see any :model_name model' do |model_name|
+step "I don't see any :model_name model" do |model_name|
   expect(page).not_to have_content model_name
 end

@@ -1,25 +1,25 @@
 (ns leihs.borrow.features.favorite-models.core
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    #_[reagent.core :as r]
-    [re-frame.core :as rf]
-    [re-graph.core :as re-graph]
-    [shadow.resource :as rc]
-    #_[leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.filters :as filters]
-    [leihs.borrow.lib.localstorage :as ls]
-    [leihs.borrow.lib.pagination :as pagination]
-    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.components :as ui] 
-    ["/leihs-ui-client-side-external-react" :as UI]
-    [leihs.borrow.features.models.core :as models]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   #_[reagent.core :as r]
+   [re-frame.core :as rf]
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]
+   #_[leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.borrow.lib.filters :as filters]
+   [leihs.borrow.lib.localstorage :as ls]
+   [leihs.borrow.lib.pagination :as pagination]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.components :as ui]
+   ["/leihs-ui-client-side-external-react" :as UI]
+   [leihs.borrow.features.models.core :as models]))
 
 (set-default-translate-path :borrow.favorite-models)
 
@@ -27,26 +27,27 @@
 
 ;-; EVENTS 
 (reg-event-fx
-  ::routes/models-favorites
-  (fn-traced [_ {:keys [query-params]}]
-    {:dispatch-n (list [::filters/set-multiple query-params]
-                       [::models/get-models EXTRA-PARAMS])}))
+ ::routes/models-favorites
+ (fn-traced [_ {:keys [query-params]}]
+            {:dispatch-n (list [::filters/set-multiple query-params]
+                               [::models/get-models EXTRA-PARAMS])}))
 
 (reg-event-fx
-  ::clear
-  (fn-traced [_ _]
-    {:dispatch-n (list [::filters/clear-current]
-                       [::models/clear-data]
-                       [:routing/navigate [::routes/models-favorites]]
-                       [::models/get-models EXTRA-PARAMS])}))
+ ::clear
+ (fn-traced [_ _]
+            {:dispatch-n (list [::filters/clear-current]
+                               [::models/clear-data]
+                               [:routing/navigate [::routes/models-favorites]]
+                               [::models/get-models EXTRA-PARAMS])}))
 
 (defn view []
   (let [models @(subscribe [::models/data])]
     [:> UI/Components.AppLayout.Page
      {:title (t :title)}
-     
-     [models/search-and-list
-      #(dispatch [:routing/navigate
-                  [::routes/models-favorites {:query-params %}]])
-      #(dispatch [::clear])
-      EXTRA-PARAMS]]))
+
+    ;;  FIXME: use new list…
+     #_[models/search-and-list
+        #(dispatch [:routing/navigate
+                    [::routes/models-favorites {:query-params %}]])
+        #(dispatch [::clear])
+        EXTRA-PARAMS]]))
