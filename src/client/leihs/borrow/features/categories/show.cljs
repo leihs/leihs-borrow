@@ -158,7 +158,7 @@
              extra-search-args])]]]
 
         [:<>
-         [:> UI/Components.Design.PageLayout.Stack2
+         [:> UI/Components.Design.Stack
 
           (when-not (empty? child-cats)
             [:> UI/Components.Design.Section

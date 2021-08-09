@@ -49,7 +49,7 @@
            filters
            nil]]]]
 
-       [:> UI/Components.Design.PageLayout.Stack2
+       [:> UI/Components.Design.Stack
         [:> UI/Components.Design.Section {:title (t :borrow.categories/title)}
 
          (categories/categories-list cats)]]])))
