@@ -134,7 +134,7 @@
     {
       "label": "prepare ui",
       "type": "shell",
-      "command": "./scripts/prepare-shared-ui.sh",
+      "command": "cd leihs-ui && bin/deps-install && cd - && ./scripts/prepare-shared-ui.sh",
       "problemMatcher": [],
       "presentation": {
         "echo": true,
