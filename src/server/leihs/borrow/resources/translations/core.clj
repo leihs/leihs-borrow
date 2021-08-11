@@ -39,13 +39,13 @@
       (->> (jdbc/execute! tx))))
 
 (defn insert-all-borrow [tx]
-  (doseq [[locale t-map] definitions]
-    (doseq [[k-path translation] (translation-key-paths-with-vals t-map)]
-      (let [k (->> k-path (map name) (string/join "."))]
-        (-> (sql/insert-into :translations_default)
-            (sql/values [{:key k, :translation translation, :language_locale (name locale)}])
-            sql/format
-            (->> (jdbc/execute! tx)))))))
+  (doseq [[k-path translation] (translation-key-paths-with-vals definitions)]
+    (let [locale (last k-path)
+          k (->> k-path butlast (map name) (string/join "."))]
+      (-> (sql/insert-into :translations_default)
+          (sql/values [{:key k, :translation translation, :language_locale (name locale)}])
+          sql/format
+          (->> (jdbc/execute! tx))))))
 
 (defn reload []
   (when-not @loaded?
@@ -62,12 +62,12 @@
       (let [delete-statement "DELETE FROM translations_default WHERE key like 'borrow.%';\n"]
         (print delete-statement)
         (.write w delete-statement))
-      (doseq [[locale t-map] definitions]
-        (doseq [[k-path translation] (translation-key-paths-with-vals t-map)]
-          (let [k (->> k-path (map name) (string/join "."))
-                insert-statement (str "INSERT INTO translations_default (key, translation, language_locale) "
-                                      "VALUES ('" k "', '" translation "', '" (name locale) "');\n")]
-            (print insert-statement)
-            (.write w insert-statement)))))))
+      (doseq [[k-path translation] (translation-key-paths-with-vals definitions)]
+        (let [locale (last k-path)
+              k (->> k-path butlast (map name) (string/join "."))
+              insert-statement (str "INSERT INTO translations_default (key, translation, language_locale) "
+                                    "VALUES ('" k "', '" translation "', '" (name locale) "');\n")]
+          (print insert-statement)
+          (.write w insert-statement))))))
 
 (comment (reload))
