@@ -1,0 +1,11 @@
+mutation addToCart(
+  $userId: UUID,
+  $ids: [UUID!]
+) {
+   addToCart(
+    userId: $userId,
+    ids: $ids
+  ) {
+    id
+  }
+}
