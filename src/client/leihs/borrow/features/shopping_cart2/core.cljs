@@ -25,7 +25,7 @@
     [leihs.borrow.features.current-user.core :as current-user]
     ["/leihs-ui-client-side-external-react" :as UI]))
 
-(set-default-translate-path :borrow.shopping-cart)
+(set-default-translate-path :borrow.shopping-cart2)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -406,10 +406,15 @@
                [:option {:value (:id user) :key (:id user)}
                 (:name user)]))]]]]])))
 
-(defn view []
-  [:> UI/Components.ShoppingCart.EmptyCart])
+(defn empty-new-rental []
+  [:div.page-inset-x.py-4
+   [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
+   [:> UI/Components.Design.Stack {:space 4 :className "text-center"}
+    (t :empty-order/no-items)
+    [:a.text-decoration-underline {:href "/app/borrow/"}
+     (t :empty-order/link-to-catalog)]]])
 
-#_(defn view []
+(defn view []
   (let [purpose (reagent/atom "")
         title (reagent/atom "")
         linked? (reagent/atom true)]
@@ -422,15 +427,10 @@
             summary @(subscribe [::order-summary])
             is-loading? (not (or data errors))]
         [:> UI/Components.AppLayout.Page
-         {:title (t :order-overview)}
-         [search-panel]
-
          (cond
            is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
            errors [ui/error-view errors]
-           (empty? grouped-reservations)
-           [:> UI/Components.ShoppingCart2.EmptyCart]
-
+           (empty? grouped-reservations) [empty-new-rental]
            :else
            [:<>
             [:div

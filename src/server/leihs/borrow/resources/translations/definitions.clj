@@ -111,6 +111,12 @@
                  :closed-singular {:de-CH "{days} bis {date}, {count} Gegenstand"}
                  :closed-plural {:de-CH "{days} bis {date}, {count} Gegenstände"}}}
 
+    :shopping-cart2 {:title {:en-GB "New Rental"
+                             :de-CH "Neue Ausleihe"}
+                     :empty-order {:no-items {:en-GB "No items added yet"
+                                              :de-CH "Noch keine Gegenstände hizugefügt"}
+                                   :link-to-catalog {:en-GB "Click here for the catalog"
+                                                     :de-CH "Hier geht's zum Katalog"}}}
     :shopping-cart {:title {:en-GB "Cart"
                             :de-CH "Warenkorb"}
                     :edit {:en-GB "Edit"
