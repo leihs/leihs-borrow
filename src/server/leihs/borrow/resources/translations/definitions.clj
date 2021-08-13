@@ -20,7 +20,9 @@
                   :members {:en-GB "Members"
                             :de-CH "Mitglieder"}
                   :loading {:en-GB "Loading delegation"
-                            :de-CH "Delegation wird geladen"}}
+                            :de-CH "Delegation wird geladen"}
+                  :personal {:en-GB "personal"
+                             :de-CH "persönlich"}}
     :favorite-models {:title {:en-GB "Favorites"
                               :de-CH "Favoriten"}}
     :filter {:search {:en-GB "Search"

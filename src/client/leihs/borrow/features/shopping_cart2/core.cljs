@@ -16,7 +16,7 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
-    [leihs.borrow.lib.helpers :as help]
+    [leihs.borrow.lib.helpers :as help :refer [log spy]]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
@@ -407,12 +407,15 @@
                 (:name user)]))]]]]])))
 
 (defn empty-new-rental []
-  [:div.page-inset-x.py-4
-   [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
-   [:> UI/Components.Design.Stack {:space 4 :className "text-center"}
-    (t :empty-order/no-items)
-    [:a.text-decoration-underline {:href "/app/borrow/"}
-     (t :empty-order/link-to-catalog)]]])
+  (let [user @(subscribe [::current-user/user-data])]
+    [:div.page-inset-x.py-4
+     [:> UI/Components.Delegations.Switcher {:user user
+                                             :t {:personal (t :!borrow.delegations/personal)}}]
+     [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
+     [:> UI/Components.Design.Stack {:space 4 :className "text-center"}
+      (t :empty-order/no-items)
+      [:a.text-decoration-underline {:href "/app/borrow/"}
+       (t :empty-order/link-to-catalog)]]]))
 
 (defn view []
   (let [purpose (reagent/atom "")
@@ -426,7 +429,7 @@
             grouped-reservations @(subscribe [::reservations-grouped])
             summary @(subscribe [::order-summary])
             is-loading? (not (or data errors))]
-        [:> UI/Components.AppLayout.Page
+        [:> UI/Components.AppLayout.Page {:title nil}
          (cond
            is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
            errors [ui/error-view errors]
