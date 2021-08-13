@@ -407,7 +407,7 @@
                 (:name user)]))]]]]])))
 
 (defn view []
-  [:> UI/Components.ShoppingCart2.EmptyCart])
+  [:> UI/Components.ShoppingCart.EmptyCart])
 
 #_(defn view []
   (let [purpose (reagent/atom "")
