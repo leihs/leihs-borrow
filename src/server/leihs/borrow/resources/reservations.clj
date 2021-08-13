@@ -16,7 +16,8 @@
             [com.walmartlabs.lacinia :as lacinia]
             [clojure.spec.alpha :as spec]
             [clojure.java.jdbc :as jdbc]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log])
+  (:import [java.time.format DateTimeFormatter]))
 
 (doseq [s [::inventory_pool_id ::start_date ::end_date]]
   (spec/def s (comp not nil?)))
@@ -38,6 +39,13 @@
           (helpers/date-start-date :reservations)
           (helpers/date-end-date :reservations))))
 
+(defn get-by-ids [tx ids]
+  (-> (apply sql/select (columns tx))
+      (sql/from :reservations)
+      (sql/where [:in :id ids])
+      sql/format
+      (->> (jdbc/query tx))))
+
 (defn query [sql-format tx]
   (jdbc/query tx
               sql-format
@@ -54,6 +62,12 @@
       (query tx)
       first
       :count))
+
+(defn overdue? [r]
+  (java-time/after?
+    (java-time/local-date)
+    (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE
+                          (:end_date r))))
 
 (defn updated-at [tx model-id]
   (-> (sql/select :reservations.updated_at)

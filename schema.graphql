@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Wed Jul 28 2021 10:43:51 GMT+0200 (Central European Summer Time)
+# timestamp: Fri Aug 13 2021 10:21:16 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -115,6 +115,11 @@ type DraftOrder {
 enum endDateRestrictionEnum {
   CLOSE_TIME
   VISITS_CAPACITY_REACHED
+}
+
+interface Fulfillment {
+  fulfilledQuantity: Int!
+  toFulfillQuantity: Int!
 }
 
 type Image {
@@ -269,6 +274,11 @@ type Pickup {
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
 }
 
+type PickupFulfillment implements Fulfillment {
+  fulfilledQuantity: Int!
+  toFulfillQuantity: Int!
+}
+
 type PoolOrder {
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
@@ -340,6 +350,7 @@ type QueryRoot {
     from: Date
     orderBy: [RentalsOrderByInput]
     poolIds: [UUID!]
+    refinedRentalState: [RefinedRentalStateEnum!]
     rentalState: RentalStateEnum
     searchTerm: NonEmptyText
     states: [PoolOrderStateEnum]
@@ -360,6 +371,18 @@ type QueryRoot {
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
 }
 
+enum RefinedRentalStateEnum {
+  IN_APPROVAL
+  TO_PICKUP
+  TO_RETURN
+  TBD
+  OVERDUE
+  REJECTED
+  CANCELED
+  RETURNED
+  EXPIRED
+}
+
 type RefreshTimeoutResult {
   unsubmittedOrder: UnsubmittedOrder
 }
@@ -372,10 +395,12 @@ type Rental {
   fromDate: Date!
   id: UUID!
   isCustomerOrder: Boolean!
+  pickupFulfillment: PickupFulfillment
   pickupQuantity: Int!
   pickups(limit: Int, orderBy: [VisitsOrderByInput]): [Pickup]
   poolOrdersCount: Int!
   purpose: NonEmptyText
+  refinedRentalState: [RefinedRentalStateEnum!]
   rejectedPoolOrdersCount: Int
 
   """
@@ -383,6 +408,7 @@ type Rental {
   """
   rentalState: RentalStateEnum!
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+  returnFulfillment: ReturnFulfillment
   returnQuantity: Int!
   returns(limit: Int, orderBy: [VisitsOrderByInput]): [Return]
 
@@ -467,6 +493,11 @@ type Return {
   inventoryPool: InventoryPool!
   quantity: Int!
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
+}
+
+type ReturnFulfillment implements Fulfillment {
+  fulfilledQuantity: Int!
+  toFulfillQuantity: Int!
 }
 
 enum startDateRestrictionEnum {

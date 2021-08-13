@@ -54,6 +54,7 @@
    :order orders/get-one
    :orders-connection orders/get-connection
    :pickups visits/get-pickups
+   :pickup-fulfillment visits/pickup-fulfillment
    :pickup-rental-quantity orders/pickup-rental-quantity
    :pool-order orders/get-one-by-pool
    :pool-orders orders/get-multiple-by-pool
@@ -64,6 +65,7 @@
    :reservations reservations/get-multiple
    :responsible delegations/responsible
    :returns visits/get-returns
+   :return-fulfillment visits/return-fulfillment
    :return-rental-quantity orders/return-rental-quantity
    :root-categories categories/get-roots
    :submitted-pool-orders-count orders/submitted-pool-orders-count

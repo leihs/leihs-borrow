@@ -1,5 +1,6 @@
 (ns leihs.borrow.resources.visits
-  (:require [leihs.core.sql :as sql]
+  (:require [leihs.borrow.resources.reservations :as reservations]
+            [leihs.core.sql :as sql]
             [leihs.core.database.helpers :as database]
             [leihs.core.ds :as ds]
             [leihs.borrow.graphql.target-user :as target-user]
@@ -71,3 +72,35 @@
       (sql/merge-where [:= :visits.type "take_back"])
       sql/format
       (as-> <> (jdbc/query tx <>))))
+
+(defn pickup-fulfillment [{{:keys [tx]} :request :as context}
+                          args
+                          {:keys [reservation-ids]}]
+  (let [rs (reservations/get-by-ids tx reservation-ids)
+        fulfilled-quantity (->> rs
+                                (filter #(->> % :status (contains? #{"signed" "closed"})))
+                                (map :quantity)
+                                (apply +))
+        to-fulfill-quantity (->> rs
+                                 (filter #(->> % :status (contains? #{"approved" "signed" "closed"})))
+                                 (map :quantity)
+                                 (apply +))]
+    (when (> to-fulfill-quantity 0)
+      {:fulfilled-quantity fulfilled-quantity
+       :to-fulfill-quantity to-fulfill-quantity})))
+
+(defn return-fulfillment [{{:keys [tx]} :request :as context}
+                          args
+                          {:keys [reservation-ids]}]
+  (let [rs (reservations/get-by-ids tx reservation-ids)
+        fulfilled-quantity (->> rs
+                                (filter #(-> % :status (= "closed")))
+                                (map :quantity)
+                                (apply +))
+        to-fulfill-quantity (->> rs
+                                 (filter #(->> % :status (contains? #{"signed" "closed"})))
+                                 (map :quantity)
+                                 (apply +))]
+    (when (> to-fulfill-quantity 0)
+      {:fulfilled-quantity fulfilled-quantity
+       :to-fulfill-quantity to-fulfill-quantity})))

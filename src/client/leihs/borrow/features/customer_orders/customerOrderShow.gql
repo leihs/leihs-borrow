@@ -6,6 +6,8 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
     title
     isCustomerOrder
     state
+    rentalState
+    refinedRentalState
     fromDate
     untilDate
     totalDays
@@ -15,6 +17,14 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
     totalQuantity
     pickupQuantity
     returnQuantity
+    pickupFulfillment {
+      fulfilledQuantity
+      toFulfillQuantity
+    }
+    returnFulfillment {
+      fulfilledQuantity
+      toFulfillQuantity
+    }
     subOrdersByPool {
       id
       inventoryPool {
@@ -73,7 +83,7 @@ fragment poolProps on InventoryPool {
 
 fragment reservationProps on Reservation {
   id
-  # status
+  status
   # startDate
   # endDate
   model {

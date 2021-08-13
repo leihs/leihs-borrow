@@ -16,10 +16,14 @@
          :ContractStateEnum {:values [:OPEN :CLOSED]}
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED :CANCELED]}
          :RentalStateEnum {:values [:OPEN :CLOSED]}
+         :RefinedRentalStateEnum {:values [:IN_APPROVAL :TO_PICKUP :TO_RETURN :TBD :OVERDUE :REJECTED :CANCELED :RETURNED :EXPIRED]}
          :VisitTypeEnum {:values [:PICKUP :RETURN]}
          :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}
          :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
          :endDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED]}}
+
+ :interfaces {:Fulfillment {:fields {:fulfilledQuantity {:type (non-null Int)}
+                                     :toFulfillQuantity {:type (non-null Int)}}}}
 
  :objects {:Contract {:fields {:id {:type (non-null :UUID)}
                                :compactId {:type (non-null :UUID)
@@ -280,47 +284,56 @@
                                           :type (list :Return)}
                                 :createdAt {:type (non-null :DateTime)}
                                 :updatedAt {:type (non-null :DateTime)}}}
+           :PickupFulfillment {:implements [:Fulfillment]
+                               :fields {:fulfilledQuantity {:type (non-null Int)}
+                                        :toFulfillQuantity {:type (non-null Int)}}}
+           :ReturnFulfillment {:implements [:Fulfillment]
+                               :fields {:fulfilledQuantity {:type (non-null Int)}
+                                        :toFulfillQuantity {:type (non-null Int)}}}
            :Rental {:fields {:id {:type (non-null :UUID)}
-                            :borrowUrl {:type (non-null String) :resolve :url}
-                            :purpose {:type :NonEmptyText}
-                            :title {:type :NonEmptyText}
-                            :state {:type (list (non-null :PoolOrderStateEnum))
-                                    :description "List of distinct states of all the sub-orders."}
-                            :rentalState {:type (non-null :RentalStateEnum)
-                                          :description "OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest"}
-                            :fromDate {:type (non-null :Date)}
-                            :untilDate {:type (non-null :Date)}
-                            :totalDays {:type (non-null Int)}
-                            :approvedPoolOrdersCount {:type Int :resolve :approved-pool-orders-count}
-                            :rejectedPoolOrdersCount {:type Int :resolve :rejected-pool-orders-count}
-                            :submittedPoolOrdersCount {:type Int :resolve :submitted-pool-orders-count}
-                            :poolOrdersCount {:type (non-null Int) :resolve :pool-orders-count}
-                            :totalQuantity {:type (non-null Int) :resolve :total-rental-quantity}
-                            :pickupQuantity {:type (non-null Int) :resolve :pickup-rental-quantity}
-                            :returnQuantity {:type (non-null Int) :resolve :return-rental-quantity}
-                            :pickups {:resolve :pickups
-                                      :args {:limit {:type Int}
-                                             :orderBy {:type (list :VisitsOrderByInput)}}
-                                      :type (list :Pickup)}
-                            :returns {:resolve :returns
-                                      :args {:limit {:type Int}
-                                             :orderBy {:type (list :VisitsOrderByInput)}}
-                                      :type (list :Return)}
-                            :subOrdersByPool {:type (list :PoolOrder)
-                                              :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
-                                              :resolve :pool-orders}
-                            :contracts {:type :ContractsConnection
-                                        :args {:first {:type Int}
-                                               :after {:type String}
-                                               :states {:type (list :ContractStateEnum)}
-                                               :orderBy {:type (list :ContractsOrderByInput)}}
-                                        :resolve :contracts-connection}
-                            :reservations {:type (list (non-null :Reservation))
-                                           :args {:orderBy {:type (list :ReservationsOrderByInput)}}
-                                           :resolve :reservations}
-                            :isCustomerOrder {:type (non-null Boolean)}
-                            :createdAt {:type (non-null :DateTime)}
-                            :updatedAt {:type (non-null :DateTime)}}}
+                             :borrowUrl {:type (non-null String) :resolve :url}
+                             :purpose {:type :NonEmptyText}
+                             :title {:type :NonEmptyText}
+                             :state {:type (list (non-null :PoolOrderStateEnum))
+                                     :description "List of distinct states of all the sub-orders."}
+                             :rentalState {:type (non-null :RentalStateEnum)
+                                           :description "OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest"}
+                             :refinedRentalState {:type (list (non-null :RefinedRentalStateEnum))}
+                             :pickupFulfillment {:type :PickupFulfillment :resolve :pickup-fulfillment} 
+                             :returnFulfillment {:type :ReturnFulfillment :resolve :return-fulfillment} 
+                             :fromDate {:type (non-null :Date)}
+                             :untilDate {:type (non-null :Date)}
+                             :totalDays {:type (non-null Int)}
+                             :approvedPoolOrdersCount {:type Int :resolve :approved-pool-orders-count}
+                             :rejectedPoolOrdersCount {:type Int :resolve :rejected-pool-orders-count}
+                             :submittedPoolOrdersCount {:type Int :resolve :submitted-pool-orders-count}
+                             :poolOrdersCount {:type (non-null Int) :resolve :pool-orders-count}
+                             :totalQuantity {:type (non-null Int) :resolve :total-rental-quantity}
+                             :pickupQuantity {:type (non-null Int) :resolve :pickup-rental-quantity}
+                             :returnQuantity {:type (non-null Int) :resolve :return-rental-quantity}
+                             :pickups {:resolve :pickups
+                                       :args {:limit {:type Int}
+                                              :orderBy {:type (list :VisitsOrderByInput)}}
+                                       :type (list :Pickup)}
+                             :returns {:resolve :returns
+                                       :args {:limit {:type Int}
+                                              :orderBy {:type (list :VisitsOrderByInput)}}
+                                       :type (list :Return)}
+                             :subOrdersByPool {:type (list :PoolOrder)
+                                               :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
+                                               :resolve :pool-orders}
+                             :contracts {:type :ContractsConnection
+                                         :args {:first {:type Int}
+                                                :after {:type String}
+                                                :states {:type (list :ContractStateEnum)}
+                                                :orderBy {:type (list :ContractsOrderByInput)}}
+                                         :resolve :contracts-connection}
+                             :reservations {:type (list (non-null :Reservation))
+                                            :args {:orderBy {:type (list :ReservationsOrderByInput)}}
+                                            :resolve :reservations}
+                             :isCustomerOrder {:type (non-null Boolean)}
+                             :createdAt {:type (non-null :DateTime)}
+                             :updatedAt {:type (non-null :DateTime)}}}
            :Pickup {:fields {:id {:type (non-null :UUID)}
                              :date {:type (non-null :Date)}
                              :quantity {:type (non-null Int)}
@@ -387,6 +400,7 @@
                             :after {:type String}
                             :states {:type (list :PoolOrderStateEnum)}
                             :rentalState {:type :RentalStateEnum}
+                            :refinedRentalState {:type (list (non-null :RefinedRentalStateEnum))}
                             :from {:type :Date
                                    :description "The `from` and `until` args select rentals based on time interval intersection."}
                             :until {:type :Date

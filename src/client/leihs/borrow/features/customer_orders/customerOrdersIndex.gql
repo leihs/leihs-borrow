@@ -21,6 +21,8 @@ fragment OrderConProps on RentalsConnection {
 fragment orderProps on Rental {
   id
   state
+  rentalState
+  refinedRentalState
   purpose
   createdAt
   updatedAt

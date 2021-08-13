@@ -36,7 +36,7 @@
     (-> db
         (update-in , [::data order-id ] (fnil identity {}))
         (cond-> errors (assoc-in , [::errors order-id] errors))
-        (assoc-in , [::data order-id] (:rental data)))))
+        (assoc-in , [::data order-id] (into (sorted-map) (:rental data))))))
 
 (reg-sub ::data
          (fn [db [_ id]] (get-in db [::data id])))

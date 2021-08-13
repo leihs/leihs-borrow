@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [resolve])
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :refer [upper-case]]
+            [clojure.set :as set]
             [clojure.tools.logging :as log]
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
@@ -34,12 +35,37 @@
       (sql/from :unified_customer_orders)
       (sql/where [:= :unified_customer_orders.user_id user-id])))
 
-(defn row-fn [r]
+(defn refine-rental-state [tx row]
+  (let [rs (reservations/get-by-ids tx (:reservation_ids row))
+        states (->> rs (map :status) set)
+        states-without-closed (set/difference states #{"closed"})]
+    (assoc row
+           :refined_rental_state 
+           (cond 
+             ; ------------------- CLOSED -------------------------
+             (= states #{"rejected"}) ["REJECTED"]
+             (= states #{"canceled"}) ["CANCELED"]
+             (= states #{"closed"}) ["RETURNED"]
+             (every? #(and (contains? #{"submitted" "approved"} (:status %))
+                           (reservations/overdue? %)) rs) ["EXPIRED"]
+             ; ------------------- OPEN ---------------------------
+             (some #(and (-> % :status (= "signed"))
+                         (reservations/overdue? %)) rs) ["OVERDUE"]
+             (= states-without-closed #{"submitted"}) ["IN_APPROVAL"]
+             (= states-without-closed #{"approved"}) ["TO_PICKUP"]
+             (= states-without-closed #{"signed"}) ["TO_RETURN"]
+             (= states-without-closed #{"submitted" "approved" "signed"}) ["IN_APPROVAL" "TO_PICKUP" "TO_RETURN"]
+             (= states-without-closed #{"submitted" "approved"}) ["IN_APPROVAL" "TO_PICKUP"]
+             (= states-without-closed #{"submitted" "signed"}) ["IN_APPROVAL" "TO_RETURN"]
+             (= states-without-closed #{"approved" "signed"}) ["TO_PICKUP" "TO_RETURN"]
+             ))))
+
+(defn row-fn [tx r]
   (let [from (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (:from_date r))
         until (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (:until_date r))]
-    (assoc r
-           :total-days
-           (java-time/time-between from until :days))))
+    (-> r
+        (assoc :total-days (+ 1 (java-time/time-between from until :days)))
+        (->> (refine-rental-state tx)))))
 
 (defn total-rental-quantity
   [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
@@ -97,7 +123,7 @@
   (-> (multiple-base-sqlmap user-id)
       (sql/merge-where [:= :unified_customer_orders.id id])
       sql/format
-      (as-> <> (jdbc/query tx <> {:row-fn row-fn}))
+      (as-> <> (jdbc/query tx <> {:row-fn (partial row-fn tx)}))
       first))
 
 (defn get-one
@@ -111,7 +137,8 @@
 
 (defn get-connection-sql-map
   [{{:keys [tx]} :request user-id ::target-user/id}
-   {:keys [order-by states rental-state from until pool-ids search-term with-pickups with-returns]}
+   {:keys [order-by states rental-state from until pool-ids
+           search-term with-pickups with-returns refined-rental-state]}
    value]
   (if (= (count [from until]) 1)
     (throw (ex-info "From and until dates must be provided together." {})))
@@ -154,12 +181,12 @@
         (sql/order-by
           (helpers/treat-order-arg order-by :unified_customer_orders)))))
 
-(defn get-connection [context args value]
+(defn get-connection [{{:keys [tx]} :request :as context} args value]
   (connections/wrap get-connection-sql-map
                     context
                     args
                     value
-                    #(map row-fn %))) 
+                    #(map (partial row-fn tx) %))) 
 
 (defn orders-columns [tx]
   (as-> (database/columns tx "orders") <>

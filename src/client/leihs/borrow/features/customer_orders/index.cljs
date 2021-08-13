@@ -69,11 +69,21 @@
 (defn order-line [order]
   (let
     [label (:purpose order)
-     href (routing/path-for ::routes/rentals-show :rental-id (:id order))]
+     href (routing/path-for ::routes/rentals-show :rental-id (:id order))
+     rental-state (:rental-state order)
+     refined-rental-state (:refined-rental-state order)]
     [:<>
      [:a {:href href} 
       label " "
-      [:span.text-color-muted (ui/format-date :short (:created-at order))]]]))
+      [:span.text-color-muted (ui/format-date :short (:created-at order))]
+      (doall 
+        (for [s refined-rental-state]
+          [:span {:class (cond
+                           (and (= rental-state "OPEN")
+                                (not= s "EXPIRED")) "badge rounded-pill bg-warning"
+                           (or (= rental-state "CLOSED")
+                               (= s "EXPIRED")) "badge rounded-pill bg-info")}
+           s]))]]))
 
 (defn orders-list [orders]
   [:ul (doall (for [order orders] [:li {:key (:id order)} [order-line order]]))])
