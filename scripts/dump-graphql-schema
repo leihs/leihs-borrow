@@ -4,3 +4,5 @@
 npm run -s graphql -- -v &> /dev/null || npm install --silent --no-audit
 
 npm run -s graphql -- get-schema
+
+echo '✔ OK'

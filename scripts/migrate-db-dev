@@ -5,3 +5,5 @@
 cd database
 bundle
 bundle exec rake db:migrate
+
+echo '✔ OK'

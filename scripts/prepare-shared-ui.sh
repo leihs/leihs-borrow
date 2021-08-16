@@ -4,3 +4,5 @@ cd leihs-ui
 bin/build || bin/build-core
 
 cd -
+
+echo '✔ OK'
