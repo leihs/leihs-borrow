@@ -411,7 +411,7 @@
     [:div.page-inset-x.py-4
      [:> UI/Components.Delegations.Switcher {:user user
                                              :t {:personal (t :!borrow.delegations/personal)}}]
-     [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
+     [:> UI/Components.Design.PageLayout.Header {:title nil #_(t :title)}]
      [:> UI/Components.Design.Stack {:space 4 :className "text-center"}
       (t :empty-order/no-items)
       [:a.text-decoration-underline {:href "/app/borrow/"}
@@ -429,7 +429,7 @@
             grouped-reservations @(subscribe [::reservations-grouped])
             summary @(subscribe [::order-summary])
             is-loading? (not (or data errors))]
-        [:> UI/Components.AppLayout.Page {:title nil}
+        [:> UI/Components.AppLayout.Page {:title (t :title)}
          (cond
            is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
            errors [ui/error-view errors]
