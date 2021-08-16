@@ -407,10 +407,16 @@
                 (:name user)]))]]]]])))
 
 (defn empty-new-rental []
-  (let [user @(subscribe [::current-user/user-data])]
+  (let [selected-id @(subscribe [::filters/user-id])
+        user @(subscribe [::current-user/user-data])]
     [:div.page-inset-x.py-4
-     [:> UI/Components.Delegations.Switcher {:user user
-                                             :t {:personal (t :!borrow.delegations/personal)}}]
+     [:> UI/Components.Delegations.Switcher
+      {:user user
+       :selectedId selected-id
+       :t {:personal (t :!borrow.delegations/personal)}
+       :onChangeCallback (fn [e]
+                           (dispatch [::filters/set-one :user-id (-> e .-target .-value)])
+                           (dispatch [::routes/shopping-cart]))}]
      [:> UI/Components.Design.PageLayout.Header {:title nil #_(t :title)}]
      [:> UI/Components.Design.Stack {:space 4 :className "text-center"}
       (t :empty-order/no-items)
