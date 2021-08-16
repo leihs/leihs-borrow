@@ -21,6 +21,7 @@
                                                reg-fx
                                                subscribe
                                                dispatch]]
+            [leihs.borrow.lib.filters :as filters]
             [leihs.borrow.lib.localstorage :as ls]
             [leihs.borrow.lib.requests :as requests]
             [leihs.borrow.features.current-user.core :as current-user]
@@ -71,6 +72,7 @@
                          [::scroll-to-top true]
                          [(:handler bidi-match) bidi-match]
                          [::current-user/fetch]
+                         [::filters/init]
                          [:leihs.borrow.features.shopping-cart.timeout/refresh])})))
 
 (reg-event-fx
