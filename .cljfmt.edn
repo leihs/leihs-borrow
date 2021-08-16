@@ -1,2 +1,0 @@
-{:indents ^:replace {*         [[:block 0]]
-                     fn-traced [[:inner 0]]}}
