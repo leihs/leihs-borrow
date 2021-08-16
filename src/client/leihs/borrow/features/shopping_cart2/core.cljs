@@ -34,7 +34,7 @@
   ::routes/shopping-cart
   (fn-traced [{:keys [db]} [_ _]]
     {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/features/shopping_cart/getShoppingCart.gql")
+                (rc/inline "leihs/borrow/features/shopping_cart2/getShoppingCart.gql")
                 {:userId (filters/user-id db)}
                 [::on-fetched-data]]}))
 
@@ -82,16 +82,17 @@
        :selectedId selected-id
        :t {:personal (t :!borrow.delegations/personal)}
        :onChangeCallback (fn [e]
-                           (dispatch [::filters/set-one :user-id (-> e .-target .-value)])
-                           (dispatch [::routes/shopping-cart]))}]]))
+                           (let [v  (-> e .-target .-value)]
+                             (dispatch [::filters/set-one :user-id v])
+                             (dispatch [::timeout/refresh v])
+                             (dispatch [::routes/shopping-cart])))}]]))
 
 (defn countdown []
-  (let [now (r/atom (js/Date.))
-        interval-id (-> #(reset! now (js/Date.))
-                        (js/setInterval 1000)
-                        r/atom)]
+  (let [now (r/atom (js/Date.))]
     (fn []
+      (js/setInterval #(reset! now (js/Date.)) 1000)
       (let [data @(subscribe [::data])
+            user-id @(subscribe [::filters/user-id])
             valid-until (-> data :valid-until datefn/parseISO)
             total-count 30
             elapsed-count (datefn/differenceInMinutes valid-until @now)]
@@ -99,7 +100,7 @@
          [:> UI/Components.ShoppingCart.Countdown
           {:totalCount total-count
            :doneCount (- total-count elapsed-count)
-           :onResetTimeLimitClick #(dispatch [::timeout/refresh])
+           :onResetTimeLimitClick #(dispatch [::timeout/refresh user-id])
            :t (with-translate-path :borrow.timeout
                 {:title (t :limit/title)
                  :still (t :still)
@@ -109,7 +110,7 @@
 (defn view []
   (let [data @(subscribe [::data])
         errors @(subscribe [::errors])
-        grouped-reservations @(subscribe [::reservations-grouped])
+        reservations @(subscribe [::reservations])
         is-loading? (not (or data errors))]
     [:> UI/Components.AppLayout.Page
      (cond
@@ -119,6 +120,6 @@
        [:<>
         [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
         [delegations-switcher]
-        (if (empty? grouped-reservations)
+        (if (empty? reservations)
           [empty-new-rental]
           [countdown])])]))

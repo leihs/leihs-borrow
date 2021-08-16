@@ -1,5 +1,5 @@
-mutation {
-  refreshTimeout {
+mutation refreshTimeout($userId: UUID) {
+  refreshTimeout(userId: $userId) {
     unsubmittedOrder {
       validUntil
     }

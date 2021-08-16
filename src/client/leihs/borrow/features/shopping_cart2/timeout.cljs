@@ -19,10 +19,10 @@
 
 (reg-event-fx
   ::refresh
-  (fn-traced [_ _]
+  (fn-traced [_ [_ user-id]]
     {:dispatch [::re-graph/mutate
                 (rc/inline "leihs/borrow/features/shopping_cart2/refreshTimeout.gql")
-                nil
+                {:userId user-id}
                 [::on-refresh]]}))
 
 (reg-event-db

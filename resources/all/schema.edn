@@ -498,7 +498,8 @@
              :unfavoriteModel {:args {:id {:type (non-null :UUID)}}
                                :resolve :unfavorite-model
                                :type (non-null :Model)}
-             :refreshTimeout {:resolve :refresh-timeout
+             :refreshTimeout {:args {:userId {:type :UUID}}
+                              :resolve :refresh-timeout
                               :type :RefreshTimeoutResult}
              :applyTemplate {:args {:id {:type (non-null :UUID)}
                                     :startDate {:type (non-null :Date)}
