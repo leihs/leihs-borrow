@@ -73,7 +73,8 @@
                          [(:handler bidi-match) bidi-match]
                          [::current-user/fetch]
                          [::filters/init]
-                         [:leihs.borrow.features.shopping-cart.timeout/refresh])})))
+                         [:leihs.borrow.features.shopping-cart.timeout/refresh]
+                         [:leihs.borrow.features.shopping-cart2.timeout/refresh])})))
 
 (reg-event-fx
   :routing/navigate

@@ -1,9 +1,8 @@
-(ns leihs.borrow.features.shopping-cart.timeout
+(ns leihs.borrow.features.shopping-cart2.timeout
   (:require [re-frame.core :as rf]
             [re-graph.core :as re-graph]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
             [shadow.resource :as rc]
-            [leihs.borrow.features.shopping-cart.core :as cart]
             [leihs.borrow.features.current-user.core :as current-user]
             [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                                reg-event-db
@@ -22,7 +21,7 @@
   ::refresh
   (fn-traced [_ _]
     {:dispatch [::re-graph/mutate
-                (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql")
+                (rc/inline "leihs/borrow/features/shopping_cart2/refreshTimeout.gql")
                 nil
                 [::on-refresh]]}))
 
@@ -32,5 +31,5 @@
     (if errors
       (js/console.log "timeout refresh errors: " (clj->js errors))
       (assoc-in db
-                [::cart/data :valid-until]
+                [:leihs.borrow.features.shopping-cart2.core/data :valid-until]
                 (-> data :refresh-timeout :unsubmitted-order :valid-until)))))

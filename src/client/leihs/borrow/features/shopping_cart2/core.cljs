@@ -1,10 +1,11 @@
 (ns leihs.borrow.features.shopping-cart2.core
   (:require
     [day8.re-frame.tracing :refer-macros [fn-traced]]
+    ["date-fns" :as datefn]
     [clojure.string :as string]
     [cljs-time.core :as tc]
     [cljs-time.format :as tf]
-    [reagent.core :as reagent]
+    [reagent.core :as r]
     [re-frame.core :as rf]
     [re-graph.core :as re-graph]
     [re-frame.std-interceptors :refer [path]]
@@ -23,6 +24,7 @@
     [leihs.borrow.components :as ui]
     [leihs.borrow.ui.icons :as icons]
     [leihs.borrow.features.current-user.core :as current-user]
+    [leihs.borrow.features.shopping-cart2.timeout :as timeout]
     ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart2)
@@ -83,6 +85,23 @@
                            (dispatch [::filters/set-one :user-id (-> e .-target .-value)])
                            (dispatch [::routes/shopping-cart]))}]]))
 
+(defn countdown []
+  (let [now (r/atom (js/Date.))
+        interval-id (-> #(reset! now (js/Date.))
+                        (js/setInterval 1000)
+                        r/atom)]
+    (fn []
+      (let [data @(subscribe [::data])
+            valid-until (-> data :valid-until datefn/parseISO)
+            total-count 30
+            elapsed-count (datefn/differenceInMinutes valid-until @now)]
+        [:div.mb-4
+         [:> UI/Components.ShoppingCart.Countdown
+          {:totalCount total-count
+           :doneCount (- total-count elapsed-count)
+           :onResetTimeLimitClick (fn []
+                                    (dispatch [::timeout/refresh]))}]]))))
+
 (defn view []
   (let [data @(subscribe [::data])
         errors @(subscribe [::errors])
@@ -98,5 +117,4 @@
         [delegations-switcher]
         (if (empty? grouped-reservations)
           [empty-new-rental]
-          [:<>
-           [:div.mb-4 [:> UI/Components.ShoppingCart.Countdown]]])])]))
+          [countdown])])]))

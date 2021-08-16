@@ -25,7 +25,8 @@
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.features.favorite-models.events :as favs]
     [leihs.borrow.features.current-user.core :as current-user]
-    [leihs.borrow.features.shopping-cart.timeout :as timeout]))
+    [leihs.borrow.features.shopping-cart.timeout :as timeout]
+    [leihs.borrow.features.shopping-cart2.timeout :as timeout2]))
 
 ; TODO: 
 ; * separate fetching of page & calendar data
@@ -215,7 +216,8 @@
        :alert (str "FAIL! " (pr-str errors))}
       {:alert (str "OK! " (pr-str data))
        :dispatch-n (list [::fetch-availability (:startDate args) (:endDate args)]
-                         [::timeout/refresh])}))) 
+                         [::timeout/refresh]
+                         [::timeout2/refresh])}))) 
 
 (defn order-panel
   [model filters]
