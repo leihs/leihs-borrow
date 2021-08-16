@@ -20,7 +20,7 @@
     [leihs.borrow.lib.helpers :as help :refer [log spy]]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path with-translate-path]]
     [leihs.borrow.components :as ui]
     [leihs.borrow.ui.icons :as icons]
     [leihs.borrow.features.current-user.core :as current-user]
@@ -99,8 +99,12 @@
          [:> UI/Components.ShoppingCart.Countdown
           {:totalCount total-count
            :doneCount (- total-count elapsed-count)
-           :onResetTimeLimitClick (fn []
-                                    (dispatch [::timeout/refresh]))}]]))))
+           :onResetTimeLimitClick #(dispatch [::timeout/refresh])
+           :t (with-translate-path :borrow.timeout
+                {:title (t :limit/title)
+                 :still (t :still)
+                 :minutesLeft (t :minutes-left)
+                 :resetLimit (t :limit/reset)})}]]))))
 
 (defn view []
   (let [data @(subscribe [::data])

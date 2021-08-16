@@ -165,6 +165,12 @@
                         :de-CH "Vorlagen"}
                 :some-not-reservable {:en-GB "Some models are not reservable!"
                                       :de-CH "Some models are not reservable!"}}
+    :timeout {:limit {:title {:en-GB "Time limit" :de-CH "Zeitlimit"}
+                      :reset {:en-GB "Reset time limit"
+                              :de-CH "Zeitlimit zurückstellen"}}
+              :status {:en-GB "Status" :de-CH "Status"}
+              :still {:en-GB "Still" :de-CH "Noch"}
+              :minutes-left {:en-GB "minute(s) left" :de-CH "Minute(n) übrig"}}
     :visits {:pickups {:title {:en-GB "Pickups"
                                :de-CH "Abholungen"}}
              :returns {:title {:en-GB "Rückgaben"
