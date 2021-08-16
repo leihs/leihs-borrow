@@ -16,8 +16,8 @@
   (let [cart-data @(subscribe [:leihs.borrow.features.shopping-cart.core/data])
         routing @(subscribe [:routing/routing])
         is-fake-menu-open? (= (get-in routing [:bidi-match :handler]) ::routes/about-page)
-        cart-item-count (count (:reservations cart-data))
-        cart-timed-out @(subscribe [::cart/timed-out?])]
+        ;cart-timed-out @(subscribe [::cart/timed-out?])
+        cart-item-count (count (:reservations cart-data))]
 
     [:> UI/Components.Design.Navbar
      {:brandName "Leihs"
@@ -26,6 +26,6 @@
       :menuItem {:href (when-not is-fake-menu-open? (routing/path-for ::routes/about-page))
                  :onClick (when is-fake-menu-open? #(dispatch [:routing/navigate-back]))}
       :cartItemCount cart-item-count
-      :cartTimedOut cart-timed-out
+      ;:cartTimedOut cart-timed-out
       :cartItem {:href (routing/path-for ::routes/shopping-cart)}}]))
 
