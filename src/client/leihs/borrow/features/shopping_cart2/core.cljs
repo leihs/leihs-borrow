@@ -17,7 +17,7 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
-    [leihs.borrow.lib.helpers :as help :refer [log spy]]
+    [leihs.borrow.lib.helpers :as help :refer [log spy camel-case-keys]]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.translate :refer [t set-default-translate-path with-translate-path]]
@@ -61,11 +61,13 @@
          :<- [::reservations]
          (fn [lines _]
            (->> lines
+                (map camel-case-keys)
                 (group-by
                   (fn [line]
                     [(get-in line [:model :id])
-                     (get-in line [:start-date])
-                     (get-in line [:end-date])])))))
+                     (get-in line [:inventoryPool :id])
+                     (get-in line [:startDate])
+                     (get-in line [:endDate])])))))
 
 (defn empty-new-rental []
   [:> UI/Components.Design.Stack {:space 4 :className "text-center"}
@@ -111,7 +113,9 @@
   (let [data @(subscribe [::data])
         errors @(subscribe [::errors])
         reservations @(subscribe [::reservations])
+        grouped-reservations @(subscribe [::reservations-grouped])
         is-loading? (not (or data errors))]
+    (log grouped-reservations)
     [:> UI/Components.AppLayout.Page
      (cond
        is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
@@ -122,4 +126,6 @@
         [delegations-switcher]
         (if (empty? reservations)
           [empty-new-rental]
-          [countdown])])]))
+          [:<>
+           [countdown]
+           [:> UI/Components.ShoppingCart.Items {:groupedRs grouped-reservations}]])])]))

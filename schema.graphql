@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Aug 13 2021 10:21:16 GMT+0200 (Central European Summer Time)
+# timestamp: Mon Aug 16 2021 18:28:12 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -235,7 +235,7 @@ type MutationRoot {
   ): [Reservation]
   deleteReservationLines(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
-  refreshTimeout: RefreshTimeoutResult
+  refreshTimeout(userId: UUID): RefreshTimeoutResult
   submitOrder(purpose: NonEmptyText!, title: NonEmptyText!, userId: UUID): Rental!
   testing(sleepSecs: Int): String
   unfavoriteModel(id: UUID!): Model!
