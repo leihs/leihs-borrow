@@ -2,7 +2,13 @@
 
 (def definitions
   {:borrow
-   {:all {:en-GB "All"
+   {:test {:items-count {:summary {:de-CH "There {numItems, plural,
+      =0 {are no items.}
+      =1 {is one item.}
+      other {are # items.}
+    }"}}}
+
+    :all {:en-GB "All"
           :de-CH "Alle"}
     :about-page {:title {:en-GB "About"
                          :de-CH "Übersicht"}

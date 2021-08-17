@@ -4,6 +4,7 @@
     "create-react-class": "^15.6.3",
     "date-fns": "^2.9.0",
     "highlight.js": "^9.18.1",
+    "intl-messageformat": "^9.9.0",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-flip-move": "3.0.3",

@@ -42,6 +42,15 @@
         [:> UI/Components.FilterBubblePanelSwitcher {:labelText "Zeige Suche/Filter"}
          [:<>
           [:span.fs-6.text-danger "TODO: new panel design, fullscreen"]
+
+          (new-function)
+
+          [:div.fs-6.text-danger
+           "translation test"
+           [:p (t ":test.items-count.summary" {:numItems 0})]
+           [:p (t ":test.items-count.summary" {:numItems 1})]
+           [:p (t ":test.items-count.summary" {:numItems 12})]]
+
           ^{:key (hash filters)}
           [models/search-panel
            #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
