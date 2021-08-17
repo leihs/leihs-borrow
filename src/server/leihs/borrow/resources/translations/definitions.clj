@@ -12,14 +12,7 @@
                          :de-CH "Kategorien"}}
     :current-user {:title {:en-GB "Current User"
                            :de-CH "Aktueller Benutzer"}}
-    :customer-orders {:title {:en-GB "Orders"
-                              :de-CH "Bestellungen"}
-                      :active-orders {:en-GB "Active Orders"
-                                      :de-CH "Aktive Bestellungen"}
-                      :rejected-orders {:en-GB "Rejected Orders"
-                                        :de-CH "Abgelehnte Bestellungen"}
-                      :approved-orders {:en-GB "Approved Orders"
-                                        :de-CH "Genehmigte Bestellungen"}}
+
     :delegations {:title {:en-GB "Delegations"
                           :de-CH "Delegationen"}
                   :responsible {:en-GB "Responsible"
@@ -72,6 +65,52 @@
                                       :de-CH "Maximale Reservierung von "}
             :maximum-reservation-post {:en-GB " days"
                                        :de-CH " Tagen"}}
+
+    :rentals {:title {:en-GB "My Rentals"
+                      :de-CH "Meine Ausleihen"}
+              :filter-bubble-label {:en-GB "All Rentals"
+                                    :de-CH "Alle Ausleihen"}
+              :section-title-open-rentals {:en-GB "Open"
+                                           :de-CH "Offen"}
+              :section-title-closed-rentals {:en-GB "Closed"
+                                             :de-CH "Abgeschlossen"}
+              :orderless-fallback-title {:de-CH "Direktausleihe"}
+
+              :refined-state-label {; states flowchart: <https://flowchart.fun/c#AoexBsHkCcBMFNoCgAEKCWBnFmCuAjAW3QBcT5YV8BPFAY10xJEMQC4UAKASQDkB9AILBgAJUgA1QQBkAlEiQARdNHh0So+JkQA3AIYl0IAHaoM2OqoMUqtQnuN6A5uy4AVSP2DcAwgGl+AFVgeQBtPiERcSlpAF0UCOExSRkzFxJsPQAHLOgQHQoOTg8vXwDg+TQsFFUAKzVyWCLRAFEAKRafNxbFSvN6Bzp4cEKuH0FeHxbpHrCS738g4Hj5sqWzaqz0OgBrG1wsooAhSFFxAHVZpFCTs8hLxXjbi56N7FUSXGhjUc5Wt0Col4V1C-0BwMeKDBQNeoPanW6kNaHS6sPGk2mPXi6KmM0UQA>
+                                    :IN_APPROVAL {:de-CH "Genehmigung" :en-GB "In Approval"}
+                                    :TO_PICKUP {:de-CH "Abholung" :en-GB "To pick up"}
+                                    :TO_RETURN {:de-CH "Rückgabe" :en-GB "To return"}
+                                    :RETURNED {:de-CH "Alle Gegenstände zurückgebracht" :en-GB "All items returned"}
+                                    :REJECTED {:de-CH "Ausleihe wurde abgelehnt" :en-GB "Rental was rejeced"}
+                                    :CANCELED {:de-CH "Ausleihe wurde storniert" :en-GB "Rental was canceled"}}
+
+              :summary
+              {:open1 {:de-CH "" :en-GB ""}
+               :open2 {:de-CH " Tage ab " :en-GB " days from "}
+               :open3 {:de-CH ", " :en-GB ", "}
+               :open4 {:de-CH " Gegenstand/-stände" :en-GB " item(s)"}
+               :closed1 {:de-CH "" :en-GB ""}
+               :closed2 {:de-CH " Tage bis " :en-GB " days until "}
+               :closed3 {:de-CH ", " :en-GB ", "}
+               :closed4 {:de-CH " Gegenstand/-stände" :en-GB " item(s)"}}
+              :fulfillment-state
+              {:items-approved1 {:de-CH "" :en-GB ""}
+               :items-approved2 {:de-CH " von " :en-GB " of "}
+               :items-approved3 {:de-CH " " :en-GB ""}
+               :items-approved4 {:de-CH " Gegenstand/-ständen genehmigt" :en-GB " item(s) approved"}
+               :items-pickedup1 {:de-CH "" :en-GB ""}
+               :items-pickedup2 {:de-CH " von " :en-GB " of "}
+               :items-pickedup3 {:de-CH " " :en-GB ""}
+               :items-pickedup4 {:de-CH " Gegenstand/-ständen abgeholt" :en-GB " item(s) picked up"}
+               :items-returned1 {:de-CH "" :en-GB ""}
+               :items-returned2 {:de-CH " von " :en-GB " of "}
+               :items-returned3 {:de-CH " " :en-GB ""}
+               :items-returned4 {:de-CH " Gegenstand/-ständen zurückgebracht" :en-GB " item(s) returned"}}
+              #_{:open-singular {:de-CH "{days} ab {date}, {count} Gegenstand"}
+                 :open-plural {:de-CH "{days} ab {date}, {count} Gegenstände"}
+                 :closed-singular {:de-CH "{days} bis {date}, {count} Gegenstand"}
+                 :closed-plural {:de-CH "{days} bis {date}, {count} Gegenstände"}}}
+
     :shopping-cart {:title {:en-GB "Cart"
                             :de-CH "Warenkorb"}
                     :edit {:en-GB "Edit"

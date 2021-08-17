@@ -75,8 +75,8 @@ step 'I approve the order of the user/delegation' do
   find('[data-order-approve]').click
 end
 
-step 'I see the order :purpose under approved orders' do |purpose|
-  within find('.ui-page', text: 'Approved Orders') do
+step 'I see the order :purpose under open orders' do |purpose|
+  within find('section', text: 'Open') do
     expect(current_scope).to have_content purpose
   end
 end

@@ -50,8 +50,8 @@ Feature: Delegations
     # check the new status of the order
     When I visit "/app/borrow/"
     And I click on the menu
-    And I click on "Orders"
-    Then I see the order "My order" under approved orders
+    And I click on "My Rentals"
+    Then I see the order "My order" under open orders
 
     # check the content of the order
     When I click on "My order"

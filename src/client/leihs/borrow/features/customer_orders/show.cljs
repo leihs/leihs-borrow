@@ -101,7 +101,7 @@
                    [reservation-line r]))]))
 
         [:h2.font-bold.text-xl [:mark "Order Data"]]
-        [:small.d-block.mt-2.text-muted.text-base total-days]
+        [:small.d-block.mt-2.text-muted.text-base total-days " days"]
 
         [:pre.text-xs {:style {:white-space :pre-wrap}} (js/JSON.stringify (clj->js order) 0 2)]
 
