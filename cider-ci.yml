@@ -23,11 +23,11 @@ jobs:
     run_when: *SPEC_DEPS
     context: { include: cider-ci/backend-specs_job-context.yml }
 
-  check-graphql-schema:
-    name: Check GraphQL schema was dumped
-    depends_on: *SPEC_DEPS
-    run_when: *SPEC_DEPS
-    context: { include: cider-ci/graph-ql-check_job-context.yml }
+  lint:
+    name: Lint
+    # depends_on: *SPEC_DEPS
+    run_when: *ON_BRANCH_UPDATE
+    context: { include: cider-ci/lint_job-context.yml }
 
   meta:
     name: Meta
@@ -48,9 +48,9 @@ jobs:
         type: job
         job_key: backend-specs
         states: [passed]
-      check-graphql-schema was successful:
+      lint was successful:
         type: job
-        job_key: check-graphql-schema
+        job_key: lint
         states: [passed]
       feature-specs was successful:
         type: job

@@ -20,7 +20,8 @@
                 [reagent-utils "0.3.3"]
                 [re-frame "1.1.1"]
                 [re-graph "0.1.14" :exclusions [re-graph.hato]]
-                [tongue "0.2.9"]]
+                [tongue "0.2.9"]
+                [clj-kondo "RELEASE"]]
  :builds {:app {:output-dir "resources/all/public/app/borrow/js"
                 :asset-path "/app/borrow/js"
                 :target :browser
