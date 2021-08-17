@@ -1,5 +1,19 @@
 # leihs-borrow
 
+## stack
+
+- (to be documented)
+
+### translations
+
+- translations strings are stored in the DB and managed [in this repo in an EDN map](src/server/leihs/borrow/resources/translations/definitions.clj)
+- for the translation function we currently use `tongue`
+- long-term we maybe want to use a more generic translation function (for example [Format.JS](https://formatjs.io/docs/core-concepts/icu-syntax) or [i18next](https://www.i18next.com/translation-function/essentials))
+- we definitly want to use the ICU syntax (could just reuse the underlying lib [`intl-messageformat`](https://formatjs.io/docs/intl-messageformat/))
+- in the meantime, to make a later adaptation easier, we just a subset on the `tongue` API: only
+  - `"plain strings"` and
+  - simple interpolation `"hello {username}"`
+
 ## DEV
 
 quickstart:
