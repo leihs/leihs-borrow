@@ -1,0 +1,14 @@
+#!/bin/sh -eu
+
+# uses `clj-kondo`
+# config docs: https://github.com/clj-kondo/clj-kondo/blob/master/doc/config.md
+# code style docs: https://github.com/bbatsov/clojure-style-guide
+
+npm ls shadow-cljs > /dev/null || npm install --silent --no-audit
+
+RESULT="$(npx shadow-cljs run clj-kondo.main/main --lint src)"
+echo "$RESULT"
+
+echo "$RESULT" | tail -1 | grep -q 'errors: 0' \
+ && echo '✔ OK' \
+ || (echo '☠ FAIL'; exit 1)
