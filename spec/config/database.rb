@@ -45,8 +45,16 @@ def database
     end
 end
 
+def with_disabled_trigger(table, trigger)
+  t_sql = trigger == :all ? 'ALL' : trigger
+  database.run "ALTER TABLE #{table} DISABLE TRIGGER #{t_sql}"
+  result = yield
+  database.run "ALTER TABLE #{table} ENABLE TRIGGER #{t_sql}"
+  result
+end
+
 def with_disabled_triggers
-  database.run 'SET session_replication_role = REPLICA;'
+  database.run 'SET session_replication_role = replica;'
   result = yield
   database.run 'SET session_replication_role = DEFAULT;'
   result

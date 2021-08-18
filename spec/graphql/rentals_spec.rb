@@ -106,6 +106,69 @@ describe 'rentals' do
     o
   end
 
+  def create_customer_order_with_mixed_fulfillments # https://github.com/leihs/leihs/issues/1131
+    i1 = FactoryBot.create(:item,
+                           leihs_model: model_1,
+                           is_borrowable: true,
+                           responsible: inventory_pool_1)
+    i2 = FactoryBot.create(:item,
+                           leihs_model: model_2,
+                           is_borrowable: true,
+                           responsible: inventory_pool_1)
+    i3 = FactoryBot.create(:item,
+                           leihs_model: model_3,
+                           is_borrowable: true,
+                           responsible: inventory_pool_1)
+
+    c1_id = 'ebe3dd35-0533-4c2c-9b4f-7285761540d9'
+    Contract.create_with_disabled_triggers(c1_id,
+                                           user.id,
+                                           inventory_pool_1.id)
+
+    o = FactoryBot.create(:order,
+                          id: 'bc7c526a-bb3a-4249-88e6-55df2e2c70e1',
+                          user: user)
+
+    po = FactoryBot.create(:pool_order,
+                           user: user,
+                           inventory_pool: inventory_pool_1,
+                           order: o,
+                           state: 'approved')
+
+    with_disabled_trigger(:reservations, :all) do
+      r1 = FactoryBot.create(:reservation,
+                             leihs_model: model_1,
+                             inventory_pool: inventory_pool_1,
+                             # status: 'signed',
+                             status: 'closed',
+                             start_date: Date.today,
+                             end_date: Date.tomorrow,
+                             contract_id: c1_id,
+                             order_id: po.id, 
+                             user: user)
+    end
+
+    r2 = FactoryBot.create(:reservation,
+                           leihs_model: model_2,
+                           inventory_pool: inventory_pool_1,
+                           status: 'signed',
+                           start_date: Date.today,
+                           end_date: Date.tomorrow,
+                           contract_id: c1_id,
+                           order_id: po.id, 
+                           user: user)
+    r3 = FactoryBot.create(:reservation,
+                           leihs_model: model_3,
+                           inventory_pool: inventory_pool_1,
+                           status: 'approved',
+                           start_date: Date.today,
+                           end_date: Date.today + 7.days,
+                           order_id: po.id, 
+                           user: user)
+    # r1.update(status: 'closed')
+    o
+  end
+
   def create_customer_order_without_contract
     i = FactoryBot.create(:item,
                           leihs_model: model_1,
@@ -172,6 +235,7 @@ describe 'rentals' do
 
     coc = create_orderless_contract
     ccowc = create_customer_order_with_contract
+    ccowmf = create_customer_order_with_mixed_fulfillments
     ccowoc = create_customer_order_without_contract
     chor = create_hand_over_reservation
 
@@ -190,10 +254,11 @@ describe 'rentals' do
 
     result = query(q, user.id).deep_symbolize_keys
     r_ids = result.dig(:data, :rentals, :edges).map{|e| e[:node]}.map{|e| e[:id]}
-    expect(r_ids.count).to eq 4
+    expect(r_ids.count).to eq 5
     expect(r_ids).to include uuid(coc.id)
     expect(r_ids).to include uuid(chor.user_id, chor.inventory_pool_id)
     expect(r_ids).to include ccowc.id
+    expect(r_ids).to include ccowmf.id
     expect(r_ids).to include ccowoc.id
   end
 end
