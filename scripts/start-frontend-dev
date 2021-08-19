@@ -3,4 +3,8 @@
 . ./scripts/_dev-env.sh
 
 npm i
+
+# force react prod mode (must match leihs-ui which is precompiled in prod mode) <https://github.com/facebook/react/issues/20359>
+export NODE_ENV=production
+
 npm run -s shadow-cljs -- watch app

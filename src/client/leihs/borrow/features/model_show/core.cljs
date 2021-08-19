@@ -223,7 +223,6 @@
         pools @(subscribe [::pools (:id model)])
         has-availability? (seq (:availability model))
         on-submit (fn [jsargs]
-                    ; (js/alert (str "Submiting!" (js/JSON.stringify jsargs)))
                     (let [args (js->clj jsargs :keywordize-keys true)]
                       (dispatch
                         [::model-create-reservation
@@ -269,6 +268,72 @@
           :onSubmit on-submit,
           :modelData (h/camel-case-keys model)}]]])))
 
+(defn order-panel-props
+  [model filters]
+  (let [now (js/Date.)
+        filter-start-date (some-> filters :start-date datefn/parseISO)
+        filter-end-date (some-> filters :end-date datefn/parseISO)
+        initial-start-date (or filter-start-date now)
+        initial-end-date (or filter-end-date
+                             (datefn/addDays initial-start-date 1))
+        min-date-loaded (datefn/startOfMonth now)
+        max-date-loaded (-> model
+                            :fetched-until-date
+                            js/Date.
+                            datefn/endOfDay)
+        fetching-until-date (some-> model
+                                    :fetching-until-date
+                                    js/Date.
+                                    datefn/endOfDay)
+        ; max-quantity (:available-quantity-in-date-range model)
+        pools @(subscribe [::pools (:id model)])
+        filters-loaded? (seq pools)
+        has-availability? (seq (:availability model))
+        on-submit (fn [jsargs]
+                    (let [args (js->clj jsargs :keywordize-keys true)]
+                      (dispatch
+                        [::model-create-reservation
+                         {:modelId (:id model),
+                          :startDate (h/date-format-day (:startDate args)),
+                          :endDate (h/date-format-day (:endDate args)),
+                          :quantity (int (:quantity args)),
+                          :poolIds [(:poolId args)]
+                          :userId (:user-id filters)}])))]
+    
+    (when filters-loaded?
+      {:initialOpen true,
+      :initialQuantity (or (:quantity filters) 1),
+      ; START DYNAMIC FETCHING PROPS
+      :initialStartDate initial-start-date,
+      :initialEndDate initial-end-date,
+      :minDateLoaded min-date-loaded,
+      :maxDateLoaded max-date-loaded,
+      :isLoadingFuture (boolean fetching-until-date),
+      ; END DYNAMIC FETCHING PROPS
+      :onShownDateChange (fn [date-object]
+                            (let [until-date (get (js->clj date-object) "date")]
+                              (h/log "Calendar shows until: " (h/date-format-day until-date))
+                              (if (or (h/spy fetching-until-date) 
+                                      (datefn/isEqual until-date max-date-loaded) 
+                                      (datefn/isBefore until-date max-date-loaded))
+                                (h/log "We are either fetching or already have until: "
+                                      (h/date-format-day until-date))
+                                (dispatch [::fetch-availability
+                                          ; Always fetching from min-date-loaded for the
+                                          ; time being, as there are issue if scrolling
+                                          ; too fast and was not sure if there was something
+                                          ; wrong with concating the availabilities.
+                                          (-> min-date-loaded h/date-format-day)
+                                          (-> until-date
+                                              (datefn/addMonths 6)
+                                              h/date-format-day)]))))
+      :initialInventoryPoolId (:pool-id filters)
+      :inventoryPools (map h/camel-case-keys pools)
+      :onSubmit on-submit,
+      :modelData (h/camel-case-keys model)}
+      
+      )))
+
 (defn view
   []
   (let [routing @(subscribe [:routing/routing])
@@ -290,4 +355,6 @@
                                                          [(if (:is-favorited model)
                                                             ::unfavorite-model
                                                             ::favorite-model) (:id model)])
+                                      ;; :orderPanel (clj->js (order-panel-props model filters))
+                                      :orderPanel  (order-panel-props model filters)
                                       :orderPanelTmp  (reagent/as-element [order-panel model filters])}])] ))
