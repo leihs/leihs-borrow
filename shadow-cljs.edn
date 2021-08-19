@@ -20,7 +20,6 @@
                 [reagent-utils "0.3.3"]
                 [re-frame "1.1.1"]
                 [re-graph "0.1.14" :exclusions [re-graph.hato]]
-                [tongue "0.2.9"]
                 [clj-kondo "RELEASE"]]
  :builds {:app {:output-dir "resources/all/public/app/borrow/js"
                 :asset-path "/app/borrow/js"
@@ -31,7 +30,7 @@
                 ; NOTE: only (temporarily!) enable this to debug problems in release builds
                 ;; :compiler-options {:source-map true :optimizations :whitespace}
                 ;
-                ; :devtools {:preloads [day8.re-frame-10x.preload]}
+                :devtools {:preloads [day8.re-frame-10x.preload]}
                 :modules {:app {:entries [leihs.borrow.app]}}
                 :dev {:closure-defines {"re_frame.trace.trace_enabled_QMARK_" true
                                         "day8.re_frame.tracing.trace_enabled_QMARK_" true}}

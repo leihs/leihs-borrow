@@ -1,18 +1,20 @@
 (ns leihs.borrow.lib.translate
   (:require-macros [leihs.borrow.lib.translate])
-  (:require [tongue.core :as tongue]
-            [re-frame.db :as db]
+  (:require ["intl-messageformat" :as intl]
             [ajax.core :refer [GET]]
-            [shadow.resource :as rc]
-            [cljs.tools.reader.edn :as edn]
-            [leihs.borrow.lib.helpers :as h]
+            [clojure.string :as string]
             [leihs.borrow.features.current-user.core :as current-user]
-            [clojure.string :as string]))
+            [leihs.borrow.lib.helpers :as h :refer [spy]]
+            [re-frame.db :as db]
+            [shadow.resource :as rc]))
 
-(def ^:dynamic *default-path* "Default path to use for locating a key.")
-
-(def dicts-extensions
-  {:tongue/fallback :en-GB})
+(def ^:dynamic *default-path* "Default path to use for locating a key." nil)
+(def default-locale :en-GB)
+(def path-escape-char \!)
+(declare dict)
+(def fallbacks {:gsw-CH :de-CH
+                :de-CH :en-US
+                :en-US :en-GB})
 
 (defn fetch-and-init
   "Fetch translations from server, store them under window property,
@@ -21,42 +23,40 @@
   (GET (str js/window.location.origin "/my/user/me/translations")
        {:format :json
         :params {:prefix "borrow"}
-        :handler #(do (set! js/window.leihsBorrowTranslations
-                            (h/keywordize-keys %))
-                      (def translate
-                        (-> js/window.leihsBorrowTranslations
-                            (merge dicts-extensions)
-                            tongue/build-translate))
-                      (callback))}))
+        :handler #(let [dict (h/keywordize-keys %)]
+                    (do (set! js/window.leihsBorrowTranslations dict)
+                        (def dict dict)
+                        (callback)))}))
 
-(defn drop-first-char [s]
-  (->> s (drop 1) string/join))
+(def remove-first-char #(-> % str rest string/join))
 
-(defn fully-qualify-key [pre k]
-  (let [k* (-> k str drop-first-char)
-        pre* (-> pre str drop-first-char)]
-    (keyword
-      (condp re-matches k*
-        #"!.*" (drop-first-char k*)
-        #".*/.*" (str pre* "." k*)
-        (str pre* "/" k*)))))
+(defn qualify [p]
+  (cond (= (first p) path-escape-char)
+          (remove-first-char p)
+        *default-path*
+          (str (remove-first-char *default-path*) "." p)
+        :else p))
 
-(defn locale-to-use []
-  (or (current-user/locale-to-use @db/app-db)
-      :en-GB))
+(defn dict-path-keys [dict-path]
+  (-> dict-path
+      remove-first-char
+      qualify
+      (string/split #"[\./]")
+      (->> (map keyword))))
 
-(defn apply-default-path [[a1 & as]]
-  (cons (if *default-path*
-          (fully-qualify-key *default-path* a1)
-          a1)
-        as))
+(defn missing-translation [dict-path]
+  (str "{{ missing: " dict-path " }}"))
 
-(defn t-base [& args]
-  (apply translate
-         (locale-to-use)
-         (apply-default-path args)))
+(defn translate [message locale values]
+  (-> message
+      (intl/IntlMessageFormat. locale)
+      (.format (clj->js values))))
 
-(comment
-  ((resolve 'drop-first-char) "Foo")
-  (fully-qualify-key :borrow.about-page :title)
-  (t :borrow/all))
+(defn t-base [dict-path values]
+  (let [path-keys (dict-path-keys dict-path)]
+    (loop [locale (current-user/locale-to-use @db/app-db)]
+      (if locale
+        (if-let [message (get-in dict (concat path-keys [locale]))]
+          (translate message locale values)
+          (recur (locale fallbacks)))
+        (missing-translation dict-path)))))
