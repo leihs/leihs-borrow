@@ -157,6 +157,21 @@
     {:db (assoc-in db [:ls ::data model-id :is-favorited] false),
      :dispatch [::favs/unfavorite-model model-id]}))
 
+(reg-event-db
+  ::open-order-panel
+  (fn-traced [db event]
+    (assoc-in db [::order-panel-open] true)))
+
+(reg-event-db
+  ::close-order-panel
+  (fn-traced [db event]
+    (assoc-in db [::order-panel-open] false)))
+
+(reg-sub
+ ::order-panel-open?
+ (fn [db]
+   (get-in db [::order-panel-open])))
+
 (reg-sub ::model-data
          (fn [db [_ id]]
            (get-in db [:ls ::data id])))
@@ -221,10 +236,12 @@
                                     datefn/endOfDay)
         ; max-quantity (:available-quantity-in-date-range model)
         pools @(subscribe [::pools (:id model)])
+        filters-loaded? (seq pools)
         has-availability? (seq (:availability model))
+        on-cancel #(dispatch [::close-order-panel])
         on-submit (fn [jsargs]
-                    ; (js/alert (str "Submiting!" (js/JSON.stringify jsargs)))
                     (let [args (js->clj jsargs :keywordize-keys true)]
+                      (dispatch [::close-order-panel])
                       (dispatch
                         [::model-create-reservation
                          {:modelId (:id model),
@@ -234,7 +251,7 @@
                           :poolIds [(:poolId args)]
                           :userId (:user-id filters)}])))]
     
-    (when (seq pools)
+    (when (and filters-loaded? has-availability?)
       [:div.border-b-2.border-gray-300.mt-4.pb-4
        [:div.d-flex.mx-n2
         [:> UI/Components.BookingCalendar
@@ -266,7 +283,8 @@
                                                   h/date-format-day)]))))
           :initialInventoryPoolId (:pool-id filters)
           :inventoryPools (map h/camel-case-keys pools)
-          :onSubmit on-submit,
+          :onSubmit on-submit
+          :onCancel on-cancel
           :modelData (h/camel-case-keys model)}]]])))
 
 (defn view
@@ -276,6 +294,7 @@
         filters @(subscribe [::filters/current])
         model @(subscribe [::model-data model-id])
         errors @(subscribe [::errors model-id])
+        order-panel-open? @(subscribe [::order-panel-open?])
         is-loading? (not (or model errors))]
     [:section.mx-3.my-4
      (cond
@@ -284,10 +303,17 @@
         [:pre (t :loading) [:samp model-id] "…"]]
        errors [ui/error-view errors]
        :else
-         [:> UI/Components.ModelShow {:model (h/camel-case-keys model)
-                                      :currentFilters (h/camel-case-keys filters)
-                                      :onClickFavorite #(dispatch
-                                                         [(if (:is-favorited model)
-                                                            ::unfavorite-model
-                                                            ::favorite-model) (:id model)])
-                                      :orderPanelTmp  (reagent/as-element [order-panel model filters])}])] ))
+       [:<>
+        [:> UI/Components.ModelShow {:model (h/camel-case-keys model)
+                                     :currentFilters (h/camel-case-keys filters)
+                                     :onClickFavorite #(dispatch
+                                                        [(if (:is-favorited model)
+                                                           ::unfavorite-model
+                                                           ::favorite-model) (:id model)])
+                                     :onOrderClick #(dispatch [::open-order-panel])
+                                    ;;  :orderPanelTmp (when order-panel-open? (reagent/as-element [order-panel model filters]))
+                                     }]
+        
+        ; NOTE: order panel is inside a modal, so we dont need to pass it through as a child to `ModelShow` 
+        (when order-panel-open? (reagent/as-element [order-panel model filters]))
+        ])] ))
