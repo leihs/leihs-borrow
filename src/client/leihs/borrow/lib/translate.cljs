@@ -3,13 +3,13 @@
   (:require ["intl-messageformat" :as intl]
             [ajax.core :refer [GET]]
             [clojure.string :as string]
+            [cljs.test :refer-macros [deftest is testing run-tests]]
             [leihs.borrow.features.current-user.core :as current-user]
-            [leihs.borrow.lib.helpers :as h :refer [spy]]
+            [leihs.borrow.lib.helpers :as h :refer [spy log]]
             [re-frame.db :as db]
             [shadow.resource :as rc]))
 
 (def ^:dynamic *default-path* "Default path to use for locating a key." nil)
-(def default-locale :en-GB)
 (def path-escape-char \!)
 (declare dict)
 (def fallbacks {:gsw-CH :de-CH
@@ -60,3 +60,64 @@
           (translate message locale values)
           (recur (locale fallbacks)))
         (missing-translation dict-path)))))
+
+; ============================= TESTS ==============================
+
+(deftest test-translate
+  (let [m "You have {itemCount, plural,
+          =0 {no items}
+          one {# item}
+          other {# items}
+          }."]
+    (is (= (translate m :de-CH {:itemCount 1})
+           "You have 1 item.")
+        "Standard happy path.")))
+
+(deftest test-t-base
+  (testing "locales and fallbacks"
+    (with-redefs [dict {:test {:gsw-CH "gsw-CH"
+                               :en-GB "en-GB"}}
+                  db/app-db (atom {:ls
+                                   {::current-user/data
+                                    {:language-to-use {:locale "gsw-CH"}}}})]
+      (is (= (t-base :test nil) "gsw-CH")
+          "Translation exists for language to use."))
+    (with-redefs [dict {:test {:de-CH "de-CH"
+                               :en-GB "en-GB"}}
+                  db/app-db (atom {:ls
+                                   {::current-user/data
+                                    {:language-to-use {:locale "gsw-CH"}}}})]
+      (is (= (t-base :test nil) "de-CH")
+          "Fallback one level."))
+    (with-redefs [dict {:test {:en-GB "en-GB"}}
+                  db/app-db (atom {:ls
+                                   {::current-user/data
+                                    {:language-to-use {:locale "gsw-CH"}}}})]
+      (is (= (t-base :test nil) "en-GB")
+          "Fallback all the way through."))
+    (with-redefs [dict {:test {:de-CH "Sie haben {itemCount, number} Gegenstände!"}}
+                  db/app-db (atom {:ls
+                                   {::current-user/data
+                                    {:language-to-use {:locale "de-CH"}}}})]
+      (is (= (-> (intl/IntlMessageFormat. "" "de-CH")
+                 .resolvedOptions
+                 .-locale)
+             "de-CH")
+          "Test correct locale resolution.")
+      (is (= (t-base :test {:itemCount 1000}) "Sie haben 1’000 Gegenstände!")
+          "Test number formatting with locale."))
+    (with-redefs [dict {:test {:fr "fr"}}
+                  db/app-db (atom {:ls
+                                   {::current-user/data
+                                    {:language-to-use {:locale "gsw-CH"}}}})]
+      (is (= (t-base :test nil) (missing-translation :test))
+          "No translation for language to use."))
+    (with-redefs [dict {:test {:de-CH "de-CH"}}
+                  db/app-db (atom {:ls
+                                   {::current-user/data
+                                    {:language-to-use nil}}})]
+      (is (= (t-base :test nil) (missing-translation :test))
+          "No language to use."))
+    ))
+
+(comment (run-tests))
