@@ -2,16 +2,55 @@
 
 (def definitions
   {:borrow
-   {:all {:en-GB "All"
+
+  ; --- GENERAL TERMS --- 
+  ; prefer using those over something like `example-page-section-title-contracts`
+  ; but NOT for interpolation / string concating (that assumes to much about the languages)
+  ; TODO: implement fallback keys so we can have both: `(t [:example-page-section-title-contracts :terms.contracts])
+   {:terms {:contract {:de-CH "Vertrag" :en-GB "Contract"}
+            :contracts {:de-CH "Verträge" :en-GB "Contracts"}
+
+            :delegation {:de-CH "Delegation" :en-GB "Delegation"}
+            :delegations {:de-CH "Delegationen" :en-GB "Delegations"}}
+
+  ; --- GENERAL PHRASES --- 
+  ; use them for consistency between different parts of the app
+  ; but NOT for interpolation / string concating (that assumes to much about the languages)
+    :phrases
+    {:items-count
+     {:de-CH "{itemCount, plural,
+                =0 {Keine Gegenstände}
+                =1 {# Gegenstand}
+                other {# Gegenstände}
+                }"
+      :en-GB "{itemCount, plural,
+                =0 {No items}
+                one {# item}
+                other {# items}
+                }"}
+
+     :contract-display-name
+     {:de-CH "Vertrag {ID} mit {poolName} vom {date, date, narrow}"
+      :en-GB "Contract {ID} with {poolName} from {date, date, narrow}"}}
+
+    :all {:en-GB "All"
           :de-CH "Alle"}
+
+
+  ; --- PER FEATURE TRANSLATIONS --- 
+
     :about-page {:title {:en-GB "About"
                          :de-CH "Übersicht"}
                  :navigation-menu {:en-GB "Navigation Menu"
                                    :de-CH "Navigationsmenü"}}
     :categories {:title {:en-GB "Categories"
                          :de-CH "Kategorien"}}
-    :current-user {:title {:en-GB "Current User"
-                           :de-CH "Aktueller Benutzer"}}
+    :current-user {:title {:en-GB "User account"
+                           :de-CH "Benutzerkonto"}
+                   :user-data {:en-GB "User data"
+                               :de-CH "Nutzerdaten"}
+                   :metadata-summary {:en-GB "ID {userId}"
+                                      :de-CH "ID {userId}"}}
 
     :delegations {:title {:en-GB "Delegations"
                           :de-CH "Delegationen"}

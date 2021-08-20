@@ -7,12 +7,11 @@ query getCurrentUserProfilePage {
         edges {
           node {
             id
+            printUrl
             compactId
-            state
             createdAt
             inventoryPool {
               ...poolProps
-              isActive
             }
           }
         }
