@@ -16,13 +16,14 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
-    [leihs.borrow.lib.helpers :as help]
+    [leihs.borrow.lib.helpers :as help :refer [spy]]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.components :as ui]
     [leihs.borrow.ui.icons :as icons]
     [leihs.borrow.features.current-user.core :as current-user]
+    [leihs.core.core :refer [dissoc-in]]
     ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
@@ -71,8 +72,9 @@
 
 (reg-event-fx
   ::delete-reservations
-  (fn-traced [_ [_ ids]]
-    {:dispatch [::re-graph/mutate
+  (fn-traced [{:keys [db]} [_ ids]]
+    {:db (assoc-in db [::data :pending-count] (- 0 (count ids)))
+     :dispatch [::re-graph/mutate
                 (rc/inline "leihs/borrow/features/shopping_cart/deleteReservationLines.gql")
                 {:ids ids}
                 [::on-delete-reservations]]}))
@@ -81,13 +83,12 @@
   ::on-delete-reservations
   (fn-traced [{:keys [db]} [_ {{ids :delete-reservation-lines} :data errors :errors}]]
     (if errors
-      {:alert (str "FAIL! " (pr-str errors))}
-      {:db (update-in db
-                      [::data :reservations]
-                      (partial filter #(->> %
-                                            :id
-                                            ((set ids))
-                                            not)))
+      {:db (dissoc-in db [::data :pending-count])
+       :alert (str "FAIL! " (pr-str errors))}
+      {:db (-> db
+               (update-in [::data :reservations]
+                          (partial filter #(->> % :id ((set ids)) not)))
+               (dissoc-in [::data :pending-count]))
        :dispatch [:leihs.borrow.features.shopping-cart.timeout/refresh]})))
 
 (reg-event-fx
@@ -134,12 +135,14 @@
 
 (reg-event-fx
   ::update-reservations
-  (fn-traced [_ [_ args]]
-    {:dispatch
-     [::re-graph/mutate
-      (rc/inline "leihs/borrow/features/shopping_cart/updateReservations.gql")
-      args
-      [::on-update-reservations-result]]}))
+  (fn-traced [{:keys [db]} [_ args]]
+    (let [new-quantity (:quantity args)
+          original-quantity (-> db ::data :edit-mode :original-quantity)]
+      {:db (assoc-in db [::data :pending-count] (- new-quantity original-quantity))
+       :dispatch [::re-graph/mutate
+                  (rc/inline "leihs/borrow/features/shopping_cart/updateReservations.gql")
+                  args
+                  [::on-update-reservations-result]]})))
 
 (reg-event-fx
   ::on-update-reservations-result
@@ -148,12 +151,13 @@
                            new-res-lines :create-reservation} :data}]]
     (if errors
       {:alert (str "FAIL! " (pr-str errors))}
-      {:db (update-in db
-                      [::data :reservations]
-                      (fn [rs]
-                        (as-> rs <>
-                          (filter #(->> % :id ((set del-ids)) not) <>)
-                          (into <> new-res-lines))))
+      {:db (-> db
+               (dissoc-in [::data :pending-count])
+               (update-in [::data :reservations]
+                          (fn [rs]
+                            (as-> rs <>
+                              (filter #(->> % :id ((set del-ids)) not) <>)
+                              (into <> new-res-lines)))))
        :dispatch [::routes/shopping-cart]})))
 
 (reg-event-db ::update-start-date
@@ -169,8 +173,14 @@
               (fn-traced [_ [_ v]] v))
 
 (reg-event-db ::update-quantity
-                 [(path ::data :edit-mode :quantity)]
-                 (fn-traced [_ [_ v]] v))
+              [(path ::data)]
+              (fn-traced [data [_ quantity]]
+                (-> data
+                    (cond->
+                      (not (-> data :edit-mode :original-quantity))
+                      (assoc-in [:edit-mode :original-quantity]
+                                (-> data :edit-mode :quantity)))
+                    (assoc-in [:edit-mode :quantity] quantity))))
 
 (reg-event-db ::cancel-edit
                  [(path ::data)]

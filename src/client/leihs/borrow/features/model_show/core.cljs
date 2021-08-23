@@ -25,7 +25,9 @@
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.features.favorite-models.events :as favs]
     [leihs.borrow.features.current-user.core :as current-user]
-    [leihs.borrow.features.shopping-cart.timeout :as timeout]))
+    [leihs.borrow.features.shopping-cart.core :as cart]
+    [leihs.borrow.features.shopping-cart.timeout :as timeout]
+    [leihs.core.core :refer [dissoc-in]]))
 
 ; TODO: 
 ; * separate fetching of page & calendar data
@@ -200,8 +202,9 @@
 
 (reg-event-fx
   ::model-create-reservation
-  (fn-traced [_ [_ args]]
-    {:dispatch
+  (fn-traced [{:keys [db]} [_ args]]
+    {:db (assoc-in db [::cart/data :pending-count] (:quantity args))
+     :dispatch
      [::re-graph/mutate
       (rc/inline
         "leihs/borrow/features/model_show/createReservationMutation.gql") args
@@ -211,7 +214,9 @@
   ::on-mutation-result
   (fn-traced [{:keys [db]} [_ args {:keys [data errors]}]]
     (if errors
-      {:db (assoc-in db [:meta :app :fatal-errors] errors)
+      {:db (-> db
+               (assoc-in [:meta :app :fatal-errors] errors)
+               (dissoc-in [::cart/data :pending-count]))
        :alert (str "FAIL! " (pr-str errors))}
       {:alert (str "OK! " (pr-str data))
        :dispatch-n (list [::fetch-availability (:startDate args) (:endDate args)]

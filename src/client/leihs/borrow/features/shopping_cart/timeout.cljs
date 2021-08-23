@@ -32,5 +32,5 @@
     (if errors
       (js/console.log "timeout refresh errors: " (clj->js errors))
       (assoc-in db
-                [::cart/data :valid-until]
-                (-> data :refresh-timeout :unsubmitted-order :valid-until)))))
+                [::cart/data]
+                (-> data :refresh-timeout :unsubmitted-order)))))
