@@ -17,6 +17,7 @@
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.filters :as filters]
+   [leihs.borrow.features.customer-orders.core :as rentals]
    [leihs.borrow.features.current-user.core :as current-user]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
@@ -76,11 +77,11 @@
 (defn filter-panel []
   (let [user-id @(subscribe [::user-id])
         target-users @(subscribe [::target-users])]
-    (if (> (count target-users) 1)
+    (when (> (count target-users) 1)
       [:div.px-3.py-4.bg-light {:class "mt-3 mb-3"}
        [:div.form.form-compact
         [:label.row
-         [:span.text-xs.col-3.col-form-label (t :!borrow.filter/for)]
+         [:span.text-xs.col-3.col-form-label (t :filter.delegation)]
          [:div.col-9
           [:select {:class "form-control"
                     :default-value user-id
@@ -95,39 +96,43 @@
               [:option {:value (:id user) :key (:id user)}
                (:name user)]))]]]]])))
 
+(defn rental-progress-bars [rental small]
+  (let [fulfillment-states (:fulfillment-states rental)
+        total-quantity (:total-quantity rental)]
+
+    [:> UI/Components.Design.Stack {:space 2}
+     (doall
+      (for [rental-state fulfillment-states]
+        (let [title (t (str :fulfillment-state-label "/" rental-state))]
+          ^{:key rental-state}
+          [:> UI/Components.Design.ProgressInfo
+           (merge
+            {:title title :small small}
+
+            (cond
+              (= "IN_APPROVAL" rental-state)
+                 ; NOTE: no partial approval, `done` will always be 0 when state is "IN_APPROVAL"
+              (let [total total-quantity
+                    done 0]
+                {:totalCount total :doneCount done :info (t :fulfillment-state.summary-line.IN_APPROVAL {:totalCount total :doneCount done})})
+
+              (= "TO_PICKUP" rental-state)
+              (let [ft (:pickup-fulfillment rental)
+                    total (:to-fulfill-quantity ft)
+                    done (:fulfilled-quantity ft)]
+                {:totalCount total :doneCount done :info (t :fulfillment-state.summary-line.TO_PICKUP {:totalCount total :doneCount done})})
+
+              (= "TO_RETURN" rental-state)
+              (let [ft (:return-fulfillment rental)
+                    total (:to-fulfill-quantity ft)
+                    done (:fulfilled-quantity ft)]
+                {:totalCount total :doneCount done :info (t :fulfillment-state.summary-line.TO_RETURN {:totalCount total :doneCount done})})))])))]))
 
 (defn order-line [rental]
   (let
    [title (or (:title rental) (:purpose rental))
     href (routing/path-for ::routes/rentals-show :rental-id (:id rental))
-    is-open (= (:state rental) "OPEN")
-    refined-rental-state (:refined-rental-state rental)
-    total-quantity (:total-quantity rental)
-    summary #_(t (if is-open
-                   (if (= total-quantity 1) :summary/open-singular :summary/open-plural)
-                   (if (= total-quantity 1) :summary/closed-singular :summary/closed-plural))
-
-                 {:days (:total-days rental)
-                  :date (if is-open
-                          (:from-date rental)
-                          (:until-date rental))
-                  :count total-quantity})
-    (if is-open
-      (str (t :summary/open1)
-           (:total-days rental)
-           (t :summary/open2)
-           (ui/format-date :short (:from-date rental))
-           (t :summary/open3)
-           total-quantity
-           (t :summary/open4))
-
-      (str (t :summary/closed1)
-           (:total-days rental)
-           (t :summary/closed2)
-           (ui/format-date :short (:until-date rental))
-           (t :summary/closed3)
-           total-quantity
-           (t :summary/closed4)))]
+    summary-text (rentals/rental-summary-text rental)]
 
     [:<>
      [:> UI/Components.Design.ListCard {:href href}
@@ -136,36 +141,10 @@
         title]]
 
       [:> UI/Components.Design.ListCard.Body
-       summary]
+       summary-text]
 
       [:> UI/Components.Design.ListCard.Foot
-       [:> UI/Components.Design.Stack {:space 2}
-        (doall
-         (for [rental-state refined-rental-state]
-           (let [title (t (str :refined-state-label "/" rental-state))]
-             ^{:key rental-state}
-             [:> UI/Components.Design.ProgressInfo
-              (merge
-               {:title title :small true}
-
-               (cond
-                 (= "IN_APPROVAL" rental-state)
-                 ; NOTE: no partial approval, `done` will always be 0 when state is "IN_APPROVAL"
-                 (let [total total-quantity
-                       done 0]
-                   {:totalCount total :doneCount done :info (str (t :fulfillment-state/items-approved1) done (t :fulfillment-state/items-approved2) total (t :fulfillment-state/items-approved3) (t :fulfillment-state/items-approved4))})
-
-                 (= "TO_PICKUP" rental-state)
-                 (let [ft (:pickup-fulfillment rental)
-                       total (:to-fulfill-quantity ft)
-                       done (:fulfilled-quantity ft)]
-                   {:totalCount total :doneCount done :info (str (t :fulfillment-state/items-pickedup1) done (t :fulfillment-state/items-pickedup2) total (t :fulfillment-state/items-pickedup3) (t :fulfillment-state/items-pickedup4))})
-
-                 (= "TO_RETURN" rental-state)
-                 (let [ft (:return-fulfillment rental)
-                       total (:to-fulfill-quantity ft)
-                       done (:fulfilled-quantity ft)]
-                   {:totalCount total :doneCount done :info (str (t :fulfillment-state/items-returned1) done (t :fulfillment-state/items-returned2) total (t :fulfillment-state/items-returned3) (t :fulfillment-state/items-returned4))})))])))]]]]))
+       (rental-progress-bars rental true)]]]))
 
 (defn orders-list [orders]
   [:> UI/Components.Design.ListCard.Stack
@@ -191,7 +170,7 @@
                              {:onClick #(js/alert "TODO!")}
                              (t :filter-bubble-label)])]
 
-     [filter-panel]
+     [filter-panel] ; TODO: put into modal
 
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
@@ -204,9 +183,9 @@
          (when-not (empty? open-rentals)
            [:> UI/Components.Design.Section
             {:title (t :section-title-open-rentals) :collapsible true}
-            [orders-list open-rentals]])]
+            [orders-list open-rentals]])
 
-        (when-not (empty? closed-rentals)
-          [:> UI/Components.Design.Section
-           {:title (t :section-title-closed-rentals) :collapsible true}
-           [orders-list closed-rentals]])])]))
+         (when-not (empty? closed-rentals)
+           [:> UI/Components.Design.Section
+            {:title (t :section-title-closed-rentals) :collapsible true}
+            [orders-list closed-rentals]])]])]))

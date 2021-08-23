@@ -5,9 +5,8 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
     purpose
     title
     isCustomerOrder
-    state
-    rentalState
-    refinedRentalState
+    state: rentalState
+    fulfillmentStates: refinedRentalState
     fromDate
     untilDate
     totalDays
@@ -84,16 +83,21 @@ fragment poolProps on InventoryPool {
 fragment reservationProps on Reservation {
   id
   status
-  # startDate
-  # endDate
+  startDate
+  endDate
   model {
     id
     name
   }
-  # quantity
-  # inventoryPool {
-  #   ...poolProps
-  # }
+  option {
+    id
+    name
+  }
+  quantity
+  inventoryPool {
+    id
+    name
+  }
 }
 
 fragment pickupProps on Pickup {
@@ -114,10 +118,13 @@ fragment contractsConnectionProps on ContractsConnection {
   edges {
     node {
       id
-      note
-      reservations {
-        ...reservationProps
-      }
+      compactId
+      printUrl
+      createdAt
+      # note
+      # reservations {
+      #   ...reservationProps
+      # }
     }
   }
 }

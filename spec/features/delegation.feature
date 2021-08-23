@@ -55,4 +55,4 @@ Feature: Delegations
 
     # check the content of the order
     When I click on "My order"
-    Then I see "1" times "Kamera"
+    Then I see "1× Kamera"

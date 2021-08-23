@@ -50,6 +50,6 @@
            nil]]]]
 
        [:> UI/Components.Design.Stack
-        [:> UI/Components.Design.Section {:title (t :borrow.categories/title)}
+        [:> UI/Components.Design.Section {:title (t :borrow.categories.title)}
 
          (categories/categories-list cats)]]])))

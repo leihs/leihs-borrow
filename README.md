@@ -123,6 +123,12 @@ java -jar ./target/leihs-borrow.jar run
 
 ### known issues
 
+#### app framework
+
+- i18n: formatting numbers in translated messages uses browser locale instead of message locale.
+
+#### tech stack
+
 - we need to install `tslib` in our `package.json`,so that `intl-messageformat` works correctly
   - see bug report https://github.com/formatjs/formatjs/issues/2645
   - we are using a newer version of the package which is fixed, but the `tslib` dep is not picked up. we dont know why, hence the workaround of installing it ourselves

@@ -29,7 +29,7 @@ fragment rentalProps on Rental {
 
   isCustomerOrder
   state: rentalState
-  refinedRentalState
+  fulfillmentStates: refinedRentalState
 
   title
   purpose

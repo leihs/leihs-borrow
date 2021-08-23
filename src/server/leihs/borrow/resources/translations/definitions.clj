@@ -115,40 +115,114 @@
                                              :de-CH "Abgeschlossen"}
               :orderless-fallback-title {:de-CH "Direktausleihe"}
 
-              :refined-state-label {; states flowchart: <https://flowchart.fun/c#AoexBsHkCcBMFNoCgAEKCWBnFmCuAjAW3QBcT5YV8BPFAY10xJEMQC4UAKASQDkB9AILBgAJUgA1QQBkAlEiQARdNHh0So+JkQA3AIYl0IAHaoM2OqoMUqtQnuN6A5uy4AVSP2DcAwgGl+AFVgeQBtPiERcSlpAF0UCOExSRkzFxJsPQAHLOgQHQoOTg8vXwDg+TQsFFUAKzVyWCLRAFEAKRafNxbFSvN6Bzp4cEKuH0FeHxbpHrCS738g4Hj5sqWzaqz0OgBrG1wsooAhSFFxAHVZpFCTs8hLxXjbi56N7FUSXGhjUc5Wt0Col4V1C-0BwMeKDBQNeoPanW6kNaHS6sPGk2mPXi6KmM0UQA>
-                                    :IN_APPROVAL {:de-CH "Genehmigung" :en-GB "In Approval"}
-                                    :TO_PICKUP {:de-CH "Abholung" :en-GB "To pick up"}
-                                    :TO_RETURN {:de-CH "Rückgabe" :en-GB "To return"}
-                                    :RETURNED {:de-CH "Alle Gegenstände zurückgebracht" :en-GB "All items returned"}
-                                    :REJECTED {:de-CH "Ausleihe wurde abgelehnt" :en-GB "Rental was rejeced"}
-                                    :CANCELED {:de-CH "Ausleihe wurde storniert" :en-GB "Rental was canceled"}}
+              :filter {:delegation {:de-CH "Für Delegation" :en-GB "For Delegation"}}
 
-              :summary
-              {:open1 {:de-CH "" :en-GB ""}
-               :open2 {:de-CH " Tage ab " :en-GB " days from "}
-               :open3 {:de-CH ", " :en-GB ", "}
-               :open4 {:de-CH " Gegenstand/-stände" :en-GB " item(s)"}
-               :closed1 {:de-CH "" :en-GB ""}
-               :closed2 {:de-CH " Tage bis " :en-GB " days until "}
-               :closed3 {:de-CH ", " :en-GB ", "}
-               :closed4 {:de-CH " Gegenstand/-stände" :en-GB " item(s)"}}
+              :fulfillment-state-label {; states flowchart: <https://flowchart.fun/c#AoexBsHkCcBMFNoCgAEKCWBnFmCuAjAW3QBcT5YV8BPFAY10xJEMQC4UAKASQDkB9AILBgAJUgA1QQBkAlEiQARdNHh0So+JkQA3AIYl0IAHaoM2OqoMUqtQnuN6A5uy4AVSP2DcAwgGl+AFVgeQBtPiERcSlpAF0UCOExSRkzFxJsPQAHLOgQHQoOTg8vXwDg+TQsFFUAKzVyWCLRAFEAKRafNxbFSvN6Bzp4cEKuH0FeHxbpHrCS738g4Hj5sqWzaqz0OgBrG1wsooAhSFFxAHVZpFCTs8hLxXjbi56N7FUSXGhjUc5Wt0Col4V1C-0BwMeKDBQNeoPanW6kNaHS6sPGk2mPXi6KmM0UQA>
+                                        :IN_APPROVAL {:de-CH "Genehmigung" :en-GB "In Approval"}
+                                        :TO_PICKUP {:de-CH "Abholung" :en-GB "To pick up"}
+                                        :TO_RETURN {:de-CH "Rückgabe" :en-GB "To return"}
+                                        :RETURNED {:de-CH "Alle Gegenstände zurückgebracht" :en-GB "All items returned"}
+                                        :REJECTED {:de-CH "Ausleihe wurde abgelehnt" :en-GB "Rental was rejeced"}
+                                        :CANCELED {:de-CH "Ausleihe wurde storniert" :en-GB "Rental was canceled"}}
+
+              :summary-line
+              {:open {:de-CH "{totalDays, plural,
+                                =1 {{itemCount, plural,
+                                  =1 {{totalDays} Tag ab {fromDate, date, short}, {itemCount} Gegenstand}
+                                  other {{totalDays} Tag ab {fromDate, date, short}, {itemCount} Gegenstände}
+                                }}
+                                other {{itemCount, plural,
+                                  =1 {{totalDays} Tage ab {fromDate, date, short}, {itemCount} Gegenstand}
+                                  other {{totalDays} Tage ab {fromDate, date, short}, {itemCount} Gegenstände}
+                                }}
+                              }"
+                      :en-GB "{totalDays, plural,
+                                =1 {{itemCount, plural,
+                                  =1 {{totalDays} day from {fromDate, date, short}, {itemCount} item}
+                                  other {{totalDays} day from {fromDate, date, short}, {itemCount} items}
+                                }}
+                                other {{itemCount, plural,
+                                  =1 {{totalDays} days from {fromDate, date, short}, {itemCount} item}
+                                  other {{totalDays} days from {fromDate, date, short}, {itemCount} items}
+                                }}
+                              }"}
+               :closed {:de-CH "{totalDays, plural,
+                                =1 {{itemCount, plural,
+                                  =1 {{totalDays} Tag bis {untilDate, date, short}, {itemCount} Gegenstand}
+                                  other {{totalDays} Tag bis {untilDate, date, short}, {itemCount} Gegenstände}
+                                }}
+                                other {{itemCount, plural,
+                                  =1 {{totalDays} Tage bis {untilDate, date, short}, {itemCount} Gegenstand}
+                                  other {{totalDays} Tage bis {untilDate, date, short}, {itemCount} Gegenstände}
+                                }}
+                              }"
+                        :en-GB "{totalDays, plural,
+                                =1 {{itemCount, plural,
+                                  =1 {{totalDays} day until {untilDate, date, short}, {itemCount} item}
+                                  other {{totalDays} day until {untilDate, date, short}, {itemCount} items}
+                                }}
+                                other {{itemCount, plural,
+                                  =1 {{totalDays} days until {untilDate, date, short}, {itemCount} item}
+                                  other {{totalDays} days until {untilDate, date, short}, {itemCount} items}
+                                }}
+                              }"}
+               ;
+               }
+
               :fulfillment-state
-              {:items-approved1 {:de-CH "" :en-GB ""}
-               :items-approved2 {:de-CH " von " :en-GB " of "}
-               :items-approved3 {:de-CH " " :en-GB ""}
-               :items-approved4 {:de-CH " Gegenstand/-ständen genehmigt" :en-GB " item(s) approved"}
-               :items-pickedup1 {:de-CH "" :en-GB ""}
-               :items-pickedup2 {:de-CH " von " :en-GB " of "}
-               :items-pickedup3 {:de-CH " " :en-GB ""}
-               :items-pickedup4 {:de-CH " Gegenstand/-ständen abgeholt" :en-GB " item(s) picked up"}
-               :items-returned1 {:de-CH "" :en-GB ""}
-               :items-returned2 {:de-CH " von " :en-GB " of "}
-               :items-returned3 {:de-CH " " :en-GB ""}
-               :items-returned4 {:de-CH " Gegenstand/-ständen zurückgebracht" :en-GB " item(s) returned"}}
-              #_{:open-singular {:de-CH "{days} ab {date}, {count} Gegenstand"}
-                 :open-plural {:de-CH "{days} ab {date}, {count} Gegenstände"}
-                 :closed-singular {:de-CH "{days} bis {date}, {count} Gegenstand"}
-                 :closed-plural {:de-CH "{days} bis {date}, {count} Gegenstände"}}}
+              {:summary-line
+               {:IN_APPROVAL
+                {:de-CH "{totalCount, plural,
+                          =1 {{doneCount} von {totalCount} Gegenstand genehmigt}
+                          other {{doneCount} von {totalCount} Gegenständen genehmigt}
+                        }"
+                 :en-GB "{totalCount, plural,
+                          =1 {{doneCount} of {totalCount} item approved}
+                          other {{doneCount} of {totalCount} items approved}
+                        }"}
+                :TO_PICKUP
+                {:de-CH "{totalCount, plural,
+                          =1 {{doneCount} von {totalCount} Gegenstand abgeholt}
+                          other {{doneCount} von {totalCount} Gegenständen abgeholt}
+                        }"
+                 :en-GB "{totalCount, plural,
+                          =1 {{doneCount} of {totalCount} item picked up}
+                          other {{doneCount} of {totalCount} items picked up}
+                        }"}
+                :TO_RETURN
+                {:de-CH "{totalCount, plural,
+                          =1 {{doneCount} von {totalCount} Gegenstand zurückgebracht}
+                          other {{doneCount} von {totalCount} Gegenständen zurückgebracht}
+                        }"
+                 :en-GB "{totalCount, plural,
+                          =1 {{doneCount} of {totalCount} item returned}
+                          other {{doneCount} of {totalCount} items returned}
+                        }"}}}}
+
+    :rental-show {:page-title {:de-CH "Ausleihe" :en-GB "Rental"}
+                  :state {:de-CH "Status" :en-GB "State"}
+                  :cancel-action-label {:de-CH "Ausleihe stornieren" :en-GB "Cancel rental"}
+                  :purpose {:de-CH "Zweck" :en-GB "Purpose"}
+                  :pools-section-title {:de-CH "Geräteparks" :en-GB "Inventory pools"}
+                  :items-section-title {:de-CH "Gegenstände" :en-GB "Items"}
+                  :documents-section-title {:de-CH "Dokumente" :en-GB "Documents"}
+                  :user-or-delegation-section-title {:de-CH "Delegation" :en-GB "Delegation"}
+                  :user-or-delegation-personal-postfix {:de-CH " (persönlich)" :en-GB " (personal)"}
+                  :metadata-summary {:de-CH "ID {rentalId}" :en-GB "ID {rentalId}"}
+                  :reservation-line
+                  {:title
+                   {:de-CH "{itemCount}× {itemName}"
+                    :en-GB "{itemCount}× {itemName}"}
+                   :duration {:de-CH "{totalDays, plural,
+                                  =1 {# Tag ab {fromDate, date, short}}
+                                  other {# Tage ab {fromDate, date, short}}
+                                }"
+                              :en-GB "{totalDays, plural,
+                                  =1 {# day from {fromDate, date, short}}
+                                  other {# days from {fromDate, date, short}}
+                                }"}}
+                  ;
+                  }
 
     :shopping-cart {:title {:en-GB "Cart"
                             :de-CH "Warenkorb"}
