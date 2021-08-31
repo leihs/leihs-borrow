@@ -165,9 +165,9 @@
                                   =1 {{totalDays} days until {untilDate, date, short}, {itemCount} item}
                                   other {{totalDays} days until {untilDate, date, short}, {itemCount} items}
                                 }}
-                              }"}
+                              }"}}
                ;
-               }
+
 
               :fulfillment-state
               {:summary-line
@@ -220,9 +220,9 @@
                               :en-GB "{totalDays, plural,
                                   =1 {# day from {fromDate, date, short}}
                                   other {# days from {fromDate, date, short}}
-                                }"}}
+                                }"}}}
                   ;
-                  }
+
 
     :shopping-cart {:title {:en-GB "Cart"
                             :de-CH "Warenkorb"}
@@ -236,7 +236,25 @@
                                      :de-CH "Delete Draft"}
                             :empty {:en-GB "Your draft is empty"
                                     :de-CH "Your draft is empty"}}
-                    :line {:total {:en-GB "Total"
+                    :countdown {:section-title {:en-GB "Status"
+                                                :de-CH "Status"}
+                                :time-limit {:en-GB "Time limit"
+                                             :de-CH "Zeitlimit"}
+                                :time-left {:en-GB "{minutesLeft, plural,
+                                                    =1 {# minute left}
+                                                    other {# minutes left}
+                                                    }"
+                                            :de-CH "{minutesLeft, plural,
+                                                    =1 {Noch eine Minute übrig}
+                                                    other {Noch # Minuten übrig}
+                                                    }"}
+                                :reset {:en-GB "Reset time limit"
+                                        :de-CH "Zeitlimit zurückstellen"}}
+                    :delegation {:section-title {:de-CH "Delegation" :en-GB "Delegation"}
+                                 :person-postfix  {:de-CH " (persönlich)" :en-GB " (personal)"}}
+                    :line {:section-title {:en-GB "Items"
+                                           :de-CH "Gegenstände"}
+                           :total {:en-GB "Total"
                                    :de-CH "Total"}
                            :total-models {:en-GB "Model(s)"
                                           :de-CH "Modell(e)"}
@@ -247,25 +265,38 @@
                            :first-pickup {:en-GB "First pickup"
                                           :de-CH "Erste Abholung"}
                            :last-return {:en-GB "last return"
-                                         :de-CH "letzte Rückgabe"}}
-                    :confirm-order {:en-GB "Confirm order"
-                                    :de-CH "Bestellung bestätigen"}
-                    :delete-order {:en-GB "Delete order"
-                                   :de-CH "Bestellung löschen"}
-                    :order-overview {:en-GB "Order Overview"
-                                     :de-CH "Bestellübersicht"}
-                    :empty-order {:en-GB "Your order is empty"
-                                  :de-CH "Deine Bestellung ist leer"}
-                    :borrow-items {:en-GB "Borrow Items"
-                                   :de-CH "Gegenstände ausleihen"}
-                    :order-title {:en-GB "Order Name"
-                                  :de-CH "Name der Bestellung"}
-                    :order-title-placeholder {:en-GB "Name Your Order"
-                                              :de-CH "Benenne deine Bestellung"}
-                    :order-purpose {:en-GB "Order Purpose"
-                                    :de-CH "Zweck der Bestellung"}
-                    :order-purpose-placeholder {:en-GB "Enter a purpose"
-                                                :de-CH "Gebe einen Zweck ein"}}
+                                         :de-CH "letzte Rückgabe"}
+                           :invalid-items-warning {:en-GB "{invalidItemsCount, plural,
+                                                           =1 {# invalid item}
+                                                           other {# invalid items}
+                                                           }"
+                                                   :de-CH "{invalidItemsCount, plural,
+                                                           =1 {# Gegenstand ungültig}
+                                                           other {# Gegenstände ungültig}
+                                                           }"}
+                           :duration {:de-CH "{totalDays, plural,
+                                              =1 {# Tag ab {fromDate, date, short}}
+                                              other {# Tage ab {fromDate, date, short}}
+                                              }"
+                                      :en-GB "{totalDays, plural,
+                                              =1 {# day from {fromDate, date, short}}
+                                              other {# days from {fromDate, date, short}}
+                                              }"}}
+                    :confirm-order {:en-GB "Confirm rental"
+                                    :de-CH "Ausleihe bestätigen"}
+                    :delete-order {:en-GB "Delete rental"
+                                   :de-CH "Ausleihe löschen"}
+                    :order-overview {:en-GB "New rental"
+                                     :de-CH "Neue Ausleihe"}
+                    :empty-order {:en-GB "No items added"
+                                  :de-CH "Noch keine Gegenstände hinzugefügt"}
+                    :borrow-items {:en-GB "Go to catalog"
+                                   :de-CH "Hier geht's zum Katalog"}
+                    :confirm-dialog {:dialog-title {:en-GB "Confirm new order" :de-CH "Neue Ausleihe bestätigen"}
+                                     :title {:en-GB "Title" :de-CH "Titel"}
+                                     :purpose {:en-GB "Purpose" :de-CH "Zweck"}
+                                     :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
+                                     :confirm {:en-GB "Confirm" :de-CH "Bestätigen"}}}
     :templates {:title {:en-GB "Templates"
                         :de-CH "Vorlagen"}
                 :some-not-reservable {:en-GB "Some models are not reservable!"
