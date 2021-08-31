@@ -8,9 +8,9 @@
 
 (defn get-available-quantities [context args _value]
   (legacy/fetch
-    "/borrow/models/availability"
-    context
-    (transform-keys csk/->snake_case args)))
+   "/borrow/models/availability"
+   context
+   (transform-keys csk/->snake_case args)))
 
 (spec/def ::date string?)
 (spec/def ::quantity (comp #(>= % 0) integer?))
@@ -21,11 +21,11 @@
 
 (defn get [context args _value]
   (->> (legacy/fetch
-         "/borrow/booking_calendar_availability"
-         context
-         (->> [:model-id :inventory-pool-id :start-date :end-date :user-id]
-              (select-keys args)
-              (transform-keys csk/->snake_case)))
+        "/borrow/booking_calendar_availability"
+        context
+        (->> [:model-id :inventory-pool-id :start-date :end-date :user-id :reservation-ids]
+             (select-keys args)
+             (transform-keys csk/->snake_case)))
        :list
        (map (fn [d]
               (->> (clojure.set/rename-keys d {:d :date})

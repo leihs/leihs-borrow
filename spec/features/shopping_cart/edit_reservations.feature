@@ -17,7 +17,6 @@ Feature: Shopping Cart - Editing Reservations
       | A13  | DSLR Camera | Pool A |
       | A21  | Tripod      | Pool A |
 
-  @pending
   Scenario: Editing a the quantity of a reservation
 
     Given the following reservations exist for the user:

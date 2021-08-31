@@ -259,8 +259,10 @@
                           :userId (:user-id filters)}])))]
     
     (when (and filters-loaded? has-availability?)
-      [:div.border-b-2.border-gray-300.mt-4.pb-4
-       [:div.d-flex.mx-n2
+      [:> UI/Components.Design.ModalDialog {:shown true
+                                            :title (t :order-dialog/title)
+                                            :class "ui-booking-calendar"}
+       [:> UI/Components.Design.ModalDialog.Body
         [:> UI/Components.BookingCalendar
          {:initialOpen true,
           :initialQuantity (or (:quantity filters) 1),
@@ -291,8 +293,10 @@
           :initialInventoryPoolId (:pool-id filters)
           :inventoryPools (map h/camel-case-keys pools)
           :onSubmit on-submit
-          :onCancel on-cancel
-          :modelData (h/camel-case-keys model)}]]])))
+          :modelData (h/camel-case-keys model)}]]
+       [:> UI/Components.Design.ModalDialog.Footer
+        [:button.btn.btn-secondary {:on-click on-cancel} (t :order-dialog/cancel)]
+        [:button.btn.btn-primary {:form :order-dialog-form :type :submit} (t :order-dialog/add)]]])))
 
 (defn enrich-recommends-with-href [m]
   (update-in m
