@@ -1,0 +1,1 @@
+{:lint-as {day8.re-frame.tracing/fn-traced clojure.core/fn}}
