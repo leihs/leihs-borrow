@@ -17,6 +17,13 @@ query getShoppingCart($userId: UUID) {
               id
               imageUrl
             }
+            totalBorrowableQuantities {
+              inventoryPool {
+                id
+                name
+              }
+              quantity
+            }
           }
           startDate
           status

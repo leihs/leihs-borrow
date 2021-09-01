@@ -5,6 +5,7 @@
    [clojure.string :as string]
    [reagent.core :as reagent]
    [re-graph.core :as re-graph]
+   [re-frame.std-interceptors :refer [path]]
    [shadow.resource :as rc]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.re-frame :refer [reg-event-fx
@@ -12,6 +13,7 @@
                                       reg-sub
                                       subscribe
                                       dispatch]]
+   [leihs.borrow.lib.helpers :as h]
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
@@ -41,6 +43,50 @@
        (assoc-in [::data :edit-mode] nil)
        (cond-> errors (assoc ::errors errors)))))
 
+;; TODO: simplify, or even inline
+(defn pool-ids-with-borrowable-quantity [db]
+  (let [quants (get-in db [::data :edit-mode :model :total-borrowable-quantities])]
+    (->> quants
+         (filter #(-> % :quantity (> 0)))
+         (map #(-> % :inventory-pool :id)))))
+
+(reg-event-fx
+ ::fetch-availability
+ (fn-traced [{:keys [db]} [_ start-date end-date]]
+   (let [edit-mode (get-in db [::data :edit-mode])
+         user-id (-> edit-mode :user :id)
+         model (:model edit-mode)
+         exclude-reservation-ids (map :id (:reservation-lines edit-mode))
+         pool-ids (pool-ids-with-borrowable-quantity db)]
+     {:db (assoc-in db [::data :edit-mode :fetching-until-date] end-date)
+      :dispatch [::re-graph/query
+                 (rc/inline "leihs/borrow/features/model_show/getAvailability.gql")
+                 {:modelId (:id model)
+                  :userId user-id
+                  :poolIds pool-ids
+                  :startDate start-date
+                  :endDate end-date
+                  :excludeReservationIds exclude-reservation-ids}
+                 [::on-fetched-availability]]})))
+
+
+(defn set-loading-as-ended [this]
+  (merge this
+         {:fetching-until-date nil
+          :fetched-until-date (:fetching-until-date this)}))
+
+(reg-event-db
+ ::on-fetched-availability
+ (fn-traced [db
+             [_ {{{availability :availability} :model} :data
+                 errors :errors}]]
+   (-> db
+       (cond-> errors (assoc-in [::errors] errors))
+       (update-in [::data :edit-mode]
+                  #(-> %
+                       set-loading-as-ended
+                       (assoc :availability availability))))))
+
 (reg-event-fx
  ::delete-reservations
  (fn-traced [{:keys [db]} [_ ids]]
@@ -63,6 +109,32 @@
       :dispatch [::timeout/refresh]})))
 
 (reg-event-fx
+ ::edit-reservation
+ (fn-traced [{:keys [db]} [_ res-lines]]
+   (let [now (js/Date.)
+         res-line (first res-lines)
+         user-id (-> res-line :user :id)
+         model (:model res-line)
+         start-date (:start-date res-line)
+         end-date (:end-date res-line)
+         quantity (count res-lines)
+         min-date-loaded (datefn/startOfMonth now)
+         max-date-loaded (-> (datefn/parseISO end-date)
+                             (datefn/addMonths 6)
+                             datefn/endOfMonth)]
+     {:db (assoc-in db
+                    [::data :edit-mode]
+                    {:reservation-lines res-lines
+                     :start-date start-date
+                     :end-date end-date
+                     :quantity quantity
+                     :user-id user-id
+                     :model model})
+      :dispatch [::fetch-availability
+                 (h/date-format-day min-date-loaded)
+                 (h/date-format-day max-date-loaded)]})))
+
+(reg-event-fx
  ::submit-order
  (fn-traced [{:keys [db]} [_ args]]
    {:dispatch [::re-graph/mutate
@@ -80,11 +152,56 @@
      {:dispatch [:routing/navigate
                  [::routes/rentals-show {:rental-id id}]]})))
 
+(reg-event-fx
+ ::update-reservations
+ (fn-traced [{:keys [db]} [_ args]]
+   (let [new-quantity (:quantity args)
+         original-quantity (-> db ::data :edit-mode :original-quantity)]
+     {:db (assoc-in db [::data :pending-count] (- new-quantity original-quantity)) ;; TODO: still needed?
+      :dispatch [::re-graph/mutate
+                 (rc/inline "leihs/borrow/features/shopping_cart/updateReservations.gql")
+                 args
+                 [::on-update-reservations-result]]})))
+
+(reg-event-fx
+ ::on-update-reservations-result
+ (fn-traced [{:keys [db]}
+             [_ {:keys [errors] {del-ids :delete-reservation-lines
+                                 new-res-lines :create-reservation} :data}]]
+   (if errors
+     {:alert (str "FAIL! " (pr-str errors))}
+     {:db (-> db
+              (dissoc-in [::data :pending-count])
+              (update-in [::data :reservations]
+                         (fn [rs]
+                           (as-> rs <>
+                             (filter #(->> % :id ((set del-ids)) not) <>)
+                             (into <> new-res-lines)))))
+      :dispatch [::routes/shopping-cart]})))
+
+(reg-event-db ::cancel-edit
+              [(path ::data)]
+              (fn-traced [co _] (assoc co :edit-mode nil)))
+
 (reg-sub ::data
          (fn [db _] (::data db)))
 
 (reg-sub ::errors
          (fn [db _] (::errors db)))
+
+(reg-sub ::edit-mode-data
+         :<- [::data]
+         (fn [data _] (:edit-mode data)))
+
+(reg-sub ::edit-mode?
+         :<- [::edit-mode-data]
+         (fn [em [_ res-lines]]
+           (boolean
+            (some->> em
+                     :reservation-lines
+                     (map :id)
+                     set
+                     (= (->> res-lines (map :id) set))))))
 
 (reg-sub ::reservations
          :<- [::data]
@@ -98,7 +215,8 @@
                  (fn [line]
                    [(get-in line [:model :id])
                     (get-in line [:start-date])
-                    (get-in line [:end-date])])))))
+                    (get-in line [:end-date])
+                    (get-in line [:inventory-pool :id])])))))
 
 (reg-sub ::delegations
          :<- [::current-user/user-data]
@@ -113,10 +231,83 @@
          (fn [[user-data user-id]]
            (or user-id (:id user-data))))
 
+(defn edit-dialog [res-lines]
+  (let [now (js/Date.)
+        edit-mode-data @(subscribe [::edit-mode-data])
+        user-id (:user-id edit-mode-data)
+        model (:model edit-mode-data)
+        availability (or (:availability edit-mode-data) [])
+        start-date (datefn/parseISO (:start-date edit-mode-data))
+        end-date (datefn/parseISO (:end-date edit-mode-data))
+        quantity (:quantity edit-mode-data)
+        pool-id (:pool-id edit-mode-data)
+        pools (->> model :total-borrowable-quantities
+                   (filter #(> (:quantity %) 0))
+                   (map #(-> % :inventory-pool (merge {:totalBorrowableQuantity (:quantity %)}))))
+        fetching-until-date (some-> edit-mode-data
+                                    :fetching-until-date
+                                    js/Date.
+                                    datefn/endOfDay)
+        min-date-loaded (datefn/startOfMonth now)
+        max-date-loaded (-> edit-mode-data
+                            :fetched-until-date
+                            js/Date.
+                            datefn/endOfDay)]
+    [:> UI/Components.Design.ModalDialog {:shown true
+                                          :title (t :edit-dialog/title)
+                                          :class "ui-booking-calendar"}
+     [:> UI/Components.Design.ModalDialog.Body
+      [:> UI/Components.Design.Stack {:space 4}
+       [:> UI/Components.BookingCalendar
+        {:initialQuantity quantity
+         :initialStartDate start-date
+         :initialEndDate end-date
+         :initialInventoryPoolId pool-id
+         :inventoryPools (map h/camel-case-keys pools)
+         :minDateLoaded min-date-loaded
+         :maxDateLoaded max-date-loaded
+         :onShownDateChange (fn [date-object]
+                              (let [until-date (get (js->clj date-object) "date")]
+                                (h/log "Calendar shows until: " (h/date-format-day until-date))
+                                (if (or fetching-until-date
+                                        (datefn/isEqual until-date max-date-loaded)
+                                        (datefn/isBefore until-date max-date-loaded))
+                                  (h/log "We are either fetching or already have until: "
+                                         (h/date-format-day until-date))
+                                  (dispatch [::fetch-availability
+                                            ; Always fetching from min-date-loaded for the
+                                            ; time being, as there are issue if scrolling
+                                            ; too fast and was not sure if there was something
+                                            ; wrong with concating the availabilities.
+                                             (-> min-date-loaded h/date-format-day)
+                                             (-> until-date (datefn/addMonths 6) h/date-format-day)]))))
+         :onSubmit (fn [jsargs]
+                     (let [args (js->clj jsargs :keywordize-keys true)]
+                       (dispatch [::update-reservations
+                                  {:ids (map :id res-lines)
+                                   :modelId (:id model)
+                                   :startDate (h/date-format-day (:startDate args))
+                                   :endDate (h/date-format-day (:endDate args))
+                                   :quantity (int (:quantity args))
+                                   :poolIds [(:poolId args)]
+                                   :userId user-id}])
+                       (dispatch [::cancel-edit])))
+         :modelData (h/camel-case-keys (merge model {:availability availability}))}]
+       [:> UI/Components.Design.ActionButtonGroup
+        [:button.btn.btn-secondary
+         {:on-click #(dispatch [::delete-reservations (map :id res-lines)])}
+         (t :edit-dialog/delete-reservation)]]]]
+     [:> UI/Components.Design.ModalDialog.Footer
+      [:button.btn.btn-secondary {:on-click #(dispatch [::cancel-edit])}
+       (t :edit-dialog/cancel)]
+      [:button.btn.btn-primary {:form "order-dialog-form" :type :submit}
+       (t :edit-dialog/confirm)]]]))
+
 (defn reservation [res-lines invalid-res-ids]
   (let [exemplar (first res-lines)
         model (:model exemplar)
         quantity (count res-lines)
+        edit-mode? @(subscribe [::edit-mode? res-lines])
         pool-names (->> res-lines
                         (map (comp :name :inventory-pool))
                         distinct
@@ -129,7 +320,7 @@
         duration (t :line.duration {:totalDays total-days :fromDate start-date})]
     [:div
      [:> UI/Components.Design.ListCard
-      {:on-click #(js/alert "TODO")}
+      {:on-click #(dispatch [::edit-reservation res-lines])}
 
       [:> UI/Components.Design.ListCard.Title
        (str quantity "x ")
@@ -139,7 +330,9 @@
        pool-names]
 
       [:> UI/Components.Design.ListCard.Foot
-       [:> UI/Components.Design.Badge {:class (when invalid? "bg-danger")} duration]]]]))
+       [:> UI/Components.Design.Badge {:class (when invalid? "bg-danger")} duration]]]
+     (when edit-mode?
+       [edit-dialog res-lines])]))
 
 (defn delegation-select []
   (let [user-id @(subscribe [::user-id])

@@ -99,7 +99,10 @@
                  :add-to-favorites {:en-GB "Add to favorites"
                                     :de-CH "Zu Favoriten hinzufügen"}
                  :remove-from-favorites {:en-GB "Remove from favorites"
-                                         :de-CH "Von Favoriten entfernen"}}
+                                         :de-CH "Von Favoriten entfernen"}
+                 :order-dialog {:title {:en-GB "Add item" :de-CH "Gegenstand hinzufügen"}
+                                :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
+                                :add {:en-GB "Add" :de-CH "Hinzufügen"}}}
     :pagination {:load-more {:en-GB "Load more"
                              :de-CH "Mehr laden"}
                  :nothing-found {:en-GB "Nothing found"
@@ -292,6 +295,10 @@
                                               =1 {# day from {fromDate, date, short}}
                                               other {# days from {fromDate, date, short}}
                                               }"}}
+                    :edit-dialog {:title {:en-GB "Edit item" :de-CH "Gegenstand bearbeiten"}
+                                  :delete-reservation {:en-GB "Remove item" :de-CH "Gegenstand entfernen"}
+                                  :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
+                                  :confirm {:en-GB "Confirm" :de-CH "Bestätigen"}}
                     :confirm-order {:en-GB "Confirm rental"
                                     :de-CH "Ausleihe bestätigen"}
                     :delete-order {:en-GB "Delete rental"
