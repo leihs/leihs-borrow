@@ -184,7 +184,9 @@
         linked? (reagent/atom true)
         form-validated? (reagent/atom false)]
     (fn [shown? hide!]
-      [:> UI/Components.Design.ModalDialog {:shown shown? :title (t :confirm-dialog/dialog-title)}
+      [:> UI/Components.Design.ModalDialog {:shown shown?
+                                            :title (t :confirm-dialog/dialog-title)
+                                            :class "ui-confirm-order-dialog"}
        [:> UI/Components.Design.ModalDialog.Body
         [:form
          {:on-submit (fn [e]
@@ -281,17 +283,16 @@
                   [:<> {:key grouped-key}
                    [reservation res-lines invalid-res-ids]]))]]
 
-             [:> UI/Components.Design.Section
-              [:> UI/Components.Design.ActionButtonGroup
-               (when (> (count invalid-res-ids) 0)
-                 [:> UI/Components.Design.Warning
-                  (t :line/invalid-items-warning {:invalidItemsCount (count invalid-res-ids)})])
-               [:button.btn.btn-primary
-                {:type "button"
-                 :disabled (not (empty? invalid-res-ids))
-                 :on-click #(reset! order-dialog-shown? true)}
-                (t :confirm-order)]
-               [:button.btn.btn-secondary
-                {:type "button"
-                 :on-click #(dispatch [::delete-reservations (map :id reservations)])}
-                (t :delete-order)]]]]])]))))
+             [:> UI/Components.Design.ActionButtonGroup
+              (when (> (count invalid-res-ids) 0)
+                [:> UI/Components.Design.Warning
+                 (t :line/invalid-items-warning {:invalidItemsCount (count invalid-res-ids)})])
+              [:button.btn.btn-primary
+               {:type "button"
+                :disabled (not (empty? invalid-res-ids))
+                :on-click #(reset! order-dialog-shown? true)}
+               (t :confirm-order)]
+              [:button.btn.btn-secondary
+               {:type "button"
+                :on-click #(dispatch [::delete-reservations (map :id reservations)])}
+               (t :delete-order)]]]])]))))
