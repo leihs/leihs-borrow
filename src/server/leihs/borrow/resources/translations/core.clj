@@ -32,6 +32,9 @@
                   (vector k-path v)))))
        (remove nil?)))
 
+(defn sanitize [s]
+  (string/escape s {\' "''"}))
+
 (defn delete-all-borrow [tx]
   (-> (sql/delete-from :translations_default)
       (sql/where ["~~*" :key "borrow.%"])
@@ -65,9 +68,11 @@
       (doseq [[k-path translation] (translation-key-paths-with-vals definitions)]
         (let [locale (last k-path)
               k (->> k-path butlast (map name) (string/join "."))
-              insert-statement (str "INSERT INTO translations_default (key, translation, language_locale) "
-                                    "VALUES ('" k "', '" translation "', '" (name locale) "');\n")]
+              insert-statement
+              (format "INSERT INTO translations_default (key, translation, language_locale) VALUES ('%s', '%s', '%s');\n"
+                      k (sanitize translation) (name locale))]
           (print insert-statement)
           (.write w insert-statement))))))
 
-(comment (reload))
+(comment (reload)
+         (dump))
