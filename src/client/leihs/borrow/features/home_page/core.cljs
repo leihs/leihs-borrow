@@ -12,13 +12,15 @@
                                       reg-fx
                                       subscribe
                                       dispatch]]
-   [leihs.borrow.lib.translate :refer [t]]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]
    ["/leihs-ui-client-side-external-react" :as UI]))
+
+(set-default-translate-path :borrow.home-page)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -38,8 +40,8 @@
 
       [:> UI/Components.AppLayout.Page
 
-       [:> UI/Components.Design.PageLayout.Header {:title "Katalog"}
-        [:> UI/Components.FilterBubblePanelSwitcher {:labelText "Zeige Suche/Filter"}
+       [:> UI/Components.Design.PageLayout.Header {:title (t :catalog)}
+        [:> UI/Components.FilterBubblePanelSwitcher {:labelText (t :show-search-and-filter)}
          [:<>
           [:span.fs-6.text-danger "TODO: new panel design, fullscreen"]
           ^{:key (hash filters)}
@@ -50,6 +52,6 @@
            nil]]]]
 
        [:> UI/Components.Design.Stack
-        [:> UI/Components.Design.Section {:title (t :borrow.categories.title)}
+        [:> UI/Components.Design.Section {:title (t :!borrow.categories.title)}
 
          (categories/categories-list cats)]]])))

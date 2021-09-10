@@ -83,13 +83,23 @@
              :pools {:all {:en-GB "All inventory pools"
                            :de-CH "Allen Geräteparks"}}}
     :home-page {:title {:en-GB "Home"
-                        :de-CH "Home"}}
+                        :de-CH "Home"}
+                :catalog {:en-GB "Catalog"
+                          :de-CH "Katalog"}
+                :show-search-and-filter {:en-GB "Show search/filter"
+                                         :de-CH "Zeige Suche/Filter"}}
     :logout {:en-GB "Logout"
              :de-CH "Abmelden"}
     :model-show {:loading {:en-GB "Loading model"
                            :de-CH "Modell wird geladen"}
                  :compatibles {:en-GB "Compatible Models"
-                               :de-CH "Ergänzende Modelle"}}
+                               :de-CH "Ergänzende Modelle"}
+                 :add-item-to-cart {:en-GB "Add item"
+                                    :de-CH "Gegenstand hinzufügen"}
+                 :add-to-favorites {:en-GB "Add to favorites"
+                                    :de-CH "Zu Favoriten hinzufügen"}
+                 :remove-from-favorites {:en-GB "Remove from favorites"
+                                         :de-CH "Von Favoriten entfernen"}}
     :pagination {:load-more {:en-GB "Load more"
                              :de-CH "Mehr laden"}
                  :nothing-found {:en-GB "Nothing found"

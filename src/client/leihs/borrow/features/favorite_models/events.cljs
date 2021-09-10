@@ -10,7 +10,16 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
+    [leihs.borrow.features.favorite-models.core :refer [EXTRA-VARS]]
+    [leihs.borrow.features.models.core :as models]
+    [leihs.core.core :refer [dissoc-in]]
     [shadow.resource :as rc]))
+
+(reg-event-db
+  ::invalidate-cache
+  (fn-traced [db _]
+    (let [cache-key (models/get-cache-key {} EXTRA-VARS)]
+      (dissoc-in db [:ls ::models/data cache-key]))))
 
 (reg-event-fx
   ::favorite-model

@@ -64,11 +64,12 @@
 (deftask dev
   "Development profile to be used in combination with other tasks."
   []
-  (with-pass-thru _
-    (set-env! :source-paths #(conj % "src/dev")
-              :resource-paths #(conj % "resources/dev"))
-    (require 'app '[clojure.tools.namespace.repl :as ctnr])
-    (apply (resolve 'ctnr/set-refresh-dirs) (get-env :directories))))
+  (comp (with-pass-thru _
+          (set-env! :source-paths #(conj % "src/dev")
+                    :resource-paths #(conj % "resources/dev"))
+          (require 'app '[clojure.tools.namespace.repl :as ctnr])
+          (apply (resolve 'ctnr/set-refresh-dirs) (get-env :directories)))
+        (dump-translations)))
 
 (ns-unmap *ns* 'repl)
 (deftask repl

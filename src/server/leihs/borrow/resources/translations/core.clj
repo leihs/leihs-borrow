@@ -50,6 +50,25 @@
           sql/format
           (->> (jdbc/execute! tx))))))
 
+(defn dump
+  ([] (dump false))
+  ([print-detailed-log]
+   (print "Dumping translations...")
+   (let [f (or (System/getenv "FILE") sql-dump-path)]
+     (with-open [w (clojure.java.io/writer f)]
+       (let [delete-statement "DELETE FROM translations_default WHERE key like 'borrow.%';\n"]
+         (when print-detailed-log (print delete-statement))
+         (.write w delete-statement))
+       (doseq [[k-path translation] (translation-key-paths-with-vals definitions)]
+         (let [locale (last k-path)
+               k (->> k-path butlast (map name) (string/join "."))
+               insert-statement
+               (format "INSERT INTO translations_default (key, translation, language_locale) VALUES ('%s', '%s', '%s');\n"
+                       k (sanitize translation) (name locale))]
+           (when print-detailed-log (print insert-statement))
+           (.write w insert-statement)))))
+   (print "done.\n")))
+
 (defn reload []
   (when-not @loaded?
     (log/info "Reloading translations...")
@@ -59,20 +78,4 @@
     (reset! loaded? true)
     (log/info "Reloading translations done.")))
 
-(defn dump []
-  (let [f (or (System/getenv "FILE") sql-dump-path)]
-    (with-open [w (clojure.java.io/writer f)]
-      (let [delete-statement "DELETE FROM translations_default WHERE key like 'borrow.%';\n"]
-        (print delete-statement)
-        (.write w delete-statement))
-      (doseq [[k-path translation] (translation-key-paths-with-vals definitions)]
-        (let [locale (last k-path)
-              k (->> k-path butlast (map name) (string/join "."))
-              insert-statement
-              (format "INSERT INTO translations_default (key, translation, language_locale) VALUES ('%s', '%s', '%s');\n"
-                      k (sanitize translation) (name locale))]
-          (print insert-statement)
-          (.write w insert-statement))))))
-
-(comment (reload)
-         (dump))
+(comment (reload))

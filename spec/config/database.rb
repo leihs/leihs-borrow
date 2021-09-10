@@ -81,7 +81,11 @@ RSpec.configure do |config|
     system(
       "DATABASE_NAME=#{http_uri.basename} ./database/scripts/restore-seeds"
     )
-    system("bin/get-translations | psql --quiet -d #{http_uri.basename}")
+    if sql_file = ENV["SQL_FILE"].presence
+      system("cat #{sql_file} | psql --quiet -d #{http_uri.basename}")
+    else
+      system("bin/get-translations | psql --quiet -d #{http_uri.basename}")
+    end
   end
   # config.after(:suite) do
   #   clean_db

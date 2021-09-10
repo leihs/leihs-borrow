@@ -18,6 +18,7 @@
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.pagination :as pagination]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.components :as ui]
    [leihs.borrow.lib.helpers :as h]
    ["/leihs-ui-client-side-external-react" :as UI]
@@ -144,7 +145,7 @@
 
 
          [:> UI/Components.FilterBubblePanelSwitcher
-          {:labelText "Zeige Suche/Filter"}
+          {:labelText (t :!borrow.home-page.show-search-and-filter)}
           [:<>
            [:span.fs-6.text-danger "TODO: new panel design, fullscreen"]
            (r/as-element

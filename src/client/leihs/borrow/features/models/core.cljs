@@ -1,40 +1,40 @@
 (ns leihs.borrow.features.models.core
   (:require
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [reagent.core :as r]
-   [akiroz.re-frame.storage :refer [persist-db]]
-   [re-frame.core :as rf]
-   [re-frame.db :as db]
-   [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                      reg-event-db
-                                      reg-sub
-                                      reg-fx
-                                      subscribe
-                                      dispatch]]
-   [leihs.borrow.lib.translate :refer [t]]
-   [leihs.borrow.lib.localstorage :as ls]
-   [leihs.borrow.lib.filters :as filters]
-   [leihs.borrow.lib.helpers :refer [spy spy-with log obj->map]]
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.pagination :as pagination]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.components :as ui]
-   ["/leihs-ui-client-side-external-react" :as UI]
-   [leihs.borrow.features.current-user.core :as current-user]))
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
+    [reagent.core :as r]
+    [akiroz.re-frame.storage :refer [persist-db]]
+    [re-frame.core :as rf]
+    [re-frame.db :as db]
+    [re-graph.core :as re-graph]
+    [shadow.resource :as rc]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
+    [leihs.borrow.lib.translate :refer [t]]
+    [leihs.borrow.lib.localstorage :as ls]
+    [leihs.borrow.lib.filters :as filters]
+    [leihs.borrow.lib.helpers :refer [spy spy-with log obj->map]]
+    [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.lib.pagination :as pagination]
+    [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.components :as ui]
+    ["/leihs-ui-client-side-external-react" :as UI]
+    [leihs.borrow.features.current-user.core :as current-user]))
 
 (def query-gql
   (rc/inline "leihs/borrow/features/models/getModels.gql"))
 
 ;-; EVENTS 
 (reg-event-fx
- ::routes/models
- (fn-traced [_ [_ {:keys [query-params]}]]
-            {:dispatch-n (list [::filters/set-multiple query-params]
-                               [::get-models])}))
+  ::routes/models
+  (fn-traced [_ [_ {:keys [query-params]}]]
+    {:dispatch-n (list [::filters/set-multiple query-params]
+                       [::get-models])}))
 
-(defn base-query-vars [filters]
+(defn prepare-query-vars [filters]
   (let [start-date (:start-date filters)
         end-date (:end-date filters)
         user-id (:user-id filters)
@@ -51,49 +51,54 @@
       user-id
       (assoc :userId user-id))))
 
-(defn query-vars [filters extra-vars]
-  (-> filters base-query-vars (merge extra-vars)))
+(defn get-query-vars [filters extra-vars]
+  (-> filters prepare-query-vars (merge extra-vars)))
 
 (defn number-of-cached [db cache-key]
   (some-> db :ls ::data (get cache-key) :edges count))
 
-(reg-event-fx
- ::get-models
- (fn-traced [{:keys [db]} [_ extra-vars]]
-            (let [q-vars (-> db filters/current (query-vars extra-vars))
-                  cache-key (hash q-vars)
-                  n (number-of-cached db cache-key)]
-              {:dispatch [::re-graph/query
-                          query-gql
-                          (cond-> q-vars n (assoc :first n))
-                          [::on-fetched-models cache-key]]})))
+(defn get-cache-key [filters extra-vars]
+  (-> filters (get-query-vars extra-vars) hash))
 
 (reg-event-fx
- ::on-fetched-models
- (fn-traced [{:keys [db]} [_ cache-key {:keys [data errors]}]]
-            (if errors
-              {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-              {:db (assoc-in db [:ls ::data cache-key] (get-in data [:models]))})))
+  ::get-models
+  (fn-traced [{:keys [db]} [_ extra-vars default-filters]]
+    (let [filters (or default-filters (filters/current db))
+          query-vars (get-query-vars filters extra-vars)
+          cache-key (get-cache-key filters extra-vars)
+          n (number-of-cached db cache-key)]
+      {:dispatch [::re-graph/query
+                  query-gql
+                  (cond-> query-vars (>= n 20) (assoc :first n))
+                  [::on-fetched-models cache-key]]})))
 
 (reg-event-fx
- ::clear
- (fn-traced [_ _]
-            {:dispatch-n (list [::filters/clear-current]
-                               [::clear-data]
-                               [:routing/navigate [::routes/home]])}))
+  ::on-fetched-models
+  (fn-traced [{:keys [db]} [_ cache-key {:keys [data errors]}]]
+    (if errors
+      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
+      {:db (assoc-in db [:ls ::data cache-key] (get-in data [:models]))})))
+
+(reg-event-fx
+  ::clear
+  (fn-traced [_ _]
+    {:dispatch-n (list [::filters/clear-current]
+                       [::clear-data]
+                       [:routing/navigate [::routes/home]])}))
 
 (reg-event-db
- ::clear-data
- (fn-traced [db _] (update db :ls dissoc ::data)))
+  ::clear-data
+  (fn-traced [db _] (update db :ls dissoc ::data)))
 
 (reg-event-db ::clear-data-under-key
               (fn-traced [db [_ cache-key]]
-                         (update-in db [:ls ::data] dissoc cache-key)))
+                (update-in db [:ls ::data] dissoc cache-key)))
 
 (reg-sub ::cache-key
          :<- [::filters/current]
-         (fn [f [_ extra-vars]]
-           (-> f (query-vars extra-vars) hash)))
+         (fn [current-filters [_ extra-vars default-filters]]
+           (let [filters (or default-filters current-filters)]
+             (get-cache-key filters extra-vars))))
 
 (reg-sub ::data-under-cache-key
          (fn [db [_ cache-key]]
@@ -129,11 +134,11 @@
    [:div.col-9
     [:input
      (merge
-      input-props
-      {:name name
-       :placeholder label
-       :class (str "form-control " (get input-props :class))
-       :style (merge (get input-props :style))})]]])
+       input-props
+       {:name name
+        :placeholder label
+        :class (str "form-control " (get input-props :class))
+        :style (merge (get input-props :style))})]]])
 
 (defn search-panel [submit-fn clear-fn extra-vars]
   (let [current-user-data @(subscribe [::current-user/data])
@@ -161,28 +166,28 @@
 
 (defn models-list [models]
   (let
-   [debug? @(subscribe [:is-debug?])
-    models-list (doall
-                 (for [m models]
-                   (let [model (:node m)
-                         max-quant (:available-quantity-in-date-range model)
-                         unavailable? (and max-quant (<= max-quant 0))]
-                     {:id (:id model)
-                      :imgSrc (or (get-in model [:cover-image :image-url])
-                                  (get-in model [:images 0 :image-url]))
-                      :isDimmed false
-                      :caption (:name model)
-                      :subCaption (:manufacturer model)
-                      :href  (routing/path-for ::routes/models-show
-                                               :model-id (:id model))})))]
+    [debug? @(subscribe [:is-debug?])
+     models-list (doall
+                   (for [m models]
+                     (let [model (:node m)
+                           max-quant (:available-quantity-in-date-range model)
+                           unavailable? (and max-quant (<= max-quant 0))]
+                       {:id (:id model)
+                        :imgSrc (or (get-in model [:cover-image :image-url])
+                                    (get-in model [:images 0 :image-url]))
+                        :isDimmed false
+                        :caption (:name model)
+                        :subCaption (:manufacturer model)
+                        :href  (routing/path-for ::routes/models-show
+                                                 :model-id (:id model))})))]
     [:<>
      [:> UI/Components.ModelList {:list models-list}]
      (when debug? [:p (pr-str @(subscribe [::data]))])]))
 
-(defn load-more [cache-key extra-vars]
+(defn load-more [cache-key extra-vars default-filters]
   (let [fetching-more? @(subscribe [::fetching cache-key])
         has-next-page? @(subscribe [::has-next-page? cache-key])
-        filters @(subscribe [::filters/current])
+        filters (or default-filters @(subscribe [::filters/current]))
         dates-valid? (<= (:start-date filters) (:end-date filters))]
     [:<>
      (if (and fetching-more? dates-valid?)
@@ -192,7 +197,7 @@
           [:button.border.border-black.p-2.rounded
            {:on-click #(dispatch [::pagination/get-more
                                   query-gql
-                                  (query-vars filters extra-vars)
+                                  (get-query-vars filters extra-vars)
                                   [:ls ::data cache-key]
                                   [:models]])}
            (t :borrow.pagination/load-more)]]))]))

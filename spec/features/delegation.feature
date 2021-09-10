@@ -16,7 +16,7 @@ Feature: Delegations
 
     # search for a model
     And I visit "/app/borrow/"
-    And I click on "Zeige Suche/Filter"
+    And I click on "Show search/filter"
     And I enter "Kamera" in the search field
     And I select "Delegation D" xxx
     And I choose to filter by availabilty
@@ -28,7 +28,7 @@ Feature: Delegations
     # make a reservation
     When I click on the model with the title "Kamera"
     Then the show page of the model "Kamera" was loaded
-    And I click on "Gegenstand hinzufügen"
+    And I click on "Add item"
     Then the order panel is shown
     And I click on "Hinzufügen" and accept the alert
 

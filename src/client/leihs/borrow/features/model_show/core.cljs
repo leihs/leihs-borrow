@@ -150,14 +150,16 @@
   (fn-traced
     [{:keys [db]} [_ model-id]]
     {:db (assoc-in db [:ls ::data model-id :is-favorited] true),
-     :dispatch [::favs/favorite-model model-id]}))
+     :dispatch-n (list [::favs/favorite-model model-id]
+                       [::favs/invalidate-cache])}))
 
 (reg-event-fx
   ::unfavorite-model
   (fn-traced
     [{:keys [db]} [_ model-id]]
     {:db (assoc-in db [:ls ::data model-id :is-favorited] false),
-     :dispatch [::favs/unfavorite-model model-id]}))
+     :dispatch-n (list [::favs/unfavorite-model model-id]
+                       [::favs/invalidate-cache])}))
 
 (reg-event-db
   ::open-order-panel
@@ -310,6 +312,9 @@
        :else
        [:<>
         [:> UI/Components.ModelShow {:model (h/camel-case-keys model)
+                                     :t {:addItemToCart (t :add-item-to-cart)
+                                         :addToFavorites (t :add-to-favorites)
+                                         :removeFromFavorites (t :remove-from-favorites)}
                                      :currentFilters (h/camel-case-keys filters)
                                      :onClickFavorite #(dispatch
                                                         [(if (:is-favorited model)
