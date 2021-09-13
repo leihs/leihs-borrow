@@ -279,8 +279,4 @@
     :templates {:title {:en-GB "Templates"
                         :de-CH "Vorlagen"}
                 :some-not-reservable {:en-GB "Some models are not reservable!"
-                                      :de-CH "Some models are not reservable!"}}
-    :visits {:pickups {:title {:en-GB "Pickups"
-                               :de-CH "Abholungen"}}
-             :returns {:title {:en-GB "Rückgaben"
-                               :de-CH "Rückgaben"}}}}})
+                                      :de-CH "Some models are not reservable!"}}}})

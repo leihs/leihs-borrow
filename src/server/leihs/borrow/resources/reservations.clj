@@ -218,8 +218,6 @@
                                sql/array)]))
     :Contract
     (sql/merge-where sqlmap [:= :reservations.contract_id id])
-    (:Pickup :Return)
-    (sql/merge-where sqlmap [:in :reservations.id (:reservation-ids value)])
     (:User :UnsubmittedOrder)
     (sql/merge-where sqlmap [:= :reservations.status "unsubmitted"])
     :DraftOrder

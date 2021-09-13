@@ -40,8 +40,6 @@
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.templates.index :as templates-index]
    [leihs.borrow.features.templates.show :as templates-show]
-   [leihs.borrow.features.visits.pickups :as pickups-index]
-   [leihs.borrow.features.visits.returns :as returns-index]
 ;; [leihs.borrow.shared-ui :as UI]
    ["/leihs-ui-client-side-external-react" :as UI]
    [leihs.borrow.testing.step-1 :as testing-step-1]
@@ -114,8 +112,6 @@
             ::routes/inventory-pools-index pools-index/view
             ::routes/templates-show templates-show/view
             ::routes/templates-index templates-index/view
-            ::routes/pickups-index pickups-index/view
-            ::routes/returns-index returns-index/view
             ::routes/testing-step-1 testing-step-1/view
             ::routes/testing-step-2 testing-step-2/view
 

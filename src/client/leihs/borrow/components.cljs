@@ -77,8 +77,6 @@
    [:p [:a {:href (routing/path-for ::routes/home)} (t :borrow.home-page/title)]]
    [:p [:a {:href (routing/path-for ::routes/models-favorites)} (t :borrow.favorite-models/title)]]
    [:p [:a {:href (routing/path-for ::routes/rentals-index)} (t :borrow.rentals/title)]]
-   [:p [:a {:href (routing/path-for ::routes/pickups-index)} (t :borrow.visits.pickups/title)]]
-   [:p [:a {:href (routing/path-for ::routes/returns-index)} (t :borrow.visits.returns/title)]]
    [:p [:a {:href (routing/path-for ::routes/templates-index)} (t :borrow.templates/title)]]
    [:p [:a {:href (routing/path-for ::routes/inventory-pools-index)} (t :borrow.pools/title)]]
    [:form {:action "/sign-out" :method "POST"}

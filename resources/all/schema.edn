@@ -17,7 +17,6 @@
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED :CANCELED]}
          :RentalStateEnum {:values [:OPEN :CLOSED]}
          :RefinedRentalStateEnum {:values [:IN_APPROVAL :TO_PICKUP :TO_RETURN :TBD :OVERDUE :REJECTED :CANCELED :RETURNED :EXPIRED]}
-         :VisitTypeEnum {:values [:PICKUP :RETURN]}
          :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}
          :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
          :endDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED]}}
@@ -274,14 +273,6 @@
                                                    :states {:type (list :ContractStateEnum)}
                                                    :orderBy {:type (list :ContractsOrderByInput)}}
                                             :resolve :contracts-connection}
-                                :pickups {:resolve :pickups
-                                          :args {:limit {:type Int}
-                                                 :orderBy {:type (list :VisitsOrderByInput)}}
-                                          :type (list :Pickup)}
-                                :returns {:resolve :returns
-                                          :args {:limit {:type Int}
-                                                 :orderBy {:type (list :VisitsOrderByInput)}}
-                                          :type (list :Return)}
                                 :createdAt {:type (non-null :DateTime)}
                                 :updatedAt {:type (non-null :DateTime)}}}
            :PickupFulfillment {:implements [:Fulfillment]
@@ -311,14 +302,6 @@
                              :totalQuantity {:type (non-null Int) :resolve :total-rental-quantity}
                              :pickupQuantity {:type (non-null Int) :resolve :pickup-rental-quantity}
                              :returnQuantity {:type (non-null Int) :resolve :return-rental-quantity}
-                             :pickups {:resolve :pickups
-                                       :args {:limit {:type Int}
-                                              :orderBy {:type (list :VisitsOrderByInput)}}
-                                       :type (list :Pickup)}
-                             :returns {:resolve :returns
-                                       :args {:limit {:type Int}
-                                              :orderBy {:type (list :VisitsOrderByInput)}}
-                                       :type (list :Return)}
                              :subOrdersByPool {:type (list :PoolOrder)
                                                :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
                                                :resolve :pool-orders}
@@ -334,22 +317,6 @@
                              :isCustomerOrder {:type (non-null Boolean)}
                              :createdAt {:type (non-null :DateTime)}
                              :updatedAt {:type (non-null :DateTime)}}}
-           :Pickup {:fields {:id {:type (non-null :UUID)}
-                             :date {:type (non-null :Date)}
-                             :quantity {:type (non-null Int)}
-                             :inventoryPool {:type (non-null :InventoryPool)
-                                             :resolve :inventory-pool}
-                             :reservations {:type (list (non-null :Reservation))
-                                            :args {:orderBy {:type (list :ReservationsOrderByInput)}}
-                                            :resolve :reservations}}}
-           :Return {:fields {:id {:type (non-null :UUID)}
-                             :date {:type (non-null :Date)}
-                             :quantity {:type (non-null Int)}
-                             :inventoryPool {:type (non-null :InventoryPool)
-                                             :resolve :inventory-pool}
-                             :reservations {:type (list (non-null :Reservation))
-                                            :args {:orderBy {:type (list :ReservationsOrderByInput)}}
-                                            :resolve :reservations}}}
            :RefreshTimeoutResult {:fields {:unsubmittedOrder {:type :UnsubmittedOrder}}}}
 
  :input-objects {:ModelsOrderByInput {:fields {:attribute {:type (non-null :ModelsOrderByAttributeEnum)}
@@ -412,14 +379,6 @@
                             :userId {:type :UUID}
                             :orderBy {:type (list :RentalsOrderByInput)}}
                      :type :RentalsConnection}
-           :pickups {:resolve :pickups
-                     :args {:limit {:type Int}
-                            :orderBy {:type (list :VisitsOrderByInput)}}
-                     :type (list :Pickup)}
-           :returns {:resolve :returns
-                     :args {:limit {:type Int}
-                            :orderBy {:type (list :VisitsOrderByInput)}}
-                     :type (list :Return)}
            :model {:args {:id {:type (non-null :UUID)}}
                    :resolve :model
                    :type (non-null :Model)}

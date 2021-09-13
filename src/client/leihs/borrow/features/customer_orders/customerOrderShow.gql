@@ -42,20 +42,8 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
       contracts {
         ...contractsConnectionProps
       }
-      pickups {
-        ...pickupProps
-      }
-      returns {
-        ...returnProps
-      }
       createdAt
       updatedAt
-    }
-    pickups {
-      ...pickupProps
-    }
-    returns {
-      ...returnProps
     }
     contracts {
       ...contractsConnectionProps
@@ -97,20 +85,6 @@ fragment reservationProps on Reservation {
   inventoryPool {
     id
     name
-  }
-}
-
-fragment pickupProps on Pickup {
-  date
-  reservations {
-    ...reservationProps
-  }
-}
-
-fragment returnProps on Return {
-  date
-  reservations {
-    ...reservationProps
   }
 }
 

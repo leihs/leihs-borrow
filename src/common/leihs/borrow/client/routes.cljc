@@ -24,13 +24,9 @@
               ["/" :rental-id] ::rentals-show}
    "templates" {"/" ::templates-index
                 ["/" :template-id] ::templates-show}
-   "pickups" {"" ::pickups-index
-              "/" ::pickups-index}
    "inventory-pools" {"" ::inventory-pools-index
             "/" ::inventory-pools-index
             ["/" :inventory-pool-id] ::inventory-pools-show}
-   "returns" {"" ::returns-index
-              "/" ::returns-index}
    "testing" {"/step-1" ::testing-step-1
               "/step-2" ::testing-step-2}
    :else ::not-found})
