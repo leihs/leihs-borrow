@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -eux
+
+git stash
+cd spec/support/legacy-api
+git fetch --all
+git switch -d --recurse-submodules $1
+cd -
+git add spec/support/legacy-api
+git commit -m "update legacy"
+git push
+git stash pop
