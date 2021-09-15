@@ -2,12 +2,24 @@
 
 set -eux
 
-git stash
+test -n "$1"
+
+UNCLEAN_WD=false
+
+if [ -z "$(git status --porcelain)" ]; then
+  UNCLEAN_WD=true
+  git stash
+fi
+
 cd spec/support/legacy-api
 git fetch --all
 git switch -d --recurse-submodules $1
 cd -
+
 git add spec/support/legacy-api
 git commit -m "update legacy"
 git push
-git stash pop
+
+if [ "$UNCLEAN_WD" = true ]; then
+  git stash pop
+fi
