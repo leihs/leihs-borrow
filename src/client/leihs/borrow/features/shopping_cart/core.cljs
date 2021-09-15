@@ -317,20 +317,23 @@
         end-date (js/Date. (:end-date exemplar))
         ;; NOTE: should be in API
         total-days (+ 1 (datefn/differenceInCalendarDays end-date start-date))
-        duration (t :line.duration {:totalDays total-days :fromDate start-date})]
+        duration (t :line.duration {:totalDays total-days :fromDate start-date})
+        action-props {:on-click #(dispatch [::edit-reservation res-lines])}]
     [:div
-     [:> UI/Components.Design.ListCard
-      {:on-click #(dispatch [::edit-reservation res-lines])}
+     [:> UI/Components.Design.ListCard action-props
 
       [:> UI/Components.Design.ListCard.Title
-       (str quantity "x ")
+       (str quantity "× ")
        (:name model)]
 
       [:> UI/Components.Design.ListCard.Body
        pool-names]
 
       [:> UI/Components.Design.ListCard.Foot
-       [:> UI/Components.Design.Badge {:class (when invalid? "bg-danger")} duration]]]
+       [:> UI/Components.Design.Badge
+        (merge action-props {:as "button" :class (str "btn btn-link stretched-link" (when invalid? " bg-danger"))})
+        duration]]]
+
      (when edit-mode?
        [edit-dialog res-lines])]))
 
