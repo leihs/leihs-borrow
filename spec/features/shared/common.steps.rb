@@ -53,12 +53,12 @@ end
 
 step "I log in with the email :email" do |email|
   @current_user = User.find(email: email)
-  visit '/app/borrow/'
-  within('.ui-form-signin') do
+  visit "/app/borrow/"
+  within(".ui-form-signin") do
     step "I enter '#{email}' in the 'user' field"
     find('button[type="submit"]').click
   end
-  within('.ui-form-signin') do
+  within(".ui-form-signin") do
     step "I enter 'password' in the 'password' field"
     find('button[type="submit"]').click
   end
@@ -99,15 +99,15 @@ step "I click button :name" do |name|
   click_button(name)
 end
 
-step 'there is an error message' do
+step "there is an error message" do
   page.has_content?(/error/i)
 end
 
-step 'I log in as the initial admin' do
+step "I log in as the initial admin" do
   step "I log in with the email '#{@initial_admin.email}'"
 end
 
-step 'I log in as the leihs admin' do
+step "I log in as the leihs admin" do
   step "I log in with the email '#{@leihs_admin.email}'"
 end
 
@@ -115,12 +115,12 @@ step "I fill out the form with:" do |table|
   fill_form_with_table(table)
 end
 
-step 'the title of the page is :title' do |title|
+step "the title of the page is :title" do |title|
   find("h1", text: title)
 end
 
 def fill_form_with_table(table)
   table.hashes.each do |row|
-    fill_in(row['field'], with: row['value'])
+    fill_in(row["field"], with: row["value"])
   end
 end
