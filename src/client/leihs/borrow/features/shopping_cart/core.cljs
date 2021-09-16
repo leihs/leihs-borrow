@@ -4,6 +4,7 @@
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [clojure.string :as string]
    [reagent.core :as reagent]
+   [reagent.impl.template :as rtpl]
    [re-graph.core :as re-graph]
    [re-frame.std-interceptors :refer [path]]
    [shadow.resource :as rc]
@@ -24,6 +25,22 @@
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
+
+
+;; NOTE: workaround for reagent input handling when using custom components
+;;       for details see <https://github.com/reagent-project/reagent/blob/b71fc361b85338ef4e4cd52a7b21e0f3f3f89628/doc/ControlledInputs.md>
+;;       we implement same solutions as MUI: <https://github.com/reagent-project/reagent/blob/master/doc/examples/material-ui.md>
+;; TODO: should be moved into some combined "UI" namespace so its more easy to use the correct version!
+(def textarea-component
+  (reagent/reactify-component (fn [props] [:textarea props])))
+
+(defn UiTextarea [props & children]
+  (let [props (-> props
+                  (assoc :inputComponent textarea-component)
+                  rtpl/convert-prop-value)]
+    (apply reagent/create-element UI/Components.Design.Textarea props (map reagent/as-element children))))
+;; END OF workaround for reagent input handling ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -236,6 +253,7 @@
         edit-mode-data @(subscribe [::edit-mode-data])
         user-id (:user-id edit-mode-data)
         model (:model edit-mode-data)
+        loading? (nil? (:availability edit-mode-data))
         availability (or (:availability edit-mode-data) [])
         start-date (datefn/parseISO (:start-date edit-mode-data))
         end-date (datefn/parseISO (:end-date edit-mode-data))
@@ -300,7 +318,7 @@
      [:> UI/Components.Design.ModalDialog.Footer
       [:button.btn.btn-secondary {:on-click #(dispatch [::cancel-edit])}
        (t :edit-dialog/cancel)]
-      [:button.btn.btn-primary {:form "order-dialog-form" :type :submit}
+      [:button.btn.btn-primary {:form "order-dialog-form" :type :submit :disabled loading?}
        (t :edit-dialog/confirm)]]]))
 
 (defn reservation [res-lines invalid-res-ids]
@@ -317,10 +335,10 @@
         end-date (js/Date. (:end-date exemplar))
         ;; NOTE: should be in API
         total-days (+ 1 (datefn/differenceInCalendarDays end-date start-date))
-        duration (t :line.duration {:totalDays total-days :fromDate start-date})
-        action-props {:on-click #(dispatch [::edit-reservation res-lines])}]
+        duration (t :line.duration {:totalDays total-days :fromDate start-date})]
     [:div
-     [:> UI/Components.Design.ListCard action-props
+     [:> UI/Components.Design.ListCard
+      {:on-click #(dispatch [::edit-reservation res-lines])}
 
       [:> UI/Components.Design.ListCard.Title
        (str quantity "× ")
@@ -357,22 +375,29 @@
           (:name user)]))]]))
 
 (defn countdown []
-  (let [now (reagent/atom (js/Date.))]
-    (fn []
-      (js/setInterval #(reset! now (js/Date.)) 1000)
-      (let [data @(subscribe [::data])
-            user-id @(subscribe [::filters/user-id])
-            valid-until (-> data :valid-until datefn/parseISO)
-            total-minutes 30
-            remaining-minutes (datefn/differenceInMinutes valid-until @now)]
-        [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible true}
-         [:> UI/Components.Design.Stack {:space 3}
-          [:> UI/Components.Design.ProgressInfo {:title (t :countdown/time-limit)
-                                                 :info (t :countdown/time-left {:minutesLeft remaining-minutes})
-                                                 :totalCount total-minutes
-                                                 :doneCount (- total-minutes remaining-minutes)}]
-          [:> UI/Components.Design.ActionButtonGroup
-           [:button.btn.btn-secondary {:type "button" :on-click #(dispatch [::timeout/refresh user-id])} (t :countdown/reset)]]]]))))
+  (reagent/with-let [now (reagent/atom (js/Date.))
+                     timer-fn  (js/setInterval #(reset! now (js/Date.)) 1000)]
+    (let [data @(subscribe [::data])
+          user-id @(subscribe [::filters/user-id])
+          valid-until (-> data :valid-until datefn/parseISO)
+          total-minutes 30
+          remaining-seconds  (max 0 (datefn/differenceInSeconds valid-until @now))
+          remaining-minutes (int (/ remaining-seconds 60))]
+      [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible true}
+       [:> UI/Components.Design.Stack {:space 3}
+        [:> UI/Components.Design.ProgressInfo {:title (t :countdown/time-limit)
+                                               :info (cond (<= remaining-seconds 0)
+                                                           (reagent/as-element [:> UI/Components.Design.Warning (t :countdown/expired)])
+                                                           (<= remaining-seconds 60)
+                                                           (t :countdown/time-left-last-minute)
+                                                           :else
+                                                           (t :countdown/time-left {:minutesLeft remaining-minutes}))
+                                               :totalCount (* 60 total-minutes)
+                                               :doneCount (- (* 60 total-minutes) remaining-seconds)}]
+        [:> UI/Components.Design.ActionButtonGroup
+         [:button.btn.btn-secondary {:type "button" :on-click #(dispatch [::timeout/refresh user-id])} (t :countdown/reset)]]]])
+    (finally (js/clearInterval timer-fn))))
+
 
 (defn order-dialog []
   (let [purpose (reagent/atom {:value ""})
@@ -380,7 +405,7 @@
         linked? (reagent/atom true)
         form-validated? (reagent/atom false)]
     (fn [shown? hide!]
-      [:> UI/Components.Design.ModalDialog {:shown shown? :title (t :confirm-dialog/dialog-title)}
+      [:> UI/Components.Design.ModalDialog {:id :confirm-order :shown shown? :title (t :confirm-dialog/dialog-title)}
        [:> UI/Components.Design.ModalDialog.Body
         [:form
          {:on-submit (fn [e]
@@ -418,7 +443,7 @@
             :collapsible true
             :class (when (:was-validated @purpose) "was-validated")}
            [:label {:htmlFor :purpose, :class "visually-hidden"} (t :confirm-dialog/purpose)]
-           [:> UI/Components.Design.Textarea
+           [UiTextarea
             {:maxRows 15
              :minRows 3
              :name :purpose
@@ -484,7 +509,7 @@
                   (t :line/invalid-items-warning {:invalidItemsCount (count invalid-res-ids)})])
                [:button.btn.btn-primary
                 {:type "button"
-                 :disabled (not (empty? invalid-res-ids))
+                 :disabled (seq invalid-res-ids)
                  :on-click #(reset! order-dialog-shown? true)}
                 (t :confirm-order)]
                [:button.btn.btn-secondary

@@ -21,7 +21,6 @@ Feature: Shopping Cart - Display of Reservation Lines
       | B2   | Tripod      | Pool B |
 
 
-  @pending
   Scenario: Grouping Reservations by Model, Dates and Pool
 
     Reservations are grouped into reservation lines.
@@ -45,7 +44,6 @@ Feature: Shopping Cart - Display of Reservation Lines
       | 1× Tripod      | Pool B | 2 days from 2/1/01 |
 
 
-  @pending
   Scenario: Sort order of the Reservation Lines
 
     Lines are sorted by start-date, then name of Pool, then name of Model

@@ -15,21 +15,21 @@
 (reg-event-fx
  ::routing/on-change-view
  (fn-traced [_ _]
-            {:dispatch [::refresh]}))
+   {:dispatch [::refresh]}))
 
 (reg-event-fx
  ::refresh
  (fn-traced [_ [_ user-id]]
-            {:dispatch [::re-graph/mutate
-                        (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql")
-                        {:userId user-id}
-                        [::on-refresh]]}))
+   {:dispatch [::re-graph/mutate
+               (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql")
+               {:userId user-id}
+               [::on-refresh]]}))
 
 (reg-event-db
  ::on-refresh
  (fn-traced [db [_ {:keys [data errors]}]]
-            (if errors
-              (js/console.log "timeout refresh errors: " (clj->js errors))
-              (assoc-in db
-                        [:leihs.borrow.features.shopping-cart.core/data :valid-until]
-                        (-> data :refresh-timeout :unsubmitted-order :valid-until)))))
+   (if errors
+     (js/console.log "timeout refresh errors: " (clj->js errors))
+     (assoc-in db
+               [:leihs.borrow.features.shopping-cart.core/data]
+               (-> data :refresh-timeout :unsubmitted-order)))))

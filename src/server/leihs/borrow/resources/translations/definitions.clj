@@ -261,6 +261,10 @@
                                                     =1 {Noch eine Minute übrig}
                                                     other {Noch # Minuten übrig}
                                                     }"}
+                                :time-left-last-minute {:en-GB "Less than one minute left"
+                                                        :de-CH "Weniger als eine Minute übrig"}
+                                :expired {:en-GB "Expired"
+                                          :de-CH "Abgelaufen"}
                                 :reset {:en-GB "Reset time limit"
                                         :de-CH "Zeitlimit zurückstellen"}}
                     :delegation {:section-title {:de-CH "Delegation" :en-GB "Delegation"}
