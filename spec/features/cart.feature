@@ -1,3 +1,6 @@
+# NOTE: is replaced with ./shopping_cart/… features,
+# this file can be deleted as soon as those are not "pending" anymore
+
 Feature: Cart
 
   Background:
@@ -9,7 +12,7 @@ Feature: Cart
   Scenario: Title and purpose
     Given I have one item in the cart ready to be submitted
     And I log in as the user
-    And I navigate to the cart 
+    And I navigate to the cart
     When I enter "foo" as title
     Then the purpose contains "foo"
     When I enter "foo bar" as purpose
