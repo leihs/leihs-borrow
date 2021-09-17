@@ -62,8 +62,12 @@
                             :de-CH "Delegation wird geladen"}}
     :favorite-models {:title {:en-GB "Favorites"
                               :de-CH "Favoriten"}}
-    :filter {:search {:en-GB "Search"
-                      :de-CH "Suche"}
+    :filter {:search {:title {:en-GB "Search"
+                              :de-CH "Suche"}
+                      :placeholder {:en-GB "Enter search term"
+                                    :de-CH "Suchbegriff eingeben"}}
+             :delegations {:en-GB "{n, plural, =1 {Delegation} other {Delegations}}"
+                           :de-CH "{n, plural, =1 {Delegation} other {Delegationen}}"}
              :for {:en-GB "For"
                    :de-CH "Für"}
              :time-span {:en-GB "Time Span"
@@ -78,8 +82,9 @@
                         :de-CH "Anzahl"}
              :get-results {:en-GB "Get Results"
                            :de-CH "Resultate anzeigen"}
-             :clear {:en-GB "Clear"
-                     :de-CH "Löschen"}
+             :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
+             :apply {:en-GB "Apply" :de-CH "Anwenden"}
+             :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}
              :pools {:all {:en-GB "All inventory pools"
                            :de-CH "Allen Geräteparks"}}}
     :home-page {:title {:en-GB "Home"
