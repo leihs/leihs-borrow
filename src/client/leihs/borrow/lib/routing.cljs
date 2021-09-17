@@ -70,7 +70,6 @@
        :dispatch-n (list [::requests/abort-running-queries] 
                          [::scroll-to-top true]
                          [(:handler bidi-match) bidi-match]
-                         [::current-user/fetch]
                          [:leihs.borrow.features.shopping-cart.timeout/refresh])})))
 
 (reg-event-fx
