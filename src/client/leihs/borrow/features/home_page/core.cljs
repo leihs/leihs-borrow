@@ -31,25 +31,41 @@
                                [::categories/fetch-index 4])}))
 
 (defn filter-modal [shown? cancel-fn]
-  (with-translate-path :borrow.filter
-    [:> UI/Components.Design.ModalDialog {:title "Filter" :shown shown?}
-     [:> UI/Components.Design.ModalDialog.Body
-      [:> UI/Components.Design.Stack {:space 4}
-       [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
-        [:label.visually-hidden {:html-for "term"} (t :search.title)]
-        [:> UI/Components.Design.InputWithClearButton
-         {:name "term"
-          :id "term"
-          :placeholder (t :search.placeholder)
-          :value nil
-          :onChange (fn [e] (js/console.log (-> e .-target .-value)))}]]]]
-     [:> UI/Components.Design.ModalDialog.Footer
-      [:button.btn.btn-secondary {:type "button" :onClick cancel-fn}
-       (t :cancel)]
-      [:button.btn.btn-secondary {:type "button" :onClick #(js/alert "reset")}
-       (t :reset)]
-      [:button.btn.btn-primary {:type "button" :onClick #(js/alert "apply")}
-       (t :apply)]]]))
+  (let [term (r/atom @(subscribe [::filters/term]))
+        pool-id (r/atom @(subscribe [::filters/pool-id]))
+        pools @(subscribe [::current-user/pools])]
+    (fn [shown? cancel-fn]
+      (with-translate-path :borrow.filter
+        [:> UI/Components.Design.ModalDialog {:title "Filter" :shown shown?}
+         [:> UI/Components.Design.ModalDialog.Body
+          [:> UI/Components.Design.Stack {:space 4}
+           [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
+            [:label.visually-hidden {:html-for "term"} (t :search.title)]
+            [:> UI/Components.Design.InputWithClearButton
+             {:name "term"
+              :id "term"
+              :placeholder (t :search.placeholder)
+              :value @term
+              :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
+           [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
+            [:label.visually-hidden {:html-for "pools"} (t :pools.title)]
+            [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
+                                  :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
+             [:option {:value "all" :key "all"} (t :pools.all)]
+             (doall
+               (for [{:keys [pool-id pool-name]} pools]
+                 [:option {:value pool-id :key pool-id} pool-name]))]]]]
+         [:> UI/Components.Design.ModalDialog.Footer
+          [:button.btn.btn-secondary {:type "button" :onClick cancel-fn}
+           (t :cancel)]
+          [:button.btn.btn-secondary
+           {:type "button"
+            :onClick #(js/alert "reset")}
+           (t :reset)]
+          [:button.btn.btn-primary
+           {:type "button"
+            :onClick #(dispatch [:routing/navigate [::routes/models {:query-params {:term @term}}]])}
+           (t :apply)]]]))))
 
 (defn view []
   (let [modal-shown? (r/atom false)]

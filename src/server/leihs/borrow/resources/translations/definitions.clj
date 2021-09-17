@@ -74,6 +74,8 @@
                          :de-CH "Zeitraum"}
              :show-only-available {:en-GB "Show available only"
                                    :de-CH "Nur Verfügbare anzeigen"}
+             :pools {:title {:en-GB "Inventory pool" :de-CH "Gerätepark"} 
+                     :all {:en-GB "All" :de-CH "Alle"}}
              :from {:en-GB "From"
                     :de-CH "Von"}
              :until {:en-GB "Until"
@@ -84,9 +86,7 @@
                            :de-CH "Resultate anzeigen"}
              :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
              :apply {:en-GB "Apply" :de-CH "Anwenden"}
-             :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}
-             :pools {:all {:en-GB "All inventory pools"
-                           :de-CH "Allen Geräteparks"}}}
+             :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
     :home-page {:title {:en-GB "Home"
                         :de-CH "Home"}
                 :catalog {:en-GB "Catalog"
