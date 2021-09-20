@@ -59,13 +59,6 @@
         (map :node)
         not-empty)))
 
-(reg-sub ::target-users
-         :<- [::current-user/user-data]
-         (fn [cu]
-           (let [user (:user cu)
-                 delegations (:delegations cu)]
-             (concat [user] delegations))))
-
 (reg-sub ::user-id
          :<- [::current-user/user-data]
          :<- [::filters/user-id]
@@ -76,7 +69,7 @@
 
 (defn filter-panel []
   (let [user-id @(subscribe [::user-id])
-        target-users @(subscribe [::target-users])]
+        target-users @(subscribe [::current-user/target-users])]
     (when (> (count target-users) 1)
       [:div.px-3.py-4.bg-light {:class "mt-3 mb-3"}
        [:div.form.form-compact

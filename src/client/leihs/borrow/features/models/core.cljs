@@ -119,13 +119,6 @@
            (subscribe [::data-under-cache-key cache-key]))
          (fn [data _] (-> data :page-info :has-next-page)))
 
-(reg-sub ::target-users
-         :<- [::current-user/user-data]
-         (fn [cu]
-           (let [delegations (:delegations cu)]
-             (when (not-empty delegations)
-               (concat [(:user cu)] delegations)))))
-
 ;-; VIEWS
 (defn form-line [name label input-props]
   [:label.row
