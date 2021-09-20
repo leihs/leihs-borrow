@@ -13,11 +13,13 @@
                                       subscribe
                                       dispatch]]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path with-translate-path]]
+   [leihs.borrow.lib.helpers :refer [log spy]]
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]
+   [leihs.core.core :refer [remove-nils]]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.home-page)
@@ -52,9 +54,8 @@
             [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
                                   :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
              [:option {:value "all" :key "all"} (t :pools.all)]
-             (doall
-               (for [{:keys [pool-id pool-name]} pools]
-                 [:option {:value pool-id :key pool-id} pool-name]))]]]]
+             (doall (for [{pool-id :id pool-name :name} pools]
+                      [:option {:value pool-id :key pool-id} pool-name]))]]]]
          [:> UI/Components.Design.ModalDialog.Footer
           [:button.btn.btn-secondary {:type "button" :onClick cancel-fn}
            (t :cancel)]
@@ -64,7 +65,10 @@
            (t :reset)]
           [:button.btn.btn-primary
            {:type "button"
-            :onClick #(dispatch [:routing/navigate [::routes/models {:query-params {:term @term}}]])}
+            :onClick #(dispatch [:routing/navigate
+                                 [::routes/models
+                                  {:query-params (remove-nils {:term @term
+                                                               :pool-id @pool-id})}]])}
            (t :apply)]]]))))
 
 (defn view []
