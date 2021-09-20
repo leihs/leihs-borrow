@@ -121,10 +121,8 @@
 
 (reg-sub ::target-users
          :<- [::current-user/user-data]
-         (fn [cu]
-           (let [delegations (:delegations cu)]
-             (when (not-empty delegations)
-               (concat [(:user cu)] delegations)))))
+         (fn [user-data]
+           (concat [user-data] (:delegations user-data))))
 
 ;-; VIEWS
 (defn form-line [name label input-props]

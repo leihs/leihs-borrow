@@ -1,26 +1,27 @@
 (ns leihs.borrow.features.home-page.core
   (:require
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [reagent.core :as r]
-   [re-frame.core :as rf]
-   #_[re-graph.core :as re-graph]
-   #_[shadow.resource :as rc]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                      reg-event-db
-                                      reg-sub
-                                      reg-fx
-                                      subscribe
-                                      dispatch]]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path with-translate-path]]
-   [leihs.borrow.lib.helpers :refer [log spy]]
-   [leihs.borrow.lib.filters :as filters]
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.features.models.core :as models]
-   [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.borrow.features.categories.core :as categories]
-   [leihs.core.core :refer [remove-nils]]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+    [clojure.string :as string]
+    [day8.re-frame.tracing :refer-macros [fn-traced]]
+    [reagent.core :as r]
+    [re-frame.core :as rf]
+    #_[re-graph.core :as re-graph]
+    #_[shadow.resource :as rc]
+    [leihs.borrow.client.routes :as routes]
+    [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                       reg-event-db
+                                       reg-sub
+                                       reg-fx
+                                       subscribe
+                                       dispatch]]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path with-translate-path]]
+    [leihs.borrow.lib.helpers :refer [log spy]]
+    [leihs.borrow.lib.filters :as filters]
+    [leihs.borrow.lib.routing :as routing]
+    [leihs.borrow.features.models.core :as models]
+    [leihs.borrow.features.current-user.core :as current-user]
+    [leihs.borrow.features.categories.core :as categories]
+    [leihs.core.core :refer [remove-nils]]
+    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.home-page)
 
@@ -35,12 +36,22 @@
 (defn filter-modal [shown? cancel-fn]
   (let [term (r/atom @(subscribe [::filters/term]))
         pool-id (r/atom @(subscribe [::filters/pool-id]))
-        pools @(subscribe [::current-user/pools])]
+        pools @(subscribe [::current-user/pools])
+        user-id (r/atom @(subscribe [::filters/user-id]))
+        target-users @(subscribe [::models/target-users])]
     (fn [shown? cancel-fn]
       (with-translate-path :borrow.filter
         [:> UI/Components.Design.ModalDialog {:title "Filter" :shown shown?}
          [:> UI/Components.Design.ModalDialog.Body
           [:> UI/Components.Design.Stack {:space 4}
+           [:> UI/Components.Design.Section {:title (t :delegations {:n 1})
+                                             :collapsible true}
+            [:label.visually-hidden {:html-for "delegation"} (t :pools.title)]
+            [:select.form-select
+             {:name "user-id" :id "user-id" :value @user-id
+              :on-change (fn [e] (reset! user-id (-> e .-target .-value)))}
+             (doall (for [{:keys [id name]} target-users]
+                      [:option {:value id :key id} name]))]]
            [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
             [:label.visually-hidden {:html-for "term"} (t :search.title)]
             [:> UI/Components.Design.InputWithClearButton
@@ -50,7 +61,7 @@
               :value @term
               :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
            [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
-            [:label.visually-hidden {:html-for "pools"} (t :pools.title)]
+            [:label.visually-hidden {:html-for "pool"} (t :pools.title)]
             [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
                                   :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
              [:option {:value "all" :key "all"} (t :pools.all)]
