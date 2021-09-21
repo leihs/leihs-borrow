@@ -174,7 +174,9 @@
  (fn-traced [{:keys [db]} [_ args]]
    (let [new-quantity (:quantity args)
          original-quantity (-> db ::data :edit-mode :original-quantity)]
-     {:db (assoc-in db [::data :pending-count] (- new-quantity original-quantity)) ;; TODO: still needed?
+     {:db (-> db
+              (assoc-in [::data :pending-count] (- new-quantity original-quantity))
+              (assoc-in [::data :edit-mode :is-saving?] true))
       :dispatch [::re-graph/mutate
                  (rc/inline "leihs/borrow/features/shopping_cart/updateReservations.gql")
                  args
@@ -189,12 +191,13 @@
      {:alert (str "FAIL! " (pr-str errors))}
      {:db (-> db
               (dissoc-in [::data :pending-count])
+              (dissoc-in [::data :edit-mode :is-saving?])
               (update-in [::data :reservations]
                          (fn [rs]
                            (as-> rs <>
                              (filter #(->> % :id ((set del-ids)) not) <>)
                              (into <> new-res-lines)))))
-      :dispatch [::routes/shopping-cart]})))
+      :dispatch [::timeout/refresh]})))
 
 (reg-event-db ::cancel-edit
               [(path ::data)]
@@ -228,6 +231,11 @@
          :<- [::reservations]
          (fn [lines _]
            (->> lines
+                (sort-by
+                 (fn [line]
+                   [(get-in line [:start-date])
+                    (get-in line [:inventory-pool :name])
+                    (get-in line [:model :name])]))
                 (group-by
                  (fn [line]
                    [(get-in line [:model :id])
@@ -270,7 +278,8 @@
         max-date-loaded (-> edit-mode-data
                             :fetched-until-date
                             js/Date.
-                            datefn/endOfDay)]
+                            datefn/endOfDay)
+        is-saving? (:is-saving? edit-mode-data)]
     [:> UI/Components.Design.ModalDialog {:shown true
                                           :title (t :edit-dialog/title)
                                           :class "ui-booking-calendar"}
@@ -308,8 +317,7 @@
                                    :endDate (h/date-format-day (:endDate args))
                                    :quantity (int (:quantity args))
                                    :poolIds [(:poolId args)]
-                                   :userId user-id}])
-                       (dispatch [::cancel-edit])))
+                                   :userId user-id}])))
          :modelData (h/camel-case-keys (merge model {:availability availability}))}]
        [:> UI/Components.Design.ActionButtonGroup
         [:button.btn.btn-secondary
@@ -318,7 +326,9 @@
      [:> UI/Components.Design.ModalDialog.Footer
       [:button.btn.btn-secondary {:on-click #(dispatch [::cancel-edit])}
        (t :edit-dialog/cancel)]
-      [:button.btn.btn-primary {:form "order-dialog-form" :type :submit :disabled loading?}
+      [:button.btn.btn-primary
+       {:form "order-dialog-form" :type :submit :disabled (or loading? is-saving?)}
+       (when is-saving? [:> UI/Components.Design.Spinner]) " "
        (t :edit-dialog/confirm)]]]))
 
 (defn reservation [res-lines invalid-res-ids]
@@ -348,10 +358,7 @@
        pool-names]
 
       [:> UI/Components.Design.ListCard.Foot
-       [:> UI/Components.Design.Badge
-        (merge action-props {:as "button" :class (str "btn btn-link stretched-link" (when invalid? " bg-danger"))})
-        duration]]]
-
+       [:> UI/Components.Design.Badge {:class (when invalid? "bg-danger")} duration]]]
      (when edit-mode?
        [edit-dialog res-lines])]))
 
@@ -405,7 +412,10 @@
         linked? (reagent/atom true)
         form-validated? (reagent/atom false)]
     (fn [shown? hide!]
-      [:> UI/Components.Design.ModalDialog {:id :confirm-order :shown shown? :title (t :confirm-dialog/dialog-title)}
+      [:> UI/Components.Design.ModalDialog {:id :confirm-order
+                                            :shown shown?
+                                            :title (t :confirm-dialog/dialog-title)
+                                            :class "ui-confirm-order-dialog"}
        [:> UI/Components.Design.ModalDialog.Body
         [:form
          {:on-submit (fn [e]
