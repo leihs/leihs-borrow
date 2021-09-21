@@ -21,7 +21,8 @@
     [leihs.borrow.features.current-user.core :as current-user]
     [leihs.borrow.features.categories.core :as categories]
     [leihs.core.core :refer [remove-nils]]
-    ["/leihs-ui-client-side-external-react" :as UI]))
+    ["/leihs-ui-client-side-external-react" :as UI]
+    ["react" :as React]))
 
 (set-default-translate-path :borrow.home-page)
 
@@ -37,6 +38,8 @@
   (let [term (r/atom @(subscribe [::filters/term]))
         pool-id (r/atom @(subscribe [::filters/pool-id]))
         pools @(subscribe [::current-user/pools])
+        available-between (r/atom @(subscribe [::filters/available-between?]))
+        start-date (r/atom @(subscribe [::filters/start-date]))
         user-id (r/atom @(subscribe [::filters/user-id]))
         target-users @(subscribe [::current-user/target-users
                                   (t :!borrow.rental-show.user-or-delegation-personal-postfix)])]
@@ -53,6 +56,7 @@
               :on-change (fn [e] (reset! user-id (-> e .-target .-value)))}
              (doall (for [{:keys [id name]} target-users]
                       [:option {:value id :key id} name]))]]
+
            [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
             [:label.visually-hidden {:html-for "term"} (t :search.title)]
             [:> UI/Components.Design.InputWithClearButton
@@ -61,13 +65,35 @@
               :placeholder (t :search.placeholder)
               :value @term
               :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
+
            [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
             [:label.visually-hidden {:html-for "pool"} (t :pools.title)]
             [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
                                   :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
              [:option {:value "all" :key "all"} (t :pools.all)]
              (doall (for [{pool-id :id pool-name :name} pools]
-                      [:option {:value pool-id :key pool-id} pool-name]))]]]]
+                      [:option {:value pool-id :key pool-id} pool-name]))]]
+
+           [:> UI/Components.Design.Section {:title (t :show-only-available) :collapsible true}
+            [:label.visually-hidden {:html-for "available-between"} (t :show-only-available)]
+            [:input.form-check-input {:type :checkbox :name "available-between" :id "available-between"
+                                      :value @available-between
+                                      :on-change (fn [_] (swap! available-between not))}]]
+
+           (when @available-between
+             [:> UI/Components.Design.Section {:title (t :time-span) :collapsible true}
+              [:fieldset
+               [:legend.visually-hidden (t :time-span)]
+               [:div.d-flex.flex-column.gap-3
+                [:> UI/Components.Design.DatePicker {:locale "de"
+                                                     :name "start-date"
+                                                     :id "start-date"
+                                                     :value @start-date
+                                                     :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
+                                                     :placeholder "undefined"
+                                                     :label (React/createElement "label" {:html-for "start-date"} (t :from))}]]
+               ]])]]
+
          [:> UI/Components.Design.ModalDialog.Footer
           [:button.btn.btn-secondary {:type "button" :onClick cancel-fn}
            (t :cancel)]
