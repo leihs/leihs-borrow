@@ -38,7 +38,8 @@
         pool-id (r/atom @(subscribe [::filters/pool-id]))
         pools @(subscribe [::current-user/pools])
         user-id (r/atom @(subscribe [::filters/user-id]))
-        target-users @(subscribe [::models/target-users])]
+        target-users @(subscribe [::current-user/target-users
+                                  (t :!borrow.rental-show.user-or-delegation-personal-postfix)])]
     (fn [shown? cancel-fn]
       (with-translate-path :borrow.filter
         [:> UI/Components.Design.ModalDialog {:title "Filter" :shown shown?}
@@ -79,7 +80,8 @@
             :onClick #(dispatch [:routing/navigate
                                  [::routes/models
                                   {:query-params (remove-nils {:term @term
-                                                               :pool-id @pool-id})}]])}
+                                                               :pool-id @pool-id
+                                                               :user-id @user-id})}]])}
            (t :apply)]]]))))
 
 (defn view []
