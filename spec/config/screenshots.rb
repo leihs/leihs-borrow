@@ -10,7 +10,7 @@ def spec_screenshot(example, step)
   dat = example.metadata
   dir = "tmp/spec-screenshots/#{dat[:file_path]}"
   stepname = step.text.gsub(/\W/, ' ').gsub(/\s+/, ' ').strip.gsub(' ', '-')
-  name = "#{dat[:example_group][:scoped_id].gsub(':','_')}_#{step.location.line}_#{stepname}"
+  name = "#{dat[:example_group][:scoped_id].gsub(':', '_')}_#{step.location.line}_#{stepname}"
   take_screenshot(dir, name)
 end
 
@@ -34,19 +34,6 @@ def take_screenshot(screenshot_dir = nil, name = nil)
               #{Capybara.current_driver}."
   end
 end
-
-module TurnipExtensions
-  module ScreenshotPerStep
-    def run_step(*args)
-      super(*args)
-      begin; spec_screenshot(RSpec.current_example, args.second); rescue => e; end
-      # spec_screenshot(RSpec.current_example, args.second)
-    end
-  end
-end
-
-# monkey-patch Turnip
-Turnip::RSpec::Execute.prepend TurnipExtensions::ScreenshotPerStep
 
 RSpec.configure do |config|
   config.after(type: :feature) do |example|

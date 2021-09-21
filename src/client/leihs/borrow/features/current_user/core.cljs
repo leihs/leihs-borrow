@@ -83,6 +83,14 @@
          :<- [::user-data]
          (fn [u _] (:delegations u)))
 
+(reg-sub ::target-users
+         :<- [::user-data]
+         (fn [user-data [_ suffix]]
+           (let [user (cond-> user-data
+                        suffix
+                        (update :name str suffix))]
+             (concat [user] (:delegations user-data)))))
+
 (reg-sub ::suspensions
          :<- [::user-data]
          (fn [u _] (:suspensions u)))

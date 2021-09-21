@@ -379,13 +379,6 @@
           {:on-click #(dispatch [::edit-reservation res-lines])}
           (t :edit)]]])]))
 
-(reg-sub ::target-users
-         :<- [::current-user/user-data]
-         (fn [cu]
-             (let [user (:user cu)
-                   delegations (:delegations cu)]
-               (concat [user] delegations))))
-
 (reg-sub ::user-id
          :<- [::current-user/user-data]
          :<- [::filters/user-id]
@@ -395,7 +388,7 @@
 (defn search-panel []
   (let [user-id @(subscribe [::user-id])
         delegations @(subscribe [::current-user/delegations])
-        target-users @(subscribe [::target-users])]
+        target-users @(subscribe [::current-user/target-users])]
     (when-not (empty? delegations)
       [:div.px-3.py-4.bg-light {:class "mb-4"
                                 :style {:box-shadow "0 0rem 2rem rgba(0, 0, 0, 0.15) inset"}}
