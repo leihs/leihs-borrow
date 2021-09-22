@@ -49,7 +49,7 @@
 
 (defn translate [message locale values]
   (-> message
-      (intl/IntlMessageFormat. locale)
+      (intl/IntlMessageFormat. (name locale))
       (.format (clj->js values))))
 
 (defn t-base [dict-path values]
