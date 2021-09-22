@@ -36,63 +36,63 @@
 (reg-event-fx
  ::routes/categories-show
  (fn-traced [{:keys [db]} [_ {:keys [query-params] :as args}]]
-            (let [categories-path (get-in args [:route-params :categories-path])
-                  category-ids (split categories-path #"/")
-                  ancestor-ids (butlast category-ids)
-                  category-id (last category-ids)
-                  parent-id (last ancestor-ids)
+   (let [categories-path (get-in args [:route-params :categories-path])
+         category-ids (split categories-path #"/")
+         ancestor-ids (butlast category-ids)
+         category-id (last category-ids)
+         parent-id (last ancestor-ids)
                   ;user-id (filters/user-id db)
-                  ]
+         ]
 
               ;; FIXME: this flickers when navigation and in general should be 1 single query!
-              {:dispatch-n (list [::filters/set-multiple query-params]
+     {:dispatch-n (list [::filters/set-multiple query-params]
 
                          ; We include the actual category itself because the
                          ; backend validates if all categories in the path
                          ; are still among the reservable ones.
-                                 [::re-graph/query categories-query
-                                  {:ids category-ids
-                                   :poolIds (when-let [pool-id (filters/pool-id db)]
-                                              [pool-id])}
-                                  [::on-fetched-categories-data]]
+                        [::re-graph/query categories-query
+                         {:ids category-ids
+                          :poolIds (when-let [pool-id (filters/pool-id db)]
+                                     [pool-id])}
+                         [::on-fetched-categories-data]]
 
                          ; We fetch the actual category again to get the correct
                          ; label in the context of the parent category.
-                                 [::re-graph/query
-                                  query
-                                  {:categoryId category-id :parentId parent-id}
-                                  [::on-fetched-category-data category-id]]
+                        [::re-graph/query
+                         query
+                         {:categoryId category-id :parentId parent-id}
+                         [::on-fetched-category-data category-id]]
 
-                                 [::models/get-models {:categoryId category-id}])})))
+                        [::models/get-models {:categoryId category-id}])})))
 
 (reg-event-db
  ::on-fetched-categories-data
  (fn-traced [db [_ {:keys [data errors]}]]
-            (-> db
-                (cond-> errors (assoc-in [::errors] errors))
-                (update-in [:ls ::data]
-                           #(apply merge %1 %2)
-                           (->> data
-                                :categories
-                                (map #(hash-map (:id %) %)))))))
+   (-> db
+       (cond-> errors (assoc-in [::errors] errors))
+       (update-in [:ls ::data]
+                  #(apply merge %1 %2)
+                  (->> data
+                       :categories
+                       (map #(hash-map (:id %) %)))))))
 
 (reg-event-db
  ::on-fetched-category-data
  (fn-traced [db [_ category-id {:keys [data errors]}]]
-            (-> db
-                (cond-> errors
-                  (assoc-in [::errors category-id] errors))
-                (update-in [:ls ::data category-id]
-                           merge
-                           (:category data)))))
+   (-> db
+       (cond-> errors
+         (assoc-in [::errors category-id] errors))
+       (update-in [:ls ::data category-id]
+                  merge
+                  (:category data)))))
 
 (reg-event-fx
  ::clear
  (fn-traced [_ [_ nav-args extra-vars]]
-            {:dispatch-n (list [::filters/clear-current]
-                               [::models/clear-data]
-                               [:routing/navigate [::routes/categories-show nav-args]]
-                               [::models/get-models extra-vars])}))
+   {:dispatch-n (list [::filters/clear-current]
+                      [::models/clear-data]
+                      [:routing/navigate [::routes/categories-show nav-args]]
+                      [::models/get-models extra-vars])}))
 
 (reg-sub
  ::ancestors

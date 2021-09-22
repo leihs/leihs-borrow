@@ -19,23 +19,23 @@
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/delegations-show
-  (fn-traced [_ [_ args]]
-    (let [delegation-id (get-in args [:route-params :delegation-id])]
-      {:dispatch [::re-graph/query
-                  (rc/inline "leihs/borrow/features/delegations/show.gql")
-                  {:id delegation-id}
-                  [::on-fetched-data delegation-id]]})))
+ ::routes/delegations-show
+ (fn-traced [_ [_ args]]
+   (let [delegation-id (get-in args [:route-params :delegation-id])]
+     {:dispatch [::re-graph/query
+                 (rc/inline "leihs/borrow/features/delegations/show.gql")
+                 {:id delegation-id}
+                 [::on-fetched-data delegation-id]]})))
 
 (reg-event-db
-  ::on-fetched-data
-  (fn-traced [db [_ delegation-id {:keys [data errors]}]]
-    (-> db
-        (update-in [::data delegation-id ] (fnil identity {}))
-        (cond->
-          errors
-          (assoc-in [::errors delegation-id] errors))
-        (assoc-in [::data delegation-id] (:delegation data)))))
+ ::on-fetched-data
+ (fn-traced [db [_ delegation-id {:keys [data errors]}]]
+   (-> db
+       (update-in [::data delegation-id] (fnil identity {}))
+       (cond->
+        errors
+         (assoc-in [::errors delegation-id] errors))
+       (assoc-in [::data delegation-id] (:delegation data)))))
 
 (reg-sub ::delegation
          (fn [db [_ id]]
@@ -61,8 +61,8 @@
    [:h3 (t :borrow.delegations/members)]
    [:ul
     (doall
-      (for [member members]
-        [:li {:key (:id member)} (fullname member)]))]])
+     (for [member members]
+       [:li {:key (:id member)} (fullname member)]))]])
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])

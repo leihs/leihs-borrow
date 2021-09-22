@@ -1,30 +1,30 @@
 (ns leihs.borrow.features.about-page.core
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [clojure.string :as string]
-    #_[reagent.core :as r]
-    [re-frame.core :as rf]
-    #_[re-graph.core :as re-graph]
-    #_[shadow.resource :as rc]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
-    [leihs.borrow.lib.translate :as translate]
-    [leihs.borrow.lib.localstorage :as ls]
-    [leihs.borrow.components :as ui]
-    [leihs.borrow.client.routes :as routes]
-    ["/leihs-ui-client-side-external-react" :as UI]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [clojure.string :as string]
+   #_[reagent.core :as r]
+   [re-frame.core :as rf]
+   #_[re-graph.core :as re-graph]
+   #_[shadow.resource :as rc]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.lib.translate :as translate]
+   [leihs.borrow.lib.localstorage :as ls]
+   [leihs.borrow.components :as ui]
+   [leihs.borrow.client.routes :as routes]
+   ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.about-page)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/about-page
-  (fn-traced [_ [_ _]] {}))
+ ::routes/about-page
+ (fn-traced [_ [_ _]] {}))
 
 (defn matches-media-query? [media-query]
   (-> (js/window.matchMedia media-query) .-matches))
@@ -59,8 +59,8 @@
    [:div.text-monospace.text-xs
     [:table>tbody
      (doall
-       (for [[ix [k v]] (map-indexed vector (get-about-page-data))]
-         [:tr {:key ix}
-          [:td.pr-2.pb-1 k]
-          [:td.pl-2.pb-1 v]]))]]])
+      (for [[ix [k v]] (map-indexed vector (get-about-page-data))]
+        [:tr {:key ix}
+         [:td.pr-2.pb-1 k]
+         [:td.pl-2.pb-1 v]]))]]])
 

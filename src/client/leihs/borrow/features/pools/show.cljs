@@ -19,23 +19,23 @@
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/inventory-pools-show
-  (fn-traced [_ [_ args]]
-    (let [pool-id (get-in args [:route-params :inventory-pool-id])]
-      {:dispatch [::re-graph/query
-                  (rc/inline "leihs/borrow/features/pools/show.gql")
-                  {:id pool-id}
-                  [::on-fetched-data pool-id]]})))
+ ::routes/inventory-pools-show
+ (fn-traced [_ [_ args]]
+   (let [pool-id (get-in args [:route-params :inventory-pool-id])]
+     {:dispatch [::re-graph/query
+                 (rc/inline "leihs/borrow/features/pools/show.gql")
+                 {:id pool-id}
+                 [::on-fetched-data pool-id]]})))
 
 (reg-event-db
-  ::on-fetched-data
-  (fn-traced [db [_ pool-id {:keys [data errors]}]]
-    (-> db
-        (update-in [:ls ::data pool-id ] (fnil identity {}))
-        (cond->
-          errors
-          (assoc-in [::errors pool-id] errors))
-        (assoc-in [:ls ::data pool-id] (:inventory-pool data)))))
+ ::on-fetched-data
+ (fn-traced [db [_ pool-id {:keys [data errors]}]]
+   (-> db
+       (update-in [:ls ::data pool-id] (fnil identity {}))
+       (cond->
+        errors
+         (assoc-in [::errors pool-id] errors))
+       (assoc-in [:ls ::data pool-id] (:inventory-pool data)))))
 
 (reg-sub ::pool
          (fn [db [_ id]]
