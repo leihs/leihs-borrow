@@ -42,8 +42,11 @@
 (defn view []
   (let [cache-key @(subscribe [::models/cache-key EXTRA-VARS {}])
         models @(subscribe [::models/edges cache-key])]
-    [:> UI/Components.AppLayout.Page
-     {:title (t :title)}
+    [:<>
+
+     [:> UI/Components.Design.PageLayout.Header
+      {:title (t :title)}]
+
      [:<>
       (cond
         (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]

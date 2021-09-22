@@ -41,8 +41,10 @@
 (defn view []
   (let [pools @(subscribe [::current-user/pools])
         is-loading? (not pools)]
-    [:> UI/Components.AppLayout.Page
-     {:title (t :borrow.pools/title)}
+    [:<>
+     [:> UI/Components.Design.PageLayout.Header
+      {:title (t :borrow.pools/title)}]
+
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
        ; errors [ui/error-view errors]

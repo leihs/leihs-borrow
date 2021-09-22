@@ -70,8 +70,9 @@
         delegation @(subscribe [::delegation delegation-id])
         errors @(subscribe [::errors delegation-id])
         is-loading? (not (or delegation errors))]
-    [:> UI/Components.AppLayout.Page
-     {:title (when delegation (:name delegation) "…")}
+    [:<>
+     [:> UI/Components.Design.PageLayout.Header
+      {:title (:name delegation)}]
      (cond
        is-loading? [:div
                     [:div [ui/spinner-clock]]

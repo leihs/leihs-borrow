@@ -40,7 +40,7 @@
   ; --- PER FEATURE TRANSLATIONS --- 
 
     :about-page {:title {:en-GB "About"
-                         :de-CH "Übersicht"}
+                         :de-CH "Über"}
                  :navigation-menu {:en-GB "Navigation Menu"
                                    :de-CH "Navigationsmenü"}}
     :categories {:title {:en-GB "Categories"
@@ -92,6 +92,28 @@
                                          :de-CH "Zeige Suche/Filter"}}
     :logout {:en-GB "Logout"
              :de-CH "Abmelden"}
+    :menu {:borrow {:section-title {:en-GB "Borrow"
+                                    :de-CH "Ausleihen"}
+                    :catalog {:en-GB "Catalog"
+                              :de-CH "Katalog"}
+                    :shopping-cart {:en-GB "New Rental"
+                                    :de-CH "Neue Ausleihe"}}
+           :user {:rentals {:en-GB "My Rentals"
+                            :de-CH "Meine Ausleihen"}
+                  :favorite-models {:en-GB "Favorites"
+                                    :de-CH "Favoriten"}
+                  :current-user {:en-GB "User Account"
+                                 :de-CH "Benutzerkonto"}
+                  :logout {:en-GB "Logout"
+                           :de-CH "Abmelden"}}
+           :help {:section-title {:en-GB "Help"
+                                  :de-CH "Hilfe"}
+                  :documentation {:en-GB "Documentation"
+                                  :de-CH "Dokumentation"}
+                  :support {:en-GB "Support"
+                            :de-CH "Unterstützung"}}
+           :language {:section-title {:en-GB "Language"
+                                      :de-CH "Sprache"}}}
     :model-show {:loading {:en-GB "Loading model"
                            :de-CH "Modell wird geladen"}
                  :compatibles {:en-GB "Compatible Models"

@@ -66,6 +66,7 @@
       {:db (-> db
                (assoc-in [:routing/routing :bidi-match] bidi-match)
                (assoc-in [:meta :app :fatal-errors] nil)
+               (assoc-in [:ls :leihs.borrow.ui.main-nav/data :is-menu-open?] nil)
                (dissoc ::requests/retry-mutation))
        :dispatch-n (list [::requests/abort-running-queries] 
                          [::scroll-to-top true]

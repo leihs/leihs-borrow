@@ -51,8 +51,9 @@
         pool @(subscribe [::pool pool-id])
         errors @(subscribe [::errors pool-id])
         is-loading? (not (or pool errors))]
-    [:> UI/Components.AppLayout.Page
-     {:title (cond (:name pool) (:name pool) :else "…")}
+    [:<>
+     [:> UI/Components.Design.PageLayout.Header
+      {:title (cond (:name pool) (:name pool) :else "…")}]
      (cond
        is-loading? [:div [:div [ui/spinner-clock]] [:pre "loading pool" [:samp (:id pool)] "…"]]
        errors [ui/error-view errors]

@@ -74,9 +74,10 @@
         end-date @(subscribe [::filters/end-date])
         errors @(subscribe [::errors template-id])
         is-loading? (not (or template errors))]
-    [:> UI/Components.AppLayout.Page
-     {:title (or (:name template "…"))
-      :backLink {:href (routing/path-for ::routes/templates-index) :children "All Templates"}}
+    [:<>
+     [:> UI/Components.Design.PageLayout.Header
+      {:title (or (:name template "…"))}
+      [:a {:href (routing/path-for ::routes/templates-index) :class "text-decoration-underline"} "All Templates"]]
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
        errors [ui/error-view errors]

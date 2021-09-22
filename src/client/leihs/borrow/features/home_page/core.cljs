@@ -38,9 +38,11 @@
           filters @(subscribe [::filters/current])]
 
 
-      [:> UI/Components.AppLayout.Page
+      [:<>
 
-       [:> UI/Components.Design.PageLayout.Header {:title (t :catalog)}
+       [:> UI/Components.Design.PageLayout.Header
+        {:title (t :catalog)}
+
         [:> UI/Components.FilterBubblePanelSwitcher {:labelText (t :show-search-and-filter)}
          [:<>
           [:span.fs-6.text-danger "TODO: new panel design, fullscreen"]

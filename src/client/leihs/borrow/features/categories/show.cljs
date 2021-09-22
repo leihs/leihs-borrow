@@ -131,7 +131,7 @@
        errors [ui/error-view errors]
        :else
 
-       [:> UI/Components.AppLayout.Page
+       [:<>
 
         [:> UI/Components.Design.PageLayout.Header
          {:title (:name category)

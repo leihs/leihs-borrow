@@ -34,7 +34,7 @@ Feature: Delegations
 
     # check the cart
     When I click on the menu
-    And I click on "Cart"
+    And I click on "New Rental"
     Then the cart page is loaded
     And I see one reservation for model "Kamera"
     And the reservation has quantity 1
@@ -49,6 +49,8 @@ Feature: Delegations
 
     # check the new status of the order
     When I visit "/app/borrow/"
+    # FIXME: wait for menu open
+    And I sleep 1
     And I click on the menu
     And I click on "My Rentals"
     Then I see the order "My order" under open orders

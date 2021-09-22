@@ -44,8 +44,9 @@
   (let [data @(subscribe [::data])
         errors @(subscribe [::errors])
         is-loading? (not (or data errors))]
-    [:> UI/Components.AppLayout.Page
-     {:title (t :title)}
+    [:<>
+     [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
+
      (cond
        is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
        errors [ui/error-view errors]

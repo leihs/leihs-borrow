@@ -1,13 +1,8 @@
 (ns leihs.borrow.components
   (:refer-clojure :exclude [time])
   (:require
-   [clojure.string :refer [upper-case]]
    [reagent.core :as reagent]
-   [leihs.borrow.features.sign-in.core :as sign-in]
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.translate :refer [t]]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.csrf :as csrf]))
+   [leihs.borrow.features.sign-in.core :as sign-in]))
 
 (defn merge-props [defaults givens]
   (merge
@@ -63,42 +58,6 @@
     (if (-> e :extensions :code (= 401))
       [sign-in/login-error-screen]
       [fatal-error-screen errors])))
-
-(defn tmp-nav []
-  [:nav.border.border-black.mb-3.p-2
-   [:b (upper-case (t :borrow.about-page/navigation-menu))]
-
-   [:p [:a {:href (routing/path-for ::routes/about-page)} (t :borrow.about-page/title)]]
-   [:p [:a {:href (routing/path-for ::routes/shopping-cart)} (t :borrow.shopping-cart/title)]]
-   [:p [:a {:href (routing/path-for ::routes/draft-order)} (t :borrow.shopping-cart.draft/title)]]
-   [:p [:a {:href (routing/path-for ::routes/categories-index)} (t :borrow.categories/title)]]
-   [:p [:a {:href (routing/path-for ::routes/current-user-show)} (t :borrow.current-user/title)]]
-   [:p [:a {:href (routing/path-for ::routes/delegations-index)} (t :borrow.delegations/title)]]
-   [:p [:a {:href (routing/path-for ::routes/home)} (t :borrow.home-page/title)]]
-   [:p [:a {:href (routing/path-for ::routes/models-favorites)} (t :borrow.favorite-models/title)]]
-   [:p [:a {:href (routing/path-for ::routes/rentals-index)} (t :borrow.rentals/title)]]
-   [:p [:a {:href (routing/path-for ::routes/templates-index)} (t :borrow.templates/title)]]
-   [:p [:a {:href (routing/path-for ::routes/inventory-pools-index)} (t :borrow.pools/title)]]
-   [:form {:action "/sign-out" :method "POST"}
-    [csrf/token-field]
-    [:button {:type "submit"}
-     (t :borrow/logout)]]])
-
-(defn dev-nav []
-  [:nav.border.border-black.mb-3.p-2
-   [:b "dev nav"]
-
-   [:p [:a {:href (routing/path-for ::routes/categories-show
-                                    :categories-path "09ac0343-0d83-5c7f-b112-d5921e9479fd")}
-        "a category show"]]
-   [:p [:a {:href (routing/path-for ::routes/models)} "model index"]]
-   [:p [:a {:href
-            (routing/path-for
-             ::routes/models-show
-             :model-id "1c18b3d3-88e8-57ac-8c28-24d3f8f77604")}
-        "a model show"]]
-   [:p [:a {:href "/app/borrow/graphiql/index.html"} "Graph" [:i "i"] "QL API console"]]])
-
 
 ; copied from <https://github.com/sindresorhus/cli-spinners/blob/af93e2f345a73a16c7686066c08dd970d66d8870/spinners.json#L720>
 (def spinner-data-clock

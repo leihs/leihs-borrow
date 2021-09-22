@@ -69,8 +69,8 @@
 
 (defn main-view [views]
   (let [errors @(subscribe [:app/fatal-errors])]
-    [:> UI/Components.AppLayout.MainView
-     {:navbar (r/as-element [main-nav/navbar])}
+    [:> UI/Components.Design.PageLayout
+     {:navbar (r/as-element [main-nav/navbar-menu])}
      [uic/error-screen errors]
      [requests/retry-banner]
      [routing/routed-view views]]))
