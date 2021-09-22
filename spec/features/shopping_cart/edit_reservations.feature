@@ -61,8 +61,8 @@ Feature: Shopping Cart - Editing Reservations
     And I wait 1 seconds
     Then I see the following lines in the "Items" section:
       | title          | body   | foot               |
-      | 1× Tripod      | Pool A | 2 days from 2/1/32 |
       | 3× DSLR Camera | Pool A | 3 days from 2/1/32 |
+      | 1× Tripod      | Pool A | 2 days from 2/1/32 |
 
     When I click on "Confirm rental"
     And I enter "My Movie" in the "Title" field
