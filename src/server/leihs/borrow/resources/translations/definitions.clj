@@ -70,8 +70,10 @@
                            :de-CH "{n, plural, =1 {Delegation} other {Delegationen}}"}
              :for {:en-GB "For"
                    :de-CH "Für"}
-             :time-span {:en-GB "Time Span"
-                         :de-CH "Zeitraum"}
+             :time-span {:title {:en-GB "Time Span"
+                                 :de-CH "Zeitraum"}
+                         :undefined {:en-GB "undefined"
+                                     :de-CH "unbestimmt"}}
              :show-only-available {:en-GB "Show available only"
                                    :de-CH "Nur Verfügbare anzeigen"}
              :pools {:title {:en-GB "Inventory pool" :de-CH "Gerätepark"} 

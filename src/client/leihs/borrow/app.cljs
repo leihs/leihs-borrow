@@ -58,12 +58,10 @@
 ;-; EVENTS
 (reg-event-db :set-debug (fn-traced [db [_ mode]] (js/console.log mode) (assoc-in db [:meta :app :debug] mode)))
 
-
 ;-; SUBSCRIPTIONS
 (reg-sub :app/fatal-errors (fn [db] (get-in db [:meta :app :fatal-errors])))
 
 (reg-sub :is-debug? (fn [db] (get-in db [:meta :app :debug] false)))
-
 
 ;-; VIEWS
 

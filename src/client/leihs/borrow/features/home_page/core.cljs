@@ -1,28 +1,29 @@
 (ns leihs.borrow.features.home-page.core
   (:require
-    [clojure.string :as string]
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [reagent.core :as r]
-    [re-frame.core :as rf]
-    #_[re-graph.core :as re-graph]
-    #_[shadow.resource :as rc]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.translate :refer [t set-default-translate-path with-translate-path]]
-    [leihs.borrow.lib.helpers :refer [log spy]]
-    [leihs.borrow.lib.filters :as filters]
-    [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.features.models.core :as models]
-    [leihs.borrow.features.current-user.core :as current-user]
-    [leihs.borrow.features.categories.core :as categories]
-    [leihs.core.core :refer [remove-nils]]
-    ["/leihs-ui-client-side-external-react" :as UI]
-    ["react" :as React]))
+   [clojure.string :as string]
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [reagent.core :as r]
+   [re-frame.core :as rf]
+   #_[re-graph.core :as re-graph]
+   #_[shadow.resource :as rc]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path with-translate-path]]
+   [leihs.borrow.lib.helpers :refer [log spy]]
+   [leihs.borrow.lib.filters :as filters]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.features.models.core :as models]
+   [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.borrow.features.categories.core :as categories]
+   [leihs.core.core :refer [remove-nils]]
+    ["date-fns" :as date-fns]
+   ["/leihs-ui-client-side-external-react" :as UI]
+   ["react" :as React]))
 
 (set-default-translate-path :borrow.home-page)
 
@@ -40,6 +41,7 @@
         pools @(subscribe [::current-user/pools])
         available-between (r/atom @(subscribe [::filters/available-between?]))
         start-date (r/atom @(subscribe [::filters/start-date]))
+        end-date (r/atom @(subscribe [::filters/end-date]))
         user-id (r/atom @(subscribe [::filters/user-id]))
         target-users @(subscribe [::current-user/target-users
                                   (t :!borrow.rental-show.user-or-delegation-personal-postfix)])]
@@ -81,18 +83,24 @@
                                       :on-change (fn [_] (swap! available-between not))}]]
 
            (when @available-between
-             [:> UI/Components.Design.Section {:title (t :time-span) :collapsible true}
+             [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
               [:fieldset
-               [:legend.visually-hidden (t :time-span)]
+               [:legend.visually-hidden (t :time-span.title)]
                [:div.d-flex.flex-column.gap-3
-                [:> UI/Components.Design.DatePicker {:locale "de"
-                                                     :name "start-date"
-                                                     :id "start-date"
-                                                     :value @start-date
-                                                     :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
-                                                     :placeholder "undefined"
-                                                     :label (React/createElement "label" {:html-for "start-date"} (t :from))}]]
-               ]])]]
+                [:> UI/Components.Design.DatePicker
+                 {:name "start-date"
+                  :id "start-date"
+                  :value @start-date
+                  :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
+                  :placeholder (t :time-span.undefined)
+                  :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
+                [:> UI/Components.Design.DatePicker
+                 {:name "end-date"
+                  :id "end-date"
+                  :value @end-date
+                  :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
+                  :placeholder (t :time-span.undefined)
+                  :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]]]])]]
 
          [:> UI/Components.Design.ModalDialog.Footer
           [:button.btn.btn-secondary {:type "button" :onClick cancel-fn}
@@ -107,7 +115,10 @@
                                  [::routes/models
                                   {:query-params (remove-nils {:term @term
                                                                :pool-id @pool-id
-                                                               :user-id @user-id})}]])}
+                                                               :user-id @user-id
+                                                               :only-available @available-between
+                                                               :start-date @start-date
+                                                               :end-date @end-date})}]])}
            (t :apply)]]]))))
 
 (defn view []
