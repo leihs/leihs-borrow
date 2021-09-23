@@ -85,7 +85,7 @@
            [:> UI/Components.Design.Section {:title (t :show-only-available) :collapsible true}
             [:label.visually-hidden {:html-for "available-between"} (t :show-only-available)]
             [:input.form-check-input {:type :checkbox :name "available-between" :id "available-between"
-                                      :value @available-between?
+                                      :checked @available-between?
                                       :on-change (fn [_] (swap! available-between? not))}]]
 
            (when @available-between?
