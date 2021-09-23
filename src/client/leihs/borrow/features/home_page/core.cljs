@@ -21,7 +21,8 @@
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]
    [leihs.core.core :refer [remove-nils]]
-    ["date-fns" :as date-fns]
+   ["date-fns" :as date-fns]
+   ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]
    ["react" :as React]))
 
@@ -31,20 +32,28 @@
 (reg-event-fx
  ::routes/home
  (fn-traced [_ [_ {:keys [query-params]}]]
-            {:dispatch-n (list [::filters/init]
-                               [::filters/set-multiple query-params]
-                               [::categories/fetch-index 4])}))
+   {:dispatch-n (list [::filters/init]
+                      [::filters/set-multiple query-params]
+                      [::categories/fetch-index 4])}))
 
 (defn filter-modal [shown? cancel-fn]
   (let [term (r/atom @(subscribe [::filters/term]))
         pool-id (r/atom @(subscribe [::filters/pool-id]))
         pools @(subscribe [::current-user/pools])
-        available-between (r/atom @(subscribe [::filters/available-between?]))
-        start-date (r/atom @(subscribe [::filters/start-date]))
-        end-date (r/atom @(subscribe [::filters/end-date]))
+        available-between? (r/atom @(subscribe [::filters/available-between?]))
+        format-date (fn [x]
+                      (-> x
+                          (date-fns/parse "yyyy-MM-dd" (js/Date.))
+                          (date-fns/format "dd.MM.yyyy")))
+        start-date (r/atom (format-date @(subscribe [::filters/start-date])))
+        end-date (r/atom (format-date @(subscribe [::filters/end-date])))
         user-id (r/atom @(subscribe [::filters/user-id]))
         target-users @(subscribe [::current-user/target-users
                                   (t :!borrow.rental-show.user-or-delegation-personal-postfix)])]
+    (comment (-> "2021-09-27"
+                 (date-fns/parse "yyyy-MM-dd" (js/Date.))
+                 (date-fns/format "dd.MM.yyyy"))
+             (format-date "2021-09-27"))
     (fn [shown? cancel-fn]
       (with-translate-path :borrow.filter
         [:> UI/Components.Design.ModalDialog {:title "Filter" :shown shown?}
@@ -79,23 +88,25 @@
            [:> UI/Components.Design.Section {:title (t :show-only-available) :collapsible true}
             [:label.visually-hidden {:html-for "available-between"} (t :show-only-available)]
             [:input.form-check-input {:type :checkbox :name "available-between" :id "available-between"
-                                      :value @available-between
-                                      :on-change (fn [_] (swap! available-between not))}]]
+                                      :value @available-between?
+                                      :on-change (fn [_] (swap! available-between? not))}]]
 
-           (when @available-between
+           (when @available-between?
              [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
               [:fieldset
                [:legend.visually-hidden (t :time-span.title)]
                [:div.d-flex.flex-column.gap-3
                 [:> UI/Components.Design.DatePicker
-                 {:name "start-date"
+                 {:locale locale/de
+                  :name "start-date"
                   :id "start-date"
                   :value @start-date
                   :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
                   :placeholder (t :time-span.undefined)
                   :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
                 [:> UI/Components.Design.DatePicker
-                 {:name "end-date"
+                 {:locale locale/de
+                  :name "end-date"
                   :id "end-date"
                   :value @end-date
                   :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
@@ -113,13 +124,23 @@
            {:type "button"
             :onClick #(dispatch [:routing/navigate
                                  [::routes/models
-                                  {:query-params (remove-nils {:term @term
-                                                               :pool-id @pool-id
-                                                               :user-id @user-id
-                                                               :only-available @available-between
-                                                               :start-date @start-date
-                                                               :end-date @end-date})}]])}
+                                  {:query-params
+                                   (remove-nils (letfn [(format-date [x]
+                                                          (-> x
+                                                              (date-fns/parse "dd.MM.yyyy" (js/Date.))
+                                                              (date-fns/format "yyyy-MM-dd")))]
+                                                  {:term @term
+                                                   :pool-id @pool-id
+                                                   :user-id @user-id
+                                                   :available-between? @available-between?
+                                                   :start-date (format-date @start-date)
+                                                   :end-date (format-date @end-date)}))}]])}
            (t :apply)]]]))))
+
+(comment
+ (-> "21.09.2021"
+     (date-fns/parse "dd.MM.yyyy" (js/Date.))
+     (date-fns/format "yyyy-MM-dd")))
 
 (defn view []
   (let [modal-shown? (r/atom false)]
