@@ -42,18 +42,15 @@
         pools @(subscribe [::current-user/pools])
         available-between? (r/atom @(subscribe [::filters/available-between?]))
         format-date (fn [x]
-                      (-> x
-                          (date-fns/parse "yyyy-MM-dd" (js/Date.))
-                          (date-fns/format "dd.MM.yyyy")))
+                      (some-> x
+                              (date-fns/parse "yyyy-MM-dd" (js/Date.))
+                              (date-fns/format "dd.MM.yyyy")))
         start-date (r/atom (format-date @(subscribe [::filters/start-date])))
         end-date (r/atom (format-date @(subscribe [::filters/end-date])))
         user-id (r/atom @(subscribe [::filters/user-id]))
+        quantity (r/atom @(subscribe [::filters/quantity]))
         target-users @(subscribe [::current-user/target-users
                                   (t :!borrow.rental-show.user-or-delegation-personal-postfix)])]
-    (comment (-> "2021-09-27"
-                 (date-fns/parse "yyyy-MM-dd" (js/Date.))
-                 (date-fns/format "dd.MM.yyyy"))
-             (format-date "2021-09-27"))
     (fn [shown? cancel-fn]
       (with-translate-path :borrow.filter
         [:> UI/Components.Design.ModalDialog {:title "Filter" :shown shown?}
@@ -92,26 +89,37 @@
                                       :on-change (fn [_] (swap! available-between? not))}]]
 
            (when @available-between?
-             [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
-              [:fieldset
-               [:legend.visually-hidden (t :time-span.title)]
-               [:div.d-flex.flex-column.gap-3
-                [:> UI/Components.Design.DatePicker
-                 {:locale locale/de
-                  :name "start-date"
-                  :id "start-date"
-                  :value @start-date
-                  :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
-                  :placeholder (t :time-span.undefined)
-                  :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
-                [:> UI/Components.Design.DatePicker
-                 {:locale locale/de
-                  :name "end-date"
-                  :id "end-date"
-                  :value @end-date
-                  :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
-                  :placeholder (t :time-span.undefined)
-                  :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]]]])]]
+             [:> UI/Components.Design.Stack {:space 4}
+              [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
+               [:fieldset
+                [:legend.visually-hidden (t :time-span.title)]
+                [:div.d-flex.flex-column.gap-3
+                 [:> UI/Components.Design.DatePicker
+                  {:locale locale/de
+                   :name "start-date"
+                   :id "start-date"
+                   :value @start-date
+                   :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
+                   :placeholder (t :time-span.undefined)
+                   :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
+                 [:> UI/Components.Design.DatePicker
+                  {:locale locale/de
+                   :name "end-date"
+                   :id "end-date"
+                   :value @end-date
+                   :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
+                   :placeholder (t :time-span.undefined)
+                   :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]]]]
+
+              [:> UI/Components.Design.Section {:title (t :quantity) :collapsible true}
+               [:label.visually-hidden {:html-for "quantity"} (t :quantity)]
+               [:input.form-control
+                {:name "quantity"
+                        :id "quantity"
+                        :placeholder (t :quantity)
+                        :type :number
+                        :value @quantity
+                        :onChange (fn [e] (reset! quantity (-> e .-target .-value)))}]]])]]
 
          [:> UI/Components.Design.ModalDialog.Footer
           [:button.btn.btn-secondary {:type "button" :onClick cancel-fn}
@@ -126,15 +134,16 @@
                                  [::routes/models
                                   {:query-params
                                    (remove-nils (letfn [(format-date [x]
-                                                          (-> x
-                                                              (date-fns/parse "dd.MM.yyyy" (js/Date.))
-                                                              (date-fns/format "yyyy-MM-dd")))]
+                                                          (some-> x
+                                                                  (date-fns/parse "dd.MM.yyyy" (js/Date.))
+                                                                  (date-fns/format "yyyy-MM-dd")))]
                                                   {:term @term
                                                    :pool-id @pool-id
                                                    :user-id @user-id
                                                    :available-between? @available-between?
                                                    :start-date (format-date @start-date)
-                                                   :end-date (format-date @end-date)}))}]])}
+                                                   :end-date (format-date @end-date)
+                                                   :quantity @quantity}))}]])}
            (t :apply)]]]))))
 
 (comment
