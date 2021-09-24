@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+SCRIPT_FULL_PATH=$(realpath "$0")
+SCRIPT_DIR=$(dirname $SCRIPT_FULL_PATH)
+ENV_FILE_PATH="$SCRIPT_DIR/../../scripts/_test-env.sh"
+source $ENV_FILE_PATH
+
+"$SCRIPT_DIR"/kill-all
+
+tmux send -t leihs-borrow:2.1 "source $ENV_FILE_PATH && boot -C focus" C-m
+tmux send -t leihs-borrow:3.1 "source $ENV_FILE_PATH && tail -f log/debug.log" C-m
+tmux send -t leihs-borrow:4.1 "source $ENV_FILE_PATH && $SCRIPT_DIR/../../scripts/start-frontend-dev" C-m
+tmux send -t leihs-borrow:5.1 "source $ENV_FILE_PATH && rails server -p $LEIHS_LEGACY_PORT" C-m
+tmux send -t leihs-borrow:7.1 "source $ENV_FILE_PATH && $SCRIPT_DIR/../../leihs-ui/my-scripts/watch" C-m
