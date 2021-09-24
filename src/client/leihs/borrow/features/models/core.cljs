@@ -43,7 +43,7 @@
     (cond-> {:searchTerm (:term filters)
              :startDate (when dates-valid? start-date)
              :endDate (when dates-valid? end-date)
-             :onlyAvailable (when dates-valid? (:available-between? filters))
+             :onlyAvailable (when dates-valid? (:only-available filters))
              :quantity (:quantity filters)
              :bothDatesGiven (boolean (and dates-valid? start-date end-date))}
       pool-id
@@ -147,7 +147,7 @@
       :initialTerm (:term filters)
       :initialUserId (:user-id filters)
       :initialPoolId (:pool-id filters)
-      :initialAvailableBetween (:available-between? filters)
+      :initialOnlyAvailable (:only-available filters)
       :initialStartDate (:start-date filters)
       :initialEndDate (:end-date filters)
       :initialQuantity (:quantity filters)
