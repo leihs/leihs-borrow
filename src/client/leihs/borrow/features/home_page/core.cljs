@@ -115,11 +115,15 @@
                [:label.visually-hidden {:html-for "quantity"} (t :quantity)]
                [:input.form-control
                 {:name "quantity"
-                        :id "quantity"
-                        :placeholder (t :quantity)
-                        :type :number
-                        :value @quantity
-                        :onChange (fn [e] (reset! quantity (-> e .-target .-value)))}]]])]]
+                 :id "quantity"
+                 :placeholder (t :quantity)
+                 :type :number
+                 :min 1
+                 :value @quantity
+                 :onChange (fn [e] (reset! quantity (-> e .-target .-value)))}]]
+
+              (when-not (or @start-date @end-date)
+                [:> UI/Components.Design.Warning "Start and end date must be set."])])]]
 
          [:> UI/Components.Design.ModalDialog.Footer
           [:button.btn.btn-secondary {:type "button" :onClick cancel-fn}
@@ -130,6 +134,8 @@
            (t :reset)]
           [:button.btn.btn-primary
            {:type "button"
+            :disabled (and @available-between?
+                           (or (nil? @start-date) (not= @end-date)))
             :onClick #(dispatch [:routing/navigate
                                  [::routes/models
                                   {:query-params
@@ -140,7 +146,7 @@
                                                   {:term @term
                                                    :pool-id @pool-id
                                                    :user-id @user-id
-                                                   :available-between? @available-between?
+                                                   :only-available @available-between?
                                                    :start-date (format-date @start-date)
                                                    :end-date (format-date @end-date)
                                                    :quantity @quantity}))}]])}
