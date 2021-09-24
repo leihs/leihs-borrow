@@ -13,7 +13,7 @@ step "I clear the browser cookies" do
 end
 
 step "I click on Add and I approve the dialog" do
-  accept_alert { click_on("Hinzufügen") }
+  accept_alert { click_on("Add") }
 end
 
 step "I click on retry and I approve the dialog" do
@@ -52,7 +52,7 @@ end
 
 step "the cart is not empty" do
   visit("/app/borrow/order")
-  expect(page).to have_content /1 Model\(s\), 1 Item\(s\)/
+  step "I see the 'Items' section"
 end
 
 step "the order panel is shown" do

@@ -30,18 +30,19 @@ Feature: Delegations
     Then the show page of the model "Kamera" was loaded
     And I click on "Add item"
     Then the order panel is shown
-    And I click on "Hinzufügen" and accept the alert
+    And I click on "Add" and accept the alert
 
     # check the cart
     When I click on the menu
     And I click on "New Rental"
-    Then the cart page is loaded
-    And I see one reservation for model "Kamera"
-    And the reservation has quantity 1
+    Then I see the following lines in the "Items" section:
+      | title     | body   |
+      | 1× Kamera | Pool A |
 
     # submit the order
-    When I name the order as "My order"
-    And I click on "Confirm order"
+    When I click on "Confirm rental"
+    And I name the order as "My order"
+    And I click on "Confirm"
 
     # approve the order in legacy
     When I visit the orders page of the pool "Pool A"

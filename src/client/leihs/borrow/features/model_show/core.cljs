@@ -227,6 +227,7 @@
 (defn order-panel
   [model filters]
   (let [now (js/Date.)
+        user-locale @(subscribe [:leihs.borrow.features.current-user.core/locale])
         filter-start-date (some-> filters :start-date datefn/parseISO)
         filter-end-date (some-> filters :end-date datefn/parseISO)
         initial-start-date (or filter-start-date now)
@@ -250,20 +251,20 @@
                     (let [args (js->clj jsargs :keywordize-keys true)]
                       (dispatch [::close-order-panel])
                       (dispatch
-                        [::model-create-reservation
-                         {:modelId (:id model),
-                          :startDate (h/date-format-day (:startDate args)),
-                          :endDate (h/date-format-day (:endDate args)),
-                          :quantity (int (:quantity args)),
-                          :poolIds [(:poolId args)]
-                          :userId (:user-id filters)}])))]
+                       [::model-create-reservation
+                        {:modelId (:id model)
+                         :startDate (h/date-format-day (:startDate args))
+                         :endDate (h/date-format-day (:endDate args))
+                         :quantity (int (:quantity args))
+                         :poolIds [(:poolId args)]
+                         :userId (:user-id filters)}])))]
     
     (when (and filters-loaded? has-availability?)
       [:> UI/Components.Design.ModalDialog {:shown true
                                             :title (t :order-dialog/title)
                                             :class "ui-booking-calendar"}
        [:> UI/Components.Design.ModalDialog.Body
-        [:> UI/Components.BookingCalendar
+        [:> UI/Components.OrderPanel
          {:initialOpen true,
           :initialQuantity (or (:quantity filters) 1),
           ; START DYNAMIC FETCHING PROPS
@@ -293,7 +294,9 @@
           :initialInventoryPoolId (:pool-id filters)
           :inventoryPools (map h/camel-case-keys pools)
           :onSubmit on-submit
-          :modelData (h/camel-case-keys model)}]]
+          :modelData (h/camel-case-keys model)
+          :locale user-locale
+          :txt (cart/order-panel-texts)}]]
        [:> UI/Components.Design.ModalDialog.Footer
         [:button.btn.btn-secondary {:on-click on-cancel} (t :order-dialog/cancel)]
         [:button.btn.btn-primary {:form :order-dialog-form :type :submit} (t :order-dialog/add)]]])))

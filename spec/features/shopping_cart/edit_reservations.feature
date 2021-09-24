@@ -1,7 +1,7 @@
 Feature: Shopping Cart - Editing Reservations
   Reservations in the Cart can be edited with an UI similar to creating the Reservation.
   The quantity, inventory pool, start- and end-dates can be edited,
-  or the
+  or the whole reservation can be deleted.
 
   Background:
     Given there is an initial admin
@@ -26,43 +26,43 @@ Feature: Shopping Cart - Editing Reservations
     And I log in as the user
     When I navigate to the cart
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot               |
-      | 1× DSLR Camera | Pool A | 3 days from 2/1/32 |
-      | 1× Tripod      | Pool A | 2 days from 2/1/32 |
+      | title          | body   | foot                 |
+      | 1× DSLR Camera | Pool A | 3 days from 01/02/32 |
+      | 1× Tripod      | Pool A | 2 days from 01/02/32 |
 
-    When I click on "3 days from 2/1/32"
-    And I see the "Edit item" dialog
+    When I click on "3 days from 01/02/32"
+    And I see the "Edit reservation" dialog
     # FIXME: currently this takes very long because calendar load *twice*!
     # And the calendar has finished loading
     And I see a form inside the dialog
     Then the form has exactly these fields:
-      | label      | value           |
-      | Anzahl     | 1               |
-      | Gerätepark | Pool A (max. 3) |
-      | Von        | 01.02.2032      |
-      | Bis        | 03.02.2032      |
+      | label          | value           |
+      | Quantity       | 1               |
+      | Inventory Pool | Pool A (max. 3) |
+      | From           | 02/01/2032      |
+      | Until          | 02/03/2032      |
 
-    When I enter "3" in the "Anzahl" field
-    Then the "Anzahl" field has "3"
+    When I enter "3" in the "Quantity" field
+    Then the "Quantity" field has "3"
     When I click on "Plus"
-    Then the "Anzahl" field has "4"
+    Then the "Quantity" field has "4"
     But the form has an error message:
       """
-      Gegenstand ist in diesem Zeitraum nicht in der gewünschten Menge verfügbar
+      Item is not available in the desired quantity during this period
       """
 
     When I click on "Minus"
-    Then the "Anzahl" field has "3"
+    Then the "Quantity" field has "3"
     And the form has no error message
 
     When I click on "Confirm"
-    And the "Edit item" dialog has closed
+    And the "Edit reservation" dialog has closed
     # FIXME: fix reloading of cart:
     And I wait 1 seconds
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot               |
-      | 1× Tripod      | Pool A | 2 days from 2/1/32 |
-      | 3× DSLR Camera | Pool A | 3 days from 2/1/32 |
+      | title          | body   | foot                 |
+      | 3× DSLR Camera | Pool A | 3 days from 01/02/32 |
+      | 1× Tripod      | Pool A | 2 days from 01/02/32 |
 
     When I click on "Confirm rental"
     And I enter "My Movie" in the "Title" field

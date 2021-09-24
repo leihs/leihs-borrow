@@ -39,6 +39,10 @@ def find_ui_list_cards(scope = page)
   scope.all(".ui-list-card")
 end
 
+def find_ui_list_card(**args)
+  find(".ui-list-card", **args)
+end
+
 def get_ui_list_cards(scope = page)
   find_ui_list_cards(scope).map do |c|
     divs = c.all(":scope > div")

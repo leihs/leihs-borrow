@@ -36,6 +36,50 @@
     :all {:en-GB "All"
           :de-CH "Alle"}
 
+  ; --- PER COMPONENT TRANSLATIONS (reused between some features) --- 
+
+    :order-panel
+    {:label {:quantity {:en-GB "Quantity" :de-CH "Anzahl"}
+             :minus {:en-GB "Minus" :de-CH "Minus"}
+             :plus {:en-GB "Plus" :de-CH "Plus"}
+             :pool {:en-GB "Inventory Pool" :de-CH "Gerätepark"}
+             :pool-max-amount {:en-GB "{pool} (max. {amount, number})" :de-CH "{pool} (max. {amount, number})"}
+             :timespan {:en-GB "Time span" :de-CH "Zeitraum"}
+             :from {:en-GB "From" :de-CH "Von"}
+             :until {:en-GB "Until" :de-CH "Bis"}}
+     :validate {:start-after-end
+                {:de-CH "Enddatum muss nach Beginndatum sein"
+                 :en-GB "End date must be after start date"}
+                :missing-quantity
+                {:de-CH "Verfügbarkeit kann nicht geprüft werden, da die Anzahl fehlt"
+                 :en-GB "Availability can not be checked because the quantity is missing"}
+                :quantity-to-large-in-range
+                {:de-CH
+                 "Gegenstand ist in diesem Zeitraum nicht in der gewünschten Menge verfügbar"
+                 :en-GB
+                 "Item is not available in the desired quantity during this period"}
+                :pool-closed-at-end-date
+                {:de-CH "Gerätepark ist am {endDate, date, small} geschlossen"
+                 :en-GB "Inventory Pool is closed on {endDate, date, small}"}
+                :end-date-to-late
+                {:de-CH "Datum darf nicht nach {maxDate, date, small} sein"
+                 :en-GB "Date must not be after {maxDate, date, small}"}
+                :quantity-to-large-at-day
+                {:de-CH
+                 "Gegenstand ist am {startDate, date, small} nicht in der gewünschten Menge verfügbar"
+                 :en-GB "Item is not available in the requested quantity on {startDate, date, small}."}
+                :pool-closed-at-start-date
+                {:de-CH "Gerätepark ist am {startDate, date, small} geschlossen"
+                 :en-GB "Inventory Pool is closed on {startDate, date, small}"}
+                :start-date-to-early
+                {:de-CH "Datum darf nicht vor {minDate, date, small} sein"
+                 :en-GB "Date must not be before {minDate, date, small}"}
+                :invalid-start-date
+                {:de-CH "Ungültiges Beginndatum"
+                 :en-GB "Invalid start date"}
+                :invalid-end-date
+                {:de-CH "Ungültiges Enddatum"
+                 :en-GB "Invalid end date"}}}
 
   ; --- PER FEATURE TRANSLATIONS --- 
 
@@ -323,8 +367,8 @@
                                               =1 {# day from {fromDate, date, short}}
                                               other {# days from {fromDate, date, short}}
                                               }"}}
-                    :edit-dialog {:title {:en-GB "Edit item" :de-CH "Gegenstand bearbeiten"}
-                                  :delete-reservation {:en-GB "Remove item" :de-CH "Gegenstand entfernen"}
+                    :edit-dialog {:title {:en-GB "Edit reservation" :de-CH "Reservation bearbeiten"}
+                                  :delete-reservation {:en-GB "Remove reservation" :de-CH "Reservation entfernen"}
                                   :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
                                   :confirm {:en-GB "Confirm" :de-CH "Bestätigen"}}
                     :confirm-order {:en-GB "Confirm rental"

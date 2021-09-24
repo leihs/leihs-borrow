@@ -17,7 +17,7 @@
    [leihs.borrow.lib.helpers :as h]
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.lib.translate :refer [t dict set-default-translate-path]]
    [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [dissoc-in]]
@@ -128,28 +128,29 @@
 (reg-event-fx
  ::edit-reservation
  (fn-traced [{:keys [db]} [_ res-lines]]
-   (let [now (js/Date.)
-         res-line (first res-lines)
-         user-id (-> res-line :user :id)
-         model (:model res-line)
-         start-date (:start-date res-line)
-         end-date (:end-date res-line)
-         quantity (count res-lines)
-         min-date-loaded (datefn/startOfMonth now)
-         max-date-loaded (-> (datefn/parseISO end-date)
-                             (datefn/addMonths 6)
-                             datefn/endOfMonth)]
-     {:db (assoc-in db
-                    [::data :edit-mode]
-                    {:reservation-lines res-lines
-                     :start-date start-date
-                     :end-date end-date
-                     :quantity quantity
-                     :user-id user-id
-                     :model model})
-      :dispatch [::fetch-availability
-                 (h/date-format-day min-date-loaded)
-                 (h/date-format-day max-date-loaded)]})))
+   (when-not (get-in db [::data :edit-mode]) ; do nothing if already editing (double event dispatch)
+     (let [now (js/Date.)
+           res-line (first res-lines)
+           user-id (-> res-line :user :id)
+           model (:model res-line)
+           start-date (:start-date res-line)
+           end-date (:end-date res-line)
+           quantity (count res-lines)
+           min-date-loaded (datefn/startOfMonth now)
+           max-date-loaded (-> (datefn/parseISO end-date)
+                               (datefn/addMonths 6)
+                               datefn/endOfMonth)]
+       {:db (assoc-in db
+                      [::data :edit-mode]
+                      {:reservation-lines res-lines
+                       :start-date start-date
+                       :end-date end-date
+                       :quantity quantity
+                       :user-id user-id
+                       :model model})
+        :dispatch [::fetch-availability
+                   (h/date-format-day min-date-loaded)
+                   (h/date-format-day max-date-loaded)]}))))
 
 (reg-event-fx
  ::submit-order
@@ -256,9 +257,15 @@
          (fn [[user-data user-id]]
            (or user-id (:id user-data))))
 
+(defn order-panel-texts []
+  ;; NOTE: maybe add a helper function for this in lib.translate?
+  {:label (clj->js (get-in dict [:borrow :order-panel :label]))
+   :validate (clj->js (get-in dict [:borrow :order-panel :validate]))})
+
 (defn edit-dialog [res-lines]
   (let [now (js/Date.)
         edit-mode-data @(subscribe [::edit-mode-data])
+        user-locale @(subscribe [:leihs.borrow.features.current-user.core/locale])
         user-id (:user-id edit-mode-data)
         model (:model edit-mode-data)
         loading? (nil? (:availability edit-mode-data))
@@ -280,12 +287,13 @@
                             js/Date.
                             datefn/endOfDay)
         is-saving? (:is-saving? edit-mode-data)]
+
     [:> UI/Components.Design.ModalDialog {:shown true
                                           :title (t :edit-dialog/title)
                                           :class "ui-booking-calendar"}
      [:> UI/Components.Design.ModalDialog.Body
       [:> UI/Components.Design.Stack {:space 4}
-       [:> UI/Components.BookingCalendar
+       [:> UI/Components.OrderPanel
         {:initialQuantity quantity
          :initialStartDate start-date
          :initialEndDate end-date
@@ -318,7 +326,9 @@
                                    :quantity (int (:quantity args))
                                    :poolIds [(:poolId args)]
                                    :userId user-id}])))
-         :modelData (h/camel-case-keys (merge model {:availability availability}))}]
+         :modelData (h/camel-case-keys (merge model {:availability availability}))
+         :locale user-locale
+         :txt (order-panel-texts)}]
        [:> UI/Components.Design.ActionButtonGroup
         [:button.btn.btn-secondary
          {:on-click #(dispatch [::delete-reservations (map :id res-lines)])}
