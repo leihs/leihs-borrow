@@ -20,7 +20,7 @@
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]
-   [leihs.core.core :refer [remove-nils]]
+   [leihs.core.core :refer [remove-nils presence]]
    ["date-fns" :as date-fns]
    ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]
@@ -48,6 +48,7 @@
         start-date (r/atom (format-date @(subscribe [::filters/start-date])))
         end-date (r/atom (format-date @(subscribe [::filters/end-date])))
         user-id (r/atom @(subscribe [::filters/user-id]))
+        auth-user @(subscribe [::current-user/user-data])
         quantity (r/atom @(subscribe [::filters/quantity]))
         target-users @(subscribe [::current-user/target-users
                                   (t :!borrow.rental-show.user-or-delegation-personal-postfix)])]
@@ -130,12 +131,18 @@
            (t :cancel)]
           [:button.btn.btn-secondary
            {:type "button"
-            :onClick #(js/alert "reset")}
+            :onClick #(do (reset! term "")
+                          (reset! pool-id "all")
+                          (reset! user-id (:id auth-user))
+                          (reset! only-available false)
+                          (reset! start-date nil)
+                          (reset! end-date nil)
+                          (reset! quantity 1))}
            (t :reset)]
           [:button.btn.btn-primary
            {:type "button"
             :disabled (and @only-available
-                           (or (nil? @start-date) (not= @end-date)))
+                           (or (nil? @start-date) (nil? @end-date)))
             :onClick #(dispatch [:routing/navigate
                                  [::routes/models
                                   {:query-params
@@ -143,19 +150,14 @@
                                                           (some-> x
                                                                   (date-fns/parse "dd.MM.yyyy" (js/Date.))
                                                                   (date-fns/format "yyyy-MM-dd")))]
-                                                  {:term @term
-                                                   :pool-id @pool-id
-                                                   :user-id @user-id
+                                                  {:term (presence @term)
+                                                   :pool-id (if (= @pool-id "all") nil @pool-id)
+                                                   :user-id (when (not= @user-id (:id auth-user)) @user-id)
                                                    :only-available @only-available
-                                                   :start-date (format-date @start-date)
-                                                   :end-date (format-date @end-date)
-                                                   :quantity @quantity}))}]])}
+                                                   :start-date (when @only-available (format-date @start-date))
+                                                   :end-date (when @only-available (format-date @end-date))
+                                                   :quantity (when @only-available @quantity)}))}]])}
            (t :apply)]]]))))
-
-(comment
- (-> "21.09.2021"
-     (date-fns/parse "dd.MM.yyyy" (js/Date.))
-     (date-fns/format "yyyy-MM-dd")))
 
 (defn view []
   (let [modal-shown? (r/atom false)]
