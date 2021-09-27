@@ -24,6 +24,7 @@
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.features.customer-orders.core :as rentals]
    [leihs.borrow.features.customer-orders.index :refer [rental-progress-bars]]
+   [leihs.borrow.features.current-user.core :as current-user]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.rental-show)
@@ -60,6 +61,11 @@
          (fn [[_ id]] (subscribe [::reservations id]))
          (fn [lines _]
            (->> lines
+                (sort-by
+                 (fn [line]
+                   [(get-in line [:start-date])
+                    (get-in line [:inventory-pool :name])
+                    (get-in line [:model :name])]))
                 (group-by
                  (fn [line]
                    [(get-in line [:model :id])
@@ -83,8 +89,7 @@
     [:<>
      [:> UI/Components.Design.ListCard {:href href}
       [:> UI/Components.Design.ListCard.Title
-       [:a.stretched-link {:href href}
-        title]]
+       title]
 
       [:> UI/Components.Design.ListCard.Body
        sub-title]
@@ -115,7 +120,9 @@
         rental-title  (or (:title rental) (:purpose rental))
 
         is-cancelable? (= ["IN_APPROVAL"] (:fulfillment-states rental))
-        contracts (map :node (get-in rental [:contracts :edges]))]
+        contracts (map :node (get-in rental [:contracts :edges]))
+        user-data @(subscribe [::current-user/user-data])
+        user-id @(subscribe [::filters/user-id])]
 
     [:<>
      (cond
@@ -161,8 +168,12 @@
 
          [:> UI/Components.Design.Section
           {:title (t :user-or-delegation-section-title) :collapsible true}
-          [:p.text-danger "TODO: Delegation"]
-          [:p.text-danger "TODO: if user: " (t :user-or-delegation-personal-postfix)]]
+          (if (or (nil? user-id) (= user-id (:id user-data)))
+            [:<> (:name user-data) (t :user-or-delegation-personal-postfix)]
+            [:<> (->> (:delegations user-data)
+                      (filter #(= user-id (:id %)))
+                      first
+                      :name)])]
 
          (when (seq contracts)
            [:> UI/Components.Design.Section
