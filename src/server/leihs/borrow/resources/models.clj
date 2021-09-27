@@ -323,12 +323,10 @@
 
 (defn get-connection
   [context
-   {:keys [only-available start-date end-date quantity]
-    limit :first
-    :as args}
+   {:keys [only-available start-date end-date quantity] limit :first :as args}
    value]
-  {:pre [(or (and only-available start-date end-date)
-             (and (nil? only-available) (nil? start-date) (nil? end-date)))]}
+  {:pre [(or (not only-available)
+             (and only-available start-date end-date))]}
   (let [conn-fn (fn [ext-args]
                   (connections/wrap get-multiple-sqlmap
                                     context

@@ -21,7 +21,7 @@
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.features.current-user.core :as current-user]))
 
-(def BOOLEANS #{:available-between?})
+(def BOOLEANS #{:only-available})
 (def INTEGERS #{:quantity})
 
 (defn massage-values [m]
@@ -94,10 +94,6 @@
   (get-in db (conj current-path k)))
 
 (reg-sub
-  ::available
-  (fn [db _] (get-in db [:ls ::filters :available])))
-
-(reg-sub
   ::current
   (fn [db _] (get-in db current-path)))
 
@@ -114,8 +110,8 @@
   (fn [db _] (get-from-current db :end-date)))
 
 (reg-sub
-  ::available-between?
-  (fn [db _] (boolean (get-from-current db :available-between?))))
+  ::only-available
+  (fn [db _] (boolean (get-from-current db :only-available))))
 
 (reg-sub
   ::quantity
