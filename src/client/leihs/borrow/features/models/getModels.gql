@@ -1,7 +1,7 @@
 query getModels(
   $searchTerm: String
-  $startDate: Date
-  $endDate: Date
+  $startDate: Date!
+  $endDate: Date!
   $first: Int
   $afterCursor: String
   $bothDatesGiven: Boolean!
@@ -17,8 +17,6 @@ query getModels(
     first: $first
     after: $afterCursor
     onlyAvailable: $onlyAvailable
-    startDate: $startDate
-    endDate: $endDate
     quantity: $quantity
     userId: $userId
     poolIds: $poolIds
