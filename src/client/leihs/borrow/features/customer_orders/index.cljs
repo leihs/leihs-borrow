@@ -27,17 +27,17 @@
 (reg-event-fx
  ::routes/rentals-index
  (fn-traced [{:keys [db]} [_ _]]
-            {:dispatch [::re-graph/query
-                        (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
-                        {:userId (filters/user-id db)}
-                        [::on-fetched-data]]}))
+   {:dispatch [::re-graph/query
+               (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
+               {:userId (filters/user-id db)}
+               [::on-fetched-data]]}))
 
 (reg-event-db
  ::on-fetched-data
  (fn-traced [db [_ {:keys [data errors]}]]
-            (-> db
-                (cond-> errors (assoc ::errors errors))
-                (assoc ::data data))))
+   (-> db
+       (cond-> errors (assoc ::errors errors))
+       (assoc ::data data))))
 
 (reg-sub ::data (fn [db _] (::data db)))
 

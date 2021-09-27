@@ -32,19 +32,19 @@
 (reg-event-fx
  ::routes/rentals-show
  (fn-traced [{:keys [db]} [_ args]]
-            (let [order-id (get-in args [:route-params :rental-id])]
-              {:dispatch [::re-graph/query
-                          (rc/inline "leihs/borrow/features/customer_orders/customerOrderShow.gql")
-                          {:id order-id, :userId (filters/user-id db)}
-                          [::on-fetched-data order-id]]})))
+   (let [order-id (get-in args [:route-params :rental-id])]
+     {:dispatch [::re-graph/query
+                 (rc/inline "leihs/borrow/features/customer_orders/customerOrderShow.gql")
+                 {:id order-id, :userId (filters/user-id db)}
+                 [::on-fetched-data order-id]]})))
 
 (reg-event-db
  ::on-fetched-data
  (fn-traced [db [_ order-id {:keys [data errors]}]]
-            (-> db
-                (update-in , [::data order-id] (fnil identity {}))
-                (cond-> errors (assoc-in , [::errors order-id] errors))
-                (assoc-in , [::data order-id] (into (sorted-map) (:rental data))))))
+   (-> db
+       (update-in , [::data order-id] (fnil identity {}))
+       (cond-> errors (assoc-in , [::errors order-id] errors))
+       (assoc-in , [::data order-id] (into (sorted-map) (:rental data))))))
 
 (reg-sub ::data
          (fn [db [_ id]] (get-in db [::data id])))
