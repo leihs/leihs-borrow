@@ -395,6 +395,8 @@
                            :after {:type String}
                            :isFavorited {:type Boolean}
                            :onlyAvailable {:type Boolean}
+                           :startDate {:type :Date}
+                           :endDate {:type :Date}
                            :quantity {:type :Int}
                            :userId {:type :UUID}
                            :poolIds {:type (list (non-null :UUID))}}

@@ -40,7 +40,7 @@
   (let [term (r/atom @(subscribe [::filters/term]))
         pool-id (r/atom @(subscribe [::filters/pool-id]))
         pools @(subscribe [::current-user/pools])
-        available-between? (r/atom @(subscribe [::filters/available-between?]))
+        only-available (r/atom @(subscribe [::filters/only-available]))
         format-date (fn [x]
                       (some-> x
                               (date-fns/parse "yyyy-MM-dd" (js/Date.))
@@ -83,12 +83,12 @@
                       [:option {:value pool-id :key pool-id} pool-name]))]]
 
            [:> UI/Components.Design.Section {:title (t :show-only-available) :collapsible true}
-            [:label.visually-hidden {:html-for "available-between"} (t :show-only-available)]
-            [:input.form-check-input {:type :checkbox :name "available-between" :id "available-between"
-                                      :checked @available-between?
-                                      :on-change (fn [_] (swap! available-between? not))}]]
+            [:label.visually-hidden {:html-for "only-available"} (t :show-only-available)]
+            [:input.form-check-input {:type :checkbox :name "only-available" :id "only-available"
+                                      :checked @only-available
+                                      :on-change (fn [_] (swap! only-available not))}]]
 
-           (when @available-between?
+           (when @only-available
              [:> UI/Components.Design.Stack {:space 4}
               [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
                [:fieldset
@@ -134,7 +134,7 @@
            (t :reset)]
           [:button.btn.btn-primary
            {:type "button"
-            :disabled (and @available-between?
+            :disabled (and @only-available
                            (or (nil? @start-date) (not= @end-date)))
             :onClick #(dispatch [:routing/navigate
                                  [::routes/models
@@ -146,7 +146,7 @@
                                                   {:term @term
                                                    :pool-id @pool-id
                                                    :user-id @user-id
-                                                   :only-available @available-between?
+                                                   :only-available @only-available
                                                    :start-date (format-date @start-date)
                                                    :end-date (format-date @end-date)
                                                    :quantity @quantity}))}]])}
