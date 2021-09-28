@@ -50,8 +50,16 @@
         user-id (r/atom @(subscribe [::filters/user-id]))
         auth-user @(subscribe [::current-user/user-data])
         quantity (r/atom @(subscribe [::filters/quantity]))
-        target-users @(subscribe [::current-user/target-users
-                                  (t :!borrow.rental-show.user-or-delegation-personal-postfix)])]
+        target-users @(subscribe [::current-user/target-users])
+        valid? (r/atom true)
+        start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
+        start-date-equal-or-before-end-date?
+        #(let [s (date-fns/parse @start-date "dd.MM.yyyy" (js/Date.))
+               e (date-fns/parse @end-date "dd.MM.yyyy" (js/Date.))]
+           (or (date-fns/isEqual s e) (date-fns/isBefore s e)))
+        valid? #(or (not @only-available)
+                    (and (start-date-and-end-date-set?)
+                         (start-date-equal-or-before-end-date?)))]
     (fn [shown? cancel-fn]
       (with-translate-path :borrow.filter
         [:> UI/Components.Design.ModalDialog {:title "Filter" :shown shown?}
@@ -59,7 +67,7 @@
           [:> UI/Components.Design.Stack {:space 4}
            [:> UI/Components.Design.Section {:title (t :delegations {:n 1})
                                              :collapsible true}
-            [:label.visually-hidden {:html-for "delegation"} (t :pools.title)]
+            [:label.visually-hidden {:html-for "user-id"} (t :pools.title)]
             [:select.form-select
              {:name "user-id" :id "user-id" :value @user-id
               :on-change (fn [e] (reset! user-id (-> e .-target .-value)))}
@@ -76,7 +84,7 @@
               :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
 
            [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
-            [:label.visually-hidden {:html-for "pool"} (t :pools.title)]
+            [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
             [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
                                   :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
              [:option {:value "all" :key "all"} (t :pools.all)]
@@ -123,8 +131,11 @@
                  :value @quantity
                  :onChange (fn [e] (reset! quantity (-> e .-target .-value)))}]]
 
-              (when-not (or @start-date @end-date)
-                [:> UI/Components.Design.Warning "Start and end date must be set."])])]]
+              (cond
+               (not (start-date-and-end-date-set?))
+               [:> UI/Components.Design.Warning "Start and end date must be set."]
+               (not (start-date-equal-or-before-end-date?))
+               [:> UI/Components.Design.Warning "Start date must be equal to or before end date."])])]]
 
          [:> UI/Components.Design.ModalDialog.Footer
           [:button.btn.btn-secondary {:type "button" :onClick cancel-fn}
@@ -141,22 +152,22 @@
            (t :reset)]
           [:button.btn.btn-primary
            {:type "button"
-            :disabled (and @only-available
-                           (or (nil? @start-date) (nil? @end-date)))
+            :disabled (not (valid?))
             :onClick #(dispatch [:routing/navigate
                                  [::routes/models
                                   {:query-params
-                                   (remove-nils (letfn [(format-date [x]
-                                                          (some-> x
-                                                                  (date-fns/parse "dd.MM.yyyy" (js/Date.))
-                                                                  (date-fns/format "yyyy-MM-dd")))]
-                                                  {:term (presence @term)
-                                                   :pool-id (if (= @pool-id "all") nil @pool-id)
-                                                   :user-id (when (not= @user-id (:id auth-user)) @user-id)
-                                                   :only-available @only-available
-                                                   :start-date (when @only-available (format-date @start-date))
-                                                   :end-date (when @only-available (format-date @end-date))
-                                                   :quantity (when @only-available @quantity)}))}]])}
+                                   (remove-nils
+                                    (letfn [(format-date [x]
+                                              (some-> x
+                                                      (date-fns/parse "dd.MM.yyyy" (js/Date.))
+                                                      (date-fns/format "yyyy-MM-dd")))]
+                                      {:term (presence @term)
+                                       :pool-id (if (= @pool-id "all") nil @pool-id)
+                                       :user-id (when (not= @user-id (:id auth-user)) @user-id)
+                                       :only-available @only-available
+                                       :start-date (when @only-available (format-date @start-date))
+                                       :end-date (when @only-available (format-date @end-date))
+                                       :quantity (when @only-available @quantity)}))}]])}
            (t :apply)]]]))))
 
 (defn view []

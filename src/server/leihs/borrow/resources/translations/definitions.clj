@@ -62,8 +62,8 @@
                             :de-CH "Delegation wird geladen"}}
     :favorite-models {:title {:en-GB "Favorites"
                               :de-CH "Favoriten"}}
-    :filter {:search {:title {:en-GB "Search"
-                              :de-CH "Suche"}
+    :filter {:search {:title {:en-GB "Search term"
+                              :de-CH "Stichwort"}
                       :placeholder {:en-GB "Enter search term"
                                     :de-CH "Suchbegriff eingeben"}}
              :delegations {:en-GB "{n, plural, =1 {Delegation} other {Delegations}}"
@@ -76,7 +76,7 @@
                                      :de-CH "unbestimmt"}}
              :show-only-available {:en-GB "Show available only"
                                    :de-CH "Nur Verfügbare anzeigen"}
-             :pools {:title {:en-GB "Inventory pool" :de-CH "Gerätepark"} 
+             :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"} 
                      :all {:en-GB "All" :de-CH "Alle"}}
              :from {:en-GB "From"
                     :de-CH "Von"}
