@@ -23,8 +23,7 @@
    [leihs.core.core :refer [remove-nils presence]]
    ["date-fns" :as date-fns]
    ["date-fns/locale" :as locale]
-   ["/leihs-ui-client-side-external-react" :as UI]
-   ["react" :as React]))
+   ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.home-page)
 
