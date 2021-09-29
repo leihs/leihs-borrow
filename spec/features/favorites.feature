@@ -17,7 +17,7 @@ Feature: Favorites
 
     When I visit "/app/borrow/"
     And I click on "Show search/filter"
-    And I click on "Get Results"
+    And I click on "Apply"
     And I click on "Beamer"
     And I click on "Add to favorites"
     When I visit "/app/borrow/models/favorites"
@@ -26,7 +26,7 @@ Feature: Favorites
 
     When I visit "/app/borrow/"
     And I click on "Show search/filter"
-    And I click on "Get Results"
+    And I click on "Apply"
     And I click on "Camera"
     And I click on "Add to favorites"
     When I visit "/app/borrow/models/favorites"
@@ -36,7 +36,7 @@ Feature: Favorites
 
     When I visit "/app/borrow/"
     And I click on "Show search/filter"
-    And I click on "Get Results"
+    And I click on "Apply"
     And I click on "Beamer"
     And I click on "Remove from favorites"
     When I visit "/app/borrow/models/favorites"
@@ -45,7 +45,7 @@ Feature: Favorites
     
     When I visit "/app/borrow/"
     And I click on "Show search/filter"
-    And I click on "Get Results"
+    And I click on "Apply"
     And I click on "Camera"
     And I click on "Remove from favorites"
     When I visit "/app/borrow/models/favorites"
