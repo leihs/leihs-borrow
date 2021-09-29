@@ -109,6 +109,7 @@
                                     :de-CH "Zu Favoriten hinzufügen"}
                  :remove-from-favorites {:en-GB "Remove from favorites"
                                          :de-CH "Von Favoriten entfernen"}}
+    :models {:title {:en-GB "Search results" :de-CH "Suchresultate"}}
     :pagination {:load-more {:en-GB "Load more"
                              :de-CH "Mehr laden"}
                  :nothing-found {:en-GB "Nothing found"

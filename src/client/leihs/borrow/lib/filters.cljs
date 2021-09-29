@@ -115,7 +115,7 @@
 
 (reg-sub
   ::quantity
-  (fn [db _] (get-from-current db :quantity)))
+  (fn [db _] (or (get-from-current db :quantity) 1)))
 
 (reg-sub
   ::user-id
