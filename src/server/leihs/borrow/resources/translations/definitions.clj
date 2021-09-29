@@ -60,8 +60,10 @@
                             :de-CH "Mitglieder"}
                   :loading {:en-GB "Loading delegation"
                             :de-CH "Delegation wird geladen"}}
-    :favorite-models {:title {:en-GB "Favorites"
-                              :de-CH "Favoriten"}}
+    :favorite-models {:title {:en-GB "My Favorites"
+                              :de-CH "Meine Favoriten"}
+                      :items {:en-GB "Items"
+                              :de-CH "Gegenstände"}}
     :filter {:search {:title {:en-GB "Search term"
                               :de-CH "Stichwort"}
                       :placeholder {:en-GB "Enter search term"

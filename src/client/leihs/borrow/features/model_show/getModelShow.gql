@@ -33,6 +33,7 @@ query getModelShow($modelId: UUID!) {
           borrowUrl
           name
           manufacturer
+          isFavorited
           images {
             id
             imageUrl

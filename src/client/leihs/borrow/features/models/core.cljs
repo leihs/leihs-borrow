@@ -172,7 +172,8 @@
                         :caption (:name model)
                         :subCaption (:manufacturer model)
                         :href  (routing/path-for ::routes/models-show
-                                                 :model-id (:id model))})))]
+                                                 :model-id (:id model))
+                        :isFavorited (:is-favorited model)})))]
     [:<>
      [:> UI/Components.ModelList {:list models-list}]
      (when debug? [:p (pr-str @(subscribe [::data]))])]))

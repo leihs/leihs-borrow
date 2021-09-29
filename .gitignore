@@ -1,9 +1,11 @@
 .calva
+.clj-kondo/.cache
 .cpcache
 .nrepl-history
 .nrepl-port
 .rebel_readline_history
 .shadow-cljs
+.lsp
 /leihs-ui.tgz
 log
 node_modules
