@@ -135,19 +135,21 @@
           [:button.btn.btn-primary
            {:type "button"
             :disabled (not (valid?))
-            :onClick #(dispatch [:routing/navigate
-                                 [::routes/models
-                                  {:query-params
-                                   (remove-nils
-                                    (letfn [(format-date [x]
-                                              (some-> x
-                                                      (date-fns/parse "dd.MM.yyyy" (js/Date.))
-                                                      (date-fns/format "yyyy-MM-dd")))]
-                                      {:term (presence @term)
-                                       :pool-id (if (= @pool-id "all") nil @pool-id)
-                                       :user-id (when (not= @user-id (:id auth-user)) @user-id)
-                                       :only-available @only-available
-                                       :start-date (when @only-available (format-date @start-date))
-                                       :end-date (when @only-available (format-date @end-date))
-                                       :quantity (when @only-available @quantity)}))}]])}
+            :onClick
+            #(do (cancel-fn)
+                 (dispatch [:routing/navigate
+                            [::routes/models
+                             {:query-params
+                              (remove-nils
+                               (letfn [(format-date [x]
+                                         (some-> x
+                                                 (date-fns/parse "dd.MM.yyyy" (js/Date.))
+                                                 (date-fns/format "yyyy-MM-dd")))]
+                                 {:term (presence @term)
+                                  :pool-id (if (= @pool-id "all") nil @pool-id)
+                                  :user-id @user-id
+                                  :only-available (when @only-available @only-available)
+                                  :start-date (when @only-available (format-date @start-date))
+                                  :end-date (when @only-available (format-date @end-date))
+                                  :quantity (when @only-available @quantity)}))}]]))}
            (t :apply)]]]))))
