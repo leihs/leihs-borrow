@@ -49,7 +49,8 @@
         user-id (r/atom @(subscribe [::filters/user-id]))
         auth-user @(subscribe [::current-user/user-data])
         quantity (r/atom @(subscribe [::filters/quantity]))
-        target-users @(subscribe [::current-user/target-users])
+        target-users @(subscribe [::current-user/target-users
+                                  (t :!borrow.rental-show.user-or-delegation-personal-postfix)])
         valid? (r/atom true)
         start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
         start-date-equal-or-before-end-date?
