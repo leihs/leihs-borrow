@@ -118,17 +118,14 @@
                    :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
                    :placeholder (t :time-span.undefined)
                    :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]]]]
-
+              
               [:> UI/Components.Design.Section {:title (t :quantity) :collapsible true}
-               [:label.visually-hidden {:html-for "quantity"} (t :quantity)]
-               [:input.form-control
+               [:> UI/Components.Design.MinusPlusControl
                 {:name "quantity"
                  :id "quantity"
-                 :placeholder (t :quantity)
-                 :type :number
+                 :number @quantity
                  :min 1
-                 :value @quantity
-                 :onChange (fn [e] (reset! quantity (-> e .-target .-value)))}]]
+                 :onChange (fn [n] (reset! quantity n))}]]
 
               (cond
                (not (start-date-and-end-date-set?))
