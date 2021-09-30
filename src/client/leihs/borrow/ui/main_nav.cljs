@@ -35,6 +35,9 @@
               (fn-traced [db [_ flag]]
                 (update-in db [:ls ::data] assoc :is-menu-open? flag)))
 
+(defn menu-link [href label]
+  [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::set-menu-open false]) :href href} label])
+
 (defn navbar-menu []
   (let [cart-item-count @(subscribe [::cart-item-count])
         menu-data @(subscribe [::menu-data])
@@ -63,20 +66,20 @@
        [:> UI/Components.Design.Menu
 
         [:> UI/Components.Design.Menu.Group {:title (t :borrow/section-title)}
-         [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/home)} (t :borrow/catalog)]
-         [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/shopping-cart)} (t :borrow/shopping-cart)]]
+         [menu-link (routing/path-for ::routes/home) (t :borrow/catalog)]
+         [menu-link (routing/path-for ::routes/shopping-cart) (t :borrow/shopping-cart)]]
 
         [:> UI/Components.Design.Menu.Group {:title user-name}
-         [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/rentals-index)} (t :user/rentals)]
-         [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/models-favorites)} (t :user/favorite-models)]
-         [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/current-user-show)} (t :user/current-user)]
+         [menu-link (routing/path-for ::routes/rentals-index) (t :user/rentals)]
+         [menu-link (routing/path-for ::routes/models-favorites) (t :user/favorite-models)]
+         [menu-link (routing/path-for ::routes/current-user-show) (t :user/current-user)]
          [:> UI/Components.Design.Menu.Button {:type "submit" :form "sign-out-form"} (t :user/logout)]
          [:form.visually-hidden {:id "sign-out-form" :action "/sign-out" :method "POST"} [csrf/token-field]]]
 
         (when (or documentation-url support-url)
           [:> UI/Components.Design.Menu.Group {:title (t :help/section-title)}
-           (when documentation-url [:> UI/Components.Design.Menu.Link {:href documentation-url} (t :help/documentation)])
-           (when support-url [:> UI/Components.Design.Menu.Link {:href support-url} (t :help/support)])])
+           (when documentation-url [menu-link documentation-url (t :help/documentation)])
+           (when support-url [menu-link support-url (t :help/support)])])
 
         (when (> (count languages) 1)
           [:> UI/Components.Design.Menu.Group {:title (t :language/section-title)}
