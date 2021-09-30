@@ -313,7 +313,7 @@
         errors @(subscribe [::errors model-id])
         order-panel-open? @(subscribe [::order-panel-open?])
         is-loading? (not (or model errors))]
-    [:section.mx-3.my-4
+    [:section
      (cond
        is-loading?
        [:div [:div [ui/spinner-clock]]
