@@ -21,13 +21,13 @@
     [leihs.borrow.ui.icons :as icons]
     ["/leihs-ui-client-side-external-react" :as UI]
     ["date-fns" :as datefn]
-    [leihs.borrow.lib.helpers :as h]
+    [leihs.borrow.lib.helpers :as h :refer [spy]]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.features.favorite-models.events :as favs]
     [leihs.borrow.features.current-user.core :as current-user]
     [leihs.borrow.features.shopping-cart.core :as cart]
     [leihs.borrow.features.shopping-cart.timeout :as timeout]
-    [leihs.core.core :refer [dissoc-in]]))
+    [leihs.core.core :refer [dissoc-in flip]]))
 
 ; TODO: 
 ; * separate fetching of page & calendar data
@@ -294,6 +294,16 @@
           :onCancel on-cancel
           :modelData (h/camel-case-keys model)}]]])))
 
+(defn enrich-recommends-with-href [m]
+  (update-in m
+             [:recommends :edges]
+             (flip map)
+             #(assoc-in %
+                        [:node :href] 
+                        (routing/path-for ::routes/models-show
+                                          :model-id
+                                          (-> % :node :id)))))
+
 (defn view
   []
   (let [routing @(subscribe [:routing/routing])
@@ -311,7 +321,9 @@
        errors [ui/error-view errors]
        :else
        [:<>
-        [:> UI/Components.ModelShow {:model (h/camel-case-keys model)
+        [:> UI/Components.ModelShow {:model (-> model
+                                                h/camel-case-keys
+                                                enrich-recommends-with-href)
                                      :t {:addItemToCart (t :add-item-to-cart)
                                          :addToFavorites (t :add-to-favorites)
                                          :removeFromFavorites (t :remove-from-favorites)}

@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Sep 13 2021 13:49:18 GMT+0200 (Central European Summer Time)
+# timestamp: Thu Sep 30 2021 15:41:20 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -19,7 +19,6 @@ type Availability {
 }
 
 type Category {
-  borrowUrl: String!
   children(poolIds: [UUID!], userId: UUID): [Category]
   id: UUID!
   images: [Image]
@@ -100,7 +99,6 @@ type DayData {
 }
 
 type Delegation {
-  borrowUrl: String!
   id: UUID!
   members: [User!]
   name: String!
@@ -132,7 +130,6 @@ type Image {
 }
 
 type InventoryPool {
-  borrowUrl: String!
   description: String
   email: String!
   hasReservableItems: Boolean!
@@ -171,7 +168,6 @@ type Model {
   attachments: [Attachment]
   availability(endDate: Date!, inventoryPoolIds: [UUID!], startDate: Date!): [ModelInventoryPoolAvailability]
   availableQuantityInDateRange(endDate: Date!, excludeReservationIds: [UUID!], inventoryPoolIds: [UUID!], startDate: Date!, userId: UUID): Int!
-  borrowUrl: String!
   coverImage: Image
   description: String
   id: UUID!
@@ -377,7 +373,6 @@ type RefreshTimeoutResult {
 
 type Rental {
   approvedPoolOrdersCount: Int
-  borrowUrl: String!
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   fromDate: Date!
@@ -492,7 +487,6 @@ type Suspension {
 }
 
 type Template {
-  borrowUrl: String!
   id: UUID!
   inventoryPool: InventoryPool!
   lines: [TemplateLine!]

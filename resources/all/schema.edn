@@ -38,7 +38,6 @@
                                :purpose {:type (non-null String)}
                                :note {:type String}}}
            :Template {:fields {:id {:type (non-null :UUID)}
-                               :borrowUrl {:type (non-null String) :resolve :url}
                                :name {:type (non-null String)}
                                :inventoryPool {:type (non-null :InventoryPool)
                                                :resolve :inventory-pool}
@@ -49,7 +48,6 @@
                                            :resolve :model}
                                    :quantity {:type (non-null Int)}}}
            :InventoryPool {:fields {:id {:type (non-null :UUID)}
-                                    :borrowUrl {:type (non-null String) :resolve :url}
                                     :description {:type String}
                                     :isActive {:type (non-null Boolean)}
                                     :email {:type (non-null String)}
@@ -65,7 +63,6 @@
                                  :suspendedUntil {:type (non-null :Date)}
                                  :suspendedReason {:type String}}}
            :Delegation {:fields {:id {:type (non-null :UUID)}
-                                 :borrowUrl {:type (non-null String) :resolve :url}
                                  :name {:type (non-null String)}
                                  :responsible {:type (non-null :User)
                                                :resolve :responsible}
@@ -148,7 +145,6 @@
                                     :description "A name consists of product name and its version."}
                              :price {:type Float}}}
            :Model {:fields {:id {:type (non-null :UUID)}
-                            :borrowUrl {:type (non-null String) :resolve :url}
                             :name {:type (non-null String)
                                    :description "A name consists of product name and its version."}
                             :manufacturer {:type String}
@@ -225,7 +221,6 @@
                                 :filename {:type (non-null String)}
                                 :size {:type (non-null Int)}}}
            :Category {:fields {:id {:type (non-null :UUID)}
-                               :borrowUrl {:type (non-null String) :resolve :url}
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
@@ -282,7 +277,6 @@
                                :fields {:fulfilledQuantity {:type (non-null Int)}
                                         :toFulfillQuantity {:type (non-null Int)}}}
            :Rental {:fields {:id {:type (non-null :UUID)}
-                             :borrowUrl {:type (non-null String) :resolve :url}
                              :purpose {:type :NonEmptyText}
                              :title {:type :NonEmptyText}
                              :state {:type (list (non-null :PoolOrderStateEnum))
