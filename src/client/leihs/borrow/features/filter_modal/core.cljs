@@ -20,7 +20,14 @@
    ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
-(defn filter-modal [shown? cancel-fn]
+(reg-event-db ::toggle-debug
+              (fn-traced [db _]
+                (update-in db [:ls :debug ::filter-labels] not)))
+
+(reg-sub ::filter-labels
+         (fn [db _] (get-in db [:ls :debug ::filter-labels])))
+
+(defn filter-modal [shown? hide!]
   (let [term (r/atom @(subscribe [::filters/term]))
         pool-id (r/atom @(subscribe [::filters/pool-id]))
         pools @(subscribe [::current-user/pools])
@@ -44,7 +51,7 @@
         valid? #(or (not @only-available)
                     (and (start-date-and-end-date-set?)
                          (start-date-equal-or-before-end-date?)))]
-    (fn [shown? cancel-fn]
+    (fn [shown? hide!]
       (with-translate-path :borrow.filter
         [:> UI/Components.Design.ModalDialog {:title "Filter" :shown shown?}
          [:> UI/Components.Design.ModalDialog.Body
@@ -119,8 +126,6 @@
                [:> UI/Components.Design.Warning "Start date must be equal to or before end date."])])]]
 
          [:> UI/Components.Design.ModalDialog.Footer
-          [:button.btn.btn-secondary {:type "button" :onClick cancel-fn}
-           (t :cancel)]
           [:button.btn.btn-secondary
            {:type "button"
             :onClick #(do (reset! term "")
@@ -135,7 +140,7 @@
            {:type "button"
             :disabled (not (valid?))
             :onClick
-            #(do (cancel-fn)
+            #(do (hide!)
                  (dispatch [:routing/navigate
                             [::routes/models
                              {:query-params
@@ -152,3 +157,31 @@
                                   :end-date (when @only-available (format-date @end-date))
                                   :quantity (when @only-available @quantity)}))}]]))}
            (t :apply)]]]))))
+
+(defn reassess-filters [fs auth-user-id]
+  (cond-> fs
+    (some-> fs :quantity (= 1))
+    (dissoc :quantity)
+    (some-> fs :user-id (= auth-user-id))
+    (dissoc :user-id)))
+
+(defn filter-comp []
+  (let [modal-shown? (r/atom false)]
+    (fn []
+      (let [hide! #(reset! modal-shown? false)
+            show! #(reset! modal-shown? true)
+            auth-user @(subscribe [::current-user/user-data])
+            filters @(subscribe [::filters/current])
+            filter-labels (reassess-filters filters (:id auth-user))
+            debug? @(subscribe [::filter-labels])]
+        [:<>
+         [filter-modal @modal-shown? hide!]
+         [:> UI/Components.Design.FilterButton {:onClick show!}
+          (if debug? #_(empty? label-filters)
+            (js/JSON.stringify (clj->js filters))
+            (t :borrow.home-page.show-search-and-filter))]
+         [:div
+          [:br]
+          [:button.btn.btn-outline-secondary.btn-sm 
+           {:on-click #(dispatch [::toggle-debug])}
+           "toggle debug"]]]))))

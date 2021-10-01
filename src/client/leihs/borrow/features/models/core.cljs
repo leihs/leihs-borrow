@@ -23,7 +23,7 @@
     [leihs.borrow.components :as ui]
     ["/leihs-ui-client-side-external-react" :as UI]
     [leihs.borrow.features.current-user.core :as current-user]
-    [leihs.borrow.features.filter-modal.core :refer [filter-modal]]))
+    [leihs.borrow.features.filter-modal.core :as filter-modal :refer [filter-comp]]))
 
 (set-default-translate-path :borrow.models)
 
@@ -217,8 +217,6 @@
       (let [extra-search-vars nil]
         [:> UI/Components.AppLayout.Page
          [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
-          [filter-modal @modal-shown? #(reset! modal-shown? false)]
-          [:> UI/Components.Design.FilterButton {:onClick #(reset! modal-shown? true)}
-           (t :!borrow.home-page.show-search-and-filter)]]
+          [filter-comp]]
          [:> UI/Components.Design.Stack
           [search-results extra-search-vars]]]))))

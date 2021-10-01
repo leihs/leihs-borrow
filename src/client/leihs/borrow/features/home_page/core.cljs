@@ -17,7 +17,7 @@
    [leihs.borrow.lib.helpers :refer [log spy]]
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.features.filter-modal.core :refer [filter-modal]]
+   [leihs.borrow.features.filter-modal.core :refer [filter-comp]]
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]
@@ -39,16 +39,10 @@
 (defn view []
   (let [modal-shown? (r/atom false)]
     (fn []
-      (let [cats @(subscribe [::categories/categories-index])
-            cats-url (routing/path-for ::routes/categories-index)
-            ;; favs @(subscribe [::categories/categories-index])
-            filters @(subscribe [::filters/current])
-            delegations true]
+      (let [cats @(subscribe [::categories/categories-index])]
         [:> UI/Components.AppLayout.Page
          [:> UI/Components.Design.PageLayout.Header {:title (t :catalog)}
-          [filter-modal @modal-shown? #(reset! modal-shown? false)]
-          [:> UI/Components.Design.FilterButton {:onClick #(reset! modal-shown? true)}
-           (t :show-search-and-filter)]]
+          [filter-comp]]
          [:> UI/Components.Design.Stack
           [:> UI/Components.Design.Section {:title (t :!borrow.categories.title)}
            (categories/categories-list cats)]]]))))
