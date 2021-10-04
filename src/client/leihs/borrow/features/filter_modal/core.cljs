@@ -27,42 +27,24 @@
 (reg-sub ::filter-labels
          (fn [db _] (get-in db [:ls :debug ::filter-labels])))
 
-(defn filter-modal [shown?
-                    hide!
-                    init-user-id
-                    init-term
-                    init-pool-id
-                    init-only-available
-                    init-start-date
-                    init-end-date
-                    init-quantity]
-
-  (let [user-id (r/atom init-user-id)
-        term (r/atom init-term)
-        pool-id (r/atom init-pool-id)
-        only-available (r/atom init-only-available)
-        format-date (fn [x]
-                      (some-> x
-                              (date-fns/parse "yyyy-MM-dd" (js/Date.))
-                              (date-fns/format "dd.MM.yyyy")))
-        start-date (r/atom (format-date init-start-date))
-        end-date (r/atom (format-date init-end-date))
-        quantity (r/atom init-quantity)]
-
-    (fn [shown?
-         hide!
-         init-user-id
-         init-term
-         init-pool-id
-         init-only-available
-         init-start-date
-         init-end-date
-         init-quantity]
-
+(defn filter-modal [shown? hide!]
+  (let [user-id (r/atom nil)
+        term (r/atom nil)
+        pool-id (r/atom nil)
+        only-available (r/atom nil)
+        start-date (r/atom nil)
+        end-date (r/atom nil)
+        quantity (r/atom nil)]
+    (fn [shown? hide!]
       (let [pools @(subscribe [::current-user/pools])
             auth-user @(subscribe [::current-user/user-data])
             target-users @(subscribe [::current-user/target-users
                                       (t :!borrow.rental-show.user-or-delegation-personal-postfix)])
+            filters @(subscribe [::filters/current])
+            format-date (fn [x]
+                          (some-> x
+                                  (date-fns/parse "yyyy-MM-dd" (js/Date.))
+                                  (date-fns/format "dd.MM.yyyy")))
             start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
             start-date-equal-or-before-end-date?
             #(let [s (date-fns/parse @start-date "dd.MM.yyyy" (js/Date.))
@@ -79,7 +61,7 @@
                                                :collapsible true}
               [:label.visually-hidden {:html-for "user-id"} (t :pools.title)]
               [:select.form-select
-               {:name "user-id" :id "user-id" :value @user-id
+               {:name "user-id" :id "user-id" :value (or @user-id (:user-id filters))
                 :on-change (fn [e] (reset! user-id (-> e .-target .-value)))}
                (doall (for [{:keys [id name]} target-users]
                         [:option {:value id :key id} name]))]]
@@ -90,12 +72,12 @@
                {:name "term"
                 :id "term"
                 :placeholder (t :search.placeholder)
-                :value @term
+                :value (or @term (:term filters))
                 :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
 
              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
               [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
-              [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
+              [:select.form-select {:name "pool-id" :id "pool-id" :value (or @pool-id (:pool-id filters) "all")
                                     :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
                [:option {:value "all" :key "all"} (t :pools.all)]
                (doall (for [{pool-id :id pool-name :name} pools]
@@ -104,7 +86,9 @@
              [:> UI/Components.Design.Section {:title (t :show-only-available) :collapsible true}
               [:label.visually-hidden {:html-for "only-available"} (t :show-only-available)]
               [:input.form-check-input {:type :checkbox :name "only-available" :id "only-available"
-                                        :checked @only-available
+                                        :checked (if (nil? @only-available)
+                                                  (or (:only-available filters) false)
+                                                  @only-available)
                                         :on-change (fn [_] (swap! only-available not))}]]
 
              (when @only-available
@@ -117,7 +101,7 @@
                     {:locale locale/de
                      :name "start-date"
                      :id "start-date"
-                     :value @start-date
+                     :value (or @start-date (some-> filters :start-date format-date))
                      :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
                      :placeholder (t :time-span.undefined)
                      :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
@@ -125,7 +109,7 @@
                     {:locale locale/de
                      :name "end-date"
                      :id "end-date"
-                     :value @end-date
+                     :value (or @end-date (some-> filters :start-date format-date))
                      :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
                      :placeholder (t :time-span.undefined)
                      :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]]]]
@@ -134,7 +118,7 @@
                  [:> UI/Components.Design.MinusPlusControl
                   {:name "quantity"
                    :id "quantity"
-                   :number @quantity
+                   :number (or @quantity (:quantity filters) 1)
                    :min 1
                    :onChange (fn [n] (reset! quantity n))}]]
 
@@ -194,16 +178,7 @@
             filter-labels (reassess-filters filters (:id auth-user))
             debug? @(subscribe [::filter-labels])]
         [:<>
-         [filter-modal
-          @modal-shown?
-          hide!
-          (:user-id filters)
-          (:term filters)
-          (:pool-id filters)
-          (:only-available filters)
-          (:start-date filters)
-          (:end-date filters)
-          (:quantity filters)]
+         [filter-modal @modal-shown? hide!]
          [:> UI/Components.Design.FilterButton {:onClick show!}
           (if debug? #_(empty? label-filters)
             (js/JSON.stringify (clj->js filters))
