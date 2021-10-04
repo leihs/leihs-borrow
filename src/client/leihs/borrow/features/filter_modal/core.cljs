@@ -11,7 +11,8 @@
                                       reg-fx
                                       subscribe
                                       dispatch]]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path with-translate-path]]
+   [leihs.borrow.lib.translate :as translate
+    :refer [t set-default-translate-path with-translate-path]]
    [leihs.borrow.lib.helpers :refer [log spy]]
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.features.current-user.core :as current-user]
@@ -41,14 +42,16 @@
             target-users @(subscribe [::current-user/target-users
                                       (t :!borrow.rental-show.user-or-delegation-personal-postfix)])
             filters @(subscribe [::filters/current])
+            locale-to-use @(subscribe [::translate/locale-to-use])
+            locale (case locale-to-use :de-CH locale/de :en-GB locale/en)
             format-date (fn [x]
                           (some-> x
                                   (date-fns/parse "yyyy-MM-dd" (js/Date.))
-                                  (date-fns/format "P" #js {:locale locale/de})))
+                                  (date-fns/format "P" #js {:locale locale})))
             start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
             start-date-equal-or-before-end-date?
-            #(let [s (date-fns/parse @start-date "dd.MM.yyyy" (js/Date.))
-                   e (date-fns/parse @end-date "dd.MM.yyyy" (js/Date.))]
+            #(let [s (date-fns/parse @start-date "P" (js/Date.) #js {:locale locale})
+                   e (date-fns/parse @end-date "P" (js/Date.) #js {:locale locale})]
                (or (date-fns/isEqual s e) (date-fns/isBefore s e)))
             valid? #(or (not @only-available)
                         (and (start-date-and-end-date-set?)
@@ -98,7 +101,7 @@
                   [:legend.visually-hidden (t :time-span.title)]
                   [:div.d-flex.flex-column.gap-3
                    [:> UI/Components.Design.DatePicker
-                    {:locale locale/de
+                    {:locale locale
                      :name "start-date"
                      :id "start-date"
                      :value (or @start-date (some-> filters :start-date format-date))
@@ -106,7 +109,7 @@
                      :placeholder (t :time-span.undefined)
                      :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
                    [:> UI/Components.Design.DatePicker
-                    {:locale locale/de
+                    {:locale locale
                      :name "end-date"
                      :id "end-date"
                      :value (or @end-date (some-> filters :start-date format-date))
@@ -150,7 +153,7 @@
                                 (remove-nils
                                  (letfn [(format-date [x]
                                            (some-> x
-                                                   (date-fns/parse "P" (js/Date.) #js {:locale locale/de})
+                                                   (date-fns/parse "P" (js/Date.) #js {:locale locale})
                                                    (date-fns/format "yyyy-MM-dd")))]
                                    {:term (presence @term)
                                     :pool-id (if (= @pool-id "all") nil @pool-id)

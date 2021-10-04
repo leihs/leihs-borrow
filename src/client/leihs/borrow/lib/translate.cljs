@@ -6,6 +6,7 @@
             [cljs.test :refer-macros [deftest is testing run-tests]]
             [leihs.borrow.features.current-user.core :as current-user]
             [leihs.borrow.lib.helpers :as h :refer [spy log]]
+            [leihs.borrow.lib.re-frame :refer [reg-sub]]
             [re-frame.db :as db]
             [shadow.resource :as rc]))
 
@@ -52,9 +53,15 @@
       (intl/IntlMessageFormat. locale)
       (.format (clj->js values))))
 
+(defn locale-to-use [db]
+  (-> db :ls ::current-user/data :language-to-use :locale keyword))
+
+(reg-sub ::locale-to-use
+         (fn [db _] (locale-to-use db)))
+
 (defn t-base [dict-path values]
   (let [path-keys (dict-path-keys dict-path)]
-    (loop [locale (current-user/locale-to-use @db/app-db)]
+    (loop [locale (locale-to-use @db/app-db)]
       (if locale
         (if-let [message (get-in dict (concat path-keys [locale]))]
           (translate message locale values)
