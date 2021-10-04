@@ -44,7 +44,7 @@
             format-date (fn [x]
                           (some-> x
                                   (date-fns/parse "yyyy-MM-dd" (js/Date.))
-                                  (date-fns/format "dd.MM.yyyy")))
+                                  (date-fns/format "P" #js {:locale locale/de})))
             start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
             start-date-equal-or-before-end-date?
             #(let [s (date-fns/parse @start-date "dd.MM.yyyy" (js/Date.))
@@ -124,9 +124,9 @@
 
                 (cond
                  (not (start-date-and-end-date-set?))
-                 [:> UI/Components.Design.Warning "Start and end date must be set."]
+                 [:> UI/Components.Design.Warning (t :time-span.errors.start-date-and-end-date-set)]
                  (not (start-date-equal-or-before-end-date?))
-                 [:> UI/Components.Design.Warning "Start date must be equal to or before end date."])])]]
+                 [:> UI/Components.Design.Warning  (t :time-span.errors.start-date-equal-or-before-end-date)])])]]
 
            [:> UI/Components.Design.ModalDialog.Footer
             [:button.btn.btn-secondary
@@ -150,7 +150,7 @@
                                 (remove-nils
                                  (letfn [(format-date [x]
                                            (some-> x
-                                                   (date-fns/parse "dd.MM.yyyy" (js/Date.))
+                                                   (date-fns/parse "P" (js/Date.) #js {:locale locale/de})
                                                    (date-fns/format "yyyy-MM-dd")))]
                                    {:term (presence @term)
                                     :pool-id (if (= @pool-id "all") nil @pool-id)

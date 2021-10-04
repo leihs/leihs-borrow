@@ -75,7 +75,11 @@
              :time-span {:title {:en-GB "Time Span"
                                  :de-CH "Zeitraum"}
                          :undefined {:en-GB "undefined"
-                                     :de-CH "unbestimmt"}}
+                                     :de-CH "unbestimmt"}
+                         :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set.",
+                                                                :de-CH "Das Start- und Enddatum müssen gesetzt sein."}
+                                  :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date.",
+                                                                        :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
              :show-only-available {:en-GB "Show available only"
                                    :de-CH "Nur Verfügbare anzeigen"}
              :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"} 
