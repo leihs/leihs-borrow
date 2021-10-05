@@ -1,30 +1,20 @@
 (ns leihs.borrow.features.about-page.core
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [clojure.string :as string]
-    #_[reagent.core :as r]
-    [re-frame.core :as rf]
-    #_[re-graph.core :as re-graph]
-    #_[shadow.resource :as rc]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
-    [leihs.borrow.lib.translate :as translate]
-    [leihs.borrow.lib.localstorage :as ls]
-    [leihs.borrow.components :as ui]
-    [leihs.borrow.client.routes :as routes]
-    ["/leihs-ui-client-side-external-react" :as UI]))
-
-(set-default-translate-path :borrow.about-page)
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [clojure.string :as string]
+   [reagent.core :as reagent]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      dispatch]]
+   [leihs.borrow.lib.translate :refer [t]]
+   [leihs.borrow.lib.localstorage :as ls]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.routing :as routing]
+   ["/leihs-ui-client-side-external-react" :as UI]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/about-page
-  (fn-traced [_ [_ _]] {}))
+ ::routes/about-page
+ (fn-traced [_ [_ _]] {}))
 
 (defn matches-media-query? [media-query]
   (-> (js/window.matchMedia media-query) .-matches))
@@ -42,25 +32,54 @@
                             (matches-media-query? "(pointer: fine)") "fine (e.g mouse)"
                             :else "unknown")]])
 
+(defn crash-component [] (throw (js/Error. "I crashed!")))
+(def crash-atom (reagent/atom nil))
+
 (defn view []
-  [:> UI/Components.AppLayout.Page
-   {:title (t :title)}
+  [:<>
 
-   [ui/tmp-nav]
-   [ui/dev-nav]
+   [:> UI/Components.Design.PageLayout.Header
+    {:title (t :borrow.about-page/title)}]
 
-   [:button.btn.btn-secondary.dont-invert.mx-1.mb-4
-    {:type :button
-     :on-click #(dispatch [::ls/clear])
-     :class :mt-2}
-    "Clear :ls"]
-   [:hr.mt-2.mb-4]
-   [:h2 "Debug Info"]
-   [:div.text-monospace.text-xs
-    [:table>tbody
-     (doall
-       (for [[ix [k v]] (map-indexed vector (get-about-page-data))]
-         [:tr {:key ix}
-          [:td.pr-2.pb-1 k]
-          [:td.pl-2.pb-1 v]]))]]])
+   [:> UI/Components.Design.Stack {:space 4}
+    [:> UI/Components.Design.Section {:title "Links which are not in menu (some of them maybe should)" :collapsible true}
+     [:> UI/Components.Design.Menu
+      [:> UI/Components.Design.Menu.Group
+       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/about-page)}
+        (t :borrow.about-page/title)]
+       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/draft-order)}
+        (t :borrow.shopping-cart.draft/title)]
+       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/delegations-index)}
+        (t :borrow.delegations/title)]
+       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/templates-index)}
+        (t :borrow.templates/title)]
+       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/inventory-pools-index)}
+        (t :borrow.pools/title)]]]]
+
+
+    [:> UI/Components.Design.Section {:title "Dev nav" :collapsible true}
+     [:> UI/Components.Design.Menu
+      [:> UI/Components.Design.Menu.Group
+       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/categories-show
+                                                                   :categories-path "09ac0343-0d83-5c7f-b112-d5921e9479fd")}
+        "a sample category"]
+       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/models)}
+        "model index"]
+       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/models-show
+                                                                   :model-id "1c18b3d3-88e8-57ac-8c28-24d3f8f77604")}
+        "a sample model"]
+       [:> UI/Components.Design.Menu.Link {:href "/app/borrow/graphiql/index.html"}
+        "Graph" [:i "i"] "QL API console"]]]]
+
+
+    [:div
+     [:button.btn.btn-secondary {:type :button :on-click #(dispatch [::ls/clear])} "Clear :ls"]
+     [:span " (clear local storage)"]]
+    [:div [:button.btn.btn-secondary {:type :button :on-click #(reset! crash-atom true)} "Crash test"]
+     (when @crash-atom [crash-component])]
+
+    [:> UI/Components.Design.Section {:title "Debug info" :collapsible true}
+     [:> UI/Components.Design.PropertyTable
+      {:properties
+       (map (fn [[key value]] {:key key :value value}) (get-about-page-data))}]]]])
 

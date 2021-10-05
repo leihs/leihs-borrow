@@ -21,13 +21,13 @@
     [leihs.borrow.ui.icons :as icons]
     ["/leihs-ui-client-side-external-react" :as UI]
     ["date-fns" :as datefn]
-    [leihs.borrow.lib.helpers :as h]
+    [leihs.borrow.lib.helpers :as h :refer [spy]]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.features.favorite-models.events :as favs]
     [leihs.borrow.features.current-user.core :as current-user]
     [leihs.borrow.features.shopping-cart.core :as cart]
     [leihs.borrow.features.shopping-cart.timeout :as timeout]
-    [leihs.core.core :refer [dissoc-in]]))
+    [leihs.core.core :refer [dissoc-in flip]]))
 
 ; TODO: 
 ; * separate fetching of page & calendar data
@@ -227,6 +227,7 @@
 (defn order-panel
   [model filters]
   (let [now (js/Date.)
+        user-locale @(subscribe [:leihs.borrow.features.current-user.core/locale])
         filter-start-date (some-> filters :start-date datefn/parseISO)
         filter-end-date (some-> filters :end-date datefn/parseISO)
         initial-start-date (or filter-start-date now)
@@ -250,18 +251,20 @@
                     (let [args (js->clj jsargs :keywordize-keys true)]
                       (dispatch [::close-order-panel])
                       (dispatch
-                        [::model-create-reservation
-                         {:modelId (:id model),
-                          :startDate (h/date-format-day (:startDate args)),
-                          :endDate (h/date-format-day (:endDate args)),
-                          :quantity (int (:quantity args)),
-                          :poolIds [(:poolId args)]
-                          :userId (:user-id filters)}])))]
+                       [::model-create-reservation
+                        {:modelId (:id model)
+                         :startDate (h/date-format-day (:startDate args))
+                         :endDate (h/date-format-day (:endDate args))
+                         :quantity (int (:quantity args))
+                         :poolIds [(:poolId args)]
+                         :userId (:user-id filters)}])))]
     
     (when (and filters-loaded? has-availability?)
-      [:div.border-b-2.border-gray-300.mt-4.pb-4
-       [:div.d-flex.mx-n2
-        [:> UI/Components.BookingCalendar
+      [:> UI/Components.Design.ModalDialog {:shown true
+                                            :title (t :order-dialog/title)
+                                            :class "ui-booking-calendar"}
+       [:> UI/Components.Design.ModalDialog.Body
+        [:> UI/Components.OrderPanel
          {:initialOpen true,
           :initialQuantity (or (:quantity filters) 1),
           ; START DYNAMIC FETCHING PROPS
@@ -291,8 +294,22 @@
           :initialInventoryPoolId (:pool-id filters)
           :inventoryPools (map h/camel-case-keys pools)
           :onSubmit on-submit
-          :onCancel on-cancel
-          :modelData (h/camel-case-keys model)}]]])))
+          :modelData (h/camel-case-keys model)
+          :locale user-locale
+          :txt (cart/order-panel-texts)}]]
+       [:> UI/Components.Design.ModalDialog.Footer
+        [:button.btn.btn-secondary {:on-click on-cancel} (t :order-dialog/cancel)]
+        [:button.btn.btn-primary {:form :order-dialog-form :type :submit} (t :order-dialog/add)]]])))
+
+(defn enrich-recommends-with-href [m]
+  (update-in m
+             [:recommends :edges]
+             (flip map)
+             #(assoc-in %
+                        [:node :href] 
+                        (routing/path-for ::routes/models-show
+                                          :model-id
+                                          (-> % :node :id)))))
 
 (defn view
   []
@@ -303,7 +320,7 @@
         errors @(subscribe [::errors model-id])
         order-panel-open? @(subscribe [::order-panel-open?])
         is-loading? (not (or model errors))]
-    [:section.mx-3.my-4
+    [:section
      (cond
        is-loading?
        [:div [:div [ui/spinner-clock]]
@@ -311,7 +328,9 @@
        errors [ui/error-view errors]
        :else
        [:<>
-        [:> UI/Components.ModelShow {:model (h/camel-case-keys model)
+        [:> UI/Components.ModelShow {:model (-> model
+                                                h/camel-case-keys
+                                                enrich-recommends-with-href)
                                      :t {:addItemToCart (t :add-item-to-cart)
                                          :addToFavorites (t :add-to-favorites)
                                          :removeFromFavorites (t :remove-from-favorites)}

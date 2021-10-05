@@ -4,14 +4,14 @@
            :NonEmptyText {:parse :non-empty-text-parse
                           :serialize :non-empty-text-serialize}}
 
- :enums {:ModelsOrderByAttributeEnum {:values [:ID :NAME]},
-         :UsersOrderByAttributeEnum {:values [:ID]},
-         :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME :SHORTNAME]},
-         :ReservationsOrderByAttributeEnum {:values [:ID]},
-         :PoolOrdersOrderByAttributeEnum {:values [:INVENTORY_POOL_ID :ID]},
-         :ContractsOrderByAttributeEnum {:values [:ID :CREATED_AT]},
-         :RentalsOrderByAttributeEnum {:values [:ID :CREATED_AT, :FROM_DATE, :UNTIL_DATE]},
-         :VisitsOrderByAttributeEnum {:values [:DATE]},
+ :enums {:ModelsOrderByAttributeEnum {:values [:ID :NAME]}
+         :UsersOrderByAttributeEnum {:values [:ID]}
+         :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME :SHORTNAME]}
+         :ReservationsOrderByAttributeEnum {:values [:ID]}
+         :PoolOrdersOrderByAttributeEnum {:values [:INVENTORY_POOL_ID :ID]}
+         :ContractsOrderByAttributeEnum {:values [:ID :CREATED_AT]}
+         :RentalsOrderByAttributeEnum {:values [:ID :CREATED_AT, :FROM_DATE, :UNTIL_DATE]}
+         :VisitsOrderByAttributeEnum {:values [:DATE]}
          :OrderByDirectionEnum {:values [:ASC :DESC]}
          :ContractStateEnum {:values [:OPEN :CLOSED]}
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED :CANCELED]}
@@ -38,7 +38,6 @@
                                :purpose {:type (non-null String)}
                                :note {:type String}}}
            :Template {:fields {:id {:type (non-null :UUID)}
-                               :borrowUrl {:type (non-null String) :resolve :url}
                                :name {:type (non-null String)}
                                :inventoryPool {:type (non-null :InventoryPool)
                                                :resolve :inventory-pool}
@@ -49,7 +48,6 @@
                                            :resolve :model}
                                    :quantity {:type (non-null Int)}}}
            :InventoryPool {:fields {:id {:type (non-null :UUID)}
-                                    :borrowUrl {:type (non-null String) :resolve :url}
                                     :description {:type String}
                                     :isActive {:type (non-null Boolean)}
                                     :email {:type (non-null String)}
@@ -65,7 +63,6 @@
                                  :suspendedUntil {:type (non-null :Date)}
                                  :suspendedReason {:type String}}}
            :Delegation {:fields {:id {:type (non-null :UUID)}
-                                 :borrowUrl {:type (non-null String) :resolve :url}
                                  :name {:type (non-null String)}
                                  :responsible {:type (non-null :User)
                                                :resolve :responsible}
@@ -148,7 +145,6 @@
                                     :description "A name consists of product name and its version."}
                              :price {:type Float}}}
            :Model {:fields {:id {:type (non-null :UUID)}
-                            :borrowUrl {:type (non-null String) :resolve :url}
                             :name {:type (non-null String)
                                    :description "A name consists of product name and its version."}
                             :manufacturer {:type String}
@@ -159,7 +155,8 @@
                                           :resolve :is-favorited-model}
                             :availability {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
                                                   :startDate {:type (non-null :Date)}
-                                                  :endDate {:type (non-null :Date)}}
+                                                  :endDate {:type (non-null :Date)}
+                                                  :excludeReservationIds {:type (list (non-null :UUID))}}
                                            :type (list :ModelInventoryPoolAvailability)
                                            :resolve :model-availability}
                             :totalBorrowableQuantities {:type (list :TotalBorrowableQuantity)
@@ -187,8 +184,8 @@
                                        :edges {:type (list :ModelEdge)}
                                        :pageInfo {:type (non-null :PageInfo)}}}
            :RentalsConnection {:fields {:totalCount {:type (non-null Int)}
-                                       :edges {:type (list :RentalEdge)}
-                                       :pageInfo {:type (non-null :PageInfo)}}}
+                                        :edges {:type (list :RentalEdge)}
+                                        :pageInfo {:type (non-null :PageInfo)}}}
            :ContractsConnection {:fields {:totalCount {:type (non-null Int)}
                                           :edges {:type (list :ContractEdge)}
                                           :pageInfo {:type (non-null :PageInfo)}}}
@@ -197,7 +194,7 @@
            :ModelEdge {:fields {:node {:type (non-null :Model)}
                                 :cursor {:type (non-null String)}}}
            :RentalEdge {:fields {:node {:type (non-null :Rental)}
-                                :cursor {:type (non-null String)}}}
+                                 :cursor {:type (non-null String)}}}
            :PageInfo {:fields {:endCursor {:type String}
                                :hasNextPage {:type Boolean}}}
            :Property {:fields {:id {:type (non-null :UUID)}
@@ -225,7 +222,6 @@
                                 :filename {:type (non-null String)}
                                 :size {:type (non-null Int)}}}
            :Category {:fields {:id {:type (non-null :UUID)}
-                               :borrowUrl {:type (non-null String) :resolve :url}
                                :name {:type (non-null String)
                                       :description "A name is either a label for the child-parent connection (if such exists) or the name of the category itself."}
                                :children {:type (list :Category)
@@ -282,7 +278,6 @@
                                :fields {:fulfilledQuantity {:type (non-null Int)}
                                         :toFulfillQuantity {:type (non-null Int)}}}
            :Rental {:fields {:id {:type (non-null :UUID)}
-                             :borrowUrl {:type (non-null String) :resolve :url}
                              :purpose {:type :NonEmptyText}
                              :title {:type :NonEmptyText}
                              :state {:type (list (non-null :PoolOrderStateEnum))
@@ -290,8 +285,8 @@
                              :rentalState {:type (non-null :RentalStateEnum)
                                            :description "OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest"}
                              :refinedRentalState {:type (list (non-null :RefinedRentalStateEnum))}
-                             :pickupFulfillment {:type :PickupFulfillment :resolve :pickup-fulfillment} 
-                             :returnFulfillment {:type :ReturnFulfillment :resolve :return-fulfillment} 
+                             :pickupFulfillment {:type :PickupFulfillment :resolve :pickup-fulfillment}
+                             :returnFulfillment {:type :ReturnFulfillment :resolve :return-fulfillment}
                              :fromDate {:type (non-null :Date)}
                              :untilDate {:type (non-null :Date)}
                              :totalDays {:type (non-null Int)}
@@ -328,7 +323,7 @@
                  :ContractsOrderByInput {:fields {:attribute {:type (non-null :ContractsOrderByAttributeEnum)}
                                                   :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :RentalsOrderByInput {:fields {:attribute {:type (non-null :RentalsOrderByAttributeEnum)}
-                                               :direction {:type (non-null :OrderByDirectionEnum)}}}
+                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :VisitsOrderByInput {:fields {:attribute {:type (non-null :VisitsOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
                  :ReservationsOrderByInput {:fields {:attribute {:type (non-null :ReservationsOrderByAttributeEnum)}

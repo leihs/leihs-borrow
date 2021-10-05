@@ -1,7 +1,6 @@
 query customerOrderShow($id: UUID!, $userId: UUID) {
   rental(id: $id, userId: $userId) {
     id
-    borrowUrl
     purpose
     title
     isCustomerOrder
@@ -58,7 +57,6 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
 
 fragment poolProps on InventoryPool {
   id
-  # borrowUrl
   # description
   # isActive
   # email

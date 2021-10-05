@@ -364,7 +364,6 @@ describe 'orders' do
     q = <<-GRAPHQL
       query {
         rental(id: "#{order.id}") {
-          borrowUrl
           state
           subOrdersByPool {
             inventoryPool {
@@ -380,8 +379,7 @@ describe 'orders' do
     expect(result).to eq(
       { data:
        { rental:
-         { borrowUrl: "#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/rentals/#{order.id}",
-           state: ["APPROVED", "SUBMITTED"],
+         { state: ["APPROVED", "SUBMITTED"],
            subOrdersByPool: [
              {inventoryPool: {id: inventory_pool_1.id, isActive: true}},
              {inventoryPool: {id: inventory_pool_2.id, isActive: false}}

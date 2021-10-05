@@ -49,11 +49,11 @@
 (reg-event-fx
  ::load-app
  (fn-traced [{:keys [db]}]
-            {:db (-> db
+   {:db (-> db
              ; NOTE: clear the routing instance on (re-)load,
              ; otherwise the event wont re-run when hot reloading!
-                     (dissoc , :routing/routing)
-                     (assoc , :meta {:app {:debug false}}))}))
+            (dissoc , :routing/routing)
+            (assoc , :meta {:app {:debug false}}))}))
 
 ;-; EVENTS
 (reg-event-db :set-debug
@@ -70,8 +70,8 @@
 
 (defn main-view [views]
   (let [errors @(subscribe [:app/fatal-errors])]
-    [:> UI/Components.AppLayout.MainView
-     {:navbar (r/as-element [main-nav/navbar])}
+    [:> UI/Components.Design.PageLayout
+     {:navbar (r/as-element [main-nav/navbar-menu])}
      [uic/error-screen errors]
      [requests/retry-banner]
      [routing/routed-view views]]))

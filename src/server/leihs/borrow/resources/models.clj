@@ -22,9 +22,9 @@
 
 (def base-sqlmap
   (-> (sql/select
-        :models.*
-        [(sql/raw "trim(both ' ' from concat_ws(' ', models.product, models.version))")
-                   :name])
+       :models.*
+       [(sql/raw "trim(both ' ' from concat_ws(' ', models.product, models.version))")
+        :name])
       (sql/modifiers :distinct)
       (sql/from :models)
       (sql/order-by [:name :asc])))
@@ -141,19 +141,19 @@
                                                          start-date
                                                          end-date)))]
         (if (or (before?
-                  (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
-                  (local-date))
+                 (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
+                 (local-date))
                 (empty? pool-ids))
           0
           (let [legacy-response (availability/get-available-quantities
-                                  context
-                                  {:model-ids [(:id value)]
-                                   :inventory-pool-ids pool-ids
-                                   :start-date start-date
-                                   :end-date end-date
-                                   :user-id user-id
-                                   :exclude-reservation-ids exclude-reservation-ids}
-                                  nil)]
+                                 context
+                                 {:model-ids [(:id value)]
+                                  :inventory-pool-ids pool-ids
+                                  :start-date start-date
+                                  :end-date end-date
+                                  :user-id user-id
+                                  :exclude-reservation-ids exclude-reservation-ids}
+                                 nil)]
             (->> legacy-response
                  (map :quantity)
                  (apply +)
@@ -171,18 +171,18 @@
                            (set/intersection (set inventory-pool-ids))
                            vec)))]
     (map (if (or (before?
-                   (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
-                   (local-date))
+                  (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
+                  (local-date))
                  (empty? pool-ids))
            #(assoc % :available-quantity-in-date-range 0)
            (let [legacy-response (availability/get-available-quantities
-                                   context
-                                   {:model-ids (map :id models)
-                                    :inventory-pool-ids pool-ids
-                                    :start-date start-date
-                                    :end-date end-date
-                                    :user-id user-id}
-                                   nil)
+                                  context
+                                  {:model-ids (map :id models)
+                                   :inventory-pool-ids pool-ids
+                                   :start-date start-date
+                                   :end-date end-date
+                                   :user-id user-id}
+                                  nil)
                  model-quantitites (->> legacy-response
                                         (group-by :model_id)
                                         (map (fn [[model-id pool-quantities]]
@@ -198,20 +198,21 @@
 
 (defn get-availability
   [{{tx :tx} :request user-id ::target-user/id :as context}
-   {:keys [start-date end-date inventory-pool-ids]}
+   {:keys [start-date end-date inventory-pool-ids exclude-reservation-ids]}
    value]
   (let [pools (pools/get-multiple context {:ids inventory-pool-ids} nil)]
     (map (fn [{pool-id :id}]
            (let [pool (pools/get-by-id (-> context :request :tx)
                                        pool-id)
                  avail (availability/get
-                         context
-                         {:start-date start-date
-                          :end-date end-date
-                          :inventory-pool-id pool-id
-                          :user-id user-id
-                          :model-id (:id value)}
-                         nil)]
+                        context
+                        {:start-date start-date
+                         :end-date end-date
+                         :inventory-pool-id pool-id
+                         :user-id user-id
+                         :model-id (:id value)
+                         :reservation-ids (or exclude-reservation-ids [])}
+                        nil)]
              (-> avail
                  (update :dates
                          (fn [dates-with-avail]
@@ -293,12 +294,12 @@
    _
    value]
   (-> (sql/select
-        (sql/call :exists
-                  (-> (sql/select true)
-                      (sql/from :favorite_models)
-                      (sql/where [:and
-                                  [:= :model_id (:id value)]
-                                  [:= :user_id user-id]]))))
+       (sql/call :exists
+                 (-> (sql/select true)
+                     (sql/from :favorite_models)
+                     (sql/where [:and
+                                 [:= :model_id (:id value)]
+                                 [:= :user_id user-id]]))))
       sql/format
       (->> (jdbc/query tx))
       first
@@ -313,7 +314,7 @@
                             :args
                             (transform-keys csk/->kebab-case))]
     (cond-> models
-      (and (executor/selects-field? context :Model/availableQuantityInDateRange) 
+      (and (executor/selects-field? context :Model/availableQuantityInDateRange)
            (:start-date field-args) ; checking this because `selects-field?` does not respect @include directive
            (:end-date field-args)) ; checking this because `selects-field?` does not respect @include directive
       (merge-available-quantities context field-args value))))

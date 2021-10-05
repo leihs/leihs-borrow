@@ -154,7 +154,7 @@
         open-rentals @(subscribe [::open-rentals])
         closed-rentals @(subscribe [::closed-rentals])]
 
-    [:> UI/Components.Design.PageLayout
+    [:<>
 
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}

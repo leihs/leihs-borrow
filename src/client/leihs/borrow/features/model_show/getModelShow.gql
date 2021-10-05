@@ -1,7 +1,6 @@
 query getModelShow($modelId: UUID!) {
   model(id: $modelId) {
     id
-    borrowUrl
     name
     manufacturer
     description
@@ -30,7 +29,6 @@ query getModelShow($modelId: UUID!) {
       edges {
         node {
           id
-          borrowUrl
           name
           manufacturer
           isFavorited

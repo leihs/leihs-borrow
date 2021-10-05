@@ -1,6 +1,7 @@
 (ns leihs.borrow.lib.translate
   (:require-macros [leihs.borrow.lib.translate])
-  (:require ["intl-messageformat" :as intl]
+  (:require ["/leihs-ui-client-side-external-react" :as UI]
+            #_["intl-messageformat" :as intl]
             [ajax.core :refer [GET]]
             [clojure.string :as string]
             [cljs.test :refer-macros [deftest is testing run-tests]]
@@ -50,7 +51,7 @@
 
 (defn translate [message locale values]
   (-> message
-      (intl/IntlMessageFormat. locale)
+      (UI/IntlMessageFormat. (name locale))
       (.format (clj->js values))))
 
 (defn locale-to-use [db]
@@ -106,7 +107,7 @@
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use {:locale "de-CH"}}}})]
-      (is (= (-> (intl/IntlMessageFormat. "" "de-CH")
+      (is (= (-> (UI/IntlMessageFormat. "" "de-CH")
                  .resolvedOptions
                  .-locale)
              "de-CH")

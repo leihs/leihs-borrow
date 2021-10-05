@@ -72,6 +72,10 @@
          :<- [::data]
          (fn [cu _] (:user cu)))
 
+(reg-sub ::locale
+         :<- [::data]
+         (fn [dat _] (-> dat :language-to-use :locale)))
+
 (reg-sub ::pools
          :<- [::user-data]
          (fn [u _] (:inventory-pools u)))

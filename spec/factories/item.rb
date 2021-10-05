@@ -14,7 +14,7 @@ FactoryBot.define do
     room
 
     is_borrowable { true }
-    
+
     created_at { DateTime.now }
     updated_at { DateTime.now }
   end

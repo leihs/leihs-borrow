@@ -64,15 +64,14 @@
                                     :poolName (get-in c [:inventory-pool :name])})})))]
 
         [:<>
-         [:> UI/Components.Design.PageLayout
-          [:> UI/Components.UserProfilePage
-           (h/camel-case-keys
-            {:currentUser current-user
-             :contracts contracts
-             :txt {:pageTitle (t :title)
-                   :sectionContracts (t :!borrow.terms.contracts)
-                   :sectionDelegations (t :!borrow.terms.delegations)}})]
+         [:> UI/Components.UserProfilePage
+          (h/camel-case-keys
+           {:currentUser current-user
+            :contracts contracts
+            :txt {:pageTitle (t :title)
+                  :sectionContracts (t :!borrow.terms.contracts)
+                  :sectionDelegations (t :!borrow.terms.delegations)}})]
 
-          [:> UI/Components.Design.PageLayout.MetadataWithDetails
-           {:summary (t :metadata-summary {:userId (:id (:user current-user))})
-            :details (clj->js (h/camel-case-keys current-user))}]]]))))
+         [:> UI/Components.Design.PageLayout.MetadataWithDetails
+          {:summary (t :metadata-summary {:userId (:id (:user current-user))})
+           :details (clj->js (h/camel-case-keys current-user))}]]))))

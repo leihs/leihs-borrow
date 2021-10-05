@@ -18,7 +18,6 @@
     [leihs.borrow.resources.users :as users]
     [leihs.borrow.resources.visits :as visits]
     [leihs.borrow.resources.templates :as templates]
-    [leihs.borrow.resources.shared.core :as shared]
     [leihs.borrow.testing :as testing]
     ))
 
@@ -79,5 +78,4 @@
    :testing-query testing/query
    :total-borrowable-quantities models/total-borrowable-quantities
    :total-rental-quantity orders/total-rental-quantity
-   :url shared/url
    })

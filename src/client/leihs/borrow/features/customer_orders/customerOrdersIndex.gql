@@ -25,7 +25,6 @@ fragment rentalConProps on RentalsConnection {
 
 fragment rentalProps on Rental {
   id
-  borrowUrl
 
   isCustomerOrder
   state: rentalState

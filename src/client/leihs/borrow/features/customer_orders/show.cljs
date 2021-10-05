@@ -117,7 +117,7 @@
         is-cancelable? (= ["IN_APPROVAL"] (:fulfillment-states rental))
         contracts (map :node (get-in rental [:contracts :edges]))]
 
-    [:> UI/Components.Design.PageLayout
+    [:<>
      (cond
 
        is-loading?

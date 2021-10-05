@@ -9,7 +9,6 @@ Feature: Shopping Cart - Filling out title and purpose
     And there is an inventory pool "Pool A"
     And the user is customer of pool "Pool A"
 
-  @pending
   Scenario: Title and purpose
     Given I have one item in the cart ready to be submitted
     And I log in as the user
