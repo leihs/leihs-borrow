@@ -22,6 +22,13 @@
    ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
+(defn default-apply-ev
+  ([query-params]
+   (default-apply-ev query-params nil))
+  ([query-params extra-params]
+   [:routing/navigate [::routes/models
+                       {:query-params (merge query-params extra-params)}]]))
+
 (reg-event-db ::toggle-debug
               (fn-traced [db _]
                 (update-in db [:ls :debug ::filter-labels] not)))
@@ -29,7 +36,7 @@
 (reg-sub ::filter-labels
          (fn [db _] (get-in db [:ls :debug ::filter-labels])))
 
-(defn filter-modal [shown? hide!]
+(defn filter-modal [shown? hide! apply-ev extra-params]
   (let [user-id (r/atom nil)
         term (r/atom nil)
         pool-id (r/atom nil)
@@ -37,7 +44,7 @@
         start-date (r/atom nil)
         end-date (r/atom nil)
         quantity (r/atom nil)]
-    (fn [shown? hide!]
+    (fn [shown? hide! apply-ev extra-params]
       (let [pools @(subscribe [::current-user/pools])
             auth-user @(subscribe [::current-user/user-data])
             target-users @(subscribe [::current-user/target-users
@@ -149,21 +156,20 @@
               :disabled (not (valid?))
               :onClick
               #(do (hide!)
-                   (dispatch [:routing/navigate
-                              [::routes/models
-                               {:query-params
-                                (remove-nils
-                                 (letfn [(format-date [x]
-                                           (some-> x
-                                                   (date-fns/parse "P" (js/Date.) #js {:locale locale})
-                                                   (date-fns/format "yyyy-MM-dd")))]
-                                   {:term (presence @term)
-                                    :pool-id (if (= @pool-id "all") nil @pool-id)
-                                    :user-id @user-id
-                                    :only-available (when @only-available @only-available)
-                                    :start-date (when @only-available (format-date @start-date))
-                                    :end-date (when @only-available (format-date @end-date))
-                                    :quantity (when @only-available @quantity)}))}]]))}
+                   (dispatch (or apply-ev default-apply-ev)
+                             (remove-nils
+                              (letfn [(format-date [x]
+                                        (some-> x
+                                                (date-fns/parse "P" (js/Date.) #js {:locale locale})
+                                                (date-fns/format "yyyy-MM-dd")))]
+                                {:term (presence @term)
+                                 :pool-id (if (= @pool-id "all") nil @pool-id)
+                                 :user-id @user-id
+                                 :only-available (when @only-available @only-available)
+                                 :start-date (when @only-available (format-date @start-date))
+                                 :end-date (when @only-available (format-date @end-date))
+                                 :quantity (when @only-available @quantity)}))
+                             extra-params))}
              (t :apply)]]])))))
 
 (defn reassess-filters [fs auth-user-id]
@@ -173,9 +179,9 @@
     (some-> fs :user-id (= auth-user-id))
     (dissoc :user-id)))
 
-(defn filter-comp []
+(defn filter-comp [apply-ev extra-params]
   (let [modal-shown? (r/atom false)]
-    (fn []
+    (fn [apply-ev extra-params]
       (let [hide! #(reset! modal-shown? false)
             show! #(reset! modal-shown? true)
             auth-user @(subscribe [::current-user/user-data])
@@ -183,7 +189,7 @@
             filter-labels (reassess-filters filters (:id auth-user))
             debug? @(subscribe [::filter-labels])]
         [:<>
-         [filter-modal @modal-shown? hide!]
+         [filter-modal @modal-shown? hide! apply-ev extra-params]
          [:> UI/Components.Design.FilterButton {:onClick show!}
           (if debug? #_(empty? label-filters)
             (js/JSON.stringify (clj->js filters))

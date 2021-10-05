@@ -23,6 +23,7 @@
    [leihs.borrow.lib.helpers :as h]
    ["/leihs-ui-client-side-external-react" :as UI]
    [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.features.filter-modal.core :refer [filter-comp]]
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.categories.core :as categories]))
 
@@ -130,46 +131,26 @@
                     [:pre "loading category" [:samp category-id] "…"]]
        errors [ui/error-view errors]
        :else
-
        [:<>
-
         [:> UI/Components.Design.PageLayout.Header
          {:title (:name category)
-
           :preTitle (r/as-element
                      [:> UI/Components.CategoryBreadcrumbs
                       {:className "text-center"
                        :ancestorCats (h/camel-case-keys cat-ancestors)
                        ;; FIXME: either add url to all ancestor cats OR extend router to take list of ids (instead of prejoined path)
                        :getPathForCategory (fn [path] (routing/path-for ::routes/categories-show :categories-path path))}])}
-
-
-         [:> UI/Components.FilterBubblePanelSwitcher
-          {:labelText (t :!borrow.home-page.show-search-and-filter)}
-          [:<>
-           [:span.fs-6.text-danger "TODO: new panel design, fullscreen"]
-           (r/as-element
-            [models/search-panel
-             #(dispatch [:routing/navigate
-                         [::routes/categories-show
-                          {:categories-path categories-path :query-params %}]])
-             #(dispatch [::clear
-                         {:categories-path categories-path}
-                         {:categoryId category-id}])
-             extra-search-args])]]]
-
+         [filter-comp
+          #(identity [:routing/navigate
+                      [::routes/categories-show
+                       {:categories-path categories-path :query-params %}]])
+          extra-search-args]]
         [:<>
          [:> UI/Components.Design.Stack
-
           (when-not (empty? child-cats)
             [:> UI/Components.Design.Section
              {:title "Unterkategorien" :collapsible true}
-
              (categories/categories-list child-cats)])
-
           [:> UI/Components.Design.Section
            {:title "Gegenstände" :collapsible true}
-
            [models/search-results extra-search-args]]]]])]))
-
-

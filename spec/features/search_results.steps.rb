@@ -53,11 +53,11 @@ step 'I enter :term in the search field' do |term|
 end
 
 step 'I select pool :pool_name' do |pool_name|
-  select(pool_name, from: 'From')
+  select(pool_name, from: 'pool-id')
 end
 
 step 'I select all pools' do
-  select('All inventory pools', from: 'From')
+  select('All', from: 'pool-id')
 end
 
 step 'there are no results' do
