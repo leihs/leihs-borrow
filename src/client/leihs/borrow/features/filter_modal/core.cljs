@@ -43,11 +43,7 @@
                                       (t :!borrow.rental-show.user-or-delegation-personal-postfix)])
             filters @(subscribe [::filters/current])
             locale-to-use @(subscribe [::translate/locale-to-use])
-            locale (case locale-to-use :de-CH locale/de :en-GB locale/en)
-            format-date (fn [x]
-                          (some-> x
-                                  (date-fns/parse "yyyy-MM-dd" (js/Date.))
-                                  (date-fns/format "P" #js {:locale locale})))
+            locale (spy (case locale-to-use :de-CH locale/de :en-GB locale/enGB))
             start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
             start-date-equal-or-before-end-date?
             #(let [s (date-fns/parse @start-date "P" (js/Date.) #js {:locale locale})
@@ -86,50 +82,56 @@
                (doall (for [{pool-id :id pool-name :name} pools]
                         [:option {:value pool-id :key pool-id} pool-name]))]]
 
-             [:> UI/Components.Design.Section {:title (t :show-only-available) :collapsible true}
-              [:label.visually-hidden {:html-for "only-available"} (t :show-only-available)]
-              [:input.form-check-input {:type :checkbox :name "only-available" :id "only-available"
-                                        :checked (if (nil? @only-available)
-                                                  (or (:only-available filters) false)
-                                                  @only-available)
-                                        :on-change (fn [_] (swap! only-available not))}]]
+             (let [oa (if (nil? @only-available)
+                        (or (:only-available filters) false)
+                        @only-available)] 
+               [:<>
+                [:> UI/Components.Design.Section {:title (t :show-only-available) :collapsible true}
+                 [:label.visually-hidden {:html-for "only-available"} (t :show-only-available)]
+                 [:input.form-check-input {:type :checkbox :name "only-available" :id "only-available"
+                                           :checked oa
+                                           :on-change (fn [_] (swap! only-available not))}]]
 
-             (when @only-available
-               [:> UI/Components.Design.Stack {:space 4}
-                [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
-                 [:fieldset
-                  [:legend.visually-hidden (t :time-span.title)]
-                  [:div.d-flex.flex-column.gap-3
-                   [:> UI/Components.Design.DatePicker
-                    {:locale locale
-                     :name "start-date"
-                     :id "start-date"
-                     :value (or @start-date (some-> filters :start-date format-date))
-                     :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
-                     :placeholder (t :time-span.undefined)
-                     :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
-                   [:> UI/Components.Design.DatePicker
-                    {:locale locale
-                     :name "end-date"
-                     :id "end-date"
-                     :value (or @end-date (some-> filters :start-date format-date))
-                     :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
-                     :placeholder (t :time-span.undefined)
-                     :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]]]]
+                (when oa
+                  [:> UI/Components.Design.Stack {:space 4}
+                   [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
+                    [:fieldset
+                     [:legend.visually-hidden (t :time-span.title)]
+                     (letfn [(format-date [x]
+                               (some-> x
+                                       (date-fns/parse "yyyy-MM-dd" (js/Date.))
+                                       (date-fns/format "P" #js {:locale locale})))]
+                       [:div.d-flex.flex-column.gap-3
+                        [:> UI/Components.Design.DatePicker
+                         {:locale locale
+                          :name "start-date"
+                          :id "start-date"
+                          :value (or @start-date (some-> filters :start-date format-date))
+                          :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
+                          :placeholder (t :time-span.undefined)
+                          :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
+                        [:> UI/Components.Design.DatePicker
+                         {:locale locale
+                          :name "end-date"
+                          :id "end-date"
+                          :value (or @end-date (some-> filters :end-date format-date))
+                          :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
+                          :placeholder (t :time-span.undefined)
+                          :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]])]]
 
-                [:> UI/Components.Design.Section {:title (t :quantity) :collapsible true}
-                 [:> UI/Components.Design.MinusPlusControl
-                  {:name "quantity"
-                   :id "quantity"
-                   :number (or @quantity (:quantity filters) 1)
-                   :min 1
-                   :onChange (fn [n] (reset! quantity n))}]]
+                   [:> UI/Components.Design.Section {:title (t :quantity) :collapsible true}
+                    [:> UI/Components.Design.MinusPlusControl
+                     {:name "quantity"
+                      :id "quantity"
+                      :number (or @quantity (:quantity filters) 1)
+                      :min 1
+                      :onChange (fn [n] (reset! quantity n))}]]
 
-                (cond
-                 (not (start-date-and-end-date-set?))
-                 [:> UI/Components.Design.Warning (t :time-span.errors.start-date-and-end-date-set)]
-                 (not (start-date-equal-or-before-end-date?))
-                 [:> UI/Components.Design.Warning  (t :time-span.errors.start-date-equal-or-before-end-date)])])]]
+                   (cond
+                    (not (start-date-and-end-date-set?))
+                    [:> UI/Components.Design.Warning (t :time-span.errors.start-date-and-end-date-set)]
+                    (not (start-date-equal-or-before-end-date?))
+                    [:> UI/Components.Design.Warning  (t :time-span.errors.start-date-equal-or-before-end-date)])])])]]
 
            [:> UI/Components.Design.ModalDialog.Footer
             [:button.btn.btn-secondary

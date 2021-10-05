@@ -3,11 +3,11 @@ step 'I choose to filter by availabilty' do
 end
 
 step 'I choose next working day as start date' do
-  fill_in('From', with: Date.today.to_s)
+  fill_in('From', with: Locales.format_date(Date.today, @user))
 end
 
 step 'I choose next next working day as end date' do
-  fill_in('Until', with: Date.tomorrow.to_s)
+  fill_in('Until', with: Locales.format_date(Date.tomorrow, @user))
 end
 
 step 'I set the quantity to :n' do |n|
