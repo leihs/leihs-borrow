@@ -22,12 +22,8 @@
    ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
-(defn default-apply-ev
-  ([query-params]
-   (default-apply-ev query-params nil))
-  ([query-params extra-params]
-   [:routing/navigate [::routes/models
-                       {:query-params (merge query-params extra-params)}]]))
+(defn default-apply-ev [query-params]
+  [:routing/navigate [::routes/models {:query-params query-params}]])
 
 (reg-event-db ::toggle-debug
               (fn-traced [db _]
@@ -51,7 +47,7 @@
                                       (t :!borrow.rental-show.user-or-delegation-personal-postfix)])
             filters @(subscribe [::filters/current])
             locale-to-use @(subscribe [::translate/locale-to-use])
-            locale (spy (case locale-to-use :de-CH locale/de :en-GB locale/enGB))
+            locale (case locale-to-use :de-CH locale/de :en-GB locale/enGB)
             start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
             start-date-equal-or-before-end-date?
             #(let [s (date-fns/parse @start-date "P" (js/Date.) #js {:locale locale})
@@ -156,20 +152,20 @@
               :disabled (not (valid?))
               :onClick
               #(do (hide!)
-                   (dispatch (or apply-ev default-apply-ev)
-                             (remove-nils
-                              (letfn [(format-date [x]
-                                        (some-> x
-                                                (date-fns/parse "P" (js/Date.) #js {:locale locale})
-                                                (date-fns/format "yyyy-MM-dd")))]
-                                {:term (presence @term)
-                                 :pool-id (if (= @pool-id "all") nil @pool-id)
-                                 :user-id @user-id
-                                 :only-available (when @only-available @only-available)
-                                 :start-date (when @only-available (format-date @start-date))
-                                 :end-date (when @only-available (format-date @end-date))
-                                 :quantity (when @only-available @quantity)}))
-                             extra-params))}
+                   (dispatch ((or apply-ev default-apply-ev)
+                              (remove-nils
+                               (merge (letfn [(format-date [x]
+                                                (some-> x
+                                                        (date-fns/parse "P" (js/Date.) #js {:locale locale})
+                                                        (date-fns/format "yyyy-MM-dd")))]
+                                        {:term (presence @term)
+                                         :pool-id (if (= @pool-id "all") nil @pool-id)
+                                         :user-id @user-id
+                                         :only-available (when @only-available @only-available)
+                                         :start-date (when @only-available (format-date @start-date))
+                                         :end-date (when @only-available (format-date @end-date))
+                                         :quantity (when @only-available @quantity)})
+                                      extra-params)))))}
              (t :apply)]]])))))
 
 (defn reassess-filters [fs auth-user-id]

@@ -144,7 +144,7 @@
           #(identity [:routing/navigate
                       [::routes/categories-show
                        {:categories-path categories-path :query-params %}]])
-          extra-search-args]]
+          #_extra-search-args]]
         [:<>
          [:> UI/Components.Design.Stack
           (when-not (empty? child-cats)
