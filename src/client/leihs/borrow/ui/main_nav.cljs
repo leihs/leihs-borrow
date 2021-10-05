@@ -46,9 +46,13 @@
         documentation-url nil
         support-url nil
         languages [{:id "de" :title "Deutsch"}]]
+
     ; TODO: provide documentation-url, support-url
     ; TODO: provide languages, implement language switch
-    [:<>
+
+    [:> UI/Components.Design.Navbar.MenuWrapper
+     {:menuIsOpen is-menu-open?}
+
 
      [:> UI/Components.Design.Navbar
       {:brandName "Leihs"
@@ -61,28 +65,28 @@
        :cartItemCount cart-item-count
        :cartItem {:href (routing/path-for ::routes/shopping-cart)}}]
 
-     [:> UI/Components.Design.Collapse {:in is-menu-open?}
-      [:div {:id "menu"}
-       [:> UI/Components.Design.Menu
 
-        [:> UI/Components.Design.Menu.Group {:title (t :borrow/section-title)}
-         [menu-link (routing/path-for ::routes/home) (t :borrow/catalog)]
-         [menu-link (routing/path-for ::routes/shopping-cart) (t :borrow/shopping-cart)]]
+     [:> UI/Components.Design.Menu
+      {:show is-menu-open? :id "menu"}
 
-        [:> UI/Components.Design.Menu.Group {:title user-name}
-         [menu-link (routing/path-for ::routes/rentals-index) (t :user/rentals)]
-         [menu-link (routing/path-for ::routes/models-favorites) (t :user/favorite-models)]
-         [menu-link (routing/path-for ::routes/current-user-show) (t :user/current-user)]
-         [:> UI/Components.Design.Menu.Button {:type "submit" :form "sign-out-form"} (t :user/logout)]
-         [:form.visually-hidden {:id "sign-out-form" :action "/sign-out" :method "POST"} [csrf/token-field]]]
+      [:> UI/Components.Design.Menu.Group {:title (t :borrow/section-title)}
+       [menu-link (routing/path-for ::routes/home) (t :borrow/catalog)]
+       [menu-link (routing/path-for ::routes/shopping-cart) (t :borrow/shopping-cart)]]
 
-        (when (or documentation-url support-url)
-          [:> UI/Components.Design.Menu.Group {:title (t :help/section-title)}
-           (when documentation-url [menu-link documentation-url (t :help/documentation)])
-           (when support-url [menu-link support-url (t :help/support)])])
+      [:> UI/Components.Design.Menu.Group {:title user-name}
+       [menu-link (routing/path-for ::routes/rentals-index) (t :user/rentals)]
+       [menu-link (routing/path-for ::routes/models-favorites) (t :user/favorite-models)]
+       [menu-link (routing/path-for ::routes/current-user-show) (t :user/current-user)]
+       [:> UI/Components.Design.Menu.Button {:type "submit" :form "sign-out-form"} (t :user/logout)]
+       [:form.visually-hidden {:id "sign-out-form" :action "/sign-out" :method "POST"} [csrf/token-field]]]
 
-        (when (> (count languages) 1)
-          [:> UI/Components.Design.Menu.Group {:title (t :language/section-title)}
-           (doall
-            (for [language languages]
-              [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::TODO-switch-language (:id language)])} (:title language)]))])]]]]))
+      (when (or documentation-url support-url)
+        [:> UI/Components.Design.Menu.Group {:title (t :help/section-title)}
+         (when documentation-url [menu-link documentation-url (t :help/documentation)])
+         (when support-url [menu-link support-url (t :help/support)])])
+
+      (when (> (count languages) 1)
+        [:> UI/Components.Design.Menu.Group {:title (t :language/section-title)}
+         (doall
+          (for [language languages]
+            [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::TODO-switch-language (:id language)])} (:title language)]))])]]))

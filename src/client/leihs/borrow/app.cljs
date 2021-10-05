@@ -68,9 +68,13 @@
 ;-; VIEWS
 
 (defn main-view [views]
-  (let [errors @(subscribe [:app/fatal-errors])]
+  (let [errors @(subscribe [:app/fatal-errors])
+        menu-data @(subscribe [::main-nav/menu-data])
+        is-menu-open? (when menu-data (:is-menu-open? menu-data))
+        open-menu-page-style {}]
     [:> UI/Components.Design.PageLayout
-     {:navbar (r/as-element [main-nav/navbar-menu])}
+     {:navbar (r/as-element [main-nav/navbar-menu])
+      :style (when is-menu-open? open-menu-page-style)}
      [uic/error-screen errors]
      [requests/retry-banner]
      [routing/routed-view views]]))

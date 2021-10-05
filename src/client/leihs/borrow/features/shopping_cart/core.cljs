@@ -492,7 +492,7 @@
             grouped-reservations @(subscribe [::reservations-grouped])
             is-loading? (not (or data errors))]
 
-        [:> UI/Components.Design.PageLayout
+        [:<>
          (cond
            is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
 
