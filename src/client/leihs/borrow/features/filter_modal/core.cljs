@@ -14,6 +14,7 @@
    [leihs.borrow.lib.translate :as translate
     :refer [t set-default-translate-path with-translate-path]]
    [leihs.borrow.lib.helpers :refer [log spy]]
+   [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton]]
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [remove-nils presence]]
@@ -67,12 +68,11 @@
 
              [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
               [:label.visually-hidden {:html-for "term"} (t :search.title)]
-              [:> UI/Components.Design.InputWithClearButton
-               {:name "term"
-                :id "term"
-                :placeholder (t :search.placeholder)
-                :value (or @term (:term filters))
-                :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
+              [UiInputWithClearButton {:name "term"
+                                       :id "term"
+                                       :placeholder (t :search.placeholder)
+                                       :value (or @term (:term filters))
+                                       :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
 
              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
               [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
