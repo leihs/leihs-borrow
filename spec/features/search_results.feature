@@ -28,18 +28,16 @@ Feature: Search results (and caching)
     And I see 40 different "Camera" models
     And there is no "Load more" button
 
-    # Clear filters, results and cache (!)
-    # And I pry
-    When I click on "Clear"
     # And I go to the homepage
+    When I click on "Leihs"
     Then I see category "Cameras"
     And I see category "Beamers"
 
     When I click on "Show search/filter"
     And I click button "Apply"
-    Then I see 20 different "Beamer" models
-    And there is "Load more" button
-    And I click on "Clear"
+    Then I see 40 different "Beamer" models
+    And I see 40 different "Camera" models
+    And there is no "Load more" button
 
   Scenario: Filter with search term (and caching)
     # Filter with search term
@@ -51,7 +49,8 @@ Feature: Search results (and caching)
     And there is no "Load more" button
 
     # Filter with another search term (without clearing)
-    When I enter "Beamer" in the search field
+    When I click on "Show search/filter"
+    And I enter "Beamer" in the search field
     And I click button "Apply"
     And I click on "Load more"
     Then I see 40 different "Beamer" models
@@ -59,7 +58,8 @@ Feature: Search results (and caching)
 
     # Filter with previous search term:
     # All results are already cached and are refreshed accordingly.
-    When I enter "Camera" in the search field
+    When I click on "Show search/filter"
+    And I enter "Camera" in the search field
     And I click button "Apply"
     Then I see 40 different "Camera" models
     And there is no "Load more" button
