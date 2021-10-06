@@ -77,7 +77,8 @@ Feature: Search results (and caching)
     Then there are no results
     And there is no "Load more" button
 
-    When I select all pools
+    When I click on "Show search/filter"
+    And I select all pools
     And I click button "Apply"
     Then I see 40 different "Camera" models
     And there is no "Load more" button

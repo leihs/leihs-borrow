@@ -42,6 +42,8 @@
 
 (def current-path [:ls ::data :current])
 
+(def DEFAULTS {:quantity 1})
+
 (reg-event-fx
   ::init
   (fn-traced [_ _]
@@ -55,19 +57,23 @@
   (fn-traced [db [_ {:keys [data errors]}]]
     (if errors
       (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)
-      (update-in db
-                 current-path
-                 (flip merge) 
-                 {:quantity 1
-                  :user-id (-> data :current-user :user :id)}))))
+      (let [defaults (assoc DEFAULTS
+                            :user-id
+                            (-> data :current-user :user :id))]
+        (update-in db
+                   current-path
+                   (flip merge) 
+                   defaults)))))
 
 (reg-event-db
   ::set-multiple
-  [(path current-path)]
-  (fn-traced [old [_ filters]]
-    (if (empty? filters)
-      old
-      (-> filters massage-values remove-blanks))))
+  (fn-traced [db [_ filters]]
+    (assoc-in db
+              current-path
+              (merge DEFAULTS
+                     {:user-id (-> db current-user/data :user :id)}
+                     (when-not (empty? filters)
+                       (-> filters massage-values remove-blanks))))))
 
 (reg-event-db
   ::set-one
@@ -87,8 +93,9 @@
   (fn-traced [db _]
     (assoc-in db
               current-path
-              {:user-id (-> db current-user/data :user :id)
-               :quantity 1})))
+              (assoc DEFAULTS
+                     :user-id
+                     (-> db current-user/data :user :id)))))
 
 (defn get-from-current [db k]
   (get-in db (conj current-path k)))
