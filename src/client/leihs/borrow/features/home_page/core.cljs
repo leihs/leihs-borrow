@@ -17,7 +17,7 @@
    [leihs.borrow.lib.helpers :refer [log spy]]
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.features.filter-modal.core :refer [filter-comp]]
+   [leihs.borrow.features.filter-modal.core :refer [filter-comp default-dispatch-fn]]
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]
@@ -42,7 +42,7 @@
       (let [cats @(subscribe [::categories/categories-index])]
         [:> UI/Components.AppLayout.Page
          [:> UI/Components.Design.PageLayout.Header {:title (t :catalog)}
-          [filter-comp]]
+          [filter-comp default-dispatch-fn]]
          [:> UI/Components.Design.Stack
           [:> UI/Components.Design.Section {:title (t :!borrow.categories.title)}
            (categories/categories-list cats)]]]))))

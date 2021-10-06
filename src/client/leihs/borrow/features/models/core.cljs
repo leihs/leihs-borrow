@@ -205,7 +205,7 @@
     [:<>
      (cond
        (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
-       (empty? models) [:p.p-6.w-full.text-center (t :borrow.pagination/nothing-found)]
+       (empty? models) [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
        :else
        [:<>
         [models-list models]

@@ -141,7 +141,7 @@
                        ;; FIXME: either add url to all ancestor cats OR extend router to take list of ids (instead of prejoined path)
                        :getPathForCategory (fn [path] (routing/path-for ::routes/categories-show :categories-path path))}])}
          [filter-comp
-          #(identity [:routing/navigate
+          #(dispatch [:routing/navigate
                       [::routes/categories-show
                        {:categories-path categories-path :query-params %}]])
           #_extra-search-args]]

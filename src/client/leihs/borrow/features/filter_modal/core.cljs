@@ -22,8 +22,9 @@
    ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
-(defn default-apply-ev [query-params]
-  [:routing/navigate [::routes/models {:query-params query-params}]])
+(defn default-dispatch-fn [query-params]
+  (dispatch [:routing/navigate
+             [::routes/models {:query-params query-params}]]))
 
 (reg-event-db ::toggle-debug
               (fn-traced [db _]
@@ -32,7 +33,7 @@
 (reg-sub ::filter-labels
          (fn [db _] (get-in db [:ls :debug ::filter-labels])))
 
-(defn filter-modal [shown? hide! apply-ev extra-params]
+(defn filter-modal [shown? hide! dispatch-fn]
   (let [user-id (r/atom nil)
         term (r/atom nil)
         pool-id (r/atom nil)
@@ -40,7 +41,7 @@
         start-date (r/atom nil)
         end-date (r/atom nil)
         quantity (r/atom nil)]
-    (fn [shown? hide! apply-ev extra-params]
+    (fn [shown? hide! dispatch-fn]
       (let [pools @(subscribe [::current-user/pools])
             auth-user @(subscribe [::current-user/user-data])
             target-users @(subscribe [::current-user/target-users
@@ -152,20 +153,19 @@
               :disabled (not (valid?))
               :onClick
               #(do (hide!)
-                   (dispatch ((or apply-ev default-apply-ev)
-                              (remove-nils
-                               (merge (letfn [(format-date [x]
-                                                (some-> x
-                                                        (date-fns/parse "P" (js/Date.) #js {:locale locale})
-                                                        (date-fns/format "yyyy-MM-dd")))]
-                                        {:term (presence @term)
-                                         :pool-id (if (= @pool-id "all") nil @pool-id)
-                                         :user-id @user-id
-                                         :only-available (when @only-available @only-available)
-                                         :start-date (when @only-available (format-date @start-date))
-                                         :end-date (when @only-available (format-date @end-date))
-                                         :quantity (when @only-available @quantity)})
-                                      extra-params)))))}
+                   (dispatch-fn
+                    (remove-nils
+                     (letfn [(format-date [x]
+                               (some-> x
+                                       (date-fns/parse "P" (js/Date.) #js {:locale locale})
+                                       (date-fns/format "yyyy-MM-dd")))]
+                       {:term (presence @term)
+                        :pool-id (if (= @pool-id "all") nil @pool-id)
+                        :user-id @user-id
+                        :only-available (when @only-available @only-available)
+                        :start-date (when @only-available (format-date @start-date))
+                        :end-date (when @only-available (format-date @end-date))
+                        :quantity (when @only-available @quantity)}))))}
              (t :apply)]]])))))
 
 (defn reassess-filters [fs auth-user-id]
@@ -175,9 +175,9 @@
     (some-> fs :user-id (= auth-user-id))
     (dissoc :user-id)))
 
-(defn filter-comp [apply-ev extra-params]
+(defn filter-comp [dispatch-fn]
   (let [modal-shown? (r/atom false)]
-    (fn [apply-ev extra-params]
+    (fn [dispatch-fn]
       (let [hide! #(reset! modal-shown? false)
             show! #(reset! modal-shown? true)
             auth-user @(subscribe [::current-user/user-data])
@@ -185,7 +185,7 @@
             filter-labels (reassess-filters filters (:id auth-user))
             debug? @(subscribe [::filter-labels])]
         [:<>
-         [filter-modal @modal-shown? hide! apply-ev extra-params]
+         [filter-modal @modal-shown? hide! dispatch-fn]
          [:> UI/Components.Design.FilterButton {:onClick show!}
           (if debug? #_(empty? label-filters)
             (js/JSON.stringify (clj->js filters))
