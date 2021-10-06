@@ -1,25 +1,25 @@
 (ns leihs.borrow.lib.filters
   (:refer-clojure :exclude [key])
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [akiroz.re-frame.storage :refer [persist-db]]
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [reagent.core :as reagent]
-    [re-frame.core :as rf]
-    [re-frame.std-interceptors :refer [path]]
-    [re-graph.core :as re-graph]
-    [shadow.resource :as rc]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.core.core :refer [flip presence]]
-    [leihs.borrow.lib.localstorage :as ls]
-    [leihs.borrow.lib.helpers :refer [spy spy-with log]]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.features.current-user.core :as current-user]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [akiroz.re-frame.storage :refer [persist-db]]
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [reagent.core :as reagent]
+   [re-frame.core :as rf]
+   [re-frame.std-interceptors :refer [path]]
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.core.core :refer [flip presence]]
+   [leihs.borrow.lib.localstorage :as ls]
+   [leihs.borrow.lib.helpers :refer [spy spy-with log]]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.features.current-user.core :as current-user]))
 
 (def BOOLEANS #{:only-available})
 (def INTEGERS #{:quantity})
@@ -44,93 +44,93 @@
 
 (def DEFAULTS {:quantity 1})
 
+(defn get-defaults [db]
+  (merge DEFAULTS
+         {:user-id (-> db current-user/data :user :id)}))
+
 (reg-event-fx
-  ::init
-  (fn-traced [_ _]
-    {:dispatch [::re-graph/query
-                filters-gql
-                {}
-                [::on-fetched]]}))
+ ::init
+ (fn-traced [_ _]
+   {:dispatch [::re-graph/query
+               filters-gql
+               {}
+               [::on-fetched]]}))
 
 (reg-event-db
-  ::on-fetched
-  (fn-traced [db [_ {:keys [data errors]}]]
-    (if errors
-      (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)
-      (let [defaults (assoc DEFAULTS
-                            :user-id
-                            (-> data :current-user :user :id))]
-        (update-in db
-                   current-path
-                   (flip merge) 
-                   defaults)))))
+ ::on-fetched
+ (fn-traced [db [_ {:keys [data errors]}]]
+   (if errors
+     (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)
+     (let [defaults (get-defaults db)]
+       (update-in db
+                  current-path
+                  (flip merge)
+                  defaults)))))
 
 (reg-event-db
-  ::set-multiple
-  (fn-traced [db [_ filters]]
-    (assoc-in db
-              current-path
-              (merge DEFAULTS
-                     {:user-id (-> db current-user/data :user :id)}
-                     (when-not (empty? filters)
-                       (-> filters massage-values remove-blanks))))))
+ ::set-multiple
+ (fn-traced [db [_ filters]]
+   (if (empty? filters)
+     db
+     (let [defaults (get-defaults db)]
+       (assoc-in db
+                 current-path
+                 (merge defaults
+                        (-> filters massage-values remove-blanks)))))))
 
 (reg-event-db
-  ::set-one
-  (fn-traced [db [_ key value]]
-    (assoc-in db (conj current-path key) value)))
+ ::set-one
+ (fn-traced [db [_ key value]]
+   (assoc-in db (conj current-path key) value)))
 
 (reg-event-db
-  ::set-pool-id
-  [(path current-path)]
-  (fn-traced [old [_ value]]
-    (if (#{"all" nil} value)
-      (dissoc old :pool-id)
-      (assoc old :pool-id value))))
+ ::set-pool-id
+ [(path current-path)]
+ (fn-traced [old [_ value]]
+   (if (#{"all" nil} value)
+     (dissoc old :pool-id)
+     (assoc old :pool-id value))))
 
 (reg-event-db
-  ::clear-current
-  (fn-traced [db _]
-    (assoc-in db
-              current-path
-              (assoc DEFAULTS
-                     :user-id
-                     (-> db current-user/data :user :id)))))
+ ::clear-current
+ (fn-traced [db _]
+   (let [defaults (get-defaults db)]
+     (assoc-in db current-path defaults))))
 
 (defn get-from-current [db k]
   (get-in db (conj current-path k)))
 
 (reg-sub
-  ::current
-  (fn [db _] (get-in db current-path)))
+ ::current
+ (fn [db _] (get-in db current-path)))
 
 (reg-sub
-  ::term
-  (fn [db _] (get-from-current db :term)))
+ ::term
+ (fn [db _] (get-from-current db :term)))
 
 (reg-sub
-  ::start-date
-  (fn [db _] (get-from-current db :start-date)))
+ ::start-date
+ (fn [db _] (get-from-current db :start-date)))
 
 (reg-sub
-  ::end-date
-  (fn [db _] (get-from-current db :end-date)))
+ ::end-date
+ (fn [db _] (get-from-current db :end-date)))
 
 (reg-sub
-  ::only-available
-  (fn [db _] (boolean (get-from-current db :only-available))))
+ ::only-available
+ (fn [db _] (boolean (get-from-current db :only-available))))
 
 (reg-sub
-  ::quantity
-  (fn [db _] (or (get-from-current db :quantity) 1)))
+ ::quantity
+ (fn [db _] (or (get-from-current db :quantity) 1)))
 
 (reg-sub
-  ::user-id
-  (fn [db _] (get-from-current db :user-id)))
+ ::user-id
+ (fn [db _] (get-from-current db :user-id)))
 
 (reg-sub
-  ::pool-id
-  (fn [db _] (get-from-current db :pool-id)))
+ ::pool-id
+ (fn [db _] (get-from-current db :pool-id)))
 
 (defn current [db] (get-in db current-path nil))
 (defn term [db] (get-in db (conj current-path :term)))
