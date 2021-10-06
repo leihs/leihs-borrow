@@ -52,9 +52,9 @@
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil into []) errors)}
       {:dispatch-n (let [current-user-data (:current-user data)
-                         response-user-id (-> current-user-data :user :id)
-                         ls-user-id  (-> db :ls ::data :user :id)]
-                     (list (when (not= response-user-id ls-user-id) [::ls/clear])
+                         ls-session-id (-> db :ls ::data :user :session-id)]
+                     (list (when (not= (:session-id current-user-data) ls-session-id)
+                             [::ls/clear])
                            [::set current-user-data]))})))
 
 (reg-event-db
