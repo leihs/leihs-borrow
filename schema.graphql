@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Sep 30 2021 15:41:20 GMT+0200 (Central European Summer Time)
+# timestamp: Wed Oct 06 2021 11:47:17 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -84,6 +84,7 @@ type CurrentUser {
   This is the language to use for translations. It takes into account user's preferred language, the default one, etc.
   """
   languageToUse: Language!
+  sessionId: UUID!
   user: User
 }
 

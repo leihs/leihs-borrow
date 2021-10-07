@@ -45,9 +45,13 @@
   (get-by-id tx user-id))
 
 (defn get-current
-  [{{tx :tx} :request user-id ::target-user/id} _ _]
+  [{{tx :tx {session-id :user_session_id} :authenticated-entity} :request
+    user-id ::target-user/id}
+   _
+   _]
   {:id user-id
-   :user (get-by-id tx user-id)})
+   :user (get-by-id tx user-id)
+   :session-id session-id})
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

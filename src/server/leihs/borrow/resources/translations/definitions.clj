@@ -108,14 +108,26 @@
                               :de-CH "Meine Favoriten"}
                       :items {:en-GB "Items"
                               :de-CH "Gegenstände"}}
-    :filter {:search {:en-GB "Search"
-                      :de-CH "Suche"}
+    :filter {:search {:title {:en-GB "Search term"
+                              :de-CH "Stichwort"}
+                      :placeholder {:en-GB "Enter search term"
+                                    :de-CH "Suchbegriff eingeben"}}
+             :delegations {:en-GB "{n, plural, =1 {Delegation} other {Delegations}}"
+                           :de-CH "{n, plural, =1 {Delegation} other {Delegationen}}"}
              :for {:en-GB "For"
                    :de-CH "Für"}
-             :time-span {:en-GB "Time Span"
-                         :de-CH "Zeitraum"}
+             :time-span {:title {:en-GB "Time Span"
+                                 :de-CH "Zeitraum"}
+                         :undefined {:en-GB "undefined"
+                                     :de-CH "unbestimmt"}
+                         :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set.",
+                                                                :de-CH "Das Start- und Enddatum müssen gesetzt sein."}
+                                  :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date.",
+                                                                        :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
              :show-only-available {:en-GB "Show available only"
                                    :de-CH "Nur Verfügbare anzeigen"}
+             :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"} 
+                     :all {:en-GB "All" :de-CH "Alle"}}
              :from {:en-GB "From"
                     :de-CH "Von"}
              :until {:en-GB "Until"
@@ -124,10 +136,9 @@
                         :de-CH "Anzahl"}
              :get-results {:en-GB "Get Results"
                            :de-CH "Resultate anzeigen"}
-             :clear {:en-GB "Clear"
-                     :de-CH "Löschen"}
-             :pools {:all {:en-GB "All inventory pools"
-                           :de-CH "Allen Geräteparks"}}}
+             :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
+             :apply {:en-GB "Apply" :de-CH "Anwenden"}
+             :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
     :home-page {:title {:en-GB "Home"
                         :de-CH "Home"}
                 :catalog {:en-GB "Catalog"
@@ -171,6 +182,7 @@
                  :order-dialog {:title {:en-GB "Add item" :de-CH "Gegenstand hinzufügen"}
                                 :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
                                 :add {:en-GB "Add" :de-CH "Hinzufügen"}}}
+    :models {:title {:en-GB "Search results" :de-CH "Suchresultate"}}
     :pagination {:load-more {:en-GB "Load more"
                              :de-CH "Mehr laden"}
                  :nothing-found {:en-GB "Nothing found"

@@ -52,9 +52,10 @@
     (if errors
       {:db (update-in db [:meta :app :fatal-errors] (fnil into []) errors)}
       {:dispatch-n (let [current-user-data (:current-user data)
-                         response-user-id (-> current-user-data :user :id)
-                         ls-user-id  (-> db :ls ::data :user :id)]
-                     (list (when (not= response-user-id ls-user-id) [::ls/clear])
+                         session-id (:session-id current-user-data)
+                         ls-session-id (-> db :ls ::data :session-id)]
+                     (list (when (not= session-id ls-session-id)
+                             [::ls/clear])
                            [::set current-user-data]))})))
 
 (reg-event-db
@@ -64,9 +65,6 @@
 
 (defn data [db]
   (-> db :ls ::data))
-
-(defn locale-to-use [db]
-  (-> db data :language-to-use :locale keyword))
 
 (reg-sub ::data
          (fn [db _] (get-in db [:ls ::data])))

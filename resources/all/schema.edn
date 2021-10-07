@@ -126,7 +126,8 @@
                                   :user {:type :User}
                                   :languageToUse {:description "This is the language to use for translations. It takes into account user's preferred language, the default one, etc."
                                                   :type (non-null :Language)
-                                                  :resolve :language-to-use}}}
+                                                  :resolve :language-to-use}
+                                  :sessionId {:type (non-null :UUID)}}}
            :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null :Date)}
                               :quantity {:type (non-null Int)}

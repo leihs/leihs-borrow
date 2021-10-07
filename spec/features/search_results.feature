@@ -20,7 +20,7 @@ Feature: Search results (and caching)
   Scenario: Home page
     # Show all without filtering
     When I click on "Show search/filter"
-    And I click button "Get Results"
+    And I click button "Apply"
     Then I see 20 different "Beamer" models
 
     When I click 3 times on "Load more"
@@ -28,39 +28,39 @@ Feature: Search results (and caching)
     And I see 40 different "Camera" models
     And there is no "Load more" button
 
-    # Clear filters, results and cache (!)
-    # And I pry
-    When I click on "Clear"
     # And I go to the homepage
+    When I click on "Leihs"
     Then I see category "Cameras"
     And I see category "Beamers"
 
     When I click on "Show search/filter"
-    And I click button "Get Results"
-    Then I see 20 different "Beamer" models
-    And there is "Load more" button
-    And I click on "Clear"
+    And I click button "Apply"
+    Then I see 40 different "Beamer" models
+    And I see 40 different "Camera" models
+    And there is no "Load more" button
 
   Scenario: Filter with search term (and caching)
     # Filter with search term
     When I click on "Show search/filter"
     And I enter "Camera" in the search field
-    And I click button "Get Results"
+    And I click button "Apply"
     And I click on "Load more"
     Then I see 40 different "Camera" models
     And there is no "Load more" button
 
     # Filter with another search term (without clearing)
-    When I enter "Beamer" in the search field
-    And I click button "Get Results"
+    When I click on "Show search/filter"
+    And I enter "Beamer" in the search field
+    And I click button "Apply"
     And I click on "Load more"
     Then I see 40 different "Beamer" models
     And there is no "Load more" button
 
     # Filter with previous search term:
     # All results are already cached and are refreshed accordingly.
-    When I enter "Camera" in the search field
-    And I click button "Get Results"
+    When I click on "Show search/filter"
+    And I enter "Camera" in the search field
+    And I click button "Apply"
     Then I see 40 different "Camera" models
     And there is no "Load more" button
 
@@ -73,12 +73,13 @@ Feature: Search results (and caching)
 
     When I click on "Show search/filter"
     And I select pool "Pool B"
-    And I click button "Get Results"
+    And I click button "Apply"
     Then there are no results
     And there is no "Load more" button
 
-    When I select all pools
-    And I click button "Get Results"
+    When I click on "Show search/filter"
+    And I select all pools
+    And I click button "Apply"
     Then I see 40 different "Camera" models
     And there is no "Load more" button
 
@@ -94,6 +95,6 @@ Feature: Search results (and caching)
     And I choose next working day as start date
     And I choose next next working day as end date
     And I set the quantity to 2
-    And I click button "Get Results"
+    And I click button "Apply"
     Then I see 1 different "Model A" models
     And I don't see any "Model B" model

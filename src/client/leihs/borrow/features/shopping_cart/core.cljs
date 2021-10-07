@@ -15,6 +15,7 @@
                                       subscribe
                                       dispatch]]
    [leihs.borrow.lib.helpers :as h]
+   [leihs.borrow.lib.form-helpers :refer [UiTextarea]]
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.translate :refer [t dict set-default-translate-path]]
@@ -25,22 +26,6 @@
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
-
-
-;; NOTE: workaround for reagent input handling when using custom components
-;;       for details see <https://github.com/reagent-project/reagent/blob/b71fc361b85338ef4e4cd52a7b21e0f3f3f89628/doc/ControlledInputs.md>
-;;       we implement same solutions as MUI: <https://github.com/reagent-project/reagent/blob/master/doc/examples/material-ui.md>
-;; TODO: should be moved into some combined "UI" namespace so its more easy to use the correct version!
-(def textarea-component
-  (reagent/reactify-component (fn [props] [:textarea props])))
-
-(defn UiTextarea [props & children]
-  (let [props (-> props
-                  (assoc :inputComponent textarea-component)
-                  rtpl/convert-prop-value)]
-    (apply reagent/create-element UI/Components.Design.Textarea props (map reagent/as-element children))))
-;; END OF workaround for reagent input handling ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx

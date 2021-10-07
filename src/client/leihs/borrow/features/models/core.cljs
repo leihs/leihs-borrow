@@ -13,7 +13,7 @@
                                        reg-fx
                                        subscribe
                                        dispatch]]
-    [leihs.borrow.lib.translate :refer [t]]
+    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.helpers :refer [spy spy-with log obj->map]]
@@ -22,7 +22,10 @@
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.components :as ui]
     ["/leihs-ui-client-side-external-react" :as UI]
-    [leihs.borrow.features.current-user.core :as current-user]))
+    [leihs.borrow.features.current-user.core :as current-user]
+    [leihs.borrow.features.filter-modal.core :as filter-modal :refer [filter-comp default-dispatch-fn]]))
+
+(set-default-translate-path :borrow.models)
 
 (def query-gql
   (rc/inline "leihs/borrow/features/models/getModels.gql"))
@@ -194,7 +197,7 @@
                                   (get-query-vars filters extra-vars)
                                   [:ls ::data cache-key]
                                   [:models]])}
-           (t :borrow.pagination/load-more)]]))]))
+           (t :!borrow.pagination/load-more)]]))]))
 
 (defn search-results [extra-vars]
   (let [cache-key @(subscribe [::cache-key extra-vars])
@@ -202,19 +205,18 @@
     [:<>
      (cond
        (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
-       (empty? models) [:p.p-6.w-full.text-center (t :borrow.pagination/nothing-found)]
+       (empty? models) [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
        :else
        [:<>
         [models-list models]
         [load-more cache-key extra-vars]])]))
 
-
 (defn view []
-  (let [extra-search-vars nil]
-    [:<>
-     [search-panel
-      #(dispatch [:routing/navigate [::routes/models {:query-params %}]])
-      #(dispatch [::clear])
-      extra-search-vars]
-
-     [search-results extra-search-vars]]))
+  (let [modal-shown? (r/atom false)]
+    (fn []
+      (let [extra-search-vars nil]
+        [:> UI/Components.AppLayout.Page
+         [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
+          [filter-comp default-dispatch-fn]]
+         [:> UI/Components.Design.Stack
+          [search-results extra-search-vars]]]))))

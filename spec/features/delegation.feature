@@ -22,7 +22,7 @@ Feature: Delegations
     And I choose to filter by availabilty
     And I choose next working day as start date
     And I choose next next working day as end date
-    And I click button "Get Results"
+    And I click button "Apply"
     Then I see one model with the title "Kamera"
 
     # make a reservation
