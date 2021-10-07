@@ -153,6 +153,8 @@
               :disabled (not (valid?))
               :onClick
               #(do (hide!)
+                   (when (= @pool-id "all")
+                     (dispatch [::filters/set-one :pool-id nil]))
                    (dispatch-fn
                     (remove-nils
                      (letfn [(format-date [x]

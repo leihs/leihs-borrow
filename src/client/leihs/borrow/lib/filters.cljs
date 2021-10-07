@@ -67,11 +67,19 @@
                   (flip merge)
                   defaults)))))
 
+(defn clear-current [db]
+  (let [defaults (get-defaults db)]
+    (assoc-in db current-path defaults)))
+
+(reg-event-db
+ ::clear-current
+ (fn-traced [db _] (clear-current db)))
+
 (reg-event-db
  ::set-multiple
  (fn-traced [db [_ filters]]
    (if (empty? filters)
-     db
+     (clear-current db)
      (let [defaults (get-defaults db)]
        (assoc-in db
                  current-path
@@ -90,12 +98,6 @@
    (if (#{"all" nil} value)
      (dissoc old :pool-id)
      (assoc old :pool-id value))))
-
-(reg-event-db
- ::clear-current
- (fn-traced [db _]
-   (let [defaults (get-defaults db)]
-     (assoc-in db current-path defaults))))
 
 (defn get-from-current [db k]
   (get-in db (conj current-path k)))
