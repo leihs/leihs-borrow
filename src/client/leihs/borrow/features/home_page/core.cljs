@@ -32,8 +32,7 @@
 (reg-event-fx
  ::routes/home
  (fn-traced [_ [_ {:keys [query-params]}]]
-   {:dispatch-n (list [::filters/init]
-                      [::filters/set-multiple query-params]
+   {:dispatch-n (list [::filters/set-multiple query-params]
                       [::categories/fetch-index 4])}))
 
 (defn view []

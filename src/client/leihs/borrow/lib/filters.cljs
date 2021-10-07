@@ -48,14 +48,6 @@
   (merge DEFAULTS
          {:user-id (-> db current-user/data :user :id)}))
 
-(reg-event-fx
- ::init
- (fn-traced [_ _]
-   {:dispatch [::re-graph/query
-               filters-gql
-               {}
-               [::on-fetched]]}))
-
 (reg-event-db
  ::on-fetched
  (fn-traced [db [_ {:keys [data errors]}]]
@@ -78,13 +70,15 @@
 (reg-event-db
  ::set-multiple
  (fn-traced [db [_ filters]]
-   (if (empty? filters)
-     (clear-current db)
-     (let [defaults (get-defaults db)]
-       (assoc-in db
-                 current-path
-                 (merge defaults
-                        (-> filters massage-values remove-blanks)))))))
+   (let [defaults (get-defaults db)]
+     (update-in db
+                current-path
+                #(merge defaults
+                        %
+                        (some-> filters
+                                not-empty
+                                massage-values
+                                remove-blanks))))))
 
 (reg-event-db
  ::set-one
