@@ -10,6 +10,10 @@ step "there is an empty database" do
   reset_database
 end
 
+step "I select :option from :label" do |option, label|
+  select(option, from: label)
+end
+
 step "I click on :txt" do |txt|
   click_on txt
 end

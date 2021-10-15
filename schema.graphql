@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Wed Oct 06 2021 11:47:17 GMT+0200 (Central European Summer Time)
+# timestamp: Tue Oct 12 2021 16:15:28 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -336,7 +336,7 @@ type QueryRoot {
     from: Date
     orderBy: [RentalsOrderByInput]
     poolIds: [UUID!]
-    refinedRentalState: [RefinedRentalStateEnum!]
+    refinedRentalState: RefinedRentalStateEnum
     rentalState: RentalStateEnum
     searchTerm: NonEmptyText
     states: [PoolOrderStateEnum]

@@ -363,7 +363,7 @@
                             :after {:type String}
                             :states {:type (list :PoolOrderStateEnum)}
                             :rentalState {:type :RentalStateEnum}
-                            :refinedRentalState {:type (list (non-null :RefinedRentalStateEnum))}
+                            :refinedRentalState {:type :RefinedRentalStateEnum}
                             :from {:type :Date
                                    :description "The `from` and `until` args select rentals based on time interval intersection."}
                             :until {:type :Date

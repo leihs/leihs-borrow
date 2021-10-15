@@ -10,12 +10,23 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as reservations]
             [leihs.borrow.resources.settings :as settings]
+            [leihs.core.core :refer [spy-with]]
             [leihs.core.database.helpers :as database]
             [leihs.core.ds :as ds]
             [leihs.core.sql :as sql])
   (:import [java.util UUID]
            [java.time.format DateTimeFormatter]
            [java.time ZoneOffset]))
+
+(def refined-rental-state->reservation-status
+  {:IN_APPROVAL "submitted"
+   :REJECTED "rejected"
+   :CANCELED "canceled"
+   :RETURNED "closed"
+   ; :EXPIRED "TODO"
+   ; :OVERDUE "TODO"
+   :TO_PICKUP "approved"
+   :TO_RETURN "signed"})
 
 (defn multiple-base-sqlmap [user-id]
   (-> (sql/select :unified_customer_orders.id
@@ -36,6 +47,7 @@
       (sql/where [:= :unified_customer_orders.user_id user-id])))
 
 (defn refine-rental-state [tx row]
+  "THIS HAS TO BE REVIEWED AGAIN!!!"
   (let [rs (reservations/get-by-ids tx (:reservation_ids row))
         states (->> rs (map :status) set)
         states-without-closed (set/difference states #{"closed"})]
@@ -57,8 +69,7 @@
              (= states-without-closed #{"submitted" "approved" "signed"}) ["IN_APPROVAL" "TO_PICKUP" "TO_RETURN"]
              (= states-without-closed #{"submitted" "approved"}) ["IN_APPROVAL" "TO_PICKUP"]
              (= states-without-closed #{"submitted" "signed"}) ["IN_APPROVAL" "TO_RETURN"]
-             (= states-without-closed #{"approved" "signed"}) ["TO_PICKUP" "TO_RETURN"]
-             ))))
+             (= states-without-closed #{"approved" "signed"}) ["TO_PICKUP" "TO_RETURN"]))))
 
 (defn row-fn [tx r]
   (let [from (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (:from_date r))
@@ -135,31 +146,55 @@
 (defn equal-condition [a1 a2]
   [:and ["@>" a1 a2] ["<@" a1 a2]])
 
+(defn merge-refined-rental-state-condition [sqlmap refined-rental-state]
+  (case refined-rental-state
+    (:IN_APPROVAL :REJECTED :CANCELED :RETURNED :TO_PICKUP :TO_RETURN)
+    (sql/merge-where sqlmap
+                     [:any (refined-rental-state->reservation-status
+                            refined-rental-state)
+                      :unified_customer_orders.reservation_states])
+    :EXPIRED
+    (sql/merge-where
+     sqlmap
+     [:exists (-> (sql/select true)
+                  (sql/from :reservations)
+                  (sql/where [:any :reservations.id :unified_customer_orders.reservation_ids])
+                  (sql/merge-where [:in :reservations.status ["submitted" "approved"]])
+                  (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.end_date]))])
+    :OVERDUE
+    (sql/merge-where
+     sqlmap
+     [:exists (-> (sql/select true)
+                  (sql/from :reservations)
+                  (sql/where [:any :reservations.id :unified_customer_orders.reservation_ids])
+                  (sql/merge-where [:= :reservations.status "signed"])
+                  (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.end_date]))])))
+
 (defn get-connection-sql-map
   [{{:keys [tx]} :request user-id ::target-user/id}
    {:keys [order-by states rental-state from until pool-ids
            search-term with-pickups with-returns refined-rental-state]}
    value]
-  (if (= (count [from until]) 1)
-    (throw (ex-info "From and until dates must be provided together." {})))
   (-> (multiple-base-sqlmap user-id)
       (cond->
         states
         (sql/merge-where (equal-condition
-                           :unified_customer_orders.state
-                           (->> states
-                                set
-                                (map #(sql/call :cast (name %) :text))
-                                sql/array)))
+                          :unified_customer_orders.state
+                          (->> states
+                               set
+                               (map #(sql/call :cast (name %) :text))
+                               sql/array)))
 
         rental-state
         (sql/merge-where [:= :unified_customer_orders.rental_state (name rental-state)])
 
-        (and from until)
+        (or from until)
         (sql/merge-where
-          (sql/raw (str "(unified_customer_orders.from_date, unified_customer_orders.until_date)"
-                        " OVERLAPS "
-                        "('" from "', '" until "')")))
+         (sql/raw
+          (format
+           "(unified_customer_orders.from_date, unified_customer_orders.until_date) OVERLAPS (%s, %s)"
+           (or (some->> from (format "'%s'")) "'1900-01-01'::date")
+           (or (some->> until (format "'%s'")) "'9999-12-31'::date"))))
 
         (not (empty? pool-ids))
         (sql/merge-where ["<@"
@@ -171,6 +206,9 @@
                           :unified_customer_orders.searchable
                           (str "%" search-term "%")])
 
+        refined-rental-state
+        (merge-refined-rental-state-condition refined-rental-state)
+
         (not (nil? with-pickups))
         (sql/merge-where [:= :unified_customer_orders.with_pickups with-pickups])
 
@@ -179,10 +217,11 @@
 
         (seq order-by)
         (sql/order-by
-          (helpers/treat-order-arg order-by :unified_customer_orders)))))
+         (helpers/treat-order-arg order-by :unified_customer_orders)))))
 
 (defn get-connection [{{:keys [tx]} :request :as context} args value]
-  (connections/wrap get-connection-sql-map
+  (connections/wrap (spy-with #(-> % (apply [context args value]) sql/format)
+                              get-connection-sql-map)
                     context
                     args
                     value

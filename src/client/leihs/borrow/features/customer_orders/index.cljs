@@ -4,6 +4,7 @@
    [reagent.core :as r]
    #_[re-frame.core :as rf]
    [re-graph.core :as re-graph]
+   [re-frame.std-interceptors :refer [path]]
    [shadow.resource :as rc]
    [leihs.borrow.components :as ui]
    [leihs.borrow.lib.re-frame :refer [reg-event-fx
@@ -18,30 +19,67 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.features.customer-orders.core :as rentals]
+   [leihs.borrow.features.customer-orders.filter-modal :refer [filter-comp]
+    :as filter-modal]
    [leihs.borrow.features.current-user.core :as current-user]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.rentals)
 
+(defn prepare-query-vars [filters]
+  (let [from (:from filters)
+        until (:until filters)
+        term (:term filters)
+        state (:state filters)
+        user-id (:user-id filters)
+        pool-id (:pool-id filters)]
+    (cond-> {}
+      term
+      (assoc :searchTerm term)
+      from
+      (assoc :from from)
+      until
+      (assoc :until until)
+      state
+      (assoc :refinedRentalState state)
+      pool-id
+      (assoc :poolIds [pool-id])
+      user-id
+      (assoc :userId user-id))))
+
 ; is kicked off from router when this view is loaded
 (reg-event-fx
  ::routes/rentals-index
- (fn-traced [{:keys [db]} [_ _]]
-   {:dispatch [::re-graph/query
-               (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
-               {:userId (filters/user-id db)}
-               [::on-fetched-data]]}))
+ (fn-traced [{:keys [db]} [_ {:keys [query-params]}]]
+   {:dispatch-n
+    (list [::save-filter-options query-params]
+          [::re-graph/query
+           (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
+           (prepare-query-vars query-params)
+           [::on-fetched-data]])}))
+
+(reg-event-db ::save-filter-options
+              (fn-traced [db [_ query-params]]
+                (assoc db ::filter-modal/options query-params)))
 
 (reg-event-db
  ::on-fetched-data
  (fn-traced [db [_ {:keys [data errors]}]]
    (-> db
        (cond-> errors (assoc ::errors errors))
-       (assoc ::data data))))
+       (assoc ::data data)
+       (assoc-in [::data :loading?] false))))
+
+(reg-event-db
+ ::toggle-loading
+ (fn-traced [db _] (update-in db [::data :loading?] not)))
 
 (reg-sub ::data (fn [db _] (::data db)))
-
 (reg-sub ::errors (fn [db _] (::errors db)))
+(reg-sub ::loading?
+         :<- [::data]
+         (fn [data _] (let [loading? (:loading? data)]
+                        (if (nil? loading?) true loading?))))
 
 (reg-sub
  ::open-rentals
@@ -66,28 +104,6 @@
            (or user-id (-> co :user :id))))
 
 ;; UI
-
-(defn filter-panel []
-  (let [user-id @(subscribe [::user-id])
-        target-users @(subscribe [::current-user/target-users])]
-    (when (> (count target-users) 1)
-      [:div.px-3.py-4.bg-light {:class "mt-3 mb-3"}
-       [:div.form.form-compact
-        [:label.row
-         [:span.text-xs.col-3.col-form-label (t :filter.delegation)]
-         [:div.col-9
-          [:select {:class "form-control"
-                    :default-value user-id
-                    :name :user-id
-                    :on-change (fn [ev]
-                                 (dispatch [::filters/set-one
-                                            :user-id
-                                            (-> ev .-target .-value)])
-                                 (dispatch [::routes/rentals-index]))}
-           (doall
-            (for [user target-users]
-              [:option {:value (:id user) :key (:id user)}
-               (:name user)]))]]]]])))
 
 (defn rental-progress-bars [rental small]
   (let [fulfillment-states (:fulfillment-states rental)
@@ -146,38 +162,34 @@
       [:<> {:key (:id order)}
        [order-line order]]))])
 
-
 (defn view []
-  (let [data @(subscribe [::data])
-        errors @(subscribe [::errors])
-        is-loading? (not (or data errors))
+  (let [errors @(subscribe [::errors])
+        loading? @(subscribe [::loading?])
         open-rentals @(subscribe [::open-rentals])
         closed-rentals @(subscribe [::closed-rentals])]
-
     [:<>
-
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}
-
-      (when-not is-loading? [:> UI/Components.Design.FilterButton
-                             {:onClick #(js/alert "TODO!")}
-                             (t :filter-bubble-label)])]
-
-     [filter-panel] ; TODO: put into modal
-
+      (when-not loading?
+        [filter-comp
+         #(do (dispatch [::toggle-loading])
+              (dispatch [:routing/navigate
+                         [::routes/rentals-index {:query-params %}]]))])]
      (cond
-       is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
+       loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
+
+       (and (empty? open-rentals) (empty? closed-rentals))
+       [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
+
        errors [ui/error-view errors]
+
        :else
        [:<>
-
         [:> UI/Components.Design.Stack {:space 5}
-
          (when-not (empty? open-rentals)
            [:> UI/Components.Design.Section
             {:title (t :section-title-open-rentals) :collapsible true}
             [orders-list open-rentals]])
-
          (when-not (empty? closed-rentals)
            [:> UI/Components.Design.Section
             {:title (t :section-title-closed-rentals) :collapsible true}
