@@ -128,7 +128,7 @@
               (when-not (start-date-equal-or-before-end-date?)
                 [:> UI/Components.Design.Warning
                  (t :time-span.errors.start-date-equal-or-before-end-date)])]
-             
+
              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
               [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
               [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
@@ -138,15 +138,6 @@
                         [:option {:value pool-id :key pool-id} pool-name]))]]]]
 
            [:> UI/Components.Design.ModalDialog.Footer
-            [:button.btn.btn-secondary
-             {:type "button"
-              :onClick #(do (reset! term "")
-                            (reset! pool-id "all")
-                            (reset! user-id (:id auth-user))
-                            (reset! start-date "")
-                            (reset! end-date "")
-                            (reset! state "all"))}
-             (t :reset)]
             [:button.btn.btn-primary
              {:type "button"
               :disabled (not (valid?))
@@ -166,7 +157,16 @@
                                      presence
                                      (date-fns/parse "P" (js/Date.) #js {:locale locale})
                                      (date-fns/format "yyyy-MM-dd"))})))}
-             (t :apply)]]])))))
+             (t :apply)]
+            [:button.btn.btn-secondary
+             {:type "button"
+              :onClick #(do (reset! term "")
+                            (reset! pool-id "all")
+                            (reset! user-id (:id auth-user))
+                            (reset! start-date "")
+                            (reset! end-date "")
+                            (reset! state "all"))}
+             (t :reset)]]])))))
 
 (defn filter-comp [dispatch-fn]
   (let [modal-shown? (r/atom false)]

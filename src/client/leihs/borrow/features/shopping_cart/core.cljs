@@ -313,12 +313,12 @@
          {:on-click #(dispatch [::delete-reservations (map :id res-lines)])}
          (t :edit-dialog/delete-reservation)]]]]
      [:> UI/Components.Design.ModalDialog.Footer
-      [:button.btn.btn-secondary {:on-click #(dispatch [::cancel-edit])}
-       (t :edit-dialog/cancel)]
       [:button.btn.btn-primary
        {:form "order-dialog-form" :type :submit :disabled (or loading? is-saving?)}
        (when is-saving? [:> UI/Components.Design.Spinner]) " "
-       (t :edit-dialog/confirm)]]]))
+       (t :edit-dialog/confirm)]
+      [:button.btn.btn-secondary {:on-click #(dispatch [::cancel-edit])}
+       (t :edit-dialog/cancel)]]]))
 
 (defn reservation [res-lines invalid-res-ids]
   (let [exemplar (first res-lines)
@@ -458,8 +458,8 @@
                           (reset! linked? false))
              :on-blur #(swap! purpose assoc :was-validated true)}]]]]]
        [:> UI/Components.Design.ModalDialog.Footer
-        [:button.btn.btn-secondary {:on-click hide!} (t :confirm-dialog/cancel)]
-        [:button.btn.btn-primary {:form :the-form :type :submit} (t :confirm-dialog/confirm)]]])))
+        [:button.btn.btn-primary {:form :the-form :type :submit} (t :confirm-dialog/confirm)]
+        [:button.btn.btn-secondary {:on-click hide!} (t :confirm-dialog/cancel)]]])))
 
 (defn view []
   (let [order-dialog-shown? (reagent/atom false)]

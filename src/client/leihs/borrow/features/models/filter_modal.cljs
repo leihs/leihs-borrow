@@ -158,16 +158,6 @@
                    [:> UI/Components.Design.Warning  (t :time-span.errors.start-date-equal-or-before-end-date)])])]]]
 
            [:> UI/Components.Design.ModalDialog.Footer
-            [:button.btn.btn-secondary
-             {:type "button"
-              :onClick #(do (reset! term "")
-                            (reset! pool-id "all")
-                            (reset! user-id "")
-                            (reset! only-available false)
-                            (reset! start-date "")
-                            (reset! end-date "")
-                            (reset! quantity 1))}
-             (t :reset)]
             [:button.btn.btn-primary
              {:type "button"
               :disabled (not (valid?))
@@ -186,7 +176,27 @@
                         :start-date (when @only-available (format-date @start-date))
                         :end-date (when @only-available (format-date @end-date))
                         :quantity (when @only-available @quantity)}))))}
-             (t :apply)]]])))))
+             (t :apply)]
+            [:button.btn.btn-secondary
+             {:type "button"
+              :onClick #(do (reset! term "")
+                            (reset! pool-id "all")
+                            (reset! user-id "")
+                            (reset! only-available false)
+                            (reset! start-date "")
+                            (reset! end-date "")
+                            (reset! quantity 1))}
+             (t :reset)]
+            [:button.btn.btn-secondary
+             {:type "button"
+              :onClick #(do (reset! term "")
+                            (reset! pool-id "all")
+                            (reset! user-id (:id auth-user))
+                            (reset! only-available false)
+                            (reset! start-date nil)
+                            (reset! end-date nil)
+                            (reset! quantity 1))}
+             (t :reset)]]])))))
 
 (defn filter-comp [dispatch-fn]
   (let [modal-shown? (r/atom false)]

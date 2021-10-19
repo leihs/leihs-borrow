@@ -299,8 +299,8 @@
           :locale user-locale
           :txt (cart/order-panel-texts)}]]
        [:> UI/Components.Design.ModalDialog.Footer
-        [:button.btn.btn-secondary {:on-click on-cancel} (t :order-dialog/cancel)]
-        [:button.btn.btn-primary {:form :order-dialog-form :type :submit} (t :order-dialog/add)]]])))
+        [:button.btn.btn-primary {:form :order-dialog-form :type :submit} (t :order-dialog/add)]
+        [:button.btn.btn-secondary {:on-click on-cancel} (t :order-dialog/cancel)]]])))
 
 (defn enrich-recommends-with-href [m]
   (update-in m
