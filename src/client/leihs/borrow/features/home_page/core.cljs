@@ -38,7 +38,7 @@
   (let [modal-shown? (r/atom false)]
     (fn []
       (let [cats @(subscribe [::categories/categories-index])]
-        [:> UI/Components.Design.PageLayout
+        [:<>
          [:> UI/Components.Design.PageLayout.Header {:title (t :catalog)}
           [filter-comp default-dispatch-fn]]
          [:> UI/Components.Design.Stack

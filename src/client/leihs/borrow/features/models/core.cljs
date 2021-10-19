@@ -1,29 +1,29 @@
 (ns leihs.borrow.features.models.core
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [reagent.core :as r]
-    [akiroz.re-frame.storage :refer [persist-db]]
-    [re-frame.core :as rf]
-    [re-frame.db :as db]
-    [re-graph.core :as re-graph]
-    [shadow.resource :as rc]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
-    [leihs.borrow.lib.localstorage :as ls]
-    [leihs.borrow.lib.helpers :refer [spy spy-with log obj->map]]
-    [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.lib.pagination :as pagination]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.components :as ui]
-    ["/leihs-ui-client-side-external-react" :as UI]
-    [leihs.borrow.features.current-user.core :as current-user]
-    [leihs.borrow.features.models.filter-modal :as filter-modal :refer [filter-comp default-dispatch-fn]]
-    [leihs.core.core :refer [remove-blanks]]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [reagent.core :as r]
+   [akiroz.re-frame.storage :refer [persist-db]]
+   [re-frame.core :as rf]
+   [re-frame.db :as db]
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.lib.localstorage :as ls]
+   [leihs.borrow.lib.helpers :refer [spy spy-with log obj->map]]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.lib.pagination :as pagination]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.components :as ui]
+   ["/leihs-ui-client-side-external-react" :as UI]
+   [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.borrow.features.models.filter-modal :as filter-modal :refer [filter-comp default-dispatch-fn]]
+   [leihs.core.core :refer [remove-blanks]]))
 
 (set-default-translate-path :borrow.models)
 
@@ -32,11 +32,11 @@
 
 ;-; EVENTS 
 (reg-event-fx
-  ::routes/models
-  (fn-traced [_ [_ {:keys [query-params]}]]
-    {:dispatch-n (list [::filter-modal/save-options query-params]
-                       [::current-user/set-chosen-user-id (:user-id query-params)]
-                       [::get-models query-params])}))
+ ::routes/models
+ (fn-traced [_ [_ {:keys [query-params]}]]
+   {:dispatch-n (list [::filter-modal/save-options query-params]
+                      [::current-user/set-chosen-user-id (:user-id query-params)]
+                      [::get-models query-params])}))
 
 (defn prepare-query-vars [filters]
   (let [term (:term filters)
@@ -88,33 +88,33 @@
   (-> query-params (get-query-vars extra-vars) hash))
 
 (reg-event-fx
-  ::get-models
-  (fn-traced [{:keys [db]} [_ query-params extra-vars]]
-    (let [query-vars (get-query-vars query-params extra-vars)
-          cache-key (get-cache-key query-params extra-vars)
-          n (number-of-cached db cache-key)]
-      {:dispatch [::re-graph/query
-                  query-gql
-                  (cond-> query-vars (>= n 20) (assoc :first n))
-                  [::on-fetched-models cache-key]]})))
+ ::get-models
+ (fn-traced [{:keys [db]} [_ query-params extra-vars]]
+   (let [query-vars (get-query-vars query-params extra-vars)
+         cache-key (get-cache-key query-params extra-vars)
+         n (number-of-cached db cache-key)]
+     {:dispatch [::re-graph/query
+                 query-gql
+                 (cond-> query-vars (>= n 20) (assoc :first n))
+                 [::on-fetched-models cache-key]]})))
 
 (reg-event-fx
-  ::on-fetched-models
-  (fn-traced [{:keys [db]} [_ cache-key {:keys [data errors]}]]
-    (if errors
-      {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-      {:db (assoc-in db [:ls ::data cache-key] (get-in data [:models]))})))
+ ::on-fetched-models
+ (fn-traced [{:keys [db]} [_ cache-key {:keys [data errors]}]]
+   (if errors
+     {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
+     {:db (assoc-in db [:ls ::data cache-key] (get-in data [:models]))})))
 
 (reg-event-fx
-  ::clear
-  (fn-traced [_ _]
-    {:dispatch-n (list [::filter-modal/clear-options]
-                       [::clear-data]
-                       [:routing/navigate [::routes/home]])}))
+ ::clear
+ (fn-traced [_ _]
+   {:dispatch-n (list [::filter-modal/clear-options]
+                      [::clear-data]
+                      [:routing/navigate [::routes/home]])}))
 
 (reg-event-db
-  ::clear-data
-  (fn-traced [db _] (update db :ls dissoc ::data)))
+ ::clear-data
+ (fn-traced [db _] (update db :ls dissoc ::data)))
 
 (reg-event-db ::clear-data-under-key
               (fn-traced [db [_ cache-key]]
@@ -151,11 +151,11 @@
    [:div.col-9
     [:input
      (merge
-       input-props
-       {:name name
-        :placeholder label
-        :class (str "form-control " (get input-props :class))
-        :style (merge (get input-props :style))})]]])
+      input-props
+      {:name name
+       :placeholder label
+       :class (str "form-control " (get input-props :class))
+       :style (merge (get input-props :style))})]]])
 
 (defn search-panel [submit-fn clear-fn extra-vars]
   (let [current-user-data @(subscribe [::current-user/data])
@@ -183,21 +183,21 @@
 
 (defn models-list [models]
   (let
-    [debug? @(subscribe [:is-debug?])
-     models-list (doall
-                   (for [m models]
-                     (let [model (:node m)
-                           max-quant (:available-quantity-in-date-range model)
-                           unavailable? (and max-quant (<= max-quant 0))]
-                       {:id (:id model)
-                        :imgSrc (or (get-in model [:cover-image :image-url])
-                                    (get-in model [:images 0 :image-url]))
-                        :isDimmed false
-                        :caption (:name model)
-                        :subCaption (:manufacturer model)
-                        :href  (routing/path-for ::routes/models-show
-                                                 :model-id (:id model))
-                        :isFavorited (:is-favorited model)})))]
+   [debug? @(subscribe [:is-debug?])
+    models-list (doall
+                 (for [m models]
+                   (let [model (:node m)
+                         max-quant (:available-quantity-in-date-range model)
+                         unavailable? (and max-quant (<= max-quant 0))]
+                     {:id (:id model)
+                      :imgSrc (or (get-in model [:cover-image :image-url])
+                                  (get-in model [:images 0 :image-url]))
+                      :isDimmed false
+                      :caption (:name model)
+                      :subCaption (:manufacturer model)
+                      :href  (routing/path-for ::routes/models-show
+                                               :model-id (:id model))
+                      :isFavorited (:is-favorited model)})))]
     [:<>
      [:> UI/Components.ModelList {:list models-list}]
      (when debug? [:p (pr-str @(subscribe [::data]))])]))
