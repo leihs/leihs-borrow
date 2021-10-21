@@ -23,6 +23,7 @@
    [leihs.borrow.features.models.filter-modal :as filter-modal]
    [leihs.core.core :refer [dissoc-in presence]]
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
+   [leihs.borrow.features.customer-orders.core :as rentals]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
@@ -93,10 +94,22 @@
                        set-loading-as-ended
                        (assoc :availability availability))))))
 
+(reg-event-db
+ ::open-delete-dialog
+ (fn-traced [db]
+   (assoc-in db [::data :delete-dialog] {})))
+
+(reg-event-db
+ ::close-delete-dialog
+ (fn-traced [db]
+   (dissoc-in db [::data :delete-dialog])))
+
 (reg-event-fx
  ::delete-reservations
  (fn-traced [{:keys [db]} [_ ids]]
-   {:db (assoc-in db [:ls ::data :pending-count] (- 0 (count ids)))
+   {:db (-> db
+            (assoc-in [:ls ::data :pending-count] (- 0 (count ids)))
+            (cond-> (get-in db [::data :delete-dialog]) (assoc-in [::data :delete-dialog :is-saving?] true)))
     :dispatch [::re-graph/mutate
                (rc/inline "leihs/borrow/features/shopping_cart/deleteReservationLines.gql")
                {:ids ids}
@@ -112,7 +125,8 @@
        {:db (-> db
                 (update-in [:ls ::data :reservations]
                            (partial filter #(->> % :id ((set ids)) not)))
-                (dissoc-in [:ls ::data :pending-count]))
+                (dissoc-in [:ls ::data :pending-count])
+                (dissoc-in [::data :delete-dialog]))
         :dispatch [::timeout/refresh user-id]}))))
 
 (reg-event-fx
@@ -142,23 +156,36 @@
                    (h/date-format-day min-date-loaded)
                    (h/date-format-day max-date-loaded)]}))))
 
+(reg-event-db
+ ::open-order-dialog
+ (fn-traced [db]
+   (assoc-in db [::data :order-dialog] {})))
+
+(reg-event-db
+ ::close-order-dialog
+ (fn-traced [db]
+   (dissoc-in db [::data :order-dialog])))
+
 (reg-event-fx
  ::submit-order
  (fn-traced [{:keys [db]} [_ args]]
-   {:dispatch [::re-graph/mutate
+   {:db (-> db
+            (assoc-in [::data :order-dialog :is-saving?] true))
+    :dispatch [::re-graph/mutate
                (rc/inline "leihs/borrow/features/shopping_cart/submitOrderMutation.gql")
                (merge args {:userId (current-user/chosen-user-id db)})
                [::on-submit-order-result]]}))
 
 (reg-event-fx
  ::on-submit-order-result
- (fn-traced [{:keys [_db]}
-             [_ {{{:keys [id]} :submit-order} :data
+ (fn-traced [{:keys [db]}
+             [_ {{rental :submit-order} :data
                  errors :errors}]]
    (if errors
      {:alert (str "FAIL! " (pr-str errors))}
-     {:dispatch [:routing/navigate
-                 [::routes/rentals-show {:rental-id id}]]})))
+     {:db (-> db
+              (assoc-in [::data :order-success] {:rental rental})
+              (dissoc-in [::data :order-dialog]))})))
 
 (reg-event-fx
  ::update-reservations
@@ -249,6 +276,15 @@
          :<- [::data]
          (fn [d _] (:user-id d)))
 
+(reg-sub ::delete-dialog-data
+         (fn [db _] (-> db (get-in [::data :delete-dialog]))))
+
+(reg-sub ::order-dialog-data
+         (fn [db _] (-> db (get-in [::data :order-dialog]))))
+
+(reg-sub ::order-success-data
+         (fn [db _] (-> db (get-in [::data :order-success]))))
+
 (defn order-panel-texts []
   ;; NOTE: maybe add a helper function for this in lib.translate?
   {:label (clj->js (get-in dict [:borrow :order-panel :label]))
@@ -281,7 +317,7 @@
         is-saving? (:is-saving? edit-mode-data)]
 
     [:> UI/Components.Design.ModalDialog {:shown true
-                                          :title (t :edit-dialog/title)
+                                          :title (t :edit-dialog/dialog-title)
                                           :class "ui-booking-calendar"}
      [:> UI/Components.Design.ModalDialog.Body
       [:> UI/Components.Design.Stack {:space 4}
@@ -411,124 +447,160 @@
          [:button.btn.btn-secondary {:type "button" :on-click #(dispatch [::timeout/refresh])} (t :countdown/reset)]]]])
     (finally (js/clearInterval timer-fn))))
 
-
 (defn order-dialog []
   (let [purpose (reagent/atom {:value ""})
         title (reagent/atom {:value ""})
         linked? (reagent/atom true)
         form-validated? (reagent/atom false)]
-    (fn [shown? hide!]
-      [:> UI/Components.Design.ModalDialog {:id :confirm-order
-                                            :shown shown?
-                                            :title (t :confirm-dialog/dialog-title)
-                                            :class "ui-confirm-order-dialog"}
-       [:> UI/Components.Design.ModalDialog.Body
-        [:form
-         {:on-submit (fn [e]
-                       (-> e .preventDefault)
-                       (reset! form-validated? true)
-                       (when (-> e .-target .checkValidity)
-                         (dispatch [::submit-order
-                                    {:purpose (:value @purpose)
-                                     :title (:value @title)}])))
-          :no-validate true
-          :auto-complete :off
-          :id :the-form
-          :class (when @form-validated? "was-validated")}
-         [:> UI/Components.Design.Stack {:space "4"}
+    (fn []
+      (let [dialog-data @(subscribe [::order-dialog-data])
+            is-saving? (:is-saving? dialog-data)]
+        [:> UI/Components.Design.ModalDialog {:id :confirm-order
+                                              :shown (some? dialog-data)
+                                              :title (t :confirm-dialog/dialog-title)
+                                              :class "ui-confirm-order-dialog"}
+         [:> UI/Components.Design.ModalDialog.Body
+          [:form
+           {:on-submit (fn [e]
+                         (-> e .preventDefault)
+                         (reset! form-validated? true)
+                         (when (-> e .-target .checkValidity)
+                           (dispatch [::submit-order
+                                      {:purpose (:value @purpose)
+                                       :title (:value @title)}])))
+            :no-validate true
+            :auto-complete :off
+            :id :the-form
+            :class (when @form-validated? "was-validated")}
+           [:> UI/Components.Design.Stack {:space "4"}
 
-          [:> UI/Components.Design.Section
-           {:title (t :confirm-dialog/title)
-            :collapsible true
-            :class (when (:was-validated @title) "was-validated")}
-           [:label {:htmlFor :title, :class "visually-hidden"} (t :confirm-dialog/title)]
-           [:input.form-control
-            {:type :text
-             :name :title
-             :id :title
-             :required true
-             :value (:value @title)
-             :on-change (fn [e]
-                          (let [v (-> e .-target .-value)]
-                            (swap! title assoc :value v)
-                            (when @linked? (swap! purpose assoc :value v))))
-             :on-blur #(swap! title assoc :was-validated true)}]]
+            [:> UI/Components.Design.Section
+             {:title (t :confirm-dialog/title)
+              :collapsible true
+              :class (when (:was-validated @title) "was-validated")}
+             [:label {:htmlFor :title, :class "visually-hidden"} (t :confirm-dialog/title)]
+             [:input.form-control
+              {:type :text
+               :name :title
+               :id :title
+               :required true
+               :value (:value @title)
+               :on-change (fn [e]
+                            (let [v (-> e .-target .-value)]
+                              (swap! title assoc :value v)
+                              (when @linked? (swap! purpose assoc :value v))))
+               :on-blur #(swap! title assoc :was-validated true)}]]
 
-          [:> UI/Components.Design.Section
-           {:title (t :confirm-dialog/purpose)
-            :collapsible true
-            :class (when (:was-validated @purpose) "was-validated")}
-           [:label {:htmlFor :purpose, :class "visually-hidden"} (t :confirm-dialog/purpose)]
-           [UiTextarea
-            {:maxRows 15
-             :minRows 3
-             :name :purpose
-             :id :purpose
-             :class "form-control"
-             :required true
-             :value (:value @purpose)
-             :on-change (fn [e]
-                          (swap! purpose assoc :value (-> e .-target .-value))
-                          (reset! linked? false))
-             :on-blur #(swap! purpose assoc :was-validated true)}]]]]]
-       [:> UI/Components.Design.ModalDialog.Footer
-        [:button.btn.btn-primary {:form :the-form :type :submit} (t :confirm-dialog/confirm)]
-        [:button.btn.btn-secondary {:on-click hide!} (t :confirm-dialog/cancel)]]])))
+            [:> UI/Components.Design.Section
+             {:title (t :confirm-dialog/purpose)
+              :collapsible true
+              :class (when (:was-validated @purpose) "was-validated")}
+             [:label {:htmlFor :purpose, :class "visually-hidden"} (t :confirm-dialog/purpose)]
+             [UiTextarea
+              {:maxRows 15
+               :minRows 3
+               :name :purpose
+               :id :purpose
+               :class "form-control"
+               :required true
+               :value (:value @purpose)
+               :on-change (fn [e]
+                            (swap! purpose assoc :value (-> e .-target .-value))
+                            (reset! linked? false))
+               :on-blur #(swap! purpose assoc :was-validated true)}]]]]]
+         [:> UI/Components.Design.ModalDialog.Footer
+          [:button.btn.btn-primary {:form :the-form :type :submit}
+           (when is-saving? [:> UI/Components.Design.Spinner]) " "
+           (t :confirm-dialog/confirm)]
+          [:button.btn.btn-secondary {:on-click #(dispatch [::close-order-dialog])} (t :confirm-dialog/cancel)]]]))))
+
+(defn order-success-notification []
+  (fn []
+    (let [notification-data @(subscribe [::order-success-data])
+          {rental :rental} notification-data
+          {:keys [title purpose]} rental
+          on-confirm #(dispatch [:routing/navigate
+                                 [::routes/rentals-show {:rental-id (-> notification-data :rental :id)}]])]
+      [:> UI/Components.Design.ConfirmDialog
+       {:shown (some? notification-data)
+        :title (t :order-success-notification/title)
+        :onConfirm #(on-confirm)}
+       [:<>
+        [:p (t :order-success-notification/order-submitted)]
+        [:> UI/Components.Design.Section {:title title :collapsible true}
+         [:p purpose]
+         [:p.small (rentals/rental-summary-text rental)]]]])))
+
+(defn delete-dialog []
+  (fn [reservations]
+    (let [dialog-data @(subscribe [::delete-dialog-data])]
+      [:> UI/Components.Design.ConfirmDialog
+       {:shown (some? dialog-data)
+        :title (t :delete-dialog/dialog-title)
+        :onConfirm #(dispatch [::delete-reservations (map :id reservations)])
+        :confirmLabel (t :delete-dialog/confirm)
+        :confirmIsLoading (:is-saving? dialog-data)
+        :onCancel #(dispatch [::close-delete-dialog])
+        :cancelLabel (t :delete-dialog/cancel)}
+       [:p (t :delete-dialog/really-delete-order)]])))
 
 (defn view []
-  (let [order-dialog-shown? (reagent/atom false)]
-    (fn []
-      (let [data @(subscribe [::data])
-            invalid-res-ids (set (:invalid-reservation-ids data))
-            errors @(subscribe [::errors])
-            reservations @(subscribe [::reservations])
-            grouped-reservations @(subscribe [::reservations-grouped])
-            is-loading? (not (or data errors))]
+  (fn []
+    (let [data @(subscribe [::data])
+          invalid-res-ids (set (:invalid-reservation-ids data))
+          errors @(subscribe [::errors])
+          reservations @(subscribe [::reservations])
+          grouped-reservations @(subscribe [::reservations-grouped])
+          is-loading? (not (or data errors))]
 
-        [:<>
-         (cond
-           is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
+      [:<>
+       (cond
+         is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
 
-           errors [ui/error-view errors]
+         errors [ui/error-view errors]
 
-           (empty? grouped-reservations)
-           [:<>
-            [:> UI/Components.Design.PageLayout.Header {:title  (t :order-overview)}]
-            [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
-             (t :empty-order)
-             [:a.text-decoration-underline {:href (routing/path-for ::routes/home)}
-              (t :borrow-items)]]]
+         (empty? grouped-reservations)
+         [:<>
+          [:> UI/Components.Design.PageLayout.Header {:title  (t :order-overview)}]
+          [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
+           (t :empty-order)
+           [:a.text-decoration-underline {:href (routing/path-for ::routes/home)}
+            (t :borrow-items)]]]
 
-           :else
-           [:<>
-            [:> UI/Components.Design.PageLayout.Header {:title  (t :order-overview)}]
+         :else
+         [:<>
+          [:> UI/Components.Design.PageLayout.Header {:title  (t :order-overview)}]
 
-            [order-dialog @order-dialog-shown? #(reset! order-dialog-shown? false)]
+          [order-dialog]
 
-            [:> UI/Components.Design.Stack {:space 5}
+          [order-success-notification]
 
-             [countdown]
+          [delete-dialog reservations]
 
-             [delegation-select]
+          [:> UI/Components.Design.Stack {:space 5}
 
-             [:> UI/Components.Design.Section {:title (t :line/section-title) :collapsible true}
-              [:> UI/Components.Design.ListCard.Stack
-               (doall
-                (for [[grouped-key res-lines] grouped-reservations]
-                  [:<> {:key grouped-key}
-                   [reservation res-lines invalid-res-ids]]))]]
+           [countdown]
 
-             [:> UI/Components.Design.Section
-              [:> UI/Components.Design.ActionButtonGroup
-               (when (> (count invalid-res-ids) 0)
-                 [:> UI/Components.Design.Warning
-                  (t :line/invalid-items-warning {:invalidItemsCount (count invalid-res-ids)})])
-               [:button.btn.btn-primary
-                {:type "button"
-                 :disabled (seq invalid-res-ids)
-                 :on-click #(reset! order-dialog-shown? true)}
-                (t :confirm-order)]
-               [:button.btn.btn-secondary
-                {:type "button"
-                 :on-click #(dispatch [::delete-reservations (map :id reservations)])}
-                (t :delete-order)]]]]])]))))
+           [delegation-select]
+
+           [:> UI/Components.Design.Section {:title (t :line/section-title) :collapsible true}
+            [:> UI/Components.Design.ListCard.Stack
+             (doall
+              (for [[grouped-key res-lines] grouped-reservations]
+                [:<> {:key grouped-key}
+                 [reservation res-lines invalid-res-ids]]))]]
+
+           [:> UI/Components.Design.Section
+            [:> UI/Components.Design.ActionButtonGroup
+             (when (> (count invalid-res-ids) 0)
+               [:> UI/Components.Design.Warning
+                (t :line/invalid-items-warning {:invalidItemsCount (count invalid-res-ids)})])
+             [:button.btn.btn-primary
+              {:type "button"
+               :disabled (seq invalid-res-ids)
+               :on-click #(dispatch [::open-order-dialog])}
+              (t :confirm-order)]
+             [:button.btn.btn-secondary
+              {:type "button"
+               :on-click #(dispatch [::open-delete-dialog])}
+              (t :delete-order)]]]]])])))

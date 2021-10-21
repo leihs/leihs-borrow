@@ -169,18 +169,30 @@
 
 (reg-event-db
   ::open-order-panel
-  (fn-traced [db event]
-    (assoc-in db [::order-panel-open] true)))
+  (fn-traced [db]
+    (assoc-in db [::data :order-panel] {:is-open? true})))
 
 (reg-event-db
   ::close-order-panel
-  (fn-traced [db event]
-    (assoc-in db [::order-panel-open] false)))
+  (fn-traced [db]
+    (assoc-in db [::data :order-panel] nil)))
+
+(reg-event-db
+ ::order-success
+ (fn-traced [db]
+   (-> db
+       (assoc-in [::data :order-panel] {:success? true}))))
+
+(reg-event-fx
+ ::dismiss-order-success
+ (fn-traced [{:keys [db]} _]
+   {:db (-> db
+            (assoc-in [::data :order-panel] nil))}))
 
 (reg-sub
- ::order-panel-open?
+ ::order-panel-data
  (fn [db]
-   (get-in db [::order-panel-open])))
+   (get-in db [::data :order-panel])))
 
 (reg-sub ::model-data
          (fn [db [_ id]]
@@ -218,11 +230,14 @@
 (reg-event-fx
   ::model-create-reservation
   (fn-traced [{:keys [db]} [_ args]]
-    {:db (assoc-in db [::cart/data :pending-count] (:quantity args))
+    {:db
+     (-> db
+         (assoc-in [:ls ::cart/data :pending-count] (:quantity args))
+         (assoc-in [::data :order-panel :is-saving?] true))
      :dispatch
      [::re-graph/mutate
       (rc/inline
-        "leihs/borrow/features/model_show/createReservationMutation.gql") args
+       "leihs/borrow/features/model_show/createReservationMutation.gql") args
       [::on-mutation-result args]]}))
 
 (reg-event-fx
@@ -231,20 +246,21 @@
     (if errors
       {:db (-> db
                (assoc-in [:meta :app :fatal-errors] errors)
-               (dissoc-in [::cart/data :pending-count]))
+               (dissoc-in [:ls ::cart/data :pending-count])
+               (assoc-in [::data :order-panel] nil))
        :alert (str "FAIL! " (pr-str errors))}
-      {:alert (str "OK! " (pr-str data))
-       :dispatch-n (list [::fetch-availability user-id (:startDate args) (-> args
+      {:dispatch-n (list [::fetch-availability user-id (:startDate args) (-> args
                                                                              :endDate
                                                                              datefn/parseISO
                                                                              with-future-buffer
                                                                              datefn/endOfMonth
                                                                              h/date-format-day)]
                          [::timeout/refresh user-id]
-                         [::current-user/set-chosen-user-id user-id])}))) 
+                         [::current-user/set-chosen-user-id user-id]
+                         [::order-success data])}))) 
 
 (defn order-panel
-  [model filters]
+  [model filters shown?]
   (let [now (js/Date.)
         user-locale @(subscribe [:leihs.borrow.features.current-user.core/locale])
         filter-start-date (some-> filters :start-date datefn/parseISO)
@@ -272,17 +288,18 @@
         on-submit (fn [jsargs]
                     (let [args (js->clj jsargs :keywordize-keys true)
                           user-id (:delegationId args)]
-                      (dispatch [::close-order-panel])
                       (dispatch [::model-create-reservation
                                  {:modelId (:id model)
                                   :startDate (h/date-format-day (:startDate args))
                                   :endDate (h/date-format-day (:endDate args))
                                   :quantity (int (:quantity args))
                                   :poolIds [(:poolId args)]
-                                  :userId user-id}])))]
+                                  :userId user-id}])))
+        order-panel-data @(subscribe [::order-panel-data])
+        is-saving? (:is-saving? order-panel-data)]
     
     (when (and filters-loaded? has-availability?)
-      [:> UI/Components.Design.ModalDialog {:shown true
+      [:> UI/Components.Design.ModalDialog {:shown shown?
                                             :title (t :order-dialog/title)
                                             :class "ui-booking-calendar"}
        [:> UI/Components.Design.ModalDialog.Body
@@ -329,7 +346,9 @@
           :locale user-locale
           :txt (cart/order-panel-texts)}]]
        [:> UI/Components.Design.ModalDialog.Footer
-        [:button.btn.btn-primary {:form :order-dialog-form :type :submit} (t :order-dialog/add)]
+        [:button.btn.btn-primary {:form :order-dialog-form :type :submit :disabled is-saving?} 
+         (when is-saving? [:> UI/Components.Design.Spinner]) " "
+         (t :order-dialog/add)]
         [:button.btn.btn-secondary {:on-click on-cancel} (t :order-dialog/cancel)]]])))
 
 (defn enrich-recommends-with-href [m]
@@ -342,6 +361,15 @@
                                           :model-id
                                           (-> % :node :id)))))
 
+(defn order-success-notification [order-panel-data]
+  [:> UI/Components.Design.ConfirmDialog
+   {:shown (:success? order-panel-data)
+    :title (t :order-success-notification/title)
+    :onConfirm #(dispatch [::dismiss-order-success])}
+   [:<>
+    [:p
+     (t :order-success-notification/item-was-added)]]])
+
 (defn view
   []
   (let [routing @(subscribe [:routing/routing])
@@ -349,7 +377,7 @@
         filters @(subscribe [::filter-modal/options])
         model @(subscribe [::model-data model-id])
         errors @(subscribe [::errors model-id])
-        order-panel-open? @(subscribe [::order-panel-open?])
+        order-panel-data @(subscribe [::order-panel-data])
         is-loading? (not (or model errors))]
     [:section
      (cond
@@ -373,7 +401,8 @@
                                      :onOrderClick #(dispatch [::open-order-panel])
                                     ;;  :orderPanelTmp (when order-panel-open? (reagent/as-element [order-panel model filters]))
                                      }]
-        
+
         ; NOTE: order panel is inside a modal, so we dont need to pass it through as a child to `ModelShow` 
-        (when order-panel-open? (reagent/as-element [order-panel model filters]))
-        ])] ))
+        [order-panel model filters (:is-open? order-panel-data)]
+        
+        [order-success-notification order-panel-data]])]))

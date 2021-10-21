@@ -185,7 +185,9 @@
                                          :de-CH "Von Favoriten entfernen"}
                  :order-dialog {:title {:en-GB "Add item" :de-CH "Gegenstand hinzufügen"}
                                 :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
-                                :add {:en-GB "Add" :de-CH "Hinzufügen"}}}
+                                :add {:en-GB "Add" :de-CH "Hinzufügen"}}
+                 :order-success-notification {:title {:en-GB "Item added" :de-CH "Gegenstand hinzugefügt"}
+                                              :item-was-added {:en-GB "The item was added to the new rental" :de-CH "Der Gegenstand wurde zur Neuen Ausleihe hinzugefügt"}}}
     :models {:title {:en-GB "Search results" :de-CH "Suchresultate"}}
     :pagination {:load-more {:en-GB "Load more"
                              :de-CH "Mehr laden"}
@@ -409,7 +411,7 @@
                                               =1 {# day from {fromDate, date, short}}
                                               other {# days from {fromDate, date, short}}
                                               }"}}
-                    :edit-dialog {:title {:en-GB "Edit reservation" :de-CH "Reservation bearbeiten"}
+                    :edit-dialog {:dialog-title {:en-GB "Edit reservation" :de-CH "Reservation bearbeiten"}
                                   :delete-reservation {:en-GB "Remove reservation" :de-CH "Reservation entfernen"}
                                   :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
                                   :confirm {:en-GB "Confirm" :de-CH "Bestätigen"}}
@@ -423,11 +425,22 @@
                                   :de-CH "Noch keine Gegenstände hinzugefügt"}
                     :borrow-items {:en-GB "Go to catalog"
                                    :de-CH "Hier geht's zum Katalog"}
-                    :confirm-dialog {:dialog-title {:en-GB "Confirm new order" :de-CH "Neue Ausleihe bestätigen"}
+                    :confirm-dialog {:dialog-title {:en-GB "Confirm new rental" :de-CH "Neue Ausleihe bestätigen"}
                                      :title {:en-GB "Title" :de-CH "Titel"}
                                      :purpose {:en-GB "Purpose" :de-CH "Zweck"}
                                      :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
-                                     :confirm {:en-GB "Confirm" :de-CH "Bestätigen"}}}
+                                     :confirm {:en-GB "Confirm" :de-CH "Bestätigen"}}
+                    :order-success-notification {:title {:en-GB "Order submitted" :de-CH "Bestellung übermittelt"}
+                                                 :order-submitted {:en-GB "Order was submitted but still needs to be approved!"
+                                                                   :de-CH "Die Bestellung wurde übermittelt, muss aber noch genehmigt werden!"}}
+                    :delete-dialog {:dialog-title {:en-GB "Delete new rental"
+                                                   :de-CH "Neue Ausleihe löschen"}
+                                    :really-delete-order {:en-GB "Really remove all reservations?"
+                                                          :de-CH "Wirklich alle Reservationen entfernen?"}
+                                    :cancel {:en-GB "Cancel"
+                                             :de-CH "Abbrechen"}
+                                    :confirm {:en-GB "Delete"
+                                              :de-CH "Löschen"}}}
     :templates {:title {:en-GB "Templates"
                         :de-CH "Vorlagen"}
                 :some-not-reservable {:en-GB "Some models are not reservable!"

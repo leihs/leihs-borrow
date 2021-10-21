@@ -9,8 +9,12 @@ mutation submitOrder(
     userId: $userId
   ) {
     id
+    title
+    purpose
     fromDate
     untilDate
     totalDays
+    state: rentalState
+    totalQuantity
   }
 }

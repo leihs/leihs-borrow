@@ -30,7 +30,13 @@ Feature: Delegations
     Then the show page of the model "Kamera" was loaded
     And I click on "Add item"
     Then the order panel is shown
-    And I click on "Add" and accept the alert
+    And I click on "Add"
+    And the "Add item" dialog has closed
+    And I accept the "Item added" dialog with the text:
+      """
+      The item was added to the new rental
+      """
+    And the "Item added" dialog has closed
 
     # check the cart
     When I click on the menu
@@ -52,6 +58,9 @@ Feature: Delegations
     And I click on "Confirm rental"
     And I name the order as "My order"
     And I click on "Confirm"
+    And the "Confirm new rental" dialog has closed
+    And I accept the "Order submitted" dialog
+    And the "Order submitted" dialog has closed
 
     # approve the order in legacy
     When I visit the orders page of the pool "Pool A"

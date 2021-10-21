@@ -67,6 +67,14 @@ Feature: Shopping Cart - Editing Reservations
     When I click on "Confirm rental"
     And I enter "My Movie" in the "Title" field
     And I click on "Confirm"
+    And the "Confirm new rental" dialog has closed
+    And I accept the "Order submitted" dialog with the text:
+      """
+      Order was submitted but still needs to be approved!
+      My Movie
+      My Movie
+      3 days from 01/02/32, 4 items
+      """
     Then I have been redirected to the newly created order
     Then the newly created order in the DB has:
       | title    | purpose  |

@@ -24,8 +24,16 @@ Feature: Shopping Cart - Filling out title and purpose
     Then the purpose contains "for my diploma film"
 
     When I submit the form
-    And I see the page title "Movie Shoot"
+    And the "Confirm new rental" dialog has closed
+    And I accept the "Order submitted" dialog with the text:
+      """
+      Order was submitted but still needs to be approved!
+      Movie Shoot
+      for my diploma film
+      2 days from 01/02/32, 1 item
+      """
     Then I have been redirected to the newly created order
+    And I see the page title "Movie Shoot"
     And I see "for my diploma film"
     And the newly created order in the DB has:
       | title       | purpose             |

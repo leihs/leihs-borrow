@@ -168,3 +168,16 @@ end
 step "there is an error message below the field" do
   binding.pry
 end
+
+step "I accept the :title dialog with the text:" do |title, text|
+  within(find_ui_modal_dialog(title: title)) do
+    expect(find(".modal-body").text).to eq text
+    click_on "OK"
+  end
+end
+
+step "I accept the :title dialog" do |title|
+  within(find_ui_modal_dialog(title: title)) do
+    click_on "OK"
+  end
+end

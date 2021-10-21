@@ -12,12 +12,16 @@ step "I clear the browser cookies" do
   browser.manage.delete_cookie("leihs-user-session")
 end
 
-step "I click on Add and I approve the dialog" do
+step "I click on Add and I approve the alert" do
   accept_alert { click_on("Add") }
 end
 
-step "I click on retry and I approve the dialog" do
+step "I click on retry and I approve the alert" do
   accept_alert { click_on("BY CLICKING HERE") }
+end
+
+step "I click on retry" do
+  click_on("BY CLICKING HERE")
 end
 
 step "I see one retry banner" do
@@ -57,4 +61,10 @@ end
 
 step "the order panel is shown" do
   find(".ui-booking-calendar")
+end
+
+step "I accept the :title dialog" do |title|
+  within(find_ui_modal_dialog(title: title)) do
+    click_on "OK"
+  end
 end

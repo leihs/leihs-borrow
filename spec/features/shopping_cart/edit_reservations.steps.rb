@@ -48,3 +48,10 @@ step "the form has exactly these fields:" do |table|
 
   expect(form_fields).to eq(symbolize_hash_keys(table.hashes))
 end
+
+step "I accept the :title dialog with the text:" do |title, text|
+  within(find_ui_modal_dialog(title: title)) do
+    expect(find(".modal-body").text).to eq text
+    click_on "OK"
+  end
+end
