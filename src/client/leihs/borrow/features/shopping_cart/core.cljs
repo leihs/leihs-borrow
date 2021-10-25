@@ -14,13 +14,13 @@
                                       reg-sub
                                       subscribe
                                       dispatch]]
-   [leihs.borrow.lib.helpers :as h]
+   [leihs.borrow.lib.helpers :as h :refer [spy]]
    [leihs.borrow.lib.form-helpers :refer [UiTextarea]]
-   [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.translate :refer [t dict set-default-translate-path]]
    [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.borrow.features.models.filter-modal :as filter-modal]
    [leihs.core.core :refer [dissoc-in]]
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
    ["/leihs-ui-client-side-external-react" :as UI]))
@@ -33,7 +33,7 @@
  (fn-traced [{:keys [db]} [_ _]]
    {:dispatch [::re-graph/query
                (rc/inline "leihs/borrow/features/shopping_cart/getShoppingCart.gql")
-               {:userId (filters/user-id db)}
+               {:userId (current-user/chosen-user-id db)}
                [::on-fetched-data]]}))
 
 (reg-event-db
@@ -142,7 +142,7 @@
  (fn-traced [{:keys [db]} [_ args]]
    {:dispatch [::re-graph/mutate
                (rc/inline "leihs/borrow/features/shopping_cart/submitOrderMutation.gql")
-               (merge args {:userId (filters/user-id db)})
+               (merge args {:userId (current-user/chosen-user-id db)})
                [::on-submit-order-result]]}))
 
 (reg-event-fx
@@ -235,12 +235,6 @@
            (let [user {:id (:id user-data) :name (str (:name user-data) (t :delegation/person-postfix))}
                  delegations (:delegations user-data)]
              (concat [user] delegations))))
-
-(reg-sub ::user-id
-         :<- [::current-user/user-data]
-         :<- [::filters/user-id]
-         (fn [[user-data user-id]]
-           (or user-id (:id user-data))))
 
 (defn order-panel-texts []
   ;; NOTE: maybe add a helper function for this in lib.translate?
@@ -361,7 +355,7 @@
        [edit-dialog res-lines])]))
 
 (defn delegation-select []
-  (let [user-id @(subscribe [::user-id])
+  (let [user-id @(subscribe [::current-user/chosen-user-id])
         delegations @(subscribe [::delegations])]
     [:> UI/Components.Design.Section {:title (t :delegation/section-title) :collapsible true}
      [:label.visually-hidden {:for :user-id} (t :delegation/section-title)]
@@ -371,7 +365,7 @@
                :default-value user-id
                :on-change (fn [e]
                             (let [v  (-> e .-target .-value)]
-                              (dispatch [::filters/set-one :user-id v])
+                              (dispatch [::current-user/set-chosen-user-id v])
                               (dispatch [::timeout/refresh v])
                               (dispatch [::routes/shopping-cart])))}
       (doall
@@ -383,7 +377,7 @@
   (reagent/with-let [now (reagent/atom (js/Date.))
                      timer-fn  (js/setInterval #(reset! now (js/Date.)) 1000)]
     (let [data @(subscribe [::data])
-          user-id @(subscribe [::filters/user-id])
+          user-id @(subscribe [::current-user/chosen-user-id])
           valid-until (-> data :valid-until datefn/parseISO)
           total-minutes 30
           remaining-seconds  (max 0 (datefn/differenceInSeconds valid-until @now))

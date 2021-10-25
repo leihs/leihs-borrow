@@ -15,9 +15,10 @@
    [leihs.borrow.lib.localstorage :as ls]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.pagination :as pagination]
-   [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.components :as ui]
    [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.borrow.features.models.filter-modal :as filter-modal]
    ["/leihs-ui-client-side-external-react" :as UI]
    #_[leihs.borrow.components :as ui]))
 
@@ -25,8 +26,8 @@
   (fn-traced [{:keys [db]} _]
              {:dispatch [::re-graph/query
                          (rc/inline "leihs/borrow/features/categories/getRootCategories.gql")
-                         {:userId (filters/user-id db)
-                          :poolIds (when-let [pool-id (filters/pool-id db)]
+                         {:userId (current-user/chosen-user-id db)
+                          :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
                                      [pool-id])}
                          [::on-fetched-categories-index]]}))
 

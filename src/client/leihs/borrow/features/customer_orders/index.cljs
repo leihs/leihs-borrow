@@ -17,7 +17,6 @@
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.features.customer-orders.core :as rentals]
    [leihs.borrow.features.customer-orders.filter-modal :refer [filter-comp]
     :as filter-modal]
@@ -52,15 +51,12 @@
  ::routes/rentals-index
  (fn-traced [{:keys [db]} [_ {:keys [query-params]}]]
    {:dispatch-n
-    (list [::save-filter-options query-params]
+    (list [::filter-modal/save-filter-options query-params]
+          [::current-user/set-chosen-user-id (:user-id query-params)]
           [::re-graph/query
            (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
            (prepare-query-vars query-params)
            [::on-fetched-data]])}))
-
-(reg-event-db ::save-filter-options
-              (fn-traced [db [_ query-params]]
-                (assoc db ::filter-modal/options query-params)))
 
 (reg-event-db
  ::on-fetched-data
@@ -98,10 +94,8 @@
         not-empty)))
 
 (reg-sub ::user-id
-         :<- [::current-user/user-data]
-         :<- [::filters/user-id]
-         (fn [[co user-id]]
-           (or user-id (-> co :user :id))))
+         :<- [::current-user/chosen-user-id]
+         (fn [user-id _] user-id))
 
 ;; UI
 

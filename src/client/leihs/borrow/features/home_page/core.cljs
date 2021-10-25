@@ -15,9 +15,9 @@
                                       dispatch]]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path with-translate-path]]
    [leihs.borrow.lib.helpers :refer [log spy]]
-   [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.features.filter-modal.core :refer [filter-comp default-dispatch-fn]]
+   [leihs.borrow.features.models.filter-modal :refer [filter-comp default-dispatch-fn]
+    :as filter-modal]
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]
@@ -31,15 +31,14 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
  ::routes/home
- (fn-traced [_ [_ {:keys [query-params]}]]
-   {:dispatch-n (list [::filters/set-multiple query-params]
-                      [::categories/fetch-index 4])}))
+ (fn-traced [_ _]
+   {:dispatch [::categories/fetch-index 4]}))
 
 (defn view []
   (let [modal-shown? (r/atom false)]
     (fn []
       (let [cats @(subscribe [::categories/categories-index])]
-        [:> UI/Components.AppLayout.Page
+        [:> UI/Components.Design.PageLayout
          [:> UI/Components.Design.PageLayout.Header {:title (t :catalog)}
           [filter-comp default-dispatch-fn]]
          [:> UI/Components.Design.Stack

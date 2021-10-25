@@ -8,6 +8,7 @@
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.mails :as mails]
             [leihs.borrow.resources.helpers :as helpers]
+            [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.resources.reservations :as reservations]
             [leihs.borrow.resources.settings :as settings]
             [leihs.core.core :refer [spy-with]]
@@ -44,7 +45,9 @@
                   :unified_customer_orders.origin_table
                   :unified_customer_orders.reservation_ids)
       (sql/from :unified_customer_orders)
-      (sql/where [:= :unified_customer_orders.user_id user-id])))
+      (sql/where [(if (coll? user-id) :in :=)
+                  :unified_customer_orders.user_id
+                  user-id])))
 
 (defn refine-rental-state [tx row]
   "THIS HAS TO BE REVIEWED AGAIN!!!"
@@ -131,11 +134,15 @@
       first))
 
 (defn get-one-by-id [tx user-id id]
-  (-> (multiple-base-sqlmap user-id)
-      (sql/merge-where [:= :unified_customer_orders.id id])
-      sql/format
-      (as-> <> (jdbc/query tx <> {:row-fn (partial row-fn tx)}))
-      first))
+  (let [delegation-ids (->> user-id
+                            (delegations/get-multiple-by-user-id tx)
+                            (map :id))]
+    (-> (multiple-base-sqlmap (conj delegation-ids user-id))
+        (sql/merge-where [:= :unified_customer_orders.id id])
+        sql/format
+        (as-> <> (jdbc/query tx <> {:row-fn (partial row-fn tx)}))
+        log/spy
+        first)))
 
 (defn get-one
   [{{:keys [tx]} :request user-id ::target-user/id}

@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Tue Oct 12 2021 16:15:28 GMT+0200 (Central European Summer Time)
+# timestamp: Tue Oct 19 2021 16:45:49 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -325,7 +325,7 @@ type QueryRoot {
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   model(id: UUID!): Model!
   models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], poolIds: [UUID!], quantity: Int, searchTerm: String, userId: UUID): ModelsConnection
-  rental(id: UUID!, userId: UUID): Rental!
+  rental(id: UUID!): Rental!
   rentals(
     after: String
     first: Int
@@ -403,6 +403,7 @@ type Rental {
   totalQuantity: Int!
   untilDate: Date!
   updatedAt: DateTime!
+  user: User!
 }
 
 type RentalEdge {

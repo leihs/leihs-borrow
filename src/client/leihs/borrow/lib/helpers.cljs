@@ -2,7 +2,11 @@
   (:require-macros leihs.borrow.lib.helpers)
   (:require [clojure.walk :refer [postwalk walk] :as walk]
             [camel-snake-kebab.core :as csk]
-            ["date-fns" :as datefn]))
+            ["date-fns" :as datefn]
+            [goog.string :as gstring]
+            [goog.string.format]))
+
+(def format gstring/format)
 
 (def keywordize-keys walk/keywordize-keys)
 

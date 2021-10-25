@@ -63,6 +63,12 @@
   (fn-traced [db [_ user-data]]
     (assoc-in db [:ls ::data] user-data)))
 
+(reg-event-db ::set-chosen-user-id
+              (fn-traced [db [_ id]]
+                (assoc-in db [:ls ::chosen-user-id] id)))
+
+(defn chosen-user-id [db] (-> db :ls ::chosen-user-id))
+
 (defn data [db]
   (-> db :ls ::data))
 
@@ -72,6 +78,10 @@
 (reg-sub ::user-data
          :<- [::data]
          (fn [cu _] (:user cu)))
+
+(reg-sub ::chosen-user-id
+         (fn [db _]
+           (or (-> db :ls ::chosen-user-id) (-> db ::user-data :id))))
 
 (reg-sub ::locale
          :<- [::data]

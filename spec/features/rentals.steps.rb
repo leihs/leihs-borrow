@@ -95,7 +95,8 @@ step "I enter :value in the :field field" do |value, field|
            else
              value
            end
-  fill_in(field, with: value2)
+  el = find_field(field)
+  simulate_typing(el, value2)
 end
 
 step "the :label select field contains value :label" do |label, value|

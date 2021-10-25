@@ -37,6 +37,16 @@
       first
       :exists))
 
+(defn get-multiple-by-user-id [tx user-id]
+  (-> (sql/select [:users.id :id] [:firstname :name] :delegator_user_id)
+      (sql/from :users)
+      (sql/join [:delegations_users :du]
+                [:= :du.delegation_id :users.id])
+      (sql/where [:= :du.user_id user-id])
+      (sql/order-by [:name :asc])
+      sql/format
+      (->> (jdbc/query tx))))
+
 (defn get-one
   [{{tx :tx} :request} {:keys [id]} _]
   (-> (sql/select [:users.id :id] [:firstname :name] :delegator_user_id)
@@ -48,14 +58,7 @@
 
 (defn get-multiple
   [{{tx :tx} :request user-id ::target-user/id} _ _]
-  (-> (sql/select [:users.id :id] [:firstname :name] :delegator_user_id)
-      (sql/from :users)
-      (sql/join [:delegations_users :du]
-                [:= :du.delegation_id :users.id])
-      (sql/where [:= :du.user_id user-id])
-      (sql/order-by [:name :asc])
-      sql/format
-      (->> (jdbc/query tx))))
+  (get-multiple-by-user-id tx user-id))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

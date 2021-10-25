@@ -1,5 +1,5 @@
-query customerOrderShow($id: UUID!, $userId: UUID) {
-  rental(id: $id, userId: $userId) {
+query customerOrderShow($id: UUID!) {
+  rental(id: $id) {
     id
     purpose
     title
@@ -43,6 +43,9 @@ query customerOrderShow($id: UUID!, $userId: UUID) {
       }
       createdAt
       updatedAt
+    }
+    user {
+      id
     }
     contracts {
       ...contractsConnectionProps

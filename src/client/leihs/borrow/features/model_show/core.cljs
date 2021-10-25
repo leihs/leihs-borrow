@@ -22,8 +22,8 @@
     ["/leihs-ui-client-side-external-react" :as UI]
     ["date-fns" :as datefn]
     [leihs.borrow.lib.helpers :as h :refer [spy]]
-    [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.features.favorite-models.events :as favs]
+    [leihs.borrow.features.models.filter-modal :as filter-modal]
     [leihs.borrow.features.current-user.core :as current-user]
     [leihs.borrow.features.shopping-cart.core :as cart]
     [leihs.borrow.features.shopping-cart.timeout :as timeout]
@@ -51,7 +51,7 @@
     {:dispatch
      [::re-graph/query
       (rc/inline "leihs/borrow/features/model_show/getModelShow.gql")
-      {:modelId @model-id, :userId (filters/user-id db)}
+      {:modelId @model-id, :userId (current-user/chosen-user-id db)}
       [::on-fetched-data]]}))
 
 (defn pool-ids-with-borrowable-quantity [db model-id]
@@ -68,8 +68,9 @@
   ::on-fetched-data
   (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
     (let [now (js/Date.)
-          start-date (filters/start-date db)
-          end-date (filters/end-date db)
+          opts (::filter-modal/options db)
+          start-date (:start-date opts)
+          end-date (:end-date opts)
           filter-start-date (some-> start-date datefn/parseISO)
           filter-end-date (some-> end-date datefn/parseISO)
           initial-start-date (or filter-start-date now)
@@ -90,7 +91,7 @@
 (reg-event-fx
   ::fetch-availability
   (fn-traced [{:keys [db]} [_ start-date end-date]]
-    (let [user-id (filters/user-id db)
+    (let [user-id (current-user/chosen-user-id db)
           pool-ids (pool-ids-with-borrowable-quantity db @model-id)]
       {:db (assoc-in db
                      [:ls ::data @model-id :fetching-until-date]
@@ -315,7 +316,7 @@
   []
   (let [routing @(subscribe [:routing/routing])
         model-id (get-in routing [:bidi-match :route-params :model-id])
-        filters @(subscribe [::filters/current])
+        filters @(subscribe [::filter-modal/options])
         model @(subscribe [::model-data model-id])
         errors @(subscribe [::errors model-id])
         order-panel-open? @(subscribe [::order-panel-open?])
