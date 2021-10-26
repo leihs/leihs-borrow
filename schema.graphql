@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Tue Oct 19 2021 16:45:49 GMT+0200 (Central European Summer Time)
+# timestamp: Tue Oct 26 2021 16:26:13 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -167,7 +167,7 @@ type Language {
 
 type Model {
   attachments: [Attachment]
-  availability(endDate: Date!, excludeReservationIds: [UUID!], inventoryPoolIds: [UUID!], startDate: Date!): [ModelInventoryPoolAvailability]
+  availability(endDate: Date!, excludeReservationIds: [UUID!], inventoryPoolIds: [UUID!], startDate: Date!, userId: UUID): [ModelInventoryPoolAvailability]
   availableQuantityInDateRange(endDate: Date!, excludeReservationIds: [UUID!], inventoryPoolIds: [UUID!], startDate: Date!, userId: UUID): Int!
   coverImage: Image
   description: String

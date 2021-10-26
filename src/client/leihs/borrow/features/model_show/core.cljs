@@ -101,8 +101,8 @@
                   {:modelId @model-id
                    :userId user-id
                    :poolIds pool-ids
-                   :startDate (h/spy start-date)
-                   :endDate (h/spy end-date)}
+                   :startDate start-date
+                   :endDate end-date}
                   [::on-fetched-availability]]})))
 
 #_(defn merge-availability [old-one new-one]
