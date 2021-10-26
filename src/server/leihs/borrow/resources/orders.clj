@@ -24,8 +24,6 @@
    :REJECTED "rejected"
    :CANCELED "canceled"
    :RETURNED "closed"
-   ; :EXPIRED "TODO"
-   ; :OVERDUE "TODO"
    :TO_PICKUP "approved"
    :TO_RETURN "signed"})
 
@@ -43,36 +41,32 @@
                   [(sql/call := :unified_customer_orders.origin_table "customer_orders")
                    :is_customer_order]
                   :unified_customer_orders.origin_table
-                  :unified_customer_orders.reservation_ids)
+                  :unified_customer_orders.reservation_ids
+                  :unified_customer_orders.reservation_states)
       (sql/from :unified_customer_orders)
       (sql/where [(if (coll? user-id) :in :=)
                   :unified_customer_orders.user_id
                   user-id])))
 
 (defn refine-rental-state [tx row]
-  "THIS HAS TO BE REVIEWED AGAIN!!!"
-  (let [rs (reservations/get-by-ids tx (:reservation_ids row))
-        states (->> rs (map :status) set)
-        states-without-closed (set/difference states #{"closed"})]
-    (assoc row
-           :refined_rental_state 
-           (cond 
-             ; ------------------- CLOSED -------------------------
-             (= states #{"rejected"}) ["REJECTED"]
-             (= states #{"canceled"}) ["CANCELED"]
-             (= states #{"closed"}) ["RETURNED"]
-             (every? #(and (contains? #{"submitted" "approved"} (:status %))
-                           (reservations/overdue? %)) rs) ["EXPIRED"]
-             ; ------------------- OPEN ---------------------------
-             (some #(and (-> % :status (= "signed"))
-                         (reservations/overdue? %)) rs) ["OVERDUE"]
-             (= states-without-closed #{"submitted"}) ["IN_APPROVAL"]
-             (= states-without-closed #{"approved"}) ["TO_PICKUP"]
-             (= states-without-closed #{"signed"}) ["TO_RETURN"]
-             (= states-without-closed #{"submitted" "approved" "signed"}) ["IN_APPROVAL" "TO_PICKUP" "TO_RETURN"]
-             (= states-without-closed #{"submitted" "approved"}) ["IN_APPROVAL" "TO_PICKUP"]
-             (= states-without-closed #{"submitted" "signed"}) ["IN_APPROVAL" "TO_RETURN"]
-             (= states-without-closed #{"approved" "signed"}) ["TO_PICKUP" "TO_RETURN"]))))
+  (let [rs (->> row
+                :reservation_ids
+                (reservations/get-by-ids tx))
+        expired? (some #(and (contains? #{"submitted" "approved"} (:status %))
+                             (reservations/overdue? %))
+                       rs)
+        overdue? (some #(and (-> % :status (= "signed"))
+                             (reservations/overdue? %))
+                       rs)
+        states (-> row
+                   :reservation_states
+                   (->> (map (set/map-invert
+                              refined-rental-state->reservation-status)))
+                   (cond->
+                     expired? (conj :EXPIRED)
+                     overdue? (conj :OVERDUE))
+                   distinct)]
+    (assoc row :refined_rental_state states)))
 
 (defn row-fn [tx r]
   (let [from (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (:from_date r))
