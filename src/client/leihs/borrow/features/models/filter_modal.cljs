@@ -73,7 +73,7 @@
                         (and (start-date-and-end-date-set?)
                              (start-date-equal-or-before-end-date?)))]
         (with-translate-path :borrow.filter
-          [:> UI/Components.Design.ModalDialog {:title "Filter" :shown true}
+          [:> UI/Components.Design.ModalDialog {:title "Filter" :shown true :dismissible true :onDismiss hide!}
            [:> UI/Components.Design.ModalDialog.Body
             [:> UI/Components.Design.Stack {:space 4}
              [:> UI/Components.Design.Section {:title (t :delegations {:n 1})
@@ -185,16 +185,6 @@
                             (reset! only-available false)
                             (reset! start-date "")
                             (reset! end-date "")
-                            (reset! quantity 1))}
-             (t :reset)]
-            [:button.btn.btn-secondary
-             {:type "button"
-              :onClick #(do (reset! term "")
-                            (reset! pool-id "all")
-                            (reset! user-id (:id auth-user))
-                            (reset! only-available false)
-                            (reset! start-date nil)
-                            (reset! end-date nil)
                             (reset! quantity 1))}
              (t :reset)]]])))))
 

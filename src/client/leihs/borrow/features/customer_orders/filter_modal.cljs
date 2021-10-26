@@ -59,7 +59,7 @@
                  true))
             valid? start-date-equal-or-before-end-date?]
         (with-translate-path :borrow.rentals.filter
-          [:> UI/Components.Design.ModalDialog {:title "Filter" :shown true}
+          [:> UI/Components.Design.ModalDialog {:title "Filter" :shown true :dismissible true :onDismiss hide!}
            [:> UI/Components.Design.ModalDialog.Body
             [:> UI/Components.Design.Stack {:space 4}
              [:> UI/Components.Design.Section {:title (t :delegations {:n 1})
