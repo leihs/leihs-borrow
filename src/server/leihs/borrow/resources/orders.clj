@@ -135,7 +135,6 @@
         (sql/merge-where [:= :unified_customer_orders.id id])
         sql/format
         (as-> <> (jdbc/query tx <> {:row-fn (partial row-fn tx)}))
-        log/spy
         first)))
 
 (defn get-one
@@ -323,23 +322,15 @@
       (throw (ex-info "User does not have any unsubmitted reservations." {})))
     (if-not (empty? (reservations/with-invalid-availability context reservations))
       (throw (ex-info "Some reserved quantities are not available anymore." {})))
-    (let [customer-order (-> (sql/insert-into :customer_orders)
-                             (sql/values [{:purpose purpose
-                                           :title title
-                                           :user_id user-id}])
-                             (sql/returning :id
-                                            :purpose
-                                            (helpers/date-time-created-at)
-                                            (helpers/date-time-updated-at)
-                                            [(sql/array (->> reservations
-                                                             (map :id)
-                                                             (map #(sql/call :cast % :uuid))))
-                                             :reservation_ids]
-                                            ["customer_orders" :origin_table])
-                             sql/format
-                             (->> (jdbc/query tx))
-                             first
-                             (assoc :state #{"SUBMITTED"}))]
+    (let [uuid (-> (sql/insert-into :customer_orders)
+                   (sql/values [{:purpose purpose
+                                 :title title
+                                 :user_id user-id}])
+                   (sql/returning :id)
+                   sql/format
+                   (->> (jdbc/query tx))
+                   first
+                   :id)]
       (loop [[[pool-id rs :as group-el] & remainder]
              (seq (group-by :inventory_pool_id reservations))
              mails []]
@@ -349,7 +340,7 @@
                                         :inventory_pool_id pool-id
                                         :state "submitted"
                                         :purpose purpose
-                                        :customer_order_id (:id customer-order)}])
+                                        :customer_order_id uuid}])
                           (sql/returning :*)
                           sql/format
                           (->> (jdbc/query tx))
@@ -365,7 +356,7 @@
             (recur remainder
                    (conj mails #(mails/send-received context order))))
           (do (set! ds/after-tx mails)
-              customer-order))))))
+              (get-one-by-id tx user-id uuid)))))))
 
 (defn cancel
   [{{:keys [tx]} :request user-id ::target-user/id} {:keys [id]} _]

@@ -9,5 +9,8 @@ mutation submitOrder(
     userId: $userId
   ) {
     id
+    fromDate
+    untilDate
+    totalDays
   }
 }
