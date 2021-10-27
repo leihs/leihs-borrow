@@ -28,6 +28,11 @@
                pending-count
                (+ pending-count)))))
 
+(reg-sub ::invalid-cart-item-count
+         :<- [::cart/data]
+         (fn [cart _]
+           (-> cart :invalid-reservation-ids count)))
+
 (reg-sub ::menu-data
          (fn [db] (get-in db [:ls ::data])))
 
@@ -40,6 +45,7 @@
 
 (defn navbar-menu []
   (let [cart-item-count @(subscribe [::cart-item-count])
+        invalid-cart-item-count @(subscribe [::invalid-cart-item-count])
         menu-data @(subscribe [::menu-data])
         is-menu-open? (:is-menu-open? menu-data)
         user-name @(subscribe [::user-name])
@@ -63,6 +69,7 @@
                   :aria-expanded is-menu-open?
                   :role :button}
        :cartItemCount cart-item-count
+       :invalidCartItemCount invalid-cart-item-count
        :cartItem {:href (routing/path-for ::routes/shopping-cart)}}]
 
 
