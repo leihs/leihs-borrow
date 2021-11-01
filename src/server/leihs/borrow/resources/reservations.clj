@@ -11,6 +11,7 @@
             [leihs.core.database.helpers :as database]
             [leihs.core.sql :as sql]
             [leihs.core.ds :as ds]
+            [leihs.core.core :refer [raise]]
             [camel-snake-kebab.core :as csk]
             [wharf.core :refer [transform-keys]]
             [com.walmartlabs.lacinia :as lacinia]
@@ -258,7 +259,7 @@
 (defn distribute [pool-avails quantity]
   (if (> quantity
          (->> pool-avails (map :quantity) (apply +)))
-    (throw (ex-info "The desired quantity is not available." {}))
+    (raise "The desired quantity is not available.")
     (loop [[{pool-quantity :quantity :as pool-avail} & remaining-pool-avails]
            (sort-by identity
                     #(let [first-comp (compare (:quantity %2)
@@ -281,9 +282,7 @@
    {:keys [model-id start-date end-date quantity inventory-pool-id] :as args}
    _]
   (when-not (models/reservable? context args {:id model-id})
-    (throw
-      (ex-info
-        "Model either does not exist or is not reservable by the user." {})))
+    (raise "Model either does not exist or is not reservable by the user."))
   (let [row {:inventory_pool_id inventory-pool-id
              :model_id model-id
              :start_date (sql/call :cast start-date :date)
@@ -301,17 +300,52 @@
         sql/format
         (query tx))))
 
+(defn unsubmitted-for-affiliated-user-exists?
+  "Returns true if there exists some reservation created either
+  for oneself or for one's delegation which is different from `user-id`.
+  It means that there is already some shopping cart open for such a user.
+  A user can have only one shopping cart open: either for oneself or for
+  one's delegation."
+  [tx user-id auth-user-id]
+  (let [d-ids (->> auth-user-id
+                   (delegations/get-multiple-by-user-id tx)
+                   (map :id))]
+    (-> (sql/select {:exists
+                     (-> (sql/select true)
+                         (sql/from :reservations)
+                         (sql/where [:= :status "unsubmitted"])
+                         (sql/merge-where (cond
+                                           (and (= user-id auth-user-id) (not (empty? d-ids)))
+                                           [:in :user_id d-ids]
+                                           (and (= user-id auth-user-id) (empty? d-ids))
+                                           false
+                                           (some #{user-id} d-ids)
+                                           [:= :user_id auth-user-id]
+                                           :else (raise "No condition met."))))})
+        sql/format
+        (->> (jdbc/query tx))
+        first
+        :exists)))
+
 (defn create
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+  [{{:keys [tx] {auth-user-id :id} :authenticated-entity} :request
+    user-id ::target-user/id
+    :as context}
    {:keys [model-id start-date end-date quantity inventory-pool-ids]
     exclude-reservation-ids :exclude-reservation-ids 
     :or {exclude-reservation-ids []}
     :as args}
    _]
   (when-not (models/reservable? context args {:id model-id})
-    (throw
-      (ex-info
-        "Model either does not exist or is not reservable by the user." {})))
+    (raise "Model either does not exist or is not reservable by the user."))
+  (when (unsubmitted-for-affiliated-user-exists? tx user-id auth-user-id)
+    (raise "There already exists an unsubmitted reservation for another user."))
+  (when (-> (sql/select {:exists (-> (sql/select true)
+                                     (sql/from :users))})
+            sql/format
+            (->> (jdbc/query tx))
+            first
+            :exists))
   (let [pools (cond->> (pools/to-reserve-from tx
                                               user-id
                                               start-date
@@ -319,16 +353,16 @@
                 (seq inventory-pool-ids)
                 (filter #((set inventory-pool-ids) (:id %))))]
     (if (empty? pools)
-      (throw (ex-info "Not possible to reserve from any pool under given conditions." {}))
+      (raise "Not possible to reserve from any pool under given conditions.")
       (let [pool-avails (->> (availability/get-available-quantities
-                               context
-                               {:inventory-pool-ids (map :id pools)
-                                :model-ids [model-id]
-                                :start-date start-date
-                                :end-date end-date
-                                :user-id user-id
-                                :exclude-reservation-ids exclude-reservation-ids}
-                               nil)
+                              context
+                              {:inventory-pool-ids (map :id pools)
+                               :model-ids [model-id]
+                               :start-date start-date
+                               :end-date end-date
+                               :user-id user-id
+                               :exclude-reservation-ids exclude-reservation-ids}
+                              nil)
                              (map (fn [el]
                                     (assoc el
                                            :name
@@ -363,9 +397,9 @@
    _]
   (let [drafts (get-drafts tx user-id ids)]
     (if (empty? drafts)
-      (throw (ex-info "No draft reservations found to process." {})))
+      (raise "No draft reservations found to process."))
     (if-not (empty? (with-invalid-availability context drafts))
-      (throw (ex-info "Some reserved quantities are not available anymore." {})))
+      (raise "Some reserved quantities are not available anymore."))
     (-> (sql/update :reservations)
         (sql/set {:status "unsubmitted", :updated_at (time/now tx)})
         (sql/where [:in :id (map :id drafts)])

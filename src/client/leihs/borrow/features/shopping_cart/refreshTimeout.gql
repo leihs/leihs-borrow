@@ -1,7 +1,5 @@
-# NOTE: this must load the same data as getShoppingCart query
-# TODO: either use a fragment to ensure that, or refactor to load less data for refresh
-mutation {
-  refreshTimeout {
+mutation refreshTimeout($userId: UUID) {
+  refreshTimeout(userId: $userId) {
     unsubmittedOrder {
       validUntil
       reservations {
@@ -31,10 +29,9 @@ mutation {
         user {
           id
         }
-        # createdAt
-        # updatedAt
       }
       invalidReservationIds
+      userId
     }
   }
 }

@@ -10,7 +10,8 @@
                                                reg-fx
                                                subscribe
                                                dispatch]]
-            [leihs.borrow.lib.routing :as routing]))
+            [leihs.borrow.lib.routing :as routing]
+            [leihs.borrow.lib.helpers :refer [log]]))
 
 (reg-event-fx
  ::routing/on-change-view
@@ -19,11 +20,13 @@
 
 (reg-event-fx
  ::refresh
- (fn-traced [_ [_ user-id]]
-   {:dispatch [::re-graph/mutate
-               (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql")
-               {:userId user-id}
-               [::on-refresh]]}))
+ (fn-traced [{:keys [db]} [_ ev-user-id]]
+   (let [cart-user-id (-> db :ls :leihs.borrow.features.shopping-cart.core/data :user-id)
+         user-id (or ev-user-id cart-user-id)]
+     {:dispatch [::re-graph/mutate
+                 (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql")
+                 {:userId user-id}
+                 [::on-refresh]]})))
 
 (reg-event-db
  ::on-refresh
@@ -31,5 +34,5 @@
    (if errors
      (js/console.log "timeout refresh errors: " (clj->js errors))
      (assoc-in db
-               [:leihs.borrow.features.shopping-cart.core/data]
+               [:ls :leihs.borrow.features.shopping-cart.core/data]
                (-> data :refresh-timeout :unsubmitted-order)))))

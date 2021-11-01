@@ -21,7 +21,7 @@
     [leihs.borrow.ui.icons :as icons]
     ["/leihs-ui-client-side-external-react" :as UI]
     ["date-fns" :as datefn]
-    [leihs.borrow.lib.helpers :as h :refer [spy]]
+    [leihs.borrow.lib.helpers :as h :refer [spy log]]
     [leihs.borrow.features.favorite-models.events :as favs]
     [leihs.borrow.features.models.filter-modal :as filter-modal]
     [leihs.borrow.features.current-user.core :as current-user]
@@ -36,6 +36,10 @@
 (set-default-translate-path :borrow.model-show)
 
 (def model-id (atom nil))
+
+(def MONTHS-BUFFER 6)
+(defn with-future-buffer [date]
+  (datefn/addMonths date MONTHS-BUFFER))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -71,6 +75,7 @@
           opts (::filter-modal/options db)
           start-date (:start-date opts)
           end-date (:end-date opts)
+          user-id (:user-id opts)
           filter-start-date (some-> start-date datefn/parseISO)
           filter-end-date (some-> end-date datefn/parseISO)
           initial-start-date (or filter-start-date now)
@@ -78,21 +83,21 @@
                                (datefn/addDays initial-start-date 1))
           min-date-loaded (datefn/startOfMonth now)
           max-date-loaded (-> initial-end-date
-                              (datefn/addMonths 6)
+                              with-future-buffer
                               datefn/endOfMonth)]
       {:db (-> db
                (update-in [:ls ::data @model-id] (fnil identity {}))
                (cond-> errors (assoc-in [::errors @model-id] errors))
                (assoc-in [:ls ::data @model-id] (:model data)))
        :dispatch [::fetch-availability
+                  user-id
                   (h/date-format-day min-date-loaded)
                   (h/date-format-day max-date-loaded)]})))
 
 (reg-event-fx
   ::fetch-availability
-  (fn-traced [{:keys [db]} [_ start-date end-date]]
-    (let [user-id (current-user/chosen-user-id db)
-          pool-ids (pool-ids-with-borrowable-quantity db @model-id)]
+  (fn-traced [{:keys [db]} [_ user-id start-date end-date]]
+    (let [pool-ids (pool-ids-with-borrowable-quantity db @model-id)]
       {:db (assoc-in db
                      [:ls ::data @model-id :fetching-until-date]
                      end-date)
@@ -203,6 +208,13 @@
         (map :inventory-pool)
         (map assoc-borrowable-quantity)))))
 
+(reg-sub ::user-id
+         :<- [::cart/user-id]
+         :<- [::current-user/chosen-user-id]
+         :<- [::current-user/user-id]
+         (fn [[cart-user-id chosen-user-id auth-user-id] _] 
+           (or cart-user-id chosen-user-id auth-user-id)))
+
 (reg-event-fx
   ::model-create-reservation
   (fn-traced [{:keys [db]} [_ args]]
@@ -215,15 +227,21 @@
 
 (reg-event-fx
   ::on-mutation-result
-  (fn-traced [{:keys [db]} [_ args {:keys [data errors]}]]
+  (fn-traced [{:keys [db]} [_ {user-id :userId :as args} {:keys [data errors]}]]
     (if errors
       {:db (-> db
                (assoc-in [:meta :app :fatal-errors] errors)
                (dissoc-in [::cart/data :pending-count]))
        :alert (str "FAIL! " (pr-str errors))}
       {:alert (str "OK! " (pr-str data))
-       :dispatch-n (list [::fetch-availability (:startDate args) (:endDate args)]
-                         [::timeout/refresh])}))) 
+       :dispatch-n (list [::fetch-availability user-id (:startDate args) (-> args
+                                                                             :endDate
+                                                                             datefn/parseISO
+                                                                             with-future-buffer
+                                                                             datefn/endOfMonth
+                                                                             h/date-format-day)]
+                         [::timeout/refresh user-id]
+                         [::current-user/set-chosen-user-id user-id])}))) 
 
 (defn order-panel
   [model filters]
@@ -244,21 +262,24 @@
                                     js/Date.
                                     datefn/endOfDay)
         ; max-quantity (:available-quantity-in-date-range model)
+        target-users @(subscribe [::current-user/target-users
+                                  (t :!borrow.rental-show.user-or-delegation-personal-postfix)])
+        user-id @(subscribe [::user-id])
         pools @(subscribe [::pools (:id model)])
         filters-loaded? (seq pools)
         has-availability? (seq (:availability model))
         on-cancel #(dispatch [::close-order-panel])
         on-submit (fn [jsargs]
-                    (let [args (js->clj jsargs :keywordize-keys true)]
+                    (let [args (js->clj jsargs :keywordize-keys true)
+                          user-id (:delegationId args)]
                       (dispatch [::close-order-panel])
-                      (dispatch
-                       [::model-create-reservation
-                        {:modelId (:id model)
-                         :startDate (h/date-format-day (:startDate args))
-                         :endDate (h/date-format-day (:endDate args))
-                         :quantity (int (:quantity args))
-                         :poolIds [(:poolId args)]
-                         :userId (:user-id filters)}])))]
+                      (dispatch [::model-create-reservation
+                                 {:modelId (:id model)
+                                  :startDate (h/date-format-day (:startDate args))
+                                  :endDate (h/date-format-day (:endDate args))
+                                  :quantity (int (:quantity args))
+                                  :poolIds [(:poolId args)]
+                                  :userId user-id}])))]
     
     (when (and filters-loaded? has-availability?)
       [:> UI/Components.Design.ModalDialog {:shown true
@@ -273,6 +294,9 @@
           :initialEndDate initial-end-date,
           :minDateLoaded min-date-loaded,
           :maxDateLoaded max-date-loaded,
+          :userDelegations target-users,
+          :initialUserDelegationId (or user-id ""),
+          :userDelegationCanBeChanged @(subscribe [::cart/empty?])
           :isLoadingFuture (boolean fetching-until-date),
           ; END DYNAMIC FETCHING PROPS
           :onShownDateChange (fn [date-object]
@@ -288,10 +312,16 @@
                                               ; time being, as there are issue if scrolling
                                               ; too fast and was not sure if there was something
                                               ; wrong with concating the availabilities.
+                                              user-id
                                               (-> min-date-loaded h/date-format-day)
                                               (-> until-date
-                                                  (datefn/addMonths 6)
+                                                  with-future-buffer
                                                   h/date-format-day)]))))
+          :onUserDelegationChange #(let [{user-id :delegationId} (js->clj % :keywordize-keys true)]
+                                     (dispatch [::fetch-availability
+                                                user-id
+                                                (-> min-date-loaded h/date-format-day)
+                                                (-> max-date-loaded h/date-format-day)]))
           :initialInventoryPoolId (:pool-id filters)
           :inventoryPools (map h/camel-case-keys pools)
           :onSubmit on-submit

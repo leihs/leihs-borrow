@@ -44,12 +44,16 @@
              :plus {:en-GB "Plus" :de-CH "Plus"}
              :pool {:en-GB "Inventory Pool" :de-CH "Gerätepark"}
              :pool-max-amount {:en-GB "{pool} (max. {amount, number})" :de-CH "{pool} (max. {amount, number})"}
+             :user-delegation {:en-GB "Delegation" :de-CH "Delegation"}
              :timespan {:en-GB "Time span" :de-CH "Zeitraum"}
              :from {:en-GB "From" :de-CH "Von"}
              :until {:en-GB "Until" :de-CH "Bis"}}
      :validate {:start-after-end
                 {:de-CH "Enddatum muss nach Beginndatum sein"
                  :en-GB "End date must be after start date"}
+                :user-delegation-cant-be-changed-active-cart
+                {:en-GB "The delegation can't be changed, as an active cart already exists."
+                 :de-CH "Die delegation kann nicht geändert werden, da schon ein aktiver Warenkorb existiert."}
                 :missing-quantity
                 {:de-CH "Verfügbarkeit kann nicht geprüft werden, da die Anzahl fehlt"
                  :en-GB "Availability can not be checked because the quantity is missing"}
@@ -120,13 +124,13 @@
                                  :de-CH "Zeitraum"}
                          :undefined {:en-GB "undefined"
                                      :de-CH "unbestimmt"}
-                         :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set.",
+                         :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set."
                                                                 :de-CH "Das Start- und Enddatum müssen gesetzt sein."}
-                                  :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date.",
+                                  :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date."
                                                                         :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
              :show-only-available {:en-GB "Show available only"
                                    :de-CH "Nur Verfügbare anzeigen"}
-             :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"} 
+             :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"}
                      :all {:en-GB "All" :de-CH "Alle"}}
              :from {:en-GB "From"
                     :de-CH "Von"}
@@ -220,11 +224,11 @@
                                     :undefined {:en-GB "undefined"
                                                 :de-CH "unbestimmt"}
                                     :errors {:start-date-equal-or-before-end-date
-                                             {:en-GB "Start date must be equal to or before end date.",
+                                             {:en-GB "Start date must be equal to or before end date."
                                               :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
-                        :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"} 
+                        :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"}
                                 :all {:en-GB "All" :de-CH "Alle"}}
-                        :states {:title {:en-GB "Status" :de-CH "Status"} 
+                        :states {:title {:en-GB "Status" :de-CH "Status"}
                                  :all {:en-GB "All" :de-CH "Alle"}}
                         :from {:en-GB "From"
                                :de-CH "Von"}

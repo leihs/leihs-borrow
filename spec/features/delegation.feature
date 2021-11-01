@@ -39,8 +39,17 @@ Feature: Delegations
       | title     | body   |
       | 1× Kamera | Pool A |
 
+    # check that the delegations select field is disabled in the order panel if cart is not empty
+    When I visit the show page for "Kamera" model
+    And I click on "Add item"
+    # Then the delegations select field is disabled
+    # And there is an error message below the field
+    And I click on "Cancel"
+
     # submit the order
-    When I click on "Confirm rental"
+    When I click on the menu
+    And I click on "New Rental"
+    And I click on "Confirm rental"
     And I name the order as "My order"
     And I click on "Confirm"
 

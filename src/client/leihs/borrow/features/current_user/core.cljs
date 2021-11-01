@@ -18,7 +18,8 @@
     [leihs.borrow.lib.localstorage :as ls]
     [leihs.borrow.lib.helpers :as help :refer [spy]]
     leihs.borrow.lib.re-graph
-    [leihs.borrow.client.routes :as routes]))
+    [leihs.borrow.client.routes :as routes]
+    [leihs.core.core :refer [presence]]))
 
 (def query (rc/inline "leihs/borrow/features/current_user/core.gql"))
 
@@ -65,7 +66,7 @@
 
 (reg-event-db ::set-chosen-user-id
               (fn-traced [db [_ id]]
-                (assoc-in db [:ls ::chosen-user-id] id)))
+                (assoc-in db [:ls ::chosen-user-id] (presence id))))
 
 (defn chosen-user-id [db] (-> db :ls ::chosen-user-id))
 
@@ -78,6 +79,10 @@
 (reg-sub ::user-data
          :<- [::data]
          (fn [cu _] (:user cu)))
+
+(reg-sub ::user-id
+         :<- [::user-data]
+         (fn [ud _] (:id ud)))
 
 (reg-sub ::chosen-user-id
          (fn [db _]

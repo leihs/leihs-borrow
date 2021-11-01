@@ -155,3 +155,16 @@ end
 step "the order panel is shown" do
   find(".ui-booking-calendar")
 end
+
+step "I visit the show page for :name model" do |name|
+  m = LeihsModel.find(product: name)
+  visit "/app/borrow/models/#{m.id}"
+end
+
+step "the delegations select field is disabled" do
+  binding.pry
+end
+
+step "there is an error message below the field" do
+  binding.pry
+end

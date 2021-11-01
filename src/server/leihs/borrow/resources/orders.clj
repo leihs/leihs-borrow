@@ -296,12 +296,15 @@
   [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
   (let [rs  (-> (reservations/unsubmitted-sqlmap tx user-id)
                 sql/format
-                (reservations/query tx))]
-    {:valid-until (valid-until tx user-id)
-     :reservations rs
-     :invalidReservationIds (->> rs
-                                 (reservations/with-invalid-availability context)
-                                 (map :id))}))
+                (reservations/query tx))
+        va (valid-until tx user-id)]
+    (when-not (empty? rs)
+      {:valid-until va
+       :reservations rs
+       :invalidReservationIds (->> rs
+                                   (reservations/with-invalid-availability context)
+                                   (map :id))
+       :user-id (when va user-id)})))
 
 (defn get-draft
   [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
@@ -407,8 +410,8 @@
    value]
   (if (reservations/some-unsubmitted-with-invalid-start-date? context)
     (do (reservations/unsubmitted->draft tx user-id)
-        {:unsubmitted-order {}})
-    (do (if (or (not (timeout? tx user-id))
-                (not (reservations/some-unsubmitted-with-invalid-availability? context)))
+        {:unsubmitted-order nil})
+    (do (when (or (not (timeout? tx user-id))
+                  (not (reservations/some-unsubmitted-with-invalid-availability? context)))
           (reservations/touch-unsubmitted! tx user-id))
         {:unsubmitted-order (get-unsubmitted context args value)})))

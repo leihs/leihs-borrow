@@ -89,9 +89,7 @@ describe 'refresh timeout' do
     m_result = query(m, user.id).deep_symbolize_keys
     expect(m_result[:data]).to eq({
       refreshTimeout: {
-        unsubmittedOrder: {
-          reservations: []
-        }
+        unsubmittedOrder: nil
       }
     })
     expect(m_result[:errors]).to be_nil
@@ -104,9 +102,7 @@ describe 'refresh timeout' do
             reservations: [{ id: r_invalid.id },
                            { id: r_ok.id }]
           },
-          unsubmittedOrder: {
-            reservations: []
-          }
+          unsubmittedOrder: nil
         }
       }
     })
