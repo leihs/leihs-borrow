@@ -15,7 +15,6 @@
                                       dispatch]]
    [leihs.borrow.lib.helpers :refer [spy]]
    [leihs.borrow.lib.localstorage :as ls]
-   [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.pagination :as pagination]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
@@ -23,8 +22,9 @@
    [leihs.borrow.lib.helpers :as h]
    ["/leihs-ui-client-side-external-react" :as UI]
    [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.features.filter-modal.core :refer [filter-comp]]
+   [leihs.borrow.features.models.filter-modal :refer [filter-comp] :as filter-modal]
    [leihs.borrow.features.models.core :as models]
+   [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]))
 
 (def query
@@ -41,22 +41,19 @@
          category-ids (split categories-path #"/")
          ancestor-ids (butlast category-ids)
          category-id (last category-ids)
-         parent-id (last ancestor-ids)
-                  ;user-id (filters/user-id db)
-         ]
+         parent-id (last ancestor-ids)]
 
               ;; FIXME: this flickers when navigation and in general should be 1 single query!
-     {:dispatch-n (list [::filters/set-multiple query-params]
-
+     {:dispatch-n (list [::filter-modal/save-options query-params]
+                        [::current-user/set-chosen-user-id (:user-id query-params)]
                          ; We include the actual category itself because the
                          ; backend validates if all categories in the path
                          ; are still among the reservable ones.
                         [::re-graph/query categories-query
                          {:ids category-ids
-                          :poolIds (when-let [pool-id (filters/pool-id db)]
+                          :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
                                      [pool-id])}
                          [::on-fetched-categories-data]]
-
                          ; We fetch the actual category again to get the correct
                          ; label in the context of the parent category.
                         [::re-graph/query
@@ -64,7 +61,7 @@
                          {:categoryId category-id :parentId parent-id}
                          [::on-fetched-category-data category-id]]
 
-                        [::models/get-models {:categoryId category-id}])})))
+                        [::models/get-models query-params {:categoryId category-id}])})))
 
 (reg-event-db
  ::on-fetched-categories-data
@@ -90,7 +87,7 @@
 (reg-event-fx
  ::clear
  (fn-traced [_ [_ nav-args extra-vars]]
-   {:dispatch-n (list [::filters/clear-current]
+   {:dispatch-n (list [::filter-modal/clear-options]
                       [::models/clear-data]
                       [:routing/navigate [::routes/categories-show nav-args]]
                       [::models/get-models extra-vars])}))

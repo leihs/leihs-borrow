@@ -227,11 +227,11 @@
 (defn get-multiple
   [{{:keys [tx]} :request
     container ::lacinia/container-type-name
-    user-id ::target-user/id
+    target-user-id ::target-user/id
     :as context}
    {:keys [order-by]}
-   value]
-  (-> (base-sqlmap tx user-id)
+   {:keys [user-id] :as value}]
+  (-> (base-sqlmap tx (or user-id target-user-id))
       (merge-where-according-to-container container value)
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by :reservations)))

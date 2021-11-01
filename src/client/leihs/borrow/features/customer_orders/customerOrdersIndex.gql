@@ -1,7 +1,19 @@
-query myRentals($userId: UUID) {
+query myRentals(
+  $userId: UUID,
+  $searchTerm: NonEmptyText,
+  $refinedRentalState: RefinedRentalStateEnum,
+  $poolIds: [UUID!],
+  $from: Date,
+  $until: Date
+) {
   openRentals: rentals(
     userId: $userId
     rentalState: OPEN
+    refinedRentalState: $refinedRentalState
+    searchTerm: $searchTerm
+    poolIds: $poolIds
+    from: $from
+    until: $until
     orderBy: [{ attribute: CREATED_AT, direction: DESC }]
   ) {
     ...rentalConProps
@@ -9,6 +21,11 @@ query myRentals($userId: UUID) {
   closedRentals: rentals(
     userId: $userId
     rentalState: CLOSED
+    refinedRentalState: $refinedRentalState
+    searchTerm: $searchTerm
+    poolIds: $poolIds
+    from: $from
+    until: $until
     orderBy: [{ attribute: CREATED_AT, direction: DESC }]
   ) {
     ...rentalConProps

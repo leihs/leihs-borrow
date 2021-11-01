@@ -207,8 +207,34 @@
               :section-title-closed-rentals {:en-GB "Closed"
                                              :de-CH "Abgeschlossen"}
               :orderless-fallback-title {:de-CH "Direktausleihe"}
-
-              :filter {:delegation {:de-CH "Für Delegation" :en-GB "For Delegation"}}
+              :filter  {:search {:title {:en-GB "Search term"
+                                         :de-CH "Stichwort"}
+                                 :placeholder {:en-GB "Enter search term"
+                                               :de-CH "Suchbegriff eingeben"}}
+                        :delegations {:en-GB "{n, plural, =1 {Delegation} other {Delegations}}"
+                                      :de-CH "{n, plural, =1 {Delegation} other {Delegationen}}"}
+                        :for {:en-GB "For"
+                              :de-CH "Für"}
+                        :time-span {:title {:en-GB "Time Span"
+                                            :de-CH "Zeitraum"}
+                                    :undefined {:en-GB "undefined"
+                                                :de-CH "unbestimmt"}
+                                    :errors {:start-date-equal-or-before-end-date
+                                             {:en-GB "Start date must be equal to or before end date.",
+                                              :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
+                        :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"} 
+                                :all {:en-GB "All" :de-CH "Alle"}}
+                        :states {:title {:en-GB "Status" :de-CH "Status"} 
+                                 :all {:en-GB "All" :de-CH "Alle"}}
+                        :from {:en-GB "From"
+                               :de-CH "Von"}
+                        :until {:en-GB "Until"
+                                :de-CH "Bis"}
+                        :get-results {:en-GB "Get Results"
+                                      :de-CH "Resultate anzeigen"}
+                        :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
+                        :apply {:en-GB "Apply" :de-CH "Anwenden"}
+                        :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
 
               :fulfillment-state-label {; states flowchart: <https://flowchart.fun/c#AoexBsHkCcBMFNoCgAEKCWBnFmCuAjAW3QBcT5YV8BPFAY10xJEMQC4UAKASQDkB9AILBgAJUgA1QQBkAlEiQARdNHh0So+JkQA3AIYl0IAHaoM2OqoMUqtQnuN6A5uy4AVSP2DcAwgGl+AFVgeQBtPiERcSlpAF0UCOExSRkzFxJsPQAHLOgQHQoOTg8vXwDg+TQsFFUAKzVyWCLRAFEAKRafNxbFSvN6Bzp4cEKuH0FeHxbpHrCS738g4Hj5sqWzaqz0OgBrG1wsooAhSFFxAHVZpFCTs8hLxXjbi56N7FUSXGhjUc5Wt0Col4V1C-0BwMeKDBQNeoPanW6kNaHS6sPGk2mPXi6KmM0UQA>
                                         :IN_APPROVAL {:de-CH "Genehmigung" :en-GB "In Approval"}

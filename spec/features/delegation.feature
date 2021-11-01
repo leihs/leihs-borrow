@@ -54,6 +54,9 @@ Feature: Delegations
     And I sleep 1
     And I click on the menu
     And I click on "My Rentals"
+    And I click on "Show search/filter"
+    And I select "Delegation D" xxx
+    And I click button "Apply"
     Then I see the order "My order" under open orders
 
     # check the content of the order

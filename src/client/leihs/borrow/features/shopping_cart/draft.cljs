@@ -17,12 +17,12 @@
                                        subscribe
                                        dispatch]]
     [leihs.borrow.lib.helpers :as help]
-    [leihs.borrow.lib.filters :as filters]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
     [leihs.borrow.components :as ui]
     [leihs.borrow.ui.icons :as icons]
     [leihs.borrow.features.current-user.core :as current-user]
+    [leihs.borrow.features.models.filter-modal :as filter-modal]
     [leihs.borrow.features.shopping-cart.core :as cart]))
 
 (set-default-translate-path :borrow.shopping-cart)
@@ -33,7 +33,7 @@
   (fn-traced [{:keys [db]} [_ _]]
     {:dispatch [::re-graph/query
                 (rc/inline "leihs/borrow/features/shopping_cart/getDraftOrder.gql")
-                {:userId (filters/user-id db)}
+                {:userId (current-user/chosen-user-id db)}
                 [::on-fetched-data]]}))
 
 (reg-event-db
@@ -118,7 +118,7 @@
   (fn-traced [{:keys [db]} [_ ids]]
     {:dispatch [::re-graph/mutate
                 (rc/inline "leihs/borrow/features/shopping_cart/addToCart.gql")
-                {:ids ids, :userId (filters/user-id db)}
+                {:ids ids, :userId (current-user/chosen-user-id db)}
                 [::on-add-to-cart-result]]}))
 
 (reg-event-fx
@@ -358,14 +358,8 @@
           {:on-click #(dispatch [::edit-reservation res-lines])}
           (t :edit)]]])]))
 
-(reg-sub ::user-id
-         :<- [::current-user/user-data]
-         :<- [::filters/user-id]
-         (fn [[co user-id]]
-           (or user-id (-> co :user :id))))
-
 (defn search-panel []
-  (let [user-id @(subscribe [::user-id])
+  (let [user-id @(subscribe [::current-user/chosen-user-id])
         delegations @(subscribe [::current-user/delegations])
         target-users @(subscribe [::current-user/target-users])]
     (when-not (empty? delegations)
@@ -379,8 +373,7 @@
                     :default-value user-id
                     :name :user-id
                     :on-change (fn [ev]
-                                 (dispatch [::filters/set-one
-                                            :user-id
+                                 (dispatch [::current-user/set-chosen-user-id
                                             (-> ev .-target .-value)])
                                  (dispatch [::routes/shopping-cart]))}
            (doall

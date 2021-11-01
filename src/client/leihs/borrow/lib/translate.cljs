@@ -6,10 +6,11 @@
             [clojure.string :as string]
             [cljs.test :refer-macros [deftest is testing run-tests]]
             [leihs.borrow.features.current-user.core :as current-user]
-            [leihs.borrow.lib.helpers :as h :refer [spy log]]
+            [leihs.borrow.lib.helpers :as h :refer [spy log format]]
             [leihs.borrow.lib.re-frame :refer [reg-sub]]
             [re-frame.db :as db]
-            [shadow.resource :as rc]))
+            [shadow.resource :as rc]
+            ["date-fns/locale" :as locale]))
 
 (def ^:dynamic *default-path* "Default path to use for locating a key." nil)
 (def path-escape-char \!)
@@ -46,8 +47,11 @@
       (string/split #"[\./]")
       (->> (map keyword))))
 
-(defn missing-translation [dict-path]
-  (str "{{ missing: " dict-path " }}"))
+(defn missing-translation [path-keys]
+  (->> path-keys
+       (map name)
+       (string/join ".")
+       (format "{{ missing: %s }}")))
 
 (defn translate [message locale values]
   (-> message
@@ -60,6 +64,13 @@
 (reg-sub ::locale-to-use
          (fn [db _] (locale-to-use db)))
 
+(reg-sub ::i18n-locale
+         :<- [::locale-to-use]
+         (fn [l _] (case l
+                     :en-GB locale/enGB
+                     :de-CH locale/de
+                     locale/enUS)))
+
 (defn t-base [dict-path values]
   (let [path-keys (dict-path-keys dict-path)]
     (loop [locale (locale-to-use @db/app-db)]
@@ -67,7 +78,7 @@
         (if-let [message (get-in dict (concat path-keys [locale]))]
           (translate message locale values)
           (recur (locale fallbacks)))
-        (missing-translation dict-path)))))
+        (missing-translation path-keys)))))
 
 ; ============================= TESTS ==============================
 

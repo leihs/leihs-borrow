@@ -41,8 +41,9 @@
       (->> (jdbc/query tx))
       first))
 
-(defn get-one [{{:keys [tx]} :request user-id ::target-user/id} _ _]
-  (get-by-id tx user-id))
+(defn get-one
+  [{{:keys [tx]} :request target-user-id ::target-user/id} _ {:keys [user-id]}]
+  (get-by-id tx (or user-id target-user-id)))
 
 (defn get-current
   [{{tx :tx {session-id :user_session_id} :authenticated-entity} :request

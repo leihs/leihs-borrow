@@ -19,10 +19,10 @@
                                       subscribe
                                       dispatch]]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.features.customer-orders.core :as rentals]
+   [leihs.borrow.features.customer-orders.filter-modal :as filter-modal]
    [leihs.borrow.features.customer-orders.index :refer [rental-progress-bars]]
    [leihs.borrow.features.current-user.core :as current-user]
    ["/leihs-ui-client-side-external-react" :as UI]))
@@ -36,7 +36,7 @@
    (let [order-id (get-in args [:route-params :rental-id])]
      {:dispatch [::re-graph/query
                  (rc/inline "leihs/borrow/features/customer_orders/customerOrderShow.gql")
-                 {:id order-id, :userId (filters/user-id db)}
+                 {:id order-id}
                  [::on-fetched-data order-id]]})))
 
 (reg-event-db
@@ -122,7 +122,7 @@
         is-cancelable? (= ["IN_APPROVAL"] (:fulfillment-states rental))
         contracts (map :node (get-in rental [:contracts :edges]))
         user-data @(subscribe [::current-user/user-data])
-        user-id @(subscribe [::filters/user-id])]
+        user-id (-> rental :user :id)]
 
     [:<>
      (cond

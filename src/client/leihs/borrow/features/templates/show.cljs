@@ -13,10 +13,10 @@
                                       subscribe
                                       dispatch]]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.filters :as filters]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.models.core :as models]
+   [leihs.borrow.features.models.filter-modal :as filter-modal]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.templates)
@@ -70,8 +70,9 @@
                                   :lines
                                   (map #(-> % :model :is-reservable))
                                   (not-every? identity))
-        start-date @(subscribe [::filters/start-date])
-        end-date @(subscribe [::filters/end-date])
+        opts @(subscribe [::filter-modal/options])
+        start-date (:start-date opts)
+        end-date (:end-date opts)
         errors @(subscribe [::errors template-id])
         is-loading? (not (or template errors))]
     [:<>
@@ -92,15 +93,13 @@
          [models/form-line :start-date (t :!borrow.filter/from)
           {:type :date
            :required true
-           :value start-date
-           :on-change #(dispatch [::filters/set-one :start-date (-> % .-target .-value)])}]]
+           :value start-date}]]
         [:div.form-group
          [models/form-line :end-date (t :!borrow.filter/until)
           {:type :date
            :required true
            :min start-date
-           :value end-date
-           :on-change #(dispatch [::filters/set-one :end-date (-> % .-target .-value)])}]]
+           :value end-date}]]
         [:div.flex-auto.w-1_2
          [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg
           {:on-click #(dispatch [::apply template-id start-date end-date])}

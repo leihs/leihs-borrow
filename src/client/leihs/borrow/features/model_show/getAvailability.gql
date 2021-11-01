@@ -11,6 +11,7 @@ query getAvailability(
       startDate: $startDate
       endDate: $endDate
       inventoryPoolIds: $poolIds
+      userId: $userId
       excludeReservationIds: $excludeReservationIds
     ) {
       inventoryPool {

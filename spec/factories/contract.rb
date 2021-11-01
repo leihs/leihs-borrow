@@ -33,6 +33,16 @@ class Contract < Sequel::Model
           );
       SQL
     end
+
+    def self.update_with_disabled_triggers(id, column, value)
+      with_disabled_triggers do
+        database.run <<-SQL
+          UPDATE contracts SET #{column} = #{value} WHERE id = '#{id}'
+        SQL
+      end
+    end
+
+    find(id: id) 
   end
 end
 

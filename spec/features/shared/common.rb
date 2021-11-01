@@ -10,3 +10,7 @@ def wait_until(wait_time = 60, &block)
     fail Timeout::Error.new(block.source), 'It timed out!'
   end
 end
+
+def simulate_typing(el, val)
+  val.chars.each { |c| el.send_keys(c); sleep(0.1) }
+end

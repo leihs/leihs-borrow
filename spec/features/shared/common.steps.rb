@@ -10,6 +10,10 @@ step "there is an empty database" do
   reset_database
 end
 
+step "I select :option from :label" do |option, label|
+  select(option, from: label)
+end
+
 step "I click on :txt" do |txt|
   click_on txt
 end
@@ -55,11 +59,11 @@ step "I log in with the email :email" do |email|
   @current_user = User.find(email: email)
   visit "/app/borrow/"
   within(".ui-form-signin") do
-    step "I enter '#{email}' in the 'user' field"
+    fill_in("user", with: email)
     find('button[type="submit"]').click
   end
   within(".ui-form-signin") do
-    step "I enter 'password' in the 'password' field"
+    fill_in("password", with: "password")
     find('button[type="submit"]').click
   end
 end

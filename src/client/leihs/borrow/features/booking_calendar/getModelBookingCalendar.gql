@@ -2,6 +2,7 @@ query getModelBookingCalendar(
   $modelId: UUID!
   $startDate: Date
   $endDate: Date
+  $userId: UUID
   # $pools: [UUID!]!
 ) {
   model(id: $modelId) {
@@ -9,11 +10,12 @@ query getModelBookingCalendar(
     name
     manufacturer
 
-    # availableQuantityInDateRange(startDate: $startDate, endDate: $endDate)
+    # availableQuantityInDateRange(startDate: $startDate, endDate: $endDate, userId: $userId)
 
     availability(
       startDate: $startDate
       endDate: $endDate
+      userId: $userId
       # inventoryPoolIds: $pools
     ) {
       inventoryPool {
