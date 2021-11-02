@@ -1,0 +1,103 @@
+fragment rentalProps on Rental {
+  id
+  purpose
+  title
+  isCustomerOrder
+  state: rentalState
+  fulfillmentStates: refinedRentalState
+  fromDate
+  untilDate
+  totalDays
+  approvedPoolOrdersCount
+  rejectedPoolOrdersCount
+  submittedPoolOrdersCount
+  totalQuantity
+  pickupQuantity
+  returnQuantity
+  pickupFulfillment {
+    fulfilledQuantity
+    toFulfillQuantity
+  }
+  returnFulfillment {
+    fulfilledQuantity
+    toFulfillQuantity
+  }
+  subOrdersByPool {
+    id
+    inventoryPool {
+      ...poolProps
+    }
+    state
+    rejectedReason
+    reservations {
+      ...reservationProps
+    }
+    order {
+      id
+      title
+      purpose
+    }
+    contracts {
+      ...contractsConnectionProps
+    }
+    createdAt
+    updatedAt
+  }
+  user {
+    id
+  }
+  contracts {
+    ...contractsConnectionProps
+  }
+  reservations {
+    ...reservationProps
+  }
+  createdAt
+  updatedAt
+}
+
+fragment poolProps on InventoryPool {
+  id
+  # description
+  # isActive
+  # email
+  name
+  # shortname
+  # hasReservableItems
+  # maximumReservationTime
+}
+
+fragment reservationProps on Reservation {
+  id
+  status
+  startDate
+  endDate
+  model {
+    id
+    name
+  }
+  option {
+    id
+    name
+  }
+  quantity
+  inventoryPool {
+    id
+    name
+  }
+}
+
+fragment contractsConnectionProps on ContractsConnection {
+  edges {
+    node {
+      id
+      compactId
+      printUrl
+      createdAt
+      # note
+      # reservations {
+      #   ...reservationProps
+      # }
+    }
+  }
+}

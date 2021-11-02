@@ -1,5 +1,13 @@
 step "I see the page title :title" do |title|
-  wait_until { get_ui_page_layout[:title] === title }
+  wait_until {
+    @page = get_ui_page_layout
+    @page[:title] === title
+  }
+end
+
+step "the page subtitle is :subtitle" do |subtitle|
+  expect(@page).to be
+  expect(@page[:subtitle]).to eq subtitle
 end
 
 step "the calendar has finished loading" do
@@ -9,6 +17,15 @@ end
 step "I see the :name section" do |section_name|
   @section = find_ui_section(title: section_name)
   expect(@section).to be
+end
+
+step "I see the following text in the :name section:" do |section_name, txt|
+  section = find_ui_section(title: section_name)
+  expect(section).to be
+  within(section) do
+    section_text = find("div")
+    expect(section_text.text).to eq txt
+  end
 end
 
 step "I see the :title dialog" do |title|

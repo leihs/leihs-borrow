@@ -17,7 +17,7 @@
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED :CANCELED]}
          :RentalStateEnum {:values [:OPEN :CLOSED]}
          :RefinedRentalStateEnum {:values [:IN_APPROVAL :TO_PICKUP :TO_RETURN :TBD :OVERDUE :REJECTED :CANCELED :RETURNED :EXPIRED]}
-         :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED]}
+         :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED :CANCELED]}
          :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
          :endDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED]}}
 

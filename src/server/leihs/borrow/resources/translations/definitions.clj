@@ -246,8 +246,10 @@
                                         :TO_PICKUP {:de-CH "Abholung" :en-GB "To pick up"}
                                         :TO_RETURN {:de-CH "Rückgabe" :en-GB "To return"}
                                         :RETURNED {:de-CH "Alle Gegenstände zurückgebracht" :en-GB "All items returned"}
-                                        :REJECTED {:de-CH "Ausleihe wurde abgelehnt" :en-GB "Rental was rejeced"}
-                                        :CANCELED {:de-CH "Ausleihe wurde storniert" :en-GB "Rental was canceled"}}
+                                        :REJECTED {:de-CH "Ausleihe wurde abgelehnt" :en-GB "Rental was rejected"}
+                                        :CANCELED {:de-CH "Ausleihe wurde storniert" :en-GB "Rental was canceled"}
+                                        :EXPIRED {:de-CH "Ausleihe abgelaufen" :en-GB "Rental expired"}
+                                        :OVERDUE {:de-CH "Rückgabe überfällig" :en-GB "Overdue"}}
 
               :summary-line
               {:open {:de-CH "{totalDays, plural,
@@ -344,7 +346,18 @@
                               :en-GB "{totalDays, plural,
                                   =1 {# day from {fromDate, date, short}}
                                   other {# days from {fromDate, date, short}}
-                                }"}}}
+                                }"}}
+                  :reservation-status-label {:DRAFT {:de-CH "DRAFT" :en-GB "DRAFT"} ; (will never appear in this view)
+                                             :UNSUBMITTED {:de-CH "UNSUBMITTED" :en-GB "UNSUBMITTED"} ; (will never appear in this view)
+                                             :SUBMITTED {:de-CH "Genehmigung" :en-GB "In approval"}
+                                             :APPROVED {:de-CH "Abholung" :en-GB "To pickup"}
+                                             :REJECTED {:de-CH "Abgelehnt" :en-GB "Rejected"}
+                                             :SIGNED {:de-CH "Rückgabe bis {endDate, date, short}" :en-GB "To return until {endDate, date, short}"}
+                                             :CLOSED {:de-CH "Zurückgebracht" :en-GB "Returned"}
+                                             :CANCELED {:de-CH "Ausleihe storniert" :en-GB "Canceled"}}
+                  :cancellation-dialog {:title {:de-CH "Ausleihe stornieren" :en-GB "Cancel rental"}
+                                        :confirm {:de-CH "Stornieren" :en-GB "Cancel rental"}
+                                        :cancel {:de-CH "Abbrechen" :en-GB "Abort"}}}
                   ;
 
 

@@ -397,7 +397,7 @@
 
       [:> UI/Components.Design.ListCard.Foot
        [:> UI/Components.Design.Badge
-        (merge action-props {:as "button" :class (str "btn btn-link stretched-link" (when invalid? " bg-danger"))})
+        (merge action-props {:as "button" :class "stretched-link" :colorClassName (when invalid? " bg-danger")})
         duration]]]
 
      (when edit-mode?

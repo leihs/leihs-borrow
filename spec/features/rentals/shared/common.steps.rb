@@ -79,30 +79,10 @@ step "the following items exist:" do |table|
   end
 end
 
-step "I see the following rentals:" do |table|
-  table.hashes.each do |h|
-    find(".ui-list-card", text: h["title"])
-  end
-  expect(all(".ui-list-card").count).to eq table.hashes.count
-end
-
-step "I enter :value in the :field field" do |value, field|
-  value2 = case value
-           when "day after tomorrow"
-             Locales.format_date(Date.tomorrow + 1.day, @user)
-           when "yesterday"
-             Locales.format_date(Date.yesterday, @user)
-           else
-             value
-           end
-  el = find_field(field)
-  simulate_typing(el, value2)
-end
-
-step "the :label select field contains value :label" do |label, value|
-  expect(page).to have_select(label, selected: value)
-end
-
-step "the :label input field has value :value" do |label, value|
-  expect(find("section", text: label).find("input").value).to eq value
+step "I see the following status rows in the :name section:" do |section_name, table|
+  section = find_ui_section(title: section_name)
+  status_rows = get_ui_progress_infos(section)
+  # ignore keys that are not present in the expectations table by removing them:
+  expected_status_rows = status_rows.map { |l| l.slice(*table.headers.map(&:to_sym)) }
+  expect(expected_status_rows).to eq symbolize_hash_keys(table.hashes)
 end

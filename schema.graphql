@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Nov 11 2021 13:51:43 GMT+0100 (Central European Standard Time)
+# timestamp: Mon Nov 15 2021 15:49:18 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -468,6 +468,7 @@ enum ReservationStateEnum {
   REJECTED
   SIGNED
   CLOSED
+  CANCELED
 }
 
 type ReturnFulfillment implements Fulfillment {

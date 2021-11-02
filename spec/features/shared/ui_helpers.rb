@@ -68,6 +68,24 @@ def get_ui_page_layout
   end
 end
 
+def find_ui_progress_infos(scope = page)
+  scope.all(".ui-progress-info")
+end
+
+def get_ui_progress_infos(scope = page)
+  find_ui_progress_infos(scope).map do |c|
+    divs = c.all(":scope > div")
+    progressbar = within(".progress") { find(".progress-bar", visible: false) }
+    now = progressbar["aria-valuenow"]
+    max = progressbar["aria-valuemax"]
+    {
+      title: divs[0].text,
+      progressbar: "[#{now} of #{max}]",
+      info: divs[2].text,
+    }
+  end
+end
+
 # ruby helpers
 
 def symbolize_hash_keys(o)

@@ -25,6 +25,7 @@
    [leihs.borrow.features.customer-orders.filter-modal :as filter-modal]
    [leihs.borrow.features.customer-orders.index :refer [rental-progress-bars]]
    [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.core.core :refer [dissoc-in]]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.rental-show)
@@ -35,7 +36,9 @@
  (fn-traced [{:keys [db]} [_ args]]
    (let [order-id (get-in args [:route-params :rental-id])]
      {:dispatch [::re-graph/query
-                 (rc/inline "leihs/borrow/features/customer_orders/customerOrderShow.gql")
+                 (str
+                  (rc/inline "leihs/borrow/features/customer_orders/customerOrderShow.gql") "\n"
+                  (rc/inline "leihs/borrow/features/customer_orders/fragment_rentalProps.gql"))
                  {:id order-id}
                  [::on-fetched-data order-id]]})))
 
@@ -46,6 +49,40 @@
        (update-in , [::data order-id] (fnil identity {}))
        (cond-> errors (assoc-in , [::errors order-id] errors))
        (assoc-in , [::data order-id] (into (sorted-map) (:rental data))))))
+
+(reg-event-db
+ ::open-cancellation-dialog
+ (fn-traced [db]
+   (assoc-in db [::data :cancellation-dialog] {})))
+
+(reg-event-db
+ ::close-cancellation-dialog
+ (fn-traced [db]
+   (dissoc-in db [::data :cancellation-dialog])))
+
+(reg-event-fx
+ ::cancel-order
+ (fn-traced [{:keys [db]} [_ id]]
+   {:db (-> db
+            (assoc-in [::data :cancellation-dialog :is-saving?] true))
+    :dispatch [::re-graph/mutate
+               (str
+                (rc/inline "leihs/borrow/features/customer_orders/cancelOrder.gql") "\n"
+                (rc/inline "leihs/borrow/features/customer_orders/fragment_rentalProps.gql"))
+               {:id id}
+               [::on-cancel-order]]}))
+
+(reg-event-fx
+ ::on-cancel-order
+ (fn-traced [{:keys [db]} [_ {{rental :cancel-order} :data errors :errors}]]
+   (if errors
+     {:alert (str "FAIL! " (pr-str errors))
+      :db (-> db
+              (dissoc-in [::data :cancellation-dialog]))}
+
+     {:db (-> db
+              (assoc-in [::data (:id rental)] (into (sorted-map) rental))
+              (dissoc-in [::data :cancellation-dialog]))})))
 
 (reg-sub ::data
          (fn [db [_ id]] (get-in db [::data id])))
@@ -73,6 +110,9 @@
                     (get-in line [:start-date])
                     (get-in line [:end-date])])))))
 
+(reg-sub ::cancellation-dialog-data
+         (fn [db _] (get-in db [::data :cancellation-dialog])))
+
 (defn ui-item-line [reservation]
   (let [model (:model reservation)
         option (:option reservation)
@@ -85,7 +125,9 @@
         title (t :reservation-line.title {:itemCount quantity, :itemName name})
         duration (t :reservation-line.duration {:totalDays total-days, :fromDate start-date})
         sub-title (get-in reservation [:inventory-pool :name])
-        href (when model (routing/path-for ::routes/models-show :model-id (:id (:model reservation))))]
+        href (when model (routing/path-for ::routes/models-show :model-id (:id (:model reservation))))
+        status (:status reservation)
+        overdue? (and (= status "SIGNED") (datefn/isAfter (js/Date.) (datefn/addDays end-date 1)))]
     [:<>
      [:> UI/Components.Design.ListCard {:href href}
       [:> UI/Components.Design.ListCard.Title
@@ -95,19 +137,37 @@
        sub-title]
 
       [:> UI/Components.Design.ListCard.Foot
-       [:> UI/Components.Design.Badge duration]
-       ;
-       ]]]))
+       [:> UI/Components.Design.Badge duration] " "
+       [:> UI/Components.Design.Badge {:colorClassName (when overdue? " bg-danger")}
+        (t (str :reservation-status-label "/" status) {:endDate end-date})]]]]))
 
 (defn ui-items-list [grouped-reservation]
-  [:> UI/Components.Design.ListCard.Stack #_{:divided true :space 3}
-  ;;  (h/log items)
+  [:> UI/Components.Design.ListCard.Stack
    (doall
     (for [[_ items] grouped-reservation]
       (for [item items]
         (when item
           [:<> {:key (:id item)}
            [ui-item-line item]]))))])
+
+(defn cancellation-dialog []
+  (fn [rental]
+    (let [dialog-data @(subscribe [::cancellation-dialog-data])
+          title (:title rental)
+          purpose (:purpose rental)
+          id (:id rental)]
+      [:> UI/Components.Design.ConfirmDialog
+       {:shown (some? dialog-data)
+        :title (t :cancellation-dialog/title)
+        :onConfirm #(dispatch [::cancel-order id])
+        :confirmLabel (t :cancellation-dialog/confirm)
+        :confirmIsLoading (:is-saving? dialog-data)
+        :onCancel #(dispatch [::close-cancellation-dialog])
+        :cancelLabel (t :cancellation-dialog/cancel)}
+       [:<>
+        [:> UI/Components.Design.Section {:title title :collapsible true}
+         [:p purpose]
+         [:p.small (rentals/rental-summary-text rental)]]]])))
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])
@@ -142,6 +202,8 @@
 
          [:h2.fw-light (rentals/rental-summary-text rental)]]
 
+        [cancellation-dialog rental]
+
         [:> UI/Components.Design.Stack {:space 5}
 
          [:> UI/Components.Design.Section
@@ -152,15 +214,15 @@
 
            (when is-cancelable?
              [:> UI/Components.Design.ActionButtonGroup
-              [:button.btn.btn-secondary {:onClick #(js/alert "TODO: Filters")} (t :cancel-action-label)]])]]
+              [:button.btn.btn-secondary {:onClick #(dispatch [::open-cancellation-dialog rental-id])} (t :cancel-action-label)]])]]
 
          [:> UI/Components.Design.Section
           {:title (t :purpose) :collapsible true}
           (:purpose rental)]
 
-         [:> UI/Components.Design.Section
-          {:title (t :pools-section-title) :collapsible true}
-          [:span.text-danger "TODO: list of inventory pools + progress bars"]]
+         #_[:> UI/Components.Design.Section
+            {:title (t :pools-section-title) :collapsible true}
+            [:p "list of inventory pools with progress bars - not implemented. probably not needed"]]
 
          [:> UI/Components.Design.Section
           {:title (t :items-section-title) :collapsible true}
