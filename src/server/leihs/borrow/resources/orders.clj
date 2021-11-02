@@ -298,7 +298,8 @@
                 sql/format
                 (reservations/query tx))
         va (valid-until tx user-id)]
-    (when-not (empty? rs)
+    (if (empty? rs)
+      {}
       {:valid-until va
        :reservations rs
        :invalidReservationIds (->> rs
@@ -410,7 +411,7 @@
    value]
   (if (reservations/some-unsubmitted-with-invalid-start-date? context)
     (do (reservations/unsubmitted->draft tx user-id)
-        {:unsubmitted-order nil})
+        {:unsubmitted-order {}})
     (do (when (or (not (timeout? tx user-id))
                   (not (reservations/some-unsubmitted-with-invalid-availability? context)))
           (reservations/touch-unsubmitted! tx user-id))
