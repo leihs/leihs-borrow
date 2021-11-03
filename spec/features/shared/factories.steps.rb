@@ -1,35 +1,35 @@
 IP_UUID = "6bf7dc96-2b11-43c1-9f49-c58a5b332517"
 
-step 'there is a user' do
+step "there is a user" do
   @user = FactoryBot.create(:user)
 end
 
-step 'there is a delegation :name' do |name|
+step "there is a delegation :name" do |name|
   @delegation = FactoryBot.create(:delegation, name: name)
 end
 
-step 'the user is member of delegation :name' do |name|
+step "the user is member of delegation :name" do |name|
   d = User.find(firstname: name)
   d.add_delegation_user(@user)
 end
 
-step 'there is a user without password' do
+step "there is a user without password" do
   @user = FactoryBot.create(:user_without_password)
 end
 
-step 'there is an initial admin' do
+step "there is an initial admin" do
   @initial_admin = FactoryBot.create(:user, is_admin: true, is_system_admin: true)
 end
 
-step 'there is a leihs admin' do
+step "there is a leihs admin" do
   @leihs_admin = FactoryBot.create(:user, is_admin: true)
 end
 
-step 'there is a procurement admin' do
+step "there is a procurement admin" do
   @procurement_admin = FactoryBot.create(:procurement_admin).user
 end
 
-step 'the user is leihs admin' do
+step "the user is leihs admin" do
   User.where(id: @user.id).update(is_admin: true)
 end
 
@@ -78,7 +78,7 @@ end
 
 step "the user is inventory manager of pool :name" do |name|
   pool = InventoryPool.find(name: name) ||
-    FactoryBot.create(:inventory_pool, name: name)
+         FactoryBot.create(:inventory_pool, name: name)
 
   FactoryBot.create(:direct_access_right,
                     user_id: @user.id,
@@ -88,7 +88,7 @@ end
 
 step "the user is customer of pool :name" do |name|
   pool = InventoryPool.find(name: name) ||
-    FactoryBot.create(:inventory_pool, name: name)
+         FactoryBot.create(:inventory_pool, name: name)
 
   FactoryBot.create(:direct_access_right,
                     user_id: @user.id,
@@ -98,7 +98,7 @@ end
 
 step "the delegation :delegation is customer of pool :name" do |delegation, name|
   pool = InventoryPool.find(name: name) ||
-    FactoryBot.create(:inventory_pool, name: name)
+         FactoryBot.create(:inventory_pool, name: name)
 
   FactoryBot.create(:direct_access_right,
                     user_id: @delegation.id,
@@ -128,7 +128,7 @@ step "there is an external authentication system" do
 end
 
 step "the user has external authentication" do
-  ext_sys = AuthenticationSystem.find(type: 'external')
+  ext_sys = AuthenticationSystem.find(type: "external")
   FactoryBot.create(:authentication_system_user,
                     user_id: @user.id,
                     authentication_system_id: ext_sys.id)
@@ -136,7 +136,7 @@ end
 
 step "the user does not have password authentication" do
   AuthenticationSystemUser
-    .where(user_id: @user.id, authentication_system_id: 'password')
+    .where(user_id: @user.id, authentication_system_id: "password")
     .delete
 end
 
@@ -162,11 +162,11 @@ step "there is a room :room for building :building" do |room, building|
   FactoryBot.create(:room, name: room, building: b)
 end
 
-step 'there is an inventory pool :name' do |name|
+step "there is an inventory pool :name" do |name|
   @pool = FactoryBot.create(:inventory_pool, name: name)
 end
 
-step 'there is a model :name' do |name|
+step "there is a model :name" do |name|
   FactoryBot.create(:leihs_model, product: name)
 end
 
@@ -178,20 +178,20 @@ step "there are meta mail templates" do
      [:submitted, :order],
      [:deadline_soon_reminder, :user],
      [:reminder, :user]].each do |tmpl, type|
-       FactoryBot.create(:mail_template,
-                         is_template_template: true,
-                         language_locale: lang.locale,
-                         name: tmpl,
-                         type: type,
-                         format: :text,
-                         body: "template stub",
-                         created_at: DateTime.now,
-                         updated_at: DateTime.now)
-     end
+      FactoryBot.create(:mail_template,
+                        is_template_template: true,
+                        language_locale: lang.locale,
+                        name: tmpl,
+                        type: type,
+                        format: :text,
+                        body: "template stub",
+                        created_at: DateTime.now,
+                        updated_at: DateTime.now)
+    end
   end
 end
 
-step 'there is/are :n borrowable item(s) for model :model in pool :pool' do |n, model, pool|
+step "there is/are :n borrowable item(s) for model :model in pool :pool" do |n, model, pool|
   model = LeihsModel.find(product: model)
   pool = InventoryPool.find(name: pool)
 
@@ -204,17 +204,17 @@ step 'there is/are :n borrowable item(s) for model :model in pool :pool' do |n, 
   end
 end
 
-step 'there is a category :name' do |name|
+step "there is a category :name" do |name|
   @category = FactoryBot.create(:category, name: name)
 end
 
-step 'the :model_name model belongs to category :cat_name' do |model_name, cat_name|
+step "the :model_name model belongs to category :cat_name" do |model_name, cat_name|
   cat = Category.find(name: cat_name)
   model = LeihsModel.find(product: model_name)
   cat.add_direct_model(model)
 end
 
-step 'parent of category :child_name is category :parent_name' do |child_name, parent_name|
+step "parent of category :child_name is category :parent_name" do |child_name, parent_name|
   parent = Category.find(name: parent_name)
   child = Category.find(name: child_name)
   parent.add_child(child)
