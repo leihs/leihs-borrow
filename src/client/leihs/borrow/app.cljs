@@ -21,7 +21,7 @@
    [leihs.borrow.lib.translate :as translate]
    [leihs.borrow.client.routes :as routes]
 
-   [leihs.borrow.features.about-page.core :as about-page]
+   [leihs.borrow.features.debug-page.core :as debug-page]
    [leihs.borrow.features.categories.index :as category-index]
    [leihs.borrow.features.categories.show :as category-show]
    [leihs.borrow.features.current-user.show :as current-user-show]
@@ -97,7 +97,7 @@
 
 ;-; CORE APP
 (def views {::routes/home home-page/view
-            ::routes/about-page about-page/view
+            ::routes/debug-page debug-page/view
 
             ;; NOTE: categories index not currently used in design spec
             ;; ::routes/categories-index category-index/view

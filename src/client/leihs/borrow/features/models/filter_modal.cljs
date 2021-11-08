@@ -26,8 +26,8 @@
              [::routes/models {:query-params query-params}]]))
 
 (reg-event-db ::toggle-debug
-              (fn-traced [db _]
-                (update-in db [:ls :debug ::filter-labels] not)))
+              (fn-traced [db [_ flag]]
+                (assoc-in db [:ls :debug ::filter-labels] flag)))
 
 (reg-event-db ::save-options
               (fn-traced [db [_ query-params]]
@@ -203,9 +203,4 @@
          [:> UI/Components.Design.FilterButton {:onClick show!}
           (if debug?
             (js/JSON.stringify (clj->js saved-opts))
-            (t :borrow.home-page.show-search-and-filter))]
-         [:div
-          [:br]
-          [:button.btn.btn-outline-secondary.btn-sm
-           {:on-click #(dispatch [::toggle-debug])}
-           "toggle debug"]]]))))
+            (t :borrow.home-page.show-search-and-filter))]]))))

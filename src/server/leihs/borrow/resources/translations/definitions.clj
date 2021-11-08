@@ -87,10 +87,6 @@
 
   ; --- PER FEATURE TRANSLATIONS --- 
 
-    :about-page {:title {:en-GB "About"
-                         :de-CH "Über"}
-                 :navigation-menu {:en-GB "Navigation Menu"
-                                   :de-CH "Navigationsmenü"}}
     :categories {:title {:en-GB "Categories"
                          :de-CH "Kategorien"}}
     :current-user {:title {:en-GB "User account"
@@ -99,6 +95,9 @@
                                :de-CH "Nutzerdaten"}
                    :metadata-summary {:en-GB "ID {userId}"
                                       :de-CH "ID {userId}"}}
+
+    :debug-page {:title {:en-GB "Debugging"
+                         :de-CH "Debugging"}}
 
     :delegations {:title {:en-GB "Delegations"
                           :de-CH "Delegationen"}
