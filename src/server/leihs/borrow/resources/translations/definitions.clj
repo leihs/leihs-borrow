@@ -88,7 +88,11 @@
   ; --- PER FEATURE TRANSLATIONS --- 
 
     :categories {:title {:en-GB "Categories"
-                         :de-CH "Kategorien"}}
+                         :de-CH "Kategorien"}
+                 :sub-categories {:en-GB "Sub-categories"
+                                  :de-CH "Unterkategorien"}
+                 :items {:en-GB "Items"
+                         :de-CH "Gegenstände"}}
     :current-user {:title {:en-GB "User account"
                            :de-CH "Benutzerkonto"}
                    :user-data {:en-GB "User data"

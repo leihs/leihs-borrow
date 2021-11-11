@@ -14,7 +14,7 @@ step 'I click on :name within breadcrumbs' do |name|
   end
 end
 
-step 'visit the sub-category :name' do |name|
+step 'I visit the sub-category :name' do |name|
   category = Category.find(name: name)
   c_seq = categories_seq(category)
   link = make_category_link(c_seq)

@@ -25,7 +25,10 @@
    [leihs.borrow.features.models.filter-modal :refer [filter-comp] :as filter-modal]
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.borrow.features.categories.core :as categories]))
+   [leihs.borrow.features.categories.core :as categories]
+   [leihs.core.core :refer [dissoc-in]]))
+
+(set-default-translate-path :borrow.categories)
 
 (def query
   (rc/inline "leihs/borrow/features/categories/getCategoryShow.gql"))
@@ -105,6 +108,18 @@
  ::errors
  (fn [db [_ id]] (get-in db [::errors id])))
 
+(reg-event-db
+ ::set-child-cats-collapsed
+ (fn [db [_ id collapsed?]]
+   (if collapsed?
+     (dissoc-in db [:ls ::open-category-ids id])
+     (assoc-in db [:ls ::open-category-ids id] true))))
+
+(reg-sub
+ ::child-cats-collapsed?
+ (fn [db [_ id]]
+   (not (get-in db [:ls ::open-category-ids id]))))
+
 (defn view []
   (let [routing @(subscribe [:routing/routing])
         categories-path (get-in routing [:bidi-match :route-params :categories-path])
@@ -119,7 +134,8 @@
         extra-search-args {:categoryId category-id}
 
         ;; FIXME: get current url from router!
-        child-cats  (for [cat children] (merge cat {:url (-> js/window .-location .-pathname (str "/" (:id cat)))}))]
+        child-cats  (for [cat children] (merge cat {:url (-> js/window .-location .-pathname (str "/" (:id cat)))}))
+        child-cats-collapsed? @(subscribe [::child-cats-collapsed? category-id])]
 
     [:<>
      (cond
@@ -131,23 +147,27 @@
        [:<>
         [:> UI/Components.Design.PageLayout.Header
          {:title (:name category)
-          :preTitle (r/as-element
-                     [:> UI/Components.CategoryBreadcrumbs
-                      {:className "text-center"
-                       :ancestorCats (h/camel-case-keys cat-ancestors)
+          :preTitle (when (seq cat-ancestors)
+                      (r/as-element
+                       [:> UI/Components.CategoryBreadcrumbs
+                        {:className "text-center"
+                         :ancestorCats (h/camel-case-keys cat-ancestors)
                        ;; FIXME: either add url to all ancestor cats OR extend router to take list of ids (instead of prejoined path)
-                       :getPathForCategory (fn [path] (routing/path-for ::routes/categories-show :categories-path path))}])}
+                         :getPathForCategory (fn [path] (routing/path-for ::routes/categories-show :categories-path path))}]))}
          [filter-comp
           #(dispatch [:routing/navigate
                       [::routes/categories-show
                        {:categories-path categories-path :query-params %}]])
           #_extra-search-args]]
         [:<>
-         [:> UI/Components.Design.Stack
+         [:> UI/Components.Design.Stack {:space 4}
           (when-not (empty? child-cats)
-            [:> UI/Components.Design.Section
-             {:title "Unterkategorien" :collapsible true}
+            [:> UI/Components.Design.Section.Controlled
+             {:title (t :sub-categories)
+              :collapsible true
+              :collapsed child-cats-collapsed?
+              :on-toggle-collapse #(dispatch [::set-child-cats-collapsed category-id %])}
              (categories/categories-list child-cats)])
           [:> UI/Components.Design.Section
-           {:title "Gegenstände" :collapsible true}
+           {:title (t :items) :collapsible true}
            [models/search-results extra-search-args]]]]])]))
