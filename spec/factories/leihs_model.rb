@@ -24,6 +24,7 @@ FactoryBot.define do
       images { [] }
       properties { [] }
       recommends { [] }
+      version { rand(1000) unless product }
     end
 
     created_at { DateTime.now }

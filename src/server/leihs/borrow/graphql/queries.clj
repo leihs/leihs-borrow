@@ -68,7 +68,7 @@
    :submitted-pool-orders-count orders/submitted-pool-orders-count
    :suspensions suspensions/get-multiple
    :thumbnails images/get-multiple-thumbnails
-   :unsubmitted-order orders/get-unsubmitted
+   :cart orders/get-cart
    :user users/get-one
    :users users/get-multiple
    :draft-order orders/get-draft

@@ -1,15 +1,15 @@
 (ns leihs.borrow.resources.orders
   (:refer-clojure :exclude [resolve])
   (:require [clojure.java.jdbc :as jdbc]
-            [clojure.string :refer [upper-case]]
             [clojure.set :as set]
+            [clojure.string :refer [upper-case]]
             [clojure.tools.logging :as log]
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.mails :as mails]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.delegations :as delegations]
-            [leihs.borrow.resources.reservations :as reservations]
+            [leihs.borrow.resources.reservations :as rs]
             [leihs.borrow.resources.settings :as settings]
             [leihs.core.core :refer [spy-with]]
             [leihs.core.database.helpers :as database]
@@ -51,12 +51,12 @@
 (defn refine-rental-state [tx row]
   (let [rs (->> row
                 :reservation_ids
-                (reservations/get-by-ids tx))
+                (rs/get-by-ids tx))
         expired? (some #(and (contains? #{"submitted" "approved"} (:status %))
-                             (reservations/overdue? %))
+                             (rs/overdue? %))
                        rs)
         overdue? (some #(and (-> % :status (= "signed"))
-                             (reservations/overdue? %))
+                             (rs/overdue? %))
                        rs)
         states (-> row
                    :reservation_states
@@ -220,8 +220,7 @@
          (helpers/treat-order-arg order-by :unified_customer_orders)))))
 
 (defn get-connection [{{:keys [tx]} :request :as context} args value]
-  (connections/wrap (spy-with #(-> % (apply [context args value]) sql/format)
-                              get-connection-sql-map)
+  (connections/wrap get-connection-sql-map
                     context
                     args
                     value
@@ -283,8 +282,8 @@
                     {:row-fn pool-order-row}))))
 
 (defn valid-until [tx user-id]
-  (-> (reservations/unsubmitted-sqlmap tx user-id)
-      (sql/select (reservations/valid-until-sql tx))
+  (-> (rs/unsubmitted-sqlmap tx user-id)
+      (sql/select (rs/valid-until-sql tx))
       (sql/order-by [:updated_at :asc])
       (sql/limit 1)
       sql/format
@@ -292,39 +291,37 @@
       first
       :updated_at))
 
-(defn get-unsubmitted
+(defn get-cart
   [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
-  (let [rs  (-> (reservations/unsubmitted-sqlmap tx user-id)
-                sql/format
-                (reservations/query tx))
+  (let [rs (-> (rs/unsubmitted-and-draft-sqlmap tx user-id)
+               sql/format
+               (rs/query tx))
         va (valid-until tx user-id)]
     (if (empty? rs)
       {}
       {:valid-until va
        :reservations rs
-       :invalidReservationIds (->> rs
-                                   (reservations/with-invalid-availability context)
-                                   (map :id))
+       :invalidReservationIds (->> (rs/get-drafts tx user-id) (map :id))
        :user-id (when va user-id)})))
 
 (defn get-draft
   [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
-  (let [rs  (-> (reservations/draft-sqlmap tx user-id)
+  (let [rs  (-> (rs/draft-sqlmap tx user-id)
                 sql/format
-                (reservations/query tx))]
+                (rs/query tx))]
     {:reservations rs
      :invalidReservationIds (as-> rs <>
-                              (reservations/with-invalid-availability context <>)
+                              (rs/with-invalid-availability context <>)
                               (map :id <>))}))
 
 (defn submit
   [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [purpose title]}
    _]
-  (let [reservations (reservations/unsubmitted tx user-id)]
+  (let [reservations (rs/unsubmitted tx user-id)]
     (if (empty? reservations)
       (throw (ex-info "User does not have any unsubmitted reservations." {})))
-    (if-not (empty? (reservations/with-invalid-availability context reservations))
+    (if-not (empty? (rs/with-invalid-availability context reservations))
       (throw (ex-info "Some reserved quantities are not available anymore." {})))
     (let [uuid (-> (sql/insert-into :customer_orders)
                    (sql/values [{:purpose purpose
@@ -356,7 +353,7 @@
                 (sql/where [:in :id (map :id rs)])
                 (sql/returning :*)
                 sql/format
-                (reservations/query tx))
+                (rs/query tx))
             (recur remainder
                    (conj mails #(mails/send-received context order))))
           (do (set! ds/after-tx mails)
@@ -388,7 +385,7 @@
           [(sql/call :>
                      (sql/call :now)
                      (sql/call :+
-                               (-> (reservations/unsubmitted-sqlmap tx user-id)
+                               (-> (rs/unsubmitted-sqlmap tx user-id)
                                    (sql/select :updated_at)
                                    (sql/order-by [:updated_at :desc])
                                    (sql/limit 1))
@@ -400,19 +397,11 @@
         :result)))
 
 (defn refresh-timeout
-  "If any of the unsubmitted reservations has an invalid start date,
-  then make them all draft. The unsubmitted order returned is {} in this case.
-  Otherwise, if the unsubmitted order is not timed-out or it is timed-out,
-  but all the reservations have still valid availability, then the valid
-  until date is updated as a side-effect. The unsubmitted order is returned
-  in any case."
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}
-   args
-   value]
-  (if (reservations/some-unsubmitted-with-invalid-start-date? context)
-    (do (reservations/unsubmitted->draft tx user-id)
-        {:unsubmitted-order {}})
-    (do (when (or (not (timeout? tx user-id))
-                  (not (reservations/some-unsubmitted-with-invalid-availability? context)))
-          (reservations/touch-unsubmitted! tx user-id))
-        {:unsubmitted-order (get-unsubmitted context args value)})))
+  [{{:keys [tx]} :request user-id ::target-user/id :as context} args value]
+  (when-some [broken-rs (not-empty (rs/broken tx user-id))]
+    (->> broken-rs (map :id) #_log/spy (rs/unsubmitted->draft tx)))
+  (when-some [invalid-rs (not-empty (rs/unsubmitted-with-invalid-availability context))]
+    (->> invalid-rs (map :id) #_log/spy (rs/unsubmitted->draft tx)))
+  (when-some [unsub-rs (not-empty (rs/unsubmitted tx user-id))]
+    (->> unsub-rs (map :id) #_log/spy (rs/touch! tx)))
+  {:unsubmitted-order (get-cart context args value)})

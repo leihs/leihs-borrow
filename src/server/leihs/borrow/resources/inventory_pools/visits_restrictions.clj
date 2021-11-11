@@ -36,9 +36,8 @@
                            :days)
           (:reservation_advance_days pool))))
 
-(defn visits-capacity-reached? [date-with-avail pool]
-  (let [index (-> date-with-avail
-                  :date
+(defn visits-capacity-reached? [date visits-count pool]
+  (let [index (-> date
                   local-date
                   .getDayOfWeek
                   .getValue
@@ -46,21 +45,24 @@
                   str
                   keyword)
         max_visits (some-> pool :max_visits index Integer.)]
-    (and max_visits
-         (>= (:visits_count date-with-avail) max_visits))))
+    (and max_visits (>= visits-count max_visits))))
 
 (defn start-date-restriction [tx date-with-avail pool]
   (cond (close-time? tx (:date date-with-avail) pool)
         :CLOSE_TIME
         (before-earliest-possible-pick-up-date? (:date date-with-avail) pool)
         :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE
-        (visits-capacity-reached? date-with-avail pool)
+        (visits-capacity-reached? (:date date-with-avail)
+                                  (:visits_count date-with-avail)
+                                  pool)
         :VISITS_CAPACITY_REACHED))
 
 (defn end-date-restriction [tx date-with-avail pool]
   (cond (close-time? tx (:date date-with-avail) pool)
         :CLOSE_TIME
-        (visits-capacity-reached? date-with-avail pool)
+        (visits-capacity-reached? (:date date-with-avail)
+                                  (:visits_count date-with-avail)
+                                  pool)
         :VISITS_CAPACITY_REACHED))
 
 (def past-date? #(before? (local-date %) (local-date)))

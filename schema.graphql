@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Wed Oct 27 2021 18:33:48 GMT+0200 (Central European Summer Time)
+# timestamp: Thu Nov 11 2021 13:51:43 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot

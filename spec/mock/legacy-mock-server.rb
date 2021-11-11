@@ -3,7 +3,6 @@ require 'json'
 require 'pry'
 require 'sinatra'
 
-require_relative 'spec/refresh_timeout.rb'
 require_relative 'spec/models/filter_available.rb'
 
 set :show_exceptions, false
