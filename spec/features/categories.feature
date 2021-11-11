@@ -35,7 +35,8 @@ Feature: Search results (and caching)
     And I see model "Mini Beamer"
     And don't see any breadcrumbs
 
-    When I click on sub-category "Beamers"
+    When I expand the "Sub-categories" section
+    And I click on sub-category "Beamers"
     Then the title of the page is "Beamers"
     And I see 2 models
     And I see model "Beamer"
@@ -44,7 +45,8 @@ Feature: Search results (and caching)
       | category |
       | Video    |
 
-    When I click on sub-category "Mini Beamers"
+    When I expand the "Sub-categories" section
+    And I click on sub-category "Mini Beamers"
     Then the title of the page is "Mini Beamers"
     And I see 1 model
     And I see model "Mini Beamer"
@@ -71,7 +73,7 @@ Feature: Search results (and caching)
     And don't see any breadcrumbs
 
   Scenario: Breadcrumbs when coming directly to a sub-category
-    When visit the sub-category "Mini Beamers"
+    When I visit the sub-category "Mini Beamers"
     Then the title of the page is "Mini Beamers"
     And I see 1 model
     And I see model "Mini Beamer"
@@ -96,3 +98,28 @@ Feature: Search results (and caching)
     And I see model "Beamer"
     And I see model "Mini Beamer"
     And don't see any breadcrumbs
+
+  Scenario: Expand and collapse sub-categories
+
+    The app tracks the collapse/expand state of the "Sub-categories" section.
+    Initially it must be collapsed.
+
+    When I click on category "Video"
+    Then the title of the page is "Video"
+    And the "Sub-categories" section is collapsed
+
+    When I expand the "Sub-categories" section
+    And I click on sub-category "Beamers"
+    Then the title of the page is "Beamers"
+    And the "Sub-categories" section is collapsed
+
+    When I click on "Video" within breadcrumbs
+    Then the title of the page is "Video"
+    And the "Sub-categories" section is expanded
+
+    When I collapse the "Sub-categories" section
+    And I visit the sub-category "Beamers"
+    And the title of the page is "Beamers"
+    And I click on "Video" within breadcrumbs
+    And the title of the page is "Video"
+    Then the "Sub-categories" section is collapsed
