@@ -19,6 +19,7 @@
             [wharf.core :refer [transform-keys]]
             [com.walmartlabs.lacinia :as lacinia]
             [clojure.spec.alpha :as spec]
+            [clojure.set :as set]
             [clojure.java.jdbc :as jdbc]
             [clojure.tools.logging :as log])
   (:import [java.time.format DateTimeFormatter]))
@@ -106,58 +107,6 @@
       sql/format
       (query tx)))
 
-(defn complies-with-reservation-advance-days? [tx r]
-  (-> (workdays/base-sqlmap (:inventory_pool_id r))
-      (sql/select
-       [(sql/raw (format "'%s'::date - CURRENT_DATE >= reservation_advance_days"
-                         (:start_date r)))
-        :result])
-      sql/format
-      (->> (jdbc/query tx))
-      first
-      :result))
-
-(defn complies-with-max-visits-restriction? [tx r] 
-  (letfn [(visits-count [tx pool-id date]
-            (-> (sql/select :%count.*)
-                (sql/from :visits)
-                (sql/where [:= :inventory_pool_id pool-id])
-                (sql/merge-where [:= :date (sql/call :cast date :date)])
-                sql/format
-                (->> (jdbc/query tx))
-                first
-                :count))]
-    (let [pool-id (:inventory_pool_id r)
-          pool (pools/get-by-id tx pool-id)]
-      (every? #(not (visits-capacity-reached? % 
-                                              (visits-count tx pool-id %)
-                                              pool))
-              [(:start_date r) (:end_date r)]))))
-
-(defn visit-days-outside-of-holidays? [tx r]
-  (-> (sql/select true)
-      (sql/from :holidays)
-      (sql/where [:= :inventory_pool_id (:inventory_pool_id r)])
-      (sql/merge-where [:not [:overlaps
-                              [(sql/call :cast (:start_date r) :date)
-                               (sql/call :cast (:end_date r) :date)]
-                              [:holidays.start_date :holidays.end_date]]])
-      sql/format
-      (->> (jdbc/query tx))
-      empty?))
-
-(defn visit-days-on-workdays? [tx r]
-  (let [weekdays [:monday :tuesday :wednesday :thursday :friday :saturday :sunday]
-        workday (workdays/get tx (:inventory_pool_id r))
-        open-days (vec (select-keys workday weekdays))]
-    (every? #(->> %
-                  (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE)
-                  .getDayOfWeek
-                  .getValue
-                  open-days
-                  second)
-            [(:start_date r) (:end_date r)])))
-
 (defn complies-with-max-reservation-time? [tx r]
   (-> (sql/select
        [(sql/raw (format "CASE
@@ -169,7 +118,6 @@
         :result])
       (sql/from :settings)
       sql/format
-      log/spy
       (->> (jdbc/query tx))
       first
       :result))
@@ -180,31 +128,16 @@
                 (query tx))]
     (reduce (fn [memo r]
               (cond-> memo
-                (not (and (complies-with-reservation-advance-days? tx r)
-                          (complies-with-max-visits-restriction? tx r)
-                          (visit-days-outside-of-holidays? tx r)
-                          (visit-days-on-workdays? tx r)
+                (not (and (->> (pools/to-reserve-from tx
+                                                      user-id
+                                                      (:start_date r)
+                                                      (:end_date r))
+                               (map :id)
+                               (some #{(:inventory_pool_id r)}))
                           (complies-with-max-reservation-time? tx r)))
                 (conj r)))
             []
             brs)))
-
-(defn timed-out? [tx r]
-  (let [minutes (:timeout_minutes (settings/get tx))]
-    (-> (sql/select
-         [(sql/call :>
-                    (sql/call :now)
-                    (sql/call :+
-                              (-> (sql/select :updated_at)
-                                  (sql/from :reservations)
-                                  (sql/where [:= :id (:id r)])
-                                  (sql/merge-where [:= :status "unsubmitted"]))
-                              (sql/raw (str "interval '" minutes " minutes'"))))
-          :result])
-        sql/format
-        (->> (jdbc/query tx))
-        first
-        :result)))
 
 (defn with-invalid-availability
   [{{:keys [tx]} :request :as context} reservations]
@@ -224,11 +157,7 @@
                          {:inventory-pool-ids [pool-id]
                           :start-date start-date
                           :end-date end-date
-                          :exclude-reservation-ids
-                          (->> reservations
-                               (spy-with (partial map :id))
-                               (filter (partial (complement timed-out?) tx))
-                               (map :id))}
+                          :exclude-reservation-ids (->> reservations (map :id))}
                          {:id model-id})]
                    (cond-> invalid-rs
                      (< available-quantity (clojure.core/count rs))
@@ -426,7 +355,8 @@
   [{{:keys [tx] {auth-user-id :id} :authenticated-entity} :request
     user-id ::target-user/id
     :as context}
-   {:keys [model-id start-date end-date quantity inventory-pool-ids]
+   {:keys [model-id start-date end-date quantity]
+    [pool-id] :inventory-pool-ids
     exclude-reservation-ids :exclude-reservation-ids 
     :or {exclude-reservation-ids []}
     :as args}
@@ -435,56 +365,38 @@
     (raise "Model either does not exist or is not reservable by the user."))
   (when (unsubmitted-for-affiliated-user-exists? tx user-id auth-user-id)
     (raise "There already exists an unsubmitted reservation for another user."))
-  (when (-> (sql/select {:exists (-> (sql/select true)
-                                     (sql/from :users))})
-            sql/format
-            (->> (jdbc/query tx))
-            first
-            :exists))
-  (let [pools (cond->> (pools/to-reserve-from tx
-                                              user-id
-                                              start-date
-                                              end-date)
-                (seq inventory-pool-ids)
-                (filter #((set inventory-pool-ids) (:id %))))]
-    (if (empty? pools)
-      (raise "Not possible to reserve from any pool under given conditions.")
-      (let [pool-avails (->> (availability/get-available-quantities
-                              context
-                              {:inventory-pool-ids (map :id pools)
-                               :model-ids [model-id]
-                               :start-date start-date
-                               :end-date end-date
-                               :user-id user-id
-                               :exclude-reservation-ids exclude-reservation-ids}
-                              nil)
-                             (map (fn [el]
-                                    (assoc el
-                                           :name
-                                           (->> pools
-                                                (filter #(= (:id el) (:id %)))
-                                                first
-                                                :name)))))]
-        (->> quantity
-             (distribute pool-avails)
-             (map (fn [{:keys [quantity] :as attrs}]
-                    (let [row (-> attrs
-                                  (select-keys [:inventory_pool_id :model_id :quantity])
-                                  (assoc :start_date (sql/call :cast start-date :date))
-                                  (assoc :end_date (sql/call :cast end-date :date))
-                                  (assoc :quantity 1
-                                         :user_id user-id
-                                         :status "unsubmitted"
-                                         :created_at (time/now tx)
-                                         :updated_at (time/now tx)))]
-                      (-> (sql/insert-into :reservations)
-                          (sql/values (->> row
-                                           repeat
-                                           (take quantity)))
-                          (assoc :returning (columns tx))
-                          sql/format
-                          (query tx)))))
-             flatten)))))
+  (when-not (->> (pools/to-reserve-from tx user-id start-date end-date)
+                 (map :id)
+                 (some #{pool-id}))
+    (raise "Not allowed to create reservation in this pool."))
+  (let [available-quantity (models/available-quantity-in-date-range
+                            context
+                            {:inventory-pool-ids [pool-id]
+                             :start-date start-date
+                             :end-date end-date
+                             :exclude-reservation-ids exclude-reservation-ids}
+                            {:id model-id})]
+    (when (< available-quantity quantity)
+      (raise "Desired quantity is not available anymore.")))
+  (let [row (-> {:inventory_pool_id pool-id, :model_id model-id}
+                (assoc :start_date (sql/call :cast start-date :date))
+                (assoc :end_date (sql/call :cast end-date :date))
+                (assoc :quantity 1
+                       :user_id user-id
+                       :status "unsubmitted"
+                       :created_at (time/now tx)
+                       :updated_at (time/now tx)))
+        created-rs (-> (sql/insert-into :reservations)
+                       (sql/values (->> row repeat (take quantity)))
+                       (assoc :returning (columns tx))
+                       sql/format
+                       (query tx))]
+    (when-some [broken-rs (not-empty (broken tx user-id))]
+      (when (-> (->> created-rs (map :id) set)
+                (set/intersection (->> broken-rs (map :id) set))
+                empty? not)
+        (raise "Reservation could not be created due to broken conditions.")))
+    created-rs))
 
 (defn add-to-cart
   [{{:keys [tx]} :request user-id ::target-user/id :as context}

@@ -55,6 +55,7 @@ describe 'reservations' do
           $startDate: Date!,
           $endDate: Date!,
           $quantity: Int!,
+          $inventoryPoolIds: [UUID!],
           $userId: UUID!
         ) {
           createReservation(
@@ -62,6 +63,7 @@ describe 'reservations' do
             startDate: $startDate,
             endDate: $endDate,
             quantity: $quantity,
+            inventoryPoolIds: $inventoryPoolIds,
             userId: $userId
           ) {
             id
@@ -73,75 +75,7 @@ describe 'reservations' do
     end
 
     context 'within one pool' do
-      it 'with implicit inventory pool ids' do
-        2.times do
-          model_1.add_item(
-            FactoryBot.create(:item,
-                              is_borrowable: true,
-                              responsible: inventory_pool_1)
-          )
-        end
-
-        vars = {
-          modelId: model_1.id,
-          startDate: Date.tomorrow.strftime,
-          endDate: (Date.tomorrow + 1.day).strftime,
-          quantity: 2,
-          userId: user.id
-        }
-
-        result = query(q, user.id, vars).deep_symbolize_keys
-
-        reservations = result.dig(:data, :createReservation)
-        expect(reservations.count).to eq 2
-
-        now = Time.now
-
-        reservations.each do |reservation|
-          # NOTE: The timestamp stored in DB is calculated according
-          # to `settings.time_zone` and stored without time zone,
-          # but representing UTC.
-          # Clojure backend formats the timestamp according to
-          # ISO 8601 while adding UTC time zone to it.
-          # At the end of the day, the time difference in minutes
-          # between now and `created_at` / `updated_at` should be
-          # 0, which means that all the time zone stuff was considered
-          # correctly accross all the layers.
-          created_at = DateTime.parse(reservation[:createdAt])
-          diff_in_minutes = ((now - created_at) / 1.minutes).round
-          expect(diff_in_minutes).to eq 0
-
-          updated_at = DateTime.parse(reservation[:updatedAt])
-          diff_in_minutes = ((now - updated_at) / 1.minutes).round
-          expect(diff_in_minutes).to eq 0
-        end
-      end
-
       it 'with explicit inventory pool ids' do
-        q = <<-GRAPHQL
-          mutation(
-            $modelId: UUID!,
-            $startDate: Date!,
-            $endDate: Date!,
-            $quantity: Int!,
-            $inventoryPoolIds: [UUID!],
-            $userId: UUID!
-          ) {
-            createReservation(
-              modelId: $modelId,
-              startDate: $startDate,
-              endDate: $endDate,
-              quantity: $quantity,
-              inventoryPoolIds: $inventoryPoolIds,
-              userId: $userId
-            ) {
-              id
-              createdAt
-              updatedAt
-            }
-          }
-        GRAPHQL
-
         model_1.add_item(
           FactoryBot.create(:item,
                             is_borrowable: true,
@@ -193,72 +127,14 @@ describe 'reservations' do
             startDate: Date.tomorrow.strftime,
             endDate: (Date.tomorrow + 1.day).strftime,
             quantity: 3,
+            inventoryPoolIds: [inventory_pool_1.id],
             userId: user.id
           }
 
           result = query(q, user.id, vars).deep_symbolize_keys
           expect(result[:data][:createReservation]).to be_nil
           expect(result[:errors].first[:message]).to eq \
-            'The desired quantity is not available.'
-        end
-      end
-    end
-
-    context 'within 2 pools' do
-      it 'works' do
-        2.times do
-          model_2.add_item(
-            FactoryBot.create(:item,
-                              is_borrowable: true,
-                              responsible: inventory_pool_1)
-          )
-        end
-
-        model_2.add_item(
-          FactoryBot.create(:item,
-                            is_borrowable: true,
-                            responsible: inventory_pool_2)
-        )
-
-        vars = {
-          modelId: model_2.id,
-          startDate: Date.tomorrow.strftime,
-          endDate: (Date.tomorrow + 1.day).strftime,
-          quantity: 3,
-          userId: user.id
-        }
-
-        result = query(q, user.id, vars).deep_symbolize_keys
-
-        reservations = result.dig(:data, :createReservation)
-        expect(reservations.count).to eq 3
-      end
-
-      context 'throws error' do
-        it 'quantity not available' do
-          model_3.add_item(
-            FactoryBot.create(:item,
-                              is_borrowable: true,
-                              responsible: inventory_pool_1)
-          )
-          model_3.add_item(
-            FactoryBot.create(:item,
-                              is_borrowable: true,
-                              responsible: inventory_pool_2)
-          )
-
-          vars = {
-            modelId: model_3.id,
-            startDate: Date.tomorrow.strftime,
-            endDate: (Date.tomorrow + 1.day).strftime,
-            quantity: 3,
-            userId: user.id
-          }
-
-          result = query(q, user.id, vars).deep_symbolize_keys
-          expect(result[:data][:createReservation]).to be_nil
-          expect(result[:errors].first[:message]).to eq \
-            'The desired quantity is not available.'
+            'Desired quantity is not available anymore.'
         end
       end
     end

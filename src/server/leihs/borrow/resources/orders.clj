@@ -379,29 +379,12 @@
         (->> (jdbc/execute! tx)))
     (get-one-by-id tx user-id id)))
 
-(defn timeout? [tx user-id]
-  (let [minutes (:timeout_minutes (settings/get tx))]
-    (-> (sql/select
-          [(sql/call :>
-                     (sql/call :now)
-                     (sql/call :+
-                               (-> (rs/unsubmitted-sqlmap tx user-id)
-                                   (sql/select :updated_at)
-                                   (sql/order-by [:updated_at :desc])
-                                   (sql/limit 1))
-                               (sql/raw (str "interval '" minutes " minutes'"))))
-           :result])
-        sql/format
-        (->> (jdbc/query tx))
-        first
-        :result)))
-
 (defn refresh-timeout
   [{{:keys [tx]} :request user-id ::target-user/id :as context} args value]
   (when-some [broken-rs (not-empty (rs/broken tx user-id))]
-    (->> broken-rs (map :id) #_log/spy (rs/unsubmitted->draft tx)))
+    (->> broken-rs (map :id) (rs/unsubmitted->draft tx)))
   (when-some [invalid-rs (not-empty (rs/unsubmitted-with-invalid-availability context))]
-    (->> invalid-rs (map :id) #_log/spy (rs/unsubmitted->draft tx)))
+    (->> invalid-rs (map :id) (rs/unsubmitted->draft tx)))
   (when-some [unsub-rs (not-empty (rs/unsubmitted tx user-id))]
-    (->> unsub-rs (map :id) #_log/spy (rs/touch! tx)))
+    (->> unsub-rs (map :id) (rs/touch! tx)))
   {:unsubmitted-order (get-cart context args value)})
