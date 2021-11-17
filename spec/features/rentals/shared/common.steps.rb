@@ -17,10 +17,10 @@ step "a customer order with title :title and the following reservations exists f
   table.hashes.each do |h|
     database.transaction do
       u = case h["user"]
-          when "user", nil then @user
-          else
-            User.find(firstname: h["user"])
-          end
+        when "user", nil then @user
+        else
+          User.find(firstname: h["user"])
+        end
       p = InventoryPool.find(name: h["pool"])
       m = LeihsModel.find(product: h["model"])
       o = Order.find(title: title)
@@ -29,22 +29,21 @@ step "a customer order with title :title and the following reservations exists f
       po ||= FactoryBot.create(:pool_order,
                                inventory_pool_id: p.id,
                                user_id: u.id,
-                               state: \
-                               if ["submitted", "approved", "rejected", "canceled"].include?(h["state"])
+                               state: if ["submitted", "approved", "rejected", "canceled"].include?(h["state"])
                                  h["state"]
                                else
                                  "approved"
                                end,
                                customer_order_id: o.id)
       c = if ["signed", "closed"].include?(h["state"])
-            Contract.create_with_disabled_triggers(UUIDTools::UUID.random_create.to_s,
-                                                   u.id,
-                                                   p.id,
-                                                   case h["state"]
-                                                   when "signed" then :open
-                                                   when "closed" then :closed
-                                                   end)
-          end
+          Contract.create_with_disabled_triggers(UUIDTools::UUID.random_create.to_s,
+                                                 u.id,
+                                                 p.id,
+                                                 case h["state"]
+          when "signed" then :open
+          when "closed" then :closed
+          end)
+        end
       if h["pickup-date"].presence
         with_disabled_triggers do
           Contract.update_with_disabled_triggers(c.id, :created_at, "'#{h["pickup-date"]}'")
@@ -85,4 +84,14 @@ step "I see the following status rows in the :name section:" do |section_name, t
   # ignore keys that are not present in the expectations table by removing them:
   expected_status_rows = status_rows.map { |l| l.slice(*table.headers.map(&:to_sym)) }
   expect(expected_status_rows).to eq symbolize_hash_keys(table.hashes)
+end
+
+step "I accept the :title dialog" do |title|
+  within(find_ui_modal_dialog(title: title)) do
+    find("button.btn-primary").click
+  end
+end
+
+step "the :name button is not visible" do |name|
+  page.has_no_selector?("button", text: name)
 end

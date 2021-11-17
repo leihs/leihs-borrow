@@ -75,13 +75,29 @@ end
 def get_ui_progress_infos(scope = page)
   find_ui_progress_infos(scope).map do |c|
     divs = c.all(":scope > div")
-    progressbar = within(".progress") { find(".progress-bar", visible: false) }
-    now = progressbar["aria-valuenow"]
-    max = progressbar["aria-valuemax"]
+
+    title = divs[0].text
+    progressbar_val = ""
+    info = ""
+
+    if divs.count > 1
+      if divs[1].matches_selector? ".progress"
+        progressbar = divs[1].find(".progress-bar", visible: false)
+        now = progressbar["aria-valuenow"]
+        max = progressbar["aria-valuemax"]
+        progressbar_val = "[#{now} of #{max}]"
+        if divs.count > 2
+          info = divs[2].text
+        end
+      else
+        info = divs[1].text
+      end
+    end
+
     {
-      title: divs[0].text,
-      progressbar: "[#{now} of #{max}]",
-      info: divs[2].text,
+      title: title,
+      progressbar: progressbar_val,
+      info: info,
     }
   end
 end
