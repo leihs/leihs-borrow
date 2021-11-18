@@ -14,7 +14,7 @@ Feature: Bla
     Background:
         Given there is an initial admin
         And there is a user
-        And there is a delegation
+        And there is a delegation "Project Saalschutz"
         And there is an inventory pool "Pool A"
         And the user is customer of pool "Pool A"
         And there is an inventory pool "Pool B"
@@ -27,11 +27,89 @@ Feature: Bla
             | A12  | DSLR Camera | Pool A |
             | A13  | DSLR Camera | Pool A |
             | A21  | Tripod      | Pool B |
-        And the following order exists
-            | title        | Purpose      | model       | pool   | quantity | start-date | end-date   |
-            | blue my mind | blue my mind | DSLR Camera | Pool A | 2        | 2032-02-01 | 2032-02-03 |
-            | blue my mind | blue my mind | Tripod      | Pool A | 1        | 2032-02-01 | 2032-02-04 |
+        And the following orders exist
+            | title        | Purpose      | model       | pool   | quantity | start-date | end-date   | status      | delegation         |
+            | blue my mind | blue my mind | DSLR Camera | Pool A | 2        | 2032-02-01 | 2032-02-03 | In_Approval | Project Saalschutz |
+            | blue my mind | blue my mind | Tripod      | Pool A | 1        | 2032-02-01 | 2032-02-04 | In_Approval | Project Saalschutz |
+            | open box     | open box     | DSLR Camera | Pool A | 2        | 2021-01-01 | 2021-02-03 | Returned    | my user            |
+            | open box     | open box     | Tripod      | Pool A | 1        | 2021-01-01 | 2021-02-03 | Returned    | my user            |
 
+    Scenario: Filter
+        When I log in as user
+        And I am assigned to a delegation
+        And I navigate to my rentals
+        Then I see the filter is collapsed
+        When I press on the filter
+        Then the filter opens
+        And I see a dropdown which contains my user and the delegation "Projekt Saalschutz"
+        And my user is selected
+        And I see a field to enter the search term
+        And the field is empty
+        And I see a dropdown to select a status
+        And all status are selected
+        And I see a date picker where I can select the start date
+        And the start date is not limited
+        And I see a date picker where I can select the end date
+        And the end date is not limited
+        And I see a drop down with pools listed where I have at least customer rights
+        And all pools are selected
+        When I klick "Anwenden"
+        Then all rentals are shown for my user
+
+
+    Scenario: Filter with selections
+        When I log in as user
+        And I am assigned to a delegation
+        And I navigate to my rentals
+        Then I see the filter is collapsed
+        When I press on the filter
+        Then the filter opens
+        When I select the delegation "Project Saalschutz"
+        And I enter the search term "Camera"
+        And I select the status "In_Approval"
+        And I choose the start date "2032-02-02"
+        And I choose the pool "Pool A"
+        And I klick on "Anwenden"
+        Then no rentals are shown
+        When I open the filter
+        And I choose the start date "2032-01-21"
+        And I klick on "Anwenden"
+        Then I see the my order
+        When I open the order
+        And I klick on "Zurücksetzen"
+        Then all rentals are shown for my user
+
+    Scenario: Keep filter when navigating back from detail page
+        When I log in as user
+        And I navigate to my rentals
+        Then I see the filter is collapsed
+        When I press on the filter
+        Then the filter opens
+        When I select the delegation "Project Saalschutz"
+        And I klick on "Anwenden"
+        Then the rentals for the delegation "Project Saalschutz" are shown
+        When I open the detail page of the rental
+        And I navigate back to my rentals
+        Then the delegation "Project Saalschutz" is still selected
+        When I log out of leihs
+        And I log in as user
+        And I navigate to my rentals
+        And I open the filter
+        Then my user is selected
+
+    Background:
+        Given there is an initial admin
+        And there is a user
+        And the user is not assigned to a delegation
+
+    Scenario: Filter - no delegation dropdown if not assigned to a delegation
+        When I log in as user
+        And I navigate to my rentals
+        Then I see the filter is collapsed
+        When I press on the filter
+        Then the filter opens
+        And my user is shown in the filter
+        And I can not choose another user
 
     Scenario: What is shown in a not yet accepted order
         When I log in as the user
