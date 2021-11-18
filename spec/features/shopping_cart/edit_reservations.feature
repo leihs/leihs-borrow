@@ -32,8 +32,6 @@ Feature: Shopping Cart - Editing Reservations
 
     When I click on "3 days from 01/02/32"
     And I see the "Edit reservation" dialog
-    # FIXME: currently this takes very long because calendar load *twice*!
-    # And the calendar has finished loading
     And I see a form inside the dialog
     Then the form has exactly these fields:
       | label          | value           |
@@ -57,8 +55,6 @@ Feature: Shopping Cart - Editing Reservations
 
     When I click on "Confirm"
     And the "Edit reservation" dialog has closed
-    # FIXME: fix reloading of cart:
-    And I wait 1 seconds
     Then I see the following lines in the "Items" section:
       | title          | body   | foot                 |
       | 3× DSLR Camera | Pool A | 3 days from 01/02/32 |
@@ -79,3 +75,24 @@ Feature: Shopping Cart - Editing Reservations
     Then the newly created order in the DB has:
       | title    | purpose  |
       | My Movie | My Movie |
+
+  Scenario: Deleting a reservation
+
+    Given the following reservations exist for the user:
+      | quantity | model       | pool   | start-date | end-date   |
+      | 1        | DSLR Camera | Pool A | 2032-02-01 | 2032-02-03 |
+      | 1        | Tripod      | Pool A | 2032-02-01 | 2032-02-02 |
+    And I log in as the user
+    When I navigate to the cart
+    Then I see the following lines in the "Items" section:
+      | title          | body   | foot                 |
+      | 1× DSLR Camera | Pool A | 3 days from 01/02/32 |
+      | 1× Tripod      | Pool A | 2 days from 01/02/32 |
+
+    When I click on "3 days from 01/02/32"
+    And I see the "Edit reservation" dialog
+    And I click on "Remove reservation"
+    And the "Edit reservation" dialog has closed
+    Then I see the following lines in the "Items" section:
+      | title     | body   | foot                 |
+      | 1× Tripod | Pool A | 2 days from 01/02/32 |

@@ -14,7 +14,7 @@
                                       reg-sub
                                       subscribe
                                       dispatch]]
-   [leihs.borrow.lib.helpers :as h :refer [spy]]
+   [leihs.borrow.lib.helpers :as h]
    [leihs.borrow.lib.form-helpers :refer [UiTextarea]]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.translate :refer [t dict set-default-translate-path]]
@@ -32,7 +32,8 @@
 (reg-event-fx
  ::routes/shopping-cart
  (fn-traced [{:keys [db]} [_ _]]
-   {:dispatch [::re-graph/query
+   {:db (assoc db ::edit-mode nil)
+    :dispatch [::re-graph/query
                (rc/inline "leihs/borrow/features/shopping_cart/getShoppingCart.gql")
                {:userId (current-user/chosen-user-id db)}
                [::on-fetched-data]]}))
@@ -43,14 +44,10 @@
    (-> db
        (assoc-in [:ls ::data]
                  (get-in data [:current-user :user :unsubmitted-order]))
-       (assoc-in [:ls ::data :edit-mode] nil)
        (cond-> errors (assoc ::errors errors)))))
 
-;; TODO: simplify, or even inline
 (defn pool-ids-with-borrowable-quantity [db]
-  (let [quants (get-in db [:ls
-                           ::data
-                           :edit-mode
+  (let [quants (get-in db [::edit-mode
                            :model
                            :total-borrowable-quantities])]
     (->> quants
@@ -60,12 +57,12 @@
 (reg-event-fx
  ::fetch-availability
  (fn-traced [{:keys [db]} [_ start-date end-date]]
-   (let [edit-mode (get-in db [:ls ::data :edit-mode])
+   (let [edit-mode (get-in db [::edit-mode])
          user-id (-> edit-mode :user :id)
          model (:model edit-mode)
-         exclude-reservation-ids (map :id (:reservation-lines edit-mode))
+         exclude-reservation-ids (map :id (:res-lines edit-mode))
          pool-ids (pool-ids-with-borrowable-quantity db)]
-     {:db (assoc-in db [:ls ::data :edit-mode :fetching-until-date] end-date)
+     {:db (assoc-in db [::edit-mode :fetching-until-date] end-date)
       :dispatch [::re-graph/query
                  (rc/inline "leihs/borrow/features/model_show/getAvailability.gql")
                  {:modelId (:id model)
@@ -77,10 +74,12 @@
                  [::on-fetched-availability]]})))
 
 
-(defn set-loading-as-ended [this]
-  (merge this
-         {:fetching-until-date nil
-          :fetched-until-date (:fetching-until-date this)}))
+(defn set-loading-as-ended [edit-mode, availability]
+  (when edit-mode
+    (merge edit-mode
+           {:fetching-until-date nil
+            :fetched-until-date (:fetching-until-date edit-mode)
+            :availability availability})))
 
 (reg-event-db
  ::on-fetched-availability
@@ -89,10 +88,8 @@
                  errors :errors}]]
    (-> db
        (cond-> errors (assoc-in [::errors] errors))
-       (update-in [:ls ::data :edit-mode]
-                  #(-> %
-                       set-loading-as-ended
-                       (assoc :availability availability))))))
+       (update-in [::edit-mode]
+                  #(set-loading-as-ended % availability)))))
 
 (reg-event-db
  ::open-delete-dialog
@@ -109,7 +106,18 @@
  (fn-traced [{:keys [db]} [_ ids]]
    {:db (-> db
             (assoc-in [:ls ::data :pending-count] (- 0 (count ids)))
-            (cond-> (get-in db [::data :delete-dialog]) (assoc-in [::data :delete-dialog :is-saving?] true)))
+            (assoc-in [::edit-mode] nil))
+    :dispatch [::re-graph/mutate
+               (rc/inline "leihs/borrow/features/shopping_cart/deleteReservationLines.gql")
+               {:ids ids}
+               [::on-delete-reservations]]}))
+
+(reg-event-fx
+ ::delete-all-reservations
+ (fn-traced [{:keys [db]} [_ ids]]
+   {:db (-> db
+            (assoc-in [:ls ::data :pending-count] (- 0 (count ids)))
+            (assoc-in [::data :delete-dialog :is-saving?] true))
     :dispatch [::re-graph/mutate
                (rc/inline "leihs/borrow/features/shopping_cart/deleteReservationLines.gql")
                {:ids ids}
@@ -132,7 +140,7 @@
 (reg-event-fx
  ::edit-reservation
  (fn-traced [{:keys [db]} [_ res-lines]]
-   (when-not (get-in db [:ls ::data :edit-mode]) ; do nothing if already editing (double event dispatch)
+   (when-not (get-in db [::edit-mode]) ; do nothing if already editing (double event dispatch)
      (let [now (js/Date.)
            res-line (first res-lines)
            user-id (-> res-line :user :id)
@@ -144,9 +152,8 @@
            max-date-loaded (-> (datefn/parseISO end-date)
                                (datefn/addMonths 6)
                                datefn/endOfMonth)]
-       {:db (assoc-in db
-                      [:ls ::data :edit-mode]
-                      {:reservation-lines res-lines
+       {:db (assoc-in db [::edit-mode]
+                      {:res-lines res-lines
                        :start-date start-date
                        :end-date end-date
                        :quantity quantity
@@ -191,10 +198,10 @@
  ::update-reservations
  (fn-traced [{:keys [db]} [_ args]]
    (let [new-quantity (:quantity args)
-         original-quantity (-> db :ls ::data :edit-mode :original-quantity)]
+         original-quantity (-> db ::edit-mode :original-quantity)]
      {:db (-> db
               (assoc-in [:ls ::data :pending-count] (- new-quantity original-quantity))
-              (assoc-in [:ls ::data :edit-mode :is-saving?] true))
+              (assoc-in [::edit-mode :is-saving?] true))
       :dispatch [::re-graph/mutate
                  (rc/inline "leihs/borrow/features/shopping_cart/updateReservations.gql")
                  args
@@ -209,7 +216,7 @@
      {:alert (str "FAIL! " (pr-str errors))}
      {:db (-> db
               (dissoc-in [:ls ::data :pending-count])
-              (dissoc-in [:ls ::data :edit-mode :is-saving?])
+              (assoc ::edit-mode nil)
               (update-in [:ls ::data :reservations]
                          (fn [rs]
                            (as-> rs <>
@@ -218,8 +225,7 @@
       :dispatch [::timeout/refresh]})))
 
 (reg-event-db ::cancel-edit
-              [(path :ls ::data)]
-              (fn-traced [co _] (assoc co :edit-mode nil)))
+              (fn-traced [co _] (assoc co ::edit-mode nil)))
 
 (reg-sub ::data
          (fn [db _] (-> db :ls ::data)))
@@ -232,18 +238,7 @@
          (fn [db _] (::errors db)))
 
 (reg-sub ::edit-mode-data
-         :<- [::data]
-         (fn [data _] (:edit-mode data)))
-
-(reg-sub ::edit-mode?
-         :<- [::edit-mode-data]
-         (fn [em [_ res-lines]]
-           (boolean
-            (some->> em
-                     :reservation-lines
-                     (map :id)
-                     set
-                     (= (->> res-lines (map :id) set))))))
+         (fn [data _] (::edit-mode data)))
 
 (reg-sub ::reservations
          :<- [::data]
@@ -290,9 +285,10 @@
   {:label (clj->js (get-in dict [:borrow :order-panel :label]))
    :validate (clj->js (get-in dict [:borrow :order-panel :validate]))})
 
-(defn edit-dialog [res-lines]
+(defn edit-dialog []
   (let [now (js/Date.)
         edit-mode-data @(subscribe [::edit-mode-data])
+        res-lines (:res-lines edit-mode-data)
         user-locale @(subscribe [:leihs.borrow.features.current-user.core/locale])
         user-id (:user-id edit-mode-data)
         model (:model edit-mode-data)
@@ -373,7 +369,6 @@
   (let [exemplar (first res-lines)
         model (:model exemplar)
         quantity (count res-lines)
-        edit-mode? @(subscribe [::edit-mode? res-lines])
         pool-names (->> res-lines
                         (map (comp :name :inventory-pool))
                         distinct
@@ -398,10 +393,7 @@
       [:> UI/Components.Design.ListCard.Foot
        [:> UI/Components.Design.Badge
         (merge action-props {:as "button" :class "stretched-link" :colorClassName (when invalid? " bg-danger")})
-        duration]]]
-
-     (when edit-mode?
-       [edit-dialog res-lines])]))
+        duration]]]]))
 
 (defn delegation-select []
   (let [user-id @(subscribe [::current-user/chosen-user-id])
@@ -537,7 +529,7 @@
       [:> UI/Components.Design.ConfirmDialog
        {:shown (some? dialog-data)
         :title (t :delete-dialog/dialog-title)
-        :onConfirm #(dispatch [::delete-reservations (map :id reservations)])
+        :onConfirm #(dispatch [::delete-all-reservations (map :id reservations)])
         :confirmLabel (t :delete-dialog/confirm)
         :confirmIsLoading (:is-saving? dialog-data)
         :onCancel #(dispatch [::close-delete-dialog])
@@ -551,6 +543,7 @@
           errors @(subscribe [::errors])
           reservations @(subscribe [::reservations])
           grouped-reservations @(subscribe [::reservations-grouped])
+          edit-mode-data @(subscribe [::edit-mode-data])
           is-loading? (not (or data errors))]
 
       [:<>
@@ -574,6 +567,8 @@
           [order-dialog]
 
           [order-success-notification]
+
+          (when edit-mode-data [edit-dialog])
 
           [delete-dialog reservations]
 

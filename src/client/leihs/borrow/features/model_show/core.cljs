@@ -47,7 +47,8 @@
   (fn-traced
     [{:keys [db]} [_ args]]
     (reset! model-id (get-in args [:route-params :model-id]))
-    {:dispatch [::fetch]}))
+    {:dispatch [::fetch]
+     :db (assoc-in db [::data :order-panel] nil)}))
 
 (reg-event-fx
   ::fetch
