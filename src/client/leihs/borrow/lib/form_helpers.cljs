@@ -1,13 +1,19 @@
 (ns leihs.borrow.lib.form-helpers
   (:require [reagent.core :as reagent]
             [reagent.impl.template :as rtpl]
+            [react :as react]
             ["/leihs-ui-client-side-external-react" :as UI]))
 
 ;; NOTE: workaround for reagent input handling when using custom components
 ;;       for details see <https://github.com/reagent-project/reagent/blob/b71fc361b85338ef4e4cd52a7b21e0f3f3f89628/doc/ControlledInputs.md>
 ;;       we implement same solutions as MUI: <https://github.com/reagent-project/reagent/blob/master/doc/examples/material-ui.md>
+;;       https://github.com/reagent-project/reagent/blob/396b375d2d6686cc104d3d99e291ba6a32ade54a/examples/react-mde/src/example/core.cljs
+
 (def textarea-component
-  (reagent/reactify-component (fn [props] [:textarea props])))
+  (react/forwardRef
+   (fn textarea [props ref]
+     (let [props (assoc (js->clj props) :ref ref)]
+       (reagent/as-element [:textarea props])))))
 
 (defn UiTextarea [props & children]
   (let [props (-> props
@@ -19,7 +25,10 @@
            (map reagent/as-element children))))
 
 (def input-component
-  (reagent/reactify-component (fn [props] [:input props])))
+  (react/forwardRef
+   (fn textarea [props ref]
+     (let [props (assoc (js->clj props) :ref ref)]
+       (reagent/as-element [:input props])))))
 
 (defn UiInputWithClearButton [props & children]
   (let [props (-> props

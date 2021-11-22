@@ -45,7 +45,6 @@
            (->> db :ls ::options (update-vals #(or % "")))))
 
 (defn filter-modal [hide! dispatch-fn saved-opts locale auth-user-id]
-  (log locale)
   (let [format-date #(some-> %
                              (date-fns/parse "yyyy-MM-dd" (js/Date.))
                              (date-fns/format "P" #js {:locale locale}))
@@ -87,19 +86,11 @@
 
              [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
               [:label.visually-hidden {:html-for "term"} (t :search.title)]
-              ; --------------------------------------------
-              ; There is some bug when one clicks on X icon.
-              ; --------------------------------------------
-              ; [UiInputWithClearButton {:name "term"
-              ;                          :id "term"
-              ;                          :placeholder (t :search.placeholder)
-              ;                          :value @term
-              ;                          :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
-              [:input.form-control {:name "term"
-                                    :id "term"
-                                    :placeholder (t :search.placeholder)
-                                    :value @term
-                                    :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
+              [UiInputWithClearButton {:name "term"
+                                       :id "term"
+                                       :placeholder (t :search.placeholder)
+                                       :value @term
+                                       :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
 
              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
               [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
@@ -126,7 +117,7 @@
                                      (date-fns/parse "yyyy-MM-dd" (js/Date.))
                                      (date-fns/format "P" #js {:locale locale})))]
                      [:div.d-flex.flex-column.gap-3
-                      [#_UiDatepicker :> UI/Components.Design.DatePicker
+                      [UiDatepicker
                        {:locale locale
                         :name "start-date"
                         :id "start-date"
@@ -134,7 +125,7 @@
                         :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
                         :placeholder (t :time-span.undefined)
                         :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
-                      [#_UiDatepicker :> UI/Components.Design.DatePicker
+                      [UiDatepicker
                        {:locale locale
                         :name "end-date"
                         :id "end-date"

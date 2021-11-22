@@ -74,19 +74,11 @@
 
              [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
               [:label.visually-hidden {:html-for "term"} (t :search.title)]
-              ; --------------------------------------------
-              ; There is some bug when one clicks on X icon.
-              ; --------------------------------------------
-              ; [UiInputWithClearButton {:name "term"
-              ;                          :id "term"
-              ;                          :placeholder (t :search.placeholder)
-              ;                          :value @term
-              ;                          :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
-              [:input.form-control {:name "term"
-                                    :id "term"
-                                    :placeholder (t :search.placeholder)
-                                    :value @term
-                                    :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
+              [UiInputWithClearButton {:name "term"
+                                       :id "term"
+                                       :placeholder (t :search.placeholder)
+                                       :value @term
+                                       :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
 
              [:> UI/Components.Design.Section {:title (t :states.title) :collapsible true}
               [:label.visually-hidden {:html-for "state"} (t :states.title)]
