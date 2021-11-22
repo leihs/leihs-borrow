@@ -22,8 +22,8 @@ Feature: Rentals
       | user | quantity | model       | pool   | start-date | end-date   | state    |
       | user | 1        | DSLR Camera | Pool A | 2101-02-01 | 2101-02-02 | approved |
     And a customer order with title "Order 2" and the following reservations exists for the user:
-      | user         | quantity | model       | pool   | start-date | end-date   | state     |
-      | Delegation D | 1        | DSLR Camera | Pool A | 2101-03-01 | 2101-03-02 | approved  |
+      | user         | quantity | model       | pool   | start-date | end-date   | state    |
+      | Delegation D | 1        | DSLR Camera | Pool A | 2101-03-01 | 2101-03-02 | approved |
     When I log in as the user
     And I visit "/app/borrow/rentals/"
     Then I see the following rentals:
@@ -53,20 +53,20 @@ Feature: Rentals
       | Order 1 |
       | Order 2 |
     When I click on "Show search/filter"
-    And I select "IN_APPROVAL" from "Status"
+    And I select "In approval" from "Status"
     And I click on "Apply"
     Then I see the following rentals:
       | title   |
       | Order 2 |
     When I click on "Show search/filter"
-    And I select "TO_PICKUP" from "Status"
+    And I select "Pickup" from "Status"
     And I click on "Apply"
     Then I see the following rentals:
       | title   |
       | Order 1 |
       | Order 2 |
     When I click on "Show search/filter"
-    Then the "Status" select field contains value "TO_PICKUP"
+    Then the "Status" select field contains value "Pickup"
 
   Scenario: Filtering according date (until date only)
 
@@ -75,14 +75,14 @@ Feature: Rentals
     taken as from date.
 
     Given a customer order with title "Order 1" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date   | state    | pickup-date |
-      | 1        | DSLR Camera | Pool A | 1900-01-01 | 1900-01-02 | closed   | 1900-01-01  |
+      | quantity | model       | pool   | start-date | end-date   | state  | pickup-date |
+      | 1        | DSLR Camera | Pool A | 1900-01-01 | 1900-01-02 | closed | 1900-01-01  |
     And a customer order with title "Order 2" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date   | state    | pickup-date |
-      | 1        | DSLR Camera | Pool A | 1900-01-01 | tomorrow   | signed   | 1900-01-01  |
+      | quantity | model       | pool   | start-date | end-date | state  | pickup-date |
+      | 1        | DSLR Camera | Pool A | 1900-01-01 | tomorrow | signed | 1900-01-01  |
     And a customer order with title "Order 3" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date   | state    | pickup-date |
-      | 1        | DSLR Camera | Pool A | 1900-01-01 | in a week  | signed   | today       |
+      | quantity | model       | pool   | start-date | end-date  | state  | pickup-date |
+      | 1        | DSLR Camera | Pool A | 1900-01-01 | in a week | signed | today       |
     And a customer order with title "Order 4" and the following reservations exists for the user:
       | quantity | model       | pool   | start-date | end-date   | state    | pickup-date |
       | 1        | DSLR Camera | Pool A | 9999-12-30 | 9999-12-31 | approved |             |
@@ -102,16 +102,16 @@ Feature: Rentals
       | Order 1 |
       | Order 2 |
       | Order 3 |
-    # TODO: fix problem with capybara and input element!!!
-    # When I click on "Show search/filter"
-    # And I enter "yesterday" in the "Until" field
-    # And I click on "Apply"
-    # Then I see the following rentals:
-    #   | title   |
-    #   | Order 1 |
-    #   | Order 2 |
-    # When I click on "Show search/filter"
-    # Then the "Until" input field has value "yesterday"
+  # TODO: fix problem with capybara and input element!!!
+  # When I click on "Show search/filter"
+  # And I enter "yesterday" in the "Until" field
+  # And I click on "Apply"
+  # Then I see the following rentals:
+  #   | title   |
+  #   | Order 1 |
+  #   | Order 2 |
+  # When I click on "Show search/filter"
+  # Then the "Until" input field has value "yesterday"
 
   Scenario: Filtering according to inventory pool
     Given a customer order with title "Order 1" and the following reservations exists for the user:

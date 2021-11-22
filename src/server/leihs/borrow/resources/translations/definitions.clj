@@ -241,7 +241,15 @@
                         :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"}
                                 :all {:en-GB "All" :de-CH "Alle"}}
                         :states {:title {:en-GB "Status" :de-CH "Status"}
-                                 :all {:en-GB "All" :de-CH "Alle"}}
+                                 :all {:en-GB "All" :de-CH "Alle"}
+                                 :state-filter-label {:IN_APPROVAL {:de-CH "In Genehmigung" :en-GB "In approval"}
+                                                      :TO_PICKUP {:de-CH "Abholung" :en-GB "Pickup"}
+                                                      :TO_RETURN {:de-CH "Rückgabe" :en-GB "Return"}
+                                                      :RETURNED {:de-CH "Zurückgebracht" :en-GB "Returned"}
+                                                      :REJECTED {:de-CH "Abgelehnt" :en-GB "Rejected"}
+                                                      :CANCELED {:de-CH "Storniert" :en-GB "Canceled"}
+                                                      :EXPIRED {:de-CH "Abgelaufen" :en-GB "Expired"}
+                                                      :OVERDUE {:de-CH "Rückgabe überfällig" :en-GB "Overdue"}}}
                         :from {:en-GB "From"
                                :de-CH "Von"}
                         :until {:en-GB "Until"
@@ -370,7 +378,7 @@
                                              :CLOSED {:de-CH "Zurückgebracht" :en-GB "Returned"}
                                              :CANCELED {:de-CH "Ausleihe storniert" :en-GB "Canceled"}
                                              ; Temporal statusses:
-                                             :EXPIRED-UNAPPROVED {:de-CH "Nicht bewilligt bis {endDate, date, short}" :en-GB "Not approved until {endDate, date, short}"}
+                                             :EXPIRED-UNAPPROVED {:de-CH "Nicht genehmigt bis {endDate, date, short}" :en-GB "Not approved until {endDate, date, short}"}
                                              :EXPIRED {:de-CH "Nicht abgeholt bis {endDate, date, short}" :en-GB "Not picked up until {endDate, date, short}"}}
                   :cancellation-dialog {:title {:de-CH "Ausleihe stornieren" :en-GB "Cancel rental"}
                                         :confirm {:de-CH "Stornieren" :en-GB "Cancel rental"}

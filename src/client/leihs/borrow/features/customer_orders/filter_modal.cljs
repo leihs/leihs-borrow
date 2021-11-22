@@ -93,7 +93,7 @@
                                         "TO_RETURN"
                                         "OVERDUE"
                                         "RETURNED"]]
-                        [:option {:value state-name :key state-name} state-name]))]]
+                        [:option {:value state-name :key state-name} (t (str :states.state-filter-label "/" state-name))]))]]
 
              [:> UI/Components.Design.Stack {:space 4}
               [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
