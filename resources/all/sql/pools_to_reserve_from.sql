@@ -45,11 +45,7 @@ AND
        AND visits.date = CAST(:start-date AS date) )
     <
     coalesce(
-      (max_visits->>(
-          array_position(
-            array['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
-            to_char(CAST(:start-date AS date), 'day'))::text
-      ))::integer,
+      (max_visits->>(to_char(CAST(:start-date AS date), 'ID')::int + 1)::text)::integer,
       2147483647
     )
 -- max amount of visits is not exceeded yet for the end-date and pool
@@ -60,10 +56,6 @@ AND
        AND visits.date = CAST(:end-date AS date) )
     <
     coalesce(
-      (max_visits->>(
-          array_position(
-            array['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
-            to_char(CAST(:end-date AS date), 'day'))::text
-      ))::integer,
+      (max_visits->>(to_char(CAST(:end-date AS date), 'ID')::int + 1)::text)::integer,
       2147483647
     )
