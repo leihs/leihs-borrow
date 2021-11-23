@@ -263,7 +263,9 @@
 (reg-sub ::delegations
          :<- [::current-user/user-data]
          (fn [user-data]
-           (let [user {:id (:id user-data) :name (str (:name user-data) (t :delegation/person-postfix))}
+           (let [user {:id (:id user-data)
+                       :name (str (:name user-data)
+                                  (t :!borrow.phrases.user-or-delegation-personal-postfix))}
                  delegations (:delegations user-data)]
              (concat [user] delegations))))
 

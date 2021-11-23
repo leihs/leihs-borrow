@@ -50,7 +50,7 @@
       (let [pools @(subscribe [::current-user/pools])
             auth-user @(subscribe [::current-user/user-data])
             target-users @(subscribe [::current-user/target-users
-                                      (t :!borrow.rental-show.user-or-delegation-personal-postfix)])
+                                      (t :!borrow.phrases.user-or-delegation-personal-postfix)])
             start-date-equal-or-before-end-date?
             #(let [s (some-> @start-date presence (date-fns/parse "P" (js/Date.) #js {:locale locale}))
                    e (some-> @end-date presence (date-fns/parse "P" (js/Date.) #js {:locale locale}))]

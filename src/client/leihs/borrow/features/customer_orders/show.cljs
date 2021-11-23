@@ -231,7 +231,7 @@
          [:> UI/Components.Design.Section
           {:title (t :user-or-delegation-section-title) :collapsible true}
           (if (or (nil? user-id) (= user-id (:id user-data)))
-            [:<> (:name user-data) (t :user-or-delegation-personal-postfix)]
+            [:<> (:name user-data) (t :!borrow.phrases.user-or-delegation-personal-postfix)]
             [:<> (->> (:delegations user-data)
                       (filter #(= user-id (:id %)))
                       first

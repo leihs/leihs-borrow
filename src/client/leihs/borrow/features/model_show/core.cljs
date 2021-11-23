@@ -280,7 +280,7 @@
                                     datefn/endOfDay)
         ; max-quantity (:available-quantity-in-date-range model)
         target-users @(subscribe [::current-user/target-users
-                                  (t :!borrow.rental-show.user-or-delegation-personal-postfix)])
+                                  (t :!borrow.phrases.user-or-delegation-personal-postfix)])
         user-id @(subscribe [::user-id])
         pools @(subscribe [::pools (:id model)])
         filters-loaded? (seq pools)

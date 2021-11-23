@@ -44,6 +44,11 @@
          (fn [db _]
            (->> db :ls ::options (update-vals #(or % "")))))
 
+(reg-sub ::pools-with-reservable-items
+         (fn [] (subscribe [::current-user/pools]))
+         (fn [pools _]
+           (filter #(:has-reservable-items %) pools)))
+
 (defn filter-modal [hide! dispatch-fn saved-opts locale auth-user-id]
   (let [format-date #(some-> %
                              (date-fns/parse "yyyy-MM-dd" (js/Date.))
@@ -52,15 +57,15 @@
         term (r/atom (or (:term saved-opts) ""))
         pool-id (r/atom (or (:pool-id saved-opts) ""))
         only-available (r/atom (let [oa (:only-available saved-opts)]
-                                 (if (nil? oa) false oa)))
+                                 (if (nil? oa) false true)))
         start-date (r/atom (or (some-> saved-opts :start-date format-date) ""))
         end-date (r/atom (or (some-> saved-opts :end-date format-date) ""))
         quantity (r/atom (or (:quantity saved-opts) 1))]
     (fn [hide! dispatch-fn saved-opts locale auth-user-id]
-      (let [pools @(subscribe [::current-user/pools])
+      (let [pools @(subscribe [::pools-with-reservable-items])
             auth-user @(subscribe [::current-user/user-data])
             target-users @(subscribe [::current-user/target-users
-                                      (t :!borrow.rental-show.user-or-delegation-personal-postfix)])
+                                      (t :!borrow.phrases.user-or-delegation-personal-postfix)])
             locale-to-use @(subscribe [::translate/locale-to-use])
             locale (case locale-to-use :de-CH locale/de :en-GB locale/enGB)
             start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
@@ -74,99 +79,95 @@
         (with-translate-path :borrow.filter
           [:> UI/Components.Design.ModalDialog {:title "Filter" :shown true :dismissible true :onDismiss hide!}
            [:> UI/Components.Design.ModalDialog.Body
-            [:> UI/Components.Design.Stack {:space 4}
-             [:> UI/Components.Design.Section {:title (t :delegations {:n 1})
-                                               :collapsible true}
-              [:label.visually-hidden {:html-for "user-id"} (t :pools.title)]
-              [:select.form-select
-               {:name "user-id" :id "user-id" :value @user-id
-                :on-change (fn [e] (reset! user-id (-> e .-target .-value)))}
-               (doall (for [{:keys [id name]} target-users]
-                        [:option {:value id :key id} name]))]]
+            [:form {:id "filter-form"
+                    :noValidate true
+                    :onSubmit
+                    #(do (-> % .preventDefault)
+                         (hide!)
+                         (dispatch-fn
+                          (remove-blanks
+                           (letfn [(format-date [x]
+                                     (some-> x
+                                             (date-fns/parse "P" (js/Date.) #js {:locale locale})
+                                             (date-fns/format "yyyy-MM-dd")))]
+                             {:term @term
+                              :pool-id (if (= @pool-id "all") nil @pool-id)
+                              :user-id (when (not= @user-id (:id auth-user)) @user-id)
+                              :only-available (when @only-available @only-available)
+                              :start-date (when @only-available (format-date @start-date))
+                              :end-date (when @only-available (format-date @end-date))
+                              :quantity (when @only-available @quantity)}))))}
+             [:> UI/Components.Design.Stack {:space 4}
+              [:> UI/Components.Design.Section {:title (t :delegations {:n 1})
+                                                :collapsible true}
+               [:label.visually-hidden {:html-for "user-id"} (t :pools.title)]
+               [:select.form-select
+                {:name "user-id" :id "user-id" :value @user-id
+                 :on-change (fn [e] (reset! user-id (-> e .-target .-value)))}
+                (doall (for [{:keys [id name]} target-users]
+                         [:option {:value id :key id} name]))]]
 
-             [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
-              [:label.visually-hidden {:html-for "term"} (t :search.title)]
-              [UiInputWithClearButton {:name "term"
-                                       :id "term"
-                                       :placeholder (t :search.placeholder)
-                                       :value @term
-                                       :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
+              [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
+               [:label.visually-hidden {:html-for "term"} (t :search.title)]
+               [UiInputWithClearButton {:name "term"
+                                        :id "term"
+                                        :placeholder (t :search.placeholder)
+                                        :value @term
+                                        :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
 
-             [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
-              [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
-              [:select.form-select {:name "pool-id" :id "pool-id" :value (or @pool-id "all")
-                                    :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
-               [:option {:value "all" :key "all"} (t :pools.all)]
-               (doall (for [{pool-id :id pool-name :name} pools]
-                        [:option {:value pool-id :key pool-id} pool-name]))]]
+              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
+               [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
+               [:select.form-select {:name "pool-id" :id "pool-id" :value (or @pool-id "all")
+                                     :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
+                [:option {:value "all" :key "all"} (t :pools.all)]
+                (doall (for [{pool-id :id pool-name :name} pools]
+                         [:option {:value pool-id :key pool-id} pool-name]))]]
 
-             [:<>
-              [:> UI/Components.Design.Section {:title (t :show-only-available) :collapsible true}
-               [:label.visually-hidden {:html-for "only-available"} (t :show-only-available)]
-               [:input.form-check-input {:type :checkbox :name "only-available" :id "only-available"
-                                         :checked @only-available
-                                         :on-change (fn [_] (swap! only-available not))}]]
+              [:> UI/Components.Design.Section {:title (t :availability) :collapsible true}
+               [:div.form-check.mb-3
+                [:input.form-check-input {:type :checkbox :name "only-available" :id "only-available"
+                                          :checked @only-available
+                                          :on-change (fn [_] (swap! only-available not))}]
+                [:label.form-check-label {:html-for "only-available"} (t :show-only-available)]]
+               (when @only-available
+                 [:fieldset
+                  [:legend.visually-hidden (t :time-span.title)]
+                  [:div.d-flex.flex-column.gap-3
+                   [UiDatepicker
+                    {:locale locale
+                     :name "start-date"
+                     :id "start-date"
+                     :value @start-date
+                     :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
+                     :placeholder (t :time-span.undefined)
+                     :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
+                   [UiDatepicker
+                    {:locale locale
+                     :name "end-date"
+                     :id "end-date"
+                     :value @end-date
+                     :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
+                     :placeholder (t :time-span.undefined)
+                     :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]]
+                  (cond
+                    (not (start-date-and-end-date-set?))
+                    [:> UI/Components.Design.Warning (t :time-span.errors.start-date-and-end-date-set)]
+                    (not (start-date-equal-or-before-end-date?))
+                    [:> UI/Components.Design.Warning  (t :time-span.errors.start-date-equal-or-before-end-date)])])]
 
               (when @only-available
-                [:> UI/Components.Design.Stack {:space 4}
-                 [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
-                  [:fieldset
-                   [:legend.visually-hidden (t :time-span.title)]
-                   (letfn [(format-date [x]
-                             (some-> x
-                                     (date-fns/parse "yyyy-MM-dd" (js/Date.))
-                                     (date-fns/format "P" #js {:locale locale})))]
-                     [:div.d-flex.flex-column.gap-3
-                      [UiDatepicker
-                       {:locale locale
-                        :name "start-date"
-                        :id "start-date"
-                        :value @start-date
-                        :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
-                        :placeholder (t :time-span.undefined)
-                        :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
-                      [UiDatepicker
-                       {:locale locale
-                        :name "end-date"
-                        :id "end-date"
-                        :value @end-date
-                        :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
-                        :placeholder (t :time-span.undefined)
-                        :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]])]]
-
-                 [:> UI/Components.Design.Section {:title (t :quantity) :collapsible true}
-                  [:> UI/Components.Design.MinusPlusControl
-                   {:name "quantity"
-                    :id "quantity"
-                    :value @quantity
-                    :min 1
-                    :onChange (fn [n] (reset! quantity n))}]]
-
-                 (cond
-                   (not (start-date-and-end-date-set?))
-                   [:> UI/Components.Design.Warning (t :time-span.errors.start-date-and-end-date-set)]
-                   (not (start-date-equal-or-before-end-date?))
-                   [:> UI/Components.Design.Warning  (t :time-span.errors.start-date-equal-or-before-end-date)])])]]]
+                [:> UI/Components.Design.Section {:title (t :quantity) :collapsible true}
+                 [:> UI/Components.Design.MinusPlusControl
+                  {:name "quantity"
+                   :id "quantity"
+                   :value @quantity
+                   :min 1
+                   :onChange (fn [n] (reset! quantity n))}]])]]]
 
            [:> UI/Components.Design.ModalDialog.Footer
-            [:button.btn.btn-primary
-             {:type "button"
-              :disabled (not (valid?))
-              :onClick
-              #(do (hide!)
-                   (dispatch-fn
-                    (remove-blanks
-                     (letfn [(format-date [x]
-                               (some-> x
-                                       (date-fns/parse "P" (js/Date.) #js {:locale locale})
-                                       (date-fns/format "yyyy-MM-dd")))]
-                       {:term @term
-                        :pool-id (if (= @pool-id "all") nil @pool-id)
-                        :user-id (when (not= @user-id (:id auth-user)) @user-id)
-                        :only-available (when @only-available @only-available)
-                        :start-date (when @only-available (format-date @start-date))
-                        :end-date (when @only-available (format-date @end-date))
-                        :quantity (when @only-available @quantity)}))))}
+            [:button.btn.btn-primary {:type "submit"
+                                      :disabled (not (valid?))
+                                      :form "filter-form"}
              (t :apply)]
             [:button.btn.btn-secondary
              {:type "button"

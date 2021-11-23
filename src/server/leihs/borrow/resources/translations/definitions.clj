@@ -31,7 +31,10 @@
 
      :contract-display-name
      {:de-CH "Vertrag {ID} mit {poolName} vom {date, date, narrow}"
-      :en-GB "Contract {ID} with {poolName} from {date, date, narrow}"}}
+      :en-GB "Contract {ID} with {poolName} from {date, date, narrow}"}
+
+     :user-or-delegation-personal-postfix
+     {:de-CH " (persönlich)" :en-GB " (personal)"}}
 
     :all {:en-GB "All"
           :de-CH "Alle"}
@@ -128,11 +131,13 @@
                          :undefined {:en-GB "undefined"
                                      :de-CH "unbestimmt"}
                          :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set."
-                                                                :de-CH "Das Start- und Enddatum müssen gesetzt sein."}
+                                                                :de-CH "Start- und Enddatum müssen gesetzt sein."}
                                   :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date."
                                                                         :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
+             :availability {:en-GB "Availability"
+                            :de-CH "Verfügbarkeit"}
              :show-only-available {:en-GB "Show available only"
-                                   :de-CH "Nur Verfügbare anzeigen"}
+                                   :de-CH "Nur verfügbare anzeigen"}
              :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"}
                      :all {:en-GB "All" :de-CH "Alle"}}
              :from {:en-GB "From"
@@ -339,7 +344,6 @@
                   :items-section-title {:de-CH "Gegenstände" :en-GB "Items"}
                   :documents-section-title {:de-CH "Dokumente" :en-GB "Documents"}
                   :user-or-delegation-section-title {:de-CH "Delegation" :en-GB "Delegation"}
-                  :user-or-delegation-personal-postfix {:de-CH " (persönlich)" :en-GB " (personal)"}
                   :metadata-summary {:de-CH "ID {rentalId}" :en-GB "ID {rentalId}"}
                   :reservation-line
                   {:title
@@ -397,8 +401,7 @@
                                           :de-CH "Abgelaufen"}
                                 :reset {:en-GB "Reset time limit"
                                         :de-CH "Zeitlimit zurückstellen"}}
-                    :delegation {:section-title {:de-CH "Delegation" :en-GB "Delegation"}
-                                 :person-postfix  {:de-CH " (persönlich)" :en-GB " (personal)"}}
+                    :delegation {:section-title {:de-CH "Delegation" :en-GB "Delegation"}}
                     :line {:section-title {:en-GB "Items"
                                            :de-CH "Gegenstände"}
                            :total {:en-GB "Total"

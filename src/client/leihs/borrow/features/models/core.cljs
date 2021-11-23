@@ -235,7 +235,7 @@
 
 (defn view []
   (let [extra-search-vars nil]
-    [:> UI/Components.Design.PageLayout
+    [:<>
      [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
       [filter-comp default-dispatch-fn]]
      [:> UI/Components.Design.Stack
