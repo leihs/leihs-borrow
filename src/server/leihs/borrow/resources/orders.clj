@@ -3,21 +3,17 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.set :as set]
             [clojure.string :refer [upper-case]]
-            [clojure.tools.logging :as log]
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.mails :as mails]
-            [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.delegations :as delegations]
+            [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as rs]
-            [leihs.borrow.resources.settings :as settings]
-            [leihs.core.core :refer [spy-with]]
+            [leihs.borrow.time :refer [past?]]
             [leihs.core.database.helpers :as database]
             [leihs.core.ds :as ds]
             [leihs.core.sql :as sql])
-  (:import [java.util UUID]
-           [java.time.format DateTimeFormatter]
-           [java.time ZoneOffset]))
+  (:import java.time.format.DateTimeFormatter))
 
 (def refined-rental-state->reservation-status
   {:IN_APPROVAL "submitted"
@@ -53,10 +49,10 @@
                 :reservation_ids
                 (rs/get-by-ids tx))
         expired? (some #(and (contains? #{"submitted" "approved"} (:status %))
-                             (rs/overdue? %))
+                             (past? (:end_date %)))
                        rs)
         overdue? (some #(and (-> % :status (= "signed"))
-                             (rs/overdue? %))
+                             (past? (:end_date %)))
                        rs)
         states (-> row
                    :reservation_states
@@ -80,6 +76,41 @@
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
+      sql/format
+      (->> (jdbc/query tx)
+           (map :quantity)
+           (apply +))))
+
+(defn overdue-rental-quantity
+  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  (-> (sql/select :*)
+      (sql/from :reservations)
+      (sql/where [:in :id reservation-ids])
+      (sql/merge-where [:= :reservations.status "signed"])
+      (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.end_date])
+      sql/format
+      (->> (jdbc/query tx)
+           (map :quantity)
+           (apply +))))
+
+(defn expired-rental-quantity
+  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  (-> (sql/select :*)
+      (sql/from :reservations)
+      (sql/where [:in :id reservation-ids])
+      (sql/merge-where [:in :reservations.status ["submitted" "approved"]])
+      (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.start_date])
+      sql/format
+      (->> (jdbc/query tx)
+           (map :quantity)
+           (apply +))))
+
+(defn rejected-rental-quantity
+  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  (-> (sql/select :*)
+      (sql/from :reservations)
+      (sql/where [:in :id reservation-ids])
+      (sql/merge-where [:= :status "rejected"])
       sql/format
       (->> (jdbc/query tx)
            (map :quantity)

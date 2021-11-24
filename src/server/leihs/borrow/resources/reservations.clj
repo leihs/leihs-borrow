@@ -1,28 +1,19 @@
 (ns leihs.borrow.resources.reservations
   (:refer-clojure :exclude [count])
-  (:require [leihs.borrow.time :as time]
-            [leihs.borrow.graphql.target-user :as target-user]
-            [leihs.borrow.resources.models :as models]
-            [leihs.borrow.resources.inventory-pools :as pools]
-            [leihs.borrow.resources.inventory-pools.visits-restrictions
-             :refer [visits-capacity-reached?]]
-            [leihs.borrow.resources.delegations :as delegations]
-            [leihs.borrow.resources.availability :as availability]
-            [leihs.borrow.resources.helpers :as helpers]
-            [leihs.borrow.resources.settings :as settings]
-            [leihs.borrow.resources.workdays :as workdays]
-            [leihs.core.database.helpers :as database]
-            [leihs.core.sql :as sql]
-            [leihs.core.ds :as ds]
-            [leihs.core.core :refer [raise spy-with]]
-            [camel-snake-kebab.core :as csk]
-            [wharf.core :refer [transform-keys]]
-            [com.walmartlabs.lacinia :as lacinia]
-            [clojure.spec.alpha :as spec]
+  (:require [clojure.java.jdbc :as jdbc]
             [clojure.set :as set]
-            [clojure.java.jdbc :as jdbc]
-            [clojure.tools.logging :as log])
-  (:import [java.time.format DateTimeFormatter]))
+            [clojure.spec.alpha :as spec]
+            [com.walmartlabs.lacinia :as lacinia]
+            [leihs.borrow.graphql.target-user :as target-user]
+            [leihs.borrow.resources.delegations :as delegations]
+            [leihs.borrow.resources.helpers :as helpers]
+            [leihs.borrow.resources.inventory-pools :as pools]
+            [leihs.borrow.resources.models :as models]
+            [leihs.borrow.resources.settings :as settings]
+            [leihs.borrow.time :as time]
+            [leihs.core.core :refer [raise]]
+            [leihs.core.database.helpers :as database]
+            [leihs.core.sql :as sql]))
 
 (doseq [s [::inventory_pool_id ::start_date ::end_date]]
   (spec/def s (comp not nil?)))
@@ -67,12 +58,6 @@
       (query tx)
       first
       :count))
-
-(defn overdue? [r]
-  (java-time/after?
-    (java-time/local-date)
-    (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE
-                          (:end_date r))))
 
 (defn updated-at [tx model-id]
   (-> (sql/select :reservations.updated_at)

@@ -22,7 +22,8 @@
     ))
 
 (def resolvers
-  {:approved-pool-orders-count orders/approved-pool-orders-count
+  {:approve-fulfillment visits/approve-fulfillment
+   :approved-pool-orders-count orders/approved-pool-orders-count
    :attachments attachments/get-multiple
    :available-quantity-in-date-range models/available-quantity-in-date-range
    :category categories/get-one
@@ -34,6 +35,7 @@
    :child-categories categories/get-children
    :delegation delegations/get-one
    :delegations delegations/get-multiple
+   :expired-rental-quantity orders/expired-rental-quantity
    :favorite-models-connection models/get-favorites-connection
    :has-reservable-items inventory-pools/has-reservable-items?
    :images images/get-multiple
@@ -52,6 +54,7 @@
    :option options/get-one
    :order orders/get-one
    :orders-connection orders/get-connection
+   :overdue-rental-quantity orders/overdue-rental-quantity
    :pickup-fulfillment visits/pickup-fulfillment
    :pickup-rental-quantity orders/pickup-rental-quantity
    :pool-order orders/get-one-by-pool
@@ -60,6 +63,7 @@
    :print-url contracts/print-url
    :properties properties/get-multiple
    :rejected-pool-orders-count orders/rejected-pool-orders-count
+   :rejected-rental-quantity orders/rejected-rental-quantity
    :reservations reservations/get-multiple
    :responsible delegations/responsible
    :return-fulfillment visits/return-fulfillment

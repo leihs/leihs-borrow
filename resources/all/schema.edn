@@ -274,6 +274,9 @@
                                             :resolve :contracts-connection}
                                 :createdAt {:type (non-null :DateTime)}
                                 :updatedAt {:type (non-null :DateTime)}}}
+           :ApproveFulfillment {:implements [:Fulfillment]
+                                :fields {:fulfilledQuantity {:type (non-null Int)}
+                                         :toFulfillQuantity {:type (non-null Int)}}}
            :PickupFulfillment {:implements [:Fulfillment]
                                :fields {:fulfilledQuantity {:type (non-null Int)}
                                         :toFulfillQuantity {:type (non-null Int)}}}
@@ -288,6 +291,7 @@
                              :rentalState {:type (non-null :RentalStateEnum)
                                            :description "OPEN are unapproved + anything with a pickup or return, CLOSED is all the rest"}
                              :refinedRentalState {:type (list (non-null :RefinedRentalStateEnum))}
+                             :approveFulfillment {:type :ApproveFulfillment :resolve :approve-fulfillment}
                              :pickupFulfillment {:type :PickupFulfillment :resolve :pickup-fulfillment}
                              :returnFulfillment {:type :ReturnFulfillment :resolve :return-fulfillment}
                              :fromDate {:type (non-null :Date)}
@@ -300,6 +304,9 @@
                              :totalQuantity {:type (non-null Int) :resolve :total-rental-quantity}
                              :pickupQuantity {:type (non-null Int) :resolve :pickup-rental-quantity}
                              :returnQuantity {:type (non-null Int) :resolve :return-rental-quantity}
+                             :rejectedQuantity {:type (non-null Int) :resolve :rejected-rental-quantity}
+                             :expiredQuantity {:type (non-null Int) :resolve :expired-rental-quantity}
+                             :overdueQuantity {:type (non-null Int) :resolve :overdue-rental-quantity}
                              :subOrdersByPool {:type (list :PoolOrder)
                                                :args {:orderBy {:type (list :PoolOrdersOrderByInput)}}
                                                :resolve :pool-orders}
