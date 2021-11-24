@@ -76,6 +76,10 @@
       [:span.ui-spinner.ui-spinner-clock
        [:span.ui-icon-colored (get-in spinner [:frames @frame])]])))
 
+(defn loading [loading-text]
+  [:div.text-center.fw-light {:style {:color "#cccccc"}}
+   (cond loading-text [:div.mb-3 loading-text])
+   [:div.text-5xl.show-after-1sec [spinner-clock]]])
 
 ; ; Intl stuff
 (defn format-date [style date]

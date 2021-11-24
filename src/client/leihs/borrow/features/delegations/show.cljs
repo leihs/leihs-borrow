@@ -50,7 +50,9 @@
 
 (defn responsible [user]
   [:<>
-   [:h3 (t :borrow.delegations/responsible)]
+   [:> UI/Components.Design.Section
+    {:title (t :borrow.delegations/responsible)
+     :collapsible true}]
    [:div (fullname user)]
    (if-let [email (:email user)]
      [:a {:href (str "mailto:" email)}
@@ -58,8 +60,10 @@
 
 (defn members-list [members]
   [:<>
-   [:h3 (t :borrow.delegations/members)]
-   [:ul
+   [:> UI/Components.Design.Section
+    {:title (t :borrow.delegations/members)
+     :collapsible true}]
+   [:ul.list-inline
     (doall
      (for [member members]
        [:li {:key (:id member)} (fullname member)]))]])
@@ -74,12 +78,9 @@
      [:> UI/Components.Design.PageLayout.Header
       {:title (:name delegation)}]
      (cond
-       is-loading? [:div
-                    [:div [ui/spinner-clock]]
-                    [:pre (t :borrow.delegations/loading) [:samp (:id delegation)] "…"]]
+       is-loading? [ui/loading (t :borrow.delegations/loading)]
        errors [ui/error-view errors]
-       :else [:<>
+       :else [:> UI/Components.Design.Stack {:space 4}
               [responsible (:responsible delegation)]
-              [:br]
               [members-list (:members delegation)]
               #_[:p.debug (pr-str delegation)]])]))

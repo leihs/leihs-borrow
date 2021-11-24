@@ -115,11 +115,10 @@
                    :value @end-date
                    :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
                    :placeholder (t :time-span.undefined)
-                   :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]]]]
-
-              (when-not (start-date-equal-or-before-end-date?)
-                [:> UI/Components.Design.Warning
-                 (t :time-span.errors.start-date-equal-or-before-end-date)])]
+                   :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]
+                 (when-not (start-date-equal-or-before-end-date?)
+                   [:> UI/Components.Design.Warning
+                    (t :time-span.errors.start-date-equal-or-before-end-date)])]]]]
 
              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
               [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]

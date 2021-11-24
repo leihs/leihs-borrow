@@ -56,7 +56,7 @@
                  :en-GB "End date must be after start date"}
                 :user-delegation-cant-be-changed-active-cart
                 {:en-GB "The delegation can't be changed, as an active cart already exists."
-                 :de-CH "Die delegation kann nicht geändert werden, da schon ein aktiver Warenkorb existiert."}
+                 :de-CH "Die Delegation kann nicht geändert werden, da schon ein aktiver Warenkorb existiert."}
                 :missing-quantity
                 {:de-CH "Verfügbarkeit kann nicht geprüft werden, da die Anzahl fehlt"
                  :en-GB "Availability can not be checked because the quantity is missing"}

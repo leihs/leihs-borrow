@@ -80,7 +80,7 @@
       {:title (or (:name template "…"))}
       [:a {:href (routing/path-for ::routes/templates-index) :class "text-decoration-underline"} "All Templates"]]
      (cond
-       is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
+       is-loading? [ui/loading]
        errors [ui/error-view errors]
        :else
        [:<>

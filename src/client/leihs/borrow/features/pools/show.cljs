@@ -55,7 +55,7 @@
      [:> UI/Components.Design.PageLayout.Header
       {:title (cond (:name pool) (:name pool) :else "…")}]
      (cond
-       is-loading? [:div [:div [ui/spinner-clock]] [:pre "loading pool" [:samp (:id pool)] "…"]]
+       is-loading? [ui/loading]
        errors [ui/error-view errors]
        :else
        [:<>

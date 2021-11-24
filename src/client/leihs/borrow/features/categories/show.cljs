@@ -139,9 +139,7 @@
 
     [:<>
      (cond
-       is-loading? [:div.p-4.text-center
-                    [:div.p-2 [ui/spinner-clock]]
-                    [:pre "loading category" [:samp category-id] "…"]]
+       is-loading? [ui/loading]
        errors [ui/error-view errors]
        :else
        [:<>

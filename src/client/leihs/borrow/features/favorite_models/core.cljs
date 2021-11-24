@@ -51,7 +51,7 @@
 
      [:<>
       (cond
-        (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
+        (nil? models) [ui/loading]
         (empty? models) [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
         :else [:> UI/Components.Design.Section {:title (t :items)}
                [models/models-list models]

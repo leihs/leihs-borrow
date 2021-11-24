@@ -191,7 +191,7 @@
        [:<>
         [:> UI/Components.Design.PageLayout.Header
          {:title (t :page-title)}]
-        [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]]
+        [ui/loading]]
 
        errors [ui/error-view errors]
 

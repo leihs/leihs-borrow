@@ -260,14 +260,16 @@
                     (get-in line [:end-date])
                     (get-in line [:inventory-pool :id])])))))
 
-(reg-sub ::delegations
+(reg-sub ::current-user-or-delegation-name
          :<- [::current-user/user-data]
-         (fn [user-data]
-           (let [user {:id (:id user-data)
-                       :name (str (:name user-data)
-                                  (t :!borrow.phrases.user-or-delegation-personal-postfix))}
-                 delegations (:delegations user-data)]
-             (concat [user] delegations))))
+         :<- [::current-user/chosen-user-id]
+         (fn [[user-data user-id] _]
+           (if (or (nil? user-id) (= user-id (:id user-data)))
+             (str (:name user-data) (t :!borrow.phrases.user-or-delegation-personal-postfix))
+             (->> (:delegations user-data)
+                  (filter #(= user-id (:id %)))
+                  first
+                  :name))))
 
 (reg-sub ::user-id
          :<- [::data]
@@ -397,25 +399,11 @@
         (merge action-props {:as "button" :class "stretched-link" :colorClassName (when invalid? " bg-danger")})
         duration]]]]))
 
-(defn delegation-select []
-  (let [user-id @(subscribe [::current-user/chosen-user-id])
-        delegations @(subscribe [::delegations])]
+(defn delegation-section []
+  (let [delegation-name @(subscribe [::current-user-or-delegation-name])]
     [:> UI/Components.Design.Section {:title (t :delegation/section-title) :collapsible true}
-     [:label.visually-hidden {:for :user-id} (t :delegation/section-title)]
-     [:select {:id :user-id
-               :name :user-id
-               :class "form-control"
-               :default-value user-id
-               :disabled true
-               :on-change (fn [e]
-                            (let [v  (-> e .-target .-value)]
-                              (dispatch [::current-user/set-chosen-user-id v])
-                              (dispatch [::timeout/refresh])
-                              (dispatch [::routes/shopping-cart])))}
-      (doall
-       (for [user delegations]
-         [:option {:value (:id user) :key (:id user)}
-          (:name user)]))]]))
+     delegation-name]))
+
 
 (defn countdown []
   (reagent/with-let [now (reagent/atom (js/Date.))
@@ -550,7 +538,7 @@
 
       [:<>
        (cond
-         is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
+         is-loading? [ui/loading]
 
          errors [ui/error-view errors]
 
@@ -578,7 +566,7 @@
 
            [countdown]
 
-           [delegation-select]
+           [delegation-section]
 
            [:> UI/Components.Design.Section {:title (t :line/section-title) :collapsible true}
             [:> UI/Components.Design.ListCard.Stack

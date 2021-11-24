@@ -382,9 +382,7 @@
         is-loading? (not (or model errors))]
     [:section
      (cond
-       is-loading?
-       [:div [:div [ui/spinner-clock]]
-        [:pre (t :loading) [:samp model-id] "…"]]
+       is-loading? [ui/loading (t :loading)]
        errors [ui/error-view errors]
        :else
        [:<>

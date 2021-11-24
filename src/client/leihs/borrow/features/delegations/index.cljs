@@ -59,7 +59,7 @@
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}]
      (cond
-       (not data) [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
+       (not data) [ui/loading]
        errors [ui/error-view errors]
        :else
        [:<>

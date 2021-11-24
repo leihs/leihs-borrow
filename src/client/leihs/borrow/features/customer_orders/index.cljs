@@ -170,7 +170,7 @@
               (dispatch [:routing/navigate
                          [::routes/rentals-index {:query-params %}]]))])]
      (cond
-       loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
+       loading? [ui/loading]
 
        (and (empty? open-rentals) (empty? closed-rentals))
        [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]

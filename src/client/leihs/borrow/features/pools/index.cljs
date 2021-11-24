@@ -46,7 +46,7 @@
       {:title (t :borrow.pools/title)}]
 
      (cond
-       is-loading? [:div [:div.text-center.text-5xl.show-after-1sec [ui/spinner-clock]]]
+       is-loading? [ui/loading]
        ; errors [ui/error-view errors]
        :else
        [:<>

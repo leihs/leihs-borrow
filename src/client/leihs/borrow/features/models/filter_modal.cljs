@@ -148,12 +148,12 @@
                      :value @end-date
                      :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
                      :placeholder (t :time-span.undefined)
-                     :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]]
-                  (cond
-                    (not (start-date-and-end-date-set?))
-                    [:> UI/Components.Design.Warning (t :time-span.errors.start-date-and-end-date-set)]
-                    (not (start-date-equal-or-before-end-date?))
-                    [:> UI/Components.Design.Warning  (t :time-span.errors.start-date-equal-or-before-end-date)])])]
+                     :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]
+                   (cond
+                     (not (start-date-and-end-date-set?))
+                     [:> UI/Components.Design.Warning (t :time-span.errors.start-date-and-end-date-set)]
+                     (not (start-date-equal-or-before-end-date?))
+                     [:> UI/Components.Design.Warning  (t :time-span.errors.start-date-equal-or-before-end-date)])]])]
 
               (when @only-available
                 [:> UI/Components.Design.Section {:title (t :quantity) :collapsible true}

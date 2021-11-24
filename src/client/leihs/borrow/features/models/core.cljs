@@ -209,7 +209,7 @@
         dates-valid? (<= (:start-date filters) (:end-date filters))]
     [:<>
      (if (and fetching-more? dates-valid?)
-       [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
+       [ui/loading]
        (when has-next-page?
          [:div.p-3.text-center
           [:button.border.border-black.p-2.rounded
@@ -226,7 +226,7 @@
         models @(subscribe [::edges cache-key])]
     [:<>
      (cond
-       (nil? models) [:p.p-6.w-full.text-center.text-xl [ui/spinner-clock]]
+       (nil? models) [ui/loading]
        (empty? models) [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
        :else
        [:<>

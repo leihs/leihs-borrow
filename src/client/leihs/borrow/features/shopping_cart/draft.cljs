@@ -1,157 +1,157 @@
 (ns leihs.borrow.features.shopping-cart.draft
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [clojure.string :as string]
-    [cljs-time.core :as tc]
-    [cljs-time.format :as tf]
-    [reagent.core :as reagent]
-    [re-frame.core :as rf]
-    [re-graph.core :as re-graph]
-    [re-frame.std-interceptors :refer [path]]
-    [shadow.resource :as rc]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.helpers :as help]
-    [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
-    [leihs.borrow.components :as ui]
-    [leihs.borrow.ui.icons :as icons]
-    [leihs.borrow.features.current-user.core :as current-user]
-    [leihs.borrow.features.models.filter-modal :as filter-modal]
-    [leihs.borrow.features.shopping-cart.core :as cart]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [clojure.string :as string]
+   [cljs-time.core :as tc]
+   [cljs-time.format :as tf]
+   [reagent.core :as reagent]
+   [re-frame.core :as rf]
+   [re-graph.core :as re-graph]
+   [re-frame.std-interceptors :refer [path]]
+   [shadow.resource :as rc]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.borrow.lib.helpers :as help]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.components :as ui]
+   [leihs.borrow.ui.icons :as icons]
+   [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.borrow.features.models.filter-modal :as filter-modal]
+   [leihs.borrow.features.shopping-cart.core :as cart]))
 
 (set-default-translate-path :borrow.shopping-cart)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
-  ::routes/draft-order
-  (fn-traced [{:keys [db]} [_ _]]
-    {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/features/shopping_cart/getDraftOrder.gql")
-                {:userId (current-user/chosen-user-id db)}
-                [::on-fetched-data]]}))
+ ::routes/draft-order
+ (fn-traced [{:keys [db]} [_ _]]
+   {:dispatch [::re-graph/query
+               (rc/inline "leihs/borrow/features/shopping_cart/getDraftOrder.gql")
+               {:userId (current-user/chosen-user-id db)}
+               [::on-fetched-data]]}))
 
 (reg-event-db
-  ::on-fetched-data
-  (fn-traced [db [_ {:keys [data errors]}]]
-    (-> db
-        (assoc ::data (get-in data
-                              [:current-user :draft-order]))
-        (assoc-in [::data :edit-mode] nil)
-        (cond-> errors (assoc ::errors errors)))))
+ ::on-fetched-data
+ (fn-traced [db [_ {:keys [data errors]}]]
+   (-> db
+       (assoc ::data (get-in data
+                             [:current-user :draft-order]))
+       (assoc-in [::data :edit-mode] nil)
+       (cond-> errors (assoc ::errors errors)))))
 
 (reg-event-fx
-  ::reset-availability-and-fetch
-  (fn-traced [{:keys [db]} [_ args]]
-    {:db (update-in db
-                    [::data :edit-mode] 
-                    dissoc 
-                    :max-quantity)
-     :dispatch [::fetch-available-quantity args]}))
+ ::reset-availability-and-fetch
+ (fn-traced [{:keys [db]} [_ args]]
+   {:db (update-in db
+                   [::data :edit-mode]
+                   dissoc
+                   :max-quantity)
+    :dispatch [::fetch-available-quantity args]}))
 
 (reg-event-fx
-  ::fetch-available-quantity
-  (fn-traced [_ [_ args]]
-    {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/features/shopping_cart/getModelAvailableQuantity.gql")
-                args
-                [::on-fetched-available-quantity]]}))
+ ::fetch-available-quantity
+ (fn-traced [_ [_ args]]
+   {:dispatch [::re-graph/query
+               (rc/inline "leihs/borrow/features/shopping_cart/getModelAvailableQuantity.gql")
+               args
+               [::on-fetched-available-quantity]]}))
 
 (reg-event-db
-  ::on-fetched-available-quantity
-  [(path ::data :edit-mode)]
-  (fn-traced [em [_ {:keys [data errors]}]]
-    (assoc em
-           :max-quantity (-> data :model :available-quantity-in-date-range))))
+ ::on-fetched-available-quantity
+ [(path ::data :edit-mode)]
+ (fn-traced [em [_ {:keys [data errors]}]]
+   (assoc em
+          :max-quantity (-> data :model :available-quantity-in-date-range))))
 
 (reg-event-fx
-  ::delete-reservations
-  (fn-traced [_ [_ ids]]
-    {:dispatch [::re-graph/mutate
-                (rc/inline "leihs/borrow/features/shopping_cart/deleteReservationLines.gql")
-                {:ids ids}
-                [::on-delete-reservations]]}))
+ ::delete-reservations
+ (fn-traced [_ [_ ids]]
+   {:dispatch [::re-graph/mutate
+               (rc/inline "leihs/borrow/features/shopping_cart/deleteReservationLines.gql")
+               {:ids ids}
+               [::on-delete-reservations]]}))
 
 (reg-event-db
-  ::on-delete-reservations
-  (fn-traced [db [_ {{ids :delete-reservation-lines} :data errors :errors}]]
-    (if errors
-      {:alert (str "FAIL! " (pr-str errors))}
-      (update-in db
-                 [::data :reservations]
-                 (partial filter #(->> %
-                                       :id
-                                       ((set ids))
-                                       not))))))
+ ::on-delete-reservations
+ (fn-traced [db [_ {{ids :delete-reservation-lines} :data errors :errors}]]
+   (if errors
+     {:alert (str "FAIL! " (pr-str errors))}
+     (update-in db
+                [::data :reservations]
+                (partial filter #(->> %
+                                      :id
+                                      ((set ids))
+                                      not))))))
 
 (reg-event-fx
-  ::edit-reservation
-  (fn-traced [{:keys [db]} [_ res-lines]]
-    (let [exemplar (first res-lines)
-          user-id (-> exemplar :user :id)
-          model (:model exemplar)
-          start-date (:start-date exemplar)
-          end-date (:end-date exemplar)
-          quantity (count res-lines)]
-      {:db (assoc-in db
-                     [::data :edit-mode]
-                     {:reservation-lines res-lines
-                      :start-date start-date
-                      :end-date end-date
-                      :quantity quantity
-                      :user-id user-id
-                      :model model
-                      :inventory-pools (map :inventory-pool res-lines)})
-       :dispatch [::fetch-available-quantity
-                  {:modelId (:id model)
-                   :startDate start-date 
-                   :endDate end-date
-                   :excludeReservationIds (map :id res-lines)}]})))
+ ::edit-reservation
+ (fn-traced [{:keys [db]} [_ res-lines]]
+   (let [exemplar (first res-lines)
+         user-id (-> exemplar :user :id)
+         model (:model exemplar)
+         start-date (:start-date exemplar)
+         end-date (:end-date exemplar)
+         quantity (count res-lines)]
+     {:db (assoc-in db
+                    [::data :edit-mode]
+                    {:reservation-lines res-lines
+                     :start-date start-date
+                     :end-date end-date
+                     :quantity quantity
+                     :user-id user-id
+                     :model model
+                     :inventory-pools (map :inventory-pool res-lines)})
+      :dispatch [::fetch-available-quantity
+                 {:modelId (:id model)
+                  :startDate start-date
+                  :endDate end-date
+                  :excludeReservationIds (map :id res-lines)}]})))
 
 (reg-event-fx
-  ::add-to-cart
-  (fn-traced [{:keys [db]} [_ ids]]
-    {:dispatch [::re-graph/mutate
-                (rc/inline "leihs/borrow/features/shopping_cart/addToCart.gql")
-                {:ids ids, :userId (current-user/chosen-user-id db)}
-                [::on-add-to-cart-result]]}))
+ ::add-to-cart
+ (fn-traced [{:keys [db]} [_ ids]]
+   {:dispatch [::re-graph/mutate
+               (rc/inline "leihs/borrow/features/shopping_cart/addToCart.gql")
+               {:ids ids, :userId (current-user/chosen-user-id db)}
+               [::on-add-to-cart-result]]}))
 
 (reg-event-fx
-  ::on-add-to-cart-result
-  (fn-traced [{:keys [_db]} [_ {:keys [data errors]}]]
-    (if errors
-      {:alert (str "FAIL! " (pr-str errors))}
-      {:alert (str "OK! " (pr-str data))
-       :routing/refresh-page "yes"})))
+ ::on-add-to-cart-result
+ (fn-traced [{:keys [_db]} [_ {:keys [data errors]}]]
+   (if errors
+     {:alert (str "FAIL! " (pr-str errors))}
+     {:alert (str "OK! " (pr-str data))
+      :routing/refresh-page "yes"})))
 
 (reg-event-fx
-  ::update-reservations
-  (fn-traced [_ [_ args]]
-    {:dispatch
-     [::re-graph/mutate
-      (rc/inline "leihs/borrow/features/shopping_cart/updateReservations.gql")
-      args
-      [::on-update-reservations-result]]}))
+ ::update-reservations
+ (fn-traced [_ [_ args]]
+   {:dispatch
+    [::re-graph/mutate
+     (rc/inline "leihs/borrow/features/shopping_cart/updateReservations.gql")
+     args
+     [::on-update-reservations-result]]}))
 
 (reg-event-fx
-  ::on-update-reservations-result
-  (fn-traced [{:keys [db]}
-              [_ {:keys [errors] {del-ids :delete-reservation-lines
-                                  new-res-lines :create-reservation} :data}]]
-    (if errors
-      {:alert (str "FAIL! " (pr-str errors))}
-      {:db (update-in db
-                      [::data :reservations]
-                      (fn [rs]
-                        (as-> rs <>
-                          (filter #(->> % :id ((set del-ids)) not) <>)
-                          (into <> new-res-lines))))
-       :dispatch [::routes/shopping-cart]})))
+ ::on-update-reservations-result
+ (fn-traced [{:keys [db]}
+             [_ {:keys [errors] {del-ids :delete-reservation-lines
+                                 new-res-lines :create-reservation} :data}]]
+   (if errors
+     {:alert (str "FAIL! " (pr-str errors))}
+     {:db (update-in db
+                     [::data :reservations]
+                     (fn [rs]
+                       (as-> rs <>
+                         (filter #(->> % :id ((set del-ids)) not) <>)
+                         (into <> new-res-lines))))
+      :dispatch [::routes/shopping-cart]})))
 
 (reg-event-db ::update-start-date
               [(path ::data :edit-mode :start-date)]
@@ -191,11 +191,11 @@
          :<- [::edit-mode-data]
          (fn [em [_ res-lines]]
            (boolean
-             (some->> em
-                      :reservation-lines
-                      (map :id)
-                      set
-                      (= (->> res-lines (map :id) set))))))
+            (some->> em
+                     :reservation-lines
+                     (map :id)
+                     set
+                     (= (->> res-lines (map :id) set))))))
 
 (reg-sub ::reservations
          :<- [::data]
@@ -206,10 +206,10 @@
          (fn [lines _]
            (->> lines
                 (group-by
-                  (fn [line]
-                    [(get-in line [:model :id])
-                     (get-in line [:start-date])
-                     (get-in line [:end-date])])))))
+                 (fn [line]
+                   [(get-in line [:model :id])
+                    (get-in line [:start-date])
+                    (get-in line [:end-date])])))))
 
 (reg-sub ::order-summary
          :<- [::reservations]
@@ -260,7 +260,7 @@
                                (dispatch [::reset-availability-and-fetch
                                           {:modelId (:id model)
                                            :userId user-id
-                                           :startDate new-start-date 
+                                           :startDate new-start-date
                                            :endDate end-date
                                            :excludeReservationIds (map :id res-lines)}])))}]]
       [:label.px-2.w-1_2
@@ -292,8 +292,8 @@
             :on-change (fn [e]
                          (let [new-quantity (-> e .-target .-value js/parseInt)]
                            (dispatch [::update-quantity new-quantity])))}]]]
-        [:div.flex-1.w-1_2 [:span.no-underline.text-color-muted 
-                            {:aria-label (str "maximum available quantity is " max-quantity)} 
+        [:div.flex-1.w-1_2 [:span.no-underline.text-color-muted
+                            {:aria-label (str "maximum available quantity is " max-quantity)}
                             "/" ui/thin-space (or max-quantity [ui/spinner-clock]) ui/thin-space "max."]]]]
       [:div.w-1_2
        [:label.d-block.mb-0
@@ -310,9 +310,9 @@
                                               :endDate end-date
                                               :excludeReservationIds (map :id res-lines)}])))}
          (doall
-           (for [user (cons (:user current-user) (:delegations current-user))]
-             [:option {:value (:id user) :key (:id user)}
-              (:name user)]))]]]
+          (for [user (cons (:user current-user) (:delegations current-user))]
+            [:option {:value (:id user) :key (:id user)}
+             (:name user)]))]]]
       [:div.flex-auto.w-1_2
        [:button.px-4.py-2.w-100.rounded-lg.font-semibold.text-lg
         {:on-click #(dispatch [::cancel-edit])}
@@ -377,9 +377,9 @@
                                             (-> ev .-target .-value)])
                                  (dispatch [::routes/shopping-cart]))}
            (doall
-             (for [user target-users]
-               [:option {:value (:id user) :key (:id user)}
-                (:name user)]))]]]]])))
+            (for [user target-users]
+              [:option {:value (:id user) :key (:id user)}
+               (:name user)]))]]]]])))
 
 (defn view []
   (let [data @(subscribe [::data])
@@ -393,28 +393,28 @@
      [search-panel]
      [:h1.mt-3.font-bold.text-3xl (t :draft/title)]
      (cond
-       is-loading? [:div.text-5xl.text-center.p-8 [ui/spinner-clock]]
+       is-loading? [ui/loading]
        errors [ui/error-view errors]
        (empty? grouped-reservations)
        [:div.bg-content-muted.text-center.my-4.px-2.py-4.rounded-lg
-        [:div.text-base (t :draft/empty)] 
-        [:a.d-inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-pill.px-4.py-2.my-4 
+        [:div.text-base (t :draft/empty)]
+        [:a.d-inline-block.text-xl.bg-content-inverse.text-color-content-inverse.rounded-pill.px-4.py-2.my-4
          {:href (routing/path-for ::routes/home)}
          (t :borrow-items)]]
        :else
        [:<>
         [:div
          (doall
-           (for [[grouped-key res-lines] grouped-reservations]
-             [:<> {:key grouped-key}
-              [reservation res-lines invalid-res-ids]]))
+          (for [[grouped-key res-lines] grouped-reservations]
+            [:<> {:key grouped-key}
+             [reservation res-lines invalid-res-ids]]))
          [:div.mt-4.text-sm.text-color-muted
           [:p
            (str (t :line/total) " ")
            (:total-models summary) ui/nbsp (str (t :line/total-models)
                                                 ", ")
            (:total-items summary) ui/nbsp  (str (t :line/total-items)
-                                                ", ") 
+                                                ", ")
            (str (t :line/from) " ")
            (string/join ", " (map :name (:pools summary)))
            "."]
@@ -426,7 +426,7 @@
            "."]]
          [:div
           [:button.w-100.p-2.my-4.rounded-full.bg-content-inverse.text-color-content-inverse.text-xl
-           {#_ #_ :disabled (not (empty? invalid-res-ids))
+           {#_#_:disabled (not (empty? invalid-res-ids))
             :on-click #(dispatch [::add-to-cart (map :id reservations)])}
            (t :draft/add-to-cart)]
           [:button.w-100.p-2.my-4.rounded-full.bg-content-danger.text-color-content-inverse.text-xl
