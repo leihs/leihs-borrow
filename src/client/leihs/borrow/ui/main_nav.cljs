@@ -49,11 +49,13 @@
         menu-data @(subscribe [::menu-data])
         is-menu-open? (:is-menu-open? menu-data)
         user-name @(subscribe [::user-name])
+        user-nav @(subscribe [::current-user/user-nav])
+        legacy-url (:legacy-url user-nav)
         documentation-url nil
         support-url nil
         languages [{:id "de" :title "Deutsch"}]]
 
-    ; TODO: provide documentation-url, support-url
+    ; TODO: provide documentation-url, support-url in user-nav
     ; TODO: provide languages, implement language switch
 
     [:> UI/Components.Design.Navbar.MenuWrapper
@@ -96,4 +98,7 @@
         [:> UI/Components.Design.Menu.Group {:title (t :language/section-title)}
          (doall
           (for [language languages]
-            [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::TODO-switch-language (:id language)])} (:title language)]))])]]))
+            [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::TODO-switch-language (:id language)])} (:title language)]))])
+
+      [:> UI/Components.Design.Menu.Group {:title "Leihs"}
+       [menu-link legacy-url (t :desktop-version)]]]]))

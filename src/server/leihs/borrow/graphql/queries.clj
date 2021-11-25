@@ -1,25 +1,24 @@
 (ns leihs.borrow.graphql.queries
   (:require
-    [leihs.borrow.resources.attachments :as attachments]
-    [leihs.borrow.resources.availability :as availability]
-    [leihs.borrow.resources.categories :as categories]
-    [leihs.borrow.resources.contracts :as contracts]
-    [leihs.borrow.resources.delegations :as delegations]
-    [leihs.borrow.resources.images :as images]
-    [leihs.borrow.resources.inventory-pools :as inventory-pools]
-    [leihs.borrow.resources.items :as items]
-    [leihs.borrow.resources.languages :as languages]
-    [leihs.borrow.resources.models :as models]
-    [leihs.borrow.resources.options :as options]
-    [leihs.borrow.resources.orders :as orders]
-    [leihs.borrow.resources.properties :as properties]
-    [leihs.borrow.resources.reservations :as reservations]
-    [leihs.borrow.resources.suspensions :as suspensions]
-    [leihs.borrow.resources.users :as users]
-    [leihs.borrow.resources.visits :as visits]
-    [leihs.borrow.resources.templates :as templates]
-    [leihs.borrow.testing :as testing]
-    ))
+   [leihs.borrow.resources.attachments :as attachments]
+   [leihs.borrow.resources.availability :as availability]
+   [leihs.borrow.resources.categories :as categories]
+   [leihs.borrow.resources.contracts :as contracts]
+   [leihs.borrow.resources.delegations :as delegations]
+   [leihs.borrow.resources.images :as images]
+   [leihs.borrow.resources.inventory-pools :as inventory-pools]
+   [leihs.borrow.resources.items :as items]
+   [leihs.borrow.resources.languages :as languages]
+   [leihs.borrow.resources.models :as models]
+   [leihs.borrow.resources.options :as options]
+   [leihs.borrow.resources.orders :as orders]
+   [leihs.borrow.resources.properties :as properties]
+   [leihs.borrow.resources.reservations :as reservations]
+   [leihs.borrow.resources.suspensions :as suspensions]
+   [leihs.borrow.resources.users :as users]
+   [leihs.borrow.resources.visits :as visits]
+   [leihs.borrow.resources.templates :as templates]
+   [leihs.borrow.testing :as testing]))
 
 (def resolvers
   {:approve-fulfillment visits/approve-fulfillment
@@ -74,6 +73,7 @@
    :thumbnails images/get-multiple-thumbnails
    :cart orders/get-cart
    :user users/get-one
+   :user-navigation users/get-navigation
    :users users/get-multiple
    :draft-order orders/get-draft
    :template templates/get-one
@@ -81,5 +81,4 @@
    :template-lines templates/get-lines
    :testing-query testing/query
    :total-borrowable-quantities models/total-borrowable-quantities
-   :total-rental-quantity orders/total-rental-quantity
-   })
+   :total-rental-quantity orders/total-rental-quantity})

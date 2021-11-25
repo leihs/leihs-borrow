@@ -175,7 +175,9 @@
                   :support {:en-GB "Support"
                             :de-CH "Unterstützung"}}
            :language {:section-title {:en-GB "Language"
-                                      :de-CH "Sprache"}}}
+                                      :de-CH "Sprache"}}
+           :desktop-version {:en-GB "Desktop version"
+                             :de-CH "Desktop-Version"}}
     :model-show {:loading {:en-GB "Loading model"
                            :de-CH "Modell wird geladen"}
                  :compatibles {:en-GB "Compatible Models"

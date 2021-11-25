@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Fri Nov 19 2021 13:53:17 GMT+0100 (Central European Standard Time)
+# timestamp: Thu Nov 25 2021 17:25:21 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -89,6 +89,7 @@ type CurrentUser {
   This is the language to use for translations. It takes into account user's preferred language, the default one, etc.
   """
   languageToUse: Language!
+  nav: UserNavigation!
   sessionId: UUID!
   user: User
 }
@@ -554,6 +555,10 @@ type User {
   secondaryEmail: String
   suspensions: [Suspension]
   unsubmittedOrder: UnsubmittedOrder
+}
+
+type UserNavigation {
+  legacyUrl: String!
 }
 
 enum UsersOrderByAttributeEnum {

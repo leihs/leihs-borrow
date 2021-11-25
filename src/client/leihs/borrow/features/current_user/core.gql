@@ -9,7 +9,7 @@ query getCurrentUser {
         id
         name
       }
-      inventoryPools(orderBy: [{attribute: NAME, direction: ASC}]) {
+      inventoryPools(orderBy: [{ attribute: NAME, direction: ASC }]) {
         id
         name
         maximumReservationTime
@@ -25,5 +25,8 @@ query getCurrentUser {
       locale
     }
     sessionId
+    nav {
+      legacyUrl
+    }
   }
 }

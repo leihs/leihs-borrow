@@ -72,6 +72,7 @@
                                :locale {:type String}
                                :default {:type Boolean}
                                :active {:type Boolean}}}
+           :UserNavigation {:fields {:legacyUrl {:type (non-null String)}}}
            :User {:description "A `User` represents a human agent that can log into and use the system."
                   :fields {:id {:type (non-null :UUID)}
                            :firstname {:type String}
@@ -128,7 +129,9 @@
                                   :languageToUse {:description "This is the language to use for translations. It takes into account user's preferred language, the default one, etc."
                                                   :type (non-null :Language)
                                                   :resolve :language-to-use}
-                                  :sessionId {:type (non-null :UUID)}}}
+                                  :sessionId {:type (non-null :UUID)}
+                                  :nav {:type (non-null :UserNavigation)
+                                        :resolve :user-navigation}}}
            :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null :Date)}
                               :quantity {:type (non-null Int)}
