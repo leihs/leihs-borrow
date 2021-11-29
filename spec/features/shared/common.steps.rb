@@ -56,20 +56,18 @@ step "I see :txt" do |txt|
 end
 
 step "I log in with the email :email" do |email|
-  @current_user = User.find(email: email)
-  visit "/app/borrow/"
-  within(".ui-form-signin") do
-    fill_in("user", with: email)
-    find('button[type="submit"]').click
-  end
-  within(".ui-form-signin") do
-    fill_in("password", with: "password")
-    find('button[type="submit"]').click
-  end
+  @current_user = log_in_as_user_with_email(email)
 end
 
 step "I log in as the user" do
-  step "I log in with the email '#{@user.email}'"
+  expect(@user).to be_a User
+  log_in_as_user_with_email(@user.email)
+end
+
+step "I log in as the user :full_name" do |name|
+  user = find_user_by_full_name!(name)
+  expect(@user).to be_a User
+  log_in_as_user_with_email(@user.email)
 end
 
 step "user's preferred language is :lang" do |lang|
@@ -108,11 +106,11 @@ step "there is an error message" do
 end
 
 step "I log in as the initial admin" do
-  step "I log in with the email '#{@initial_admin.email}'"
+  log_in_as_user_with_email(@initial_admin.email)
 end
 
 step "I log in as the leihs admin" do
-  step "I log in with the email '#{@leihs_admin.email}'"
+  log_in_as_user_with_email(@leihs_admin.email)
 end
 
 step "I fill out the form with:" do |table|
