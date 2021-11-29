@@ -34,14 +34,15 @@ Feature: Rentals - Show
     Then I see the page title "My Order"
     And the page subtitle is "2 days from 01/02/01, 2 items"
     And I see the following status rows in the "State" section:
-      | title      | progressbar | info                   |
-      | To pick up | [0 of 2]    | 0 of 2 items picked up |
+      | title  | progressbar | info                   |
+      | Pickup | [0 of 2]    | 0 of 2 items picked up |
     And I see the "Purpose" section
     And I see the following lines in the "Items" section:
-      | title          | body   | foot                           |
-      | 1× DSLR Camera | Pool A | 2 days from 01/02/01 To pickup |
-      | 1× Tripod      | Pool B | 2 days from 01/02/01 To pickup |
+      | title          | body   | foot                            |
+      | 1× DSLR Camera | Pool A | 2 days from 01/02/01 To pick up |
+      | 1× Tripod      | Pool B | 2 days from 01/02/01 To pick up |
     And I see the "Delegation" section
+
 
   Scenario: Sort order of the Reservation Lines
 
@@ -62,14 +63,14 @@ Feature: Rentals - Show
     And I click on "My Order"
 
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                           |
-      | 1× DSLR Camera | Pool A | 2 days from 01/02/01 To pickup |
-      | 1× DSLR Camera | Pool B | 2 days from 01/02/01 To pickup |
-      | 1× Tripod      | Pool B | 2 days from 01/02/01 To pickup |
-      | 1× Tripod      | Pool B | 2 days from 01/02/01 To pickup |
-      | 1× DSLR Camera | Pool B | 2 days from 01/03/01 To pickup |
-      | 1× Xylophone   | Pool B | 2 days from 01/03/01 To pickup |
-      | 1× DSLR Camera | Pool A | 2 days from 01/04/01 To pickup |
+      | title          | body   | foot                            |
+      | 1× DSLR Camera | Pool A | 2 days from 01/02/01 To pick up |
+      | 1× DSLR Camera | Pool B | 2 days from 01/02/01 To pick up |
+      | 1× Tripod      | Pool B | 2 days from 01/02/01 To pick up |
+      | 1× Tripod      | Pool B | 2 days from 01/02/01 To pick up |
+      | 1× DSLR Camera | Pool B | 2 days from 01/03/01 To pick up |
+      | 1× Xylophone   | Pool B | 2 days from 01/03/01 To pick up |
+      | 1× DSLR Camera | Pool A | 2 days from 01/04/01 To pick up |
 
 
   # pending: "And the page subtitle is..." fails, because 'today' is used as rental start date instead of 01/02/2021
@@ -87,8 +88,8 @@ Feature: Rentals - Show
     Then I see the page title "My Order"
     And the page subtitle is "2 days from 01/02/01, 2 items"
     And I see the following status rows in the "State" section:
-      | title     | progressbar | info                  |
-      | To return | [0 of 2]    | 0 of 2 items returned |
+      | title  | progressbar | info                  |
+      | Return | [0 of 2]    | 0 of 2 items returned |
     And I see the following lines in the "Items" section:
       | title          | body   | foot                                          |
       | 1× DSLR Camera | Pool A | 2 days from 01/02/01 To return until 02/02/01 |

@@ -22,8 +22,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.features.customer-orders.core :as rentals]
-   [leihs.borrow.features.customer-orders.filter-modal :as filter-modal]
-   [leihs.borrow.features.customer-orders.index :refer [rental-progress-bars]]
+   [leihs.borrow.features.customer-orders.index :refer [status-summary]]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [dissoc-in]]
    ["/leihs-ui-client-side-external-react" :as UI]))
@@ -127,7 +126,11 @@
         sub-title (get-in reservation [:inventory-pool :name])
         href (when model (routing/path-for ::routes/models-show :model-id (:id (:model reservation))))
         status (:status reservation)
-        overdue? (and (= status "SIGNED") (datefn/isAfter (js/Date.) (datefn/addDays end-date 1)))]
+        is-over? (datefn/isAfter (js/Date.) (datefn/addDays end-date 1))
+        overdue? (and (= status "SIGNED") is-over?)
+        expired-unapproved? (and (= status "SUBMITTED") is-over?)
+        expired? (and (= status "APPROVED") is-over?)
+        refined-status (cond expired-unapproved? "EXPIRED-UNAPPROVED" expired? "EXPIRED" :else status)]
     [:<>
      [:> UI/Components.Design.ListCard {:href href}
       [:> UI/Components.Design.ListCard.Title
@@ -139,7 +142,7 @@
       [:> UI/Components.Design.ListCard.Foot
        [:> UI/Components.Design.Badge duration] " "
        [:> UI/Components.Design.Badge {:colorClassName (when overdue? " bg-danger")}
-        (t (str :reservation-status-label "/" status) {:endDate end-date})]]]]))
+        (t (str :reservation-status-label "/" refined-status) {:endDate end-date})]]]]))
 
 (defn ui-items-list [grouped-reservation]
   [:> UI/Components.Design.ListCard.Stack
@@ -210,7 +213,8 @@
           {:title (t :state) :collapsible true}
 
           [:> UI/Components.Design.Stack {:space 3}
-           (rental-progress-bars rental false)
+
+           [status-summary rental false]
 
            (when is-cancelable?
              [:> UI/Components.Design.ActionButtonGroup
@@ -219,10 +223,6 @@
          [:> UI/Components.Design.Section
           {:title (t :purpose) :collapsible true}
           (:purpose rental)]
-
-         #_[:> UI/Components.Design.Section
-            {:title (t :pools-section-title) :collapsible true}
-            [:p "list of inventory pools with progress bars - not implemented. probably not needed"]]
 
          [:> UI/Components.Design.Section
           {:title (t :items-section-title) :collapsible true}

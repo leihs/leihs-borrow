@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Nov 25 2021 17:25:21 GMT+0100 (Central European Standard Time)
+# timestamp: Tue Nov 30 2021 15:38:10 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -384,12 +384,12 @@ type Rental {
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   expiredQuantity: Int!
+  expiredUnapprovedQuantity: Int!
   fromDate: Date!
   id: UUID!
   isCustomerOrder: Boolean!
   overdueQuantity: Int!
   pickupFulfillment: PickupFulfillment
-  pickupQuantity: Int!
   poolOrdersCount: Int!
   purpose: NonEmptyText
   refinedRentalState: [RefinedRentalStateEnum!]
@@ -402,7 +402,6 @@ type Rental {
   rentalState: RentalStateEnum!
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   returnFulfillment: ReturnFulfillment
-  returnQuantity: Int!
 
   """List of distinct states of all the sub-orders."""
   state: [PoolOrderStateEnum!]

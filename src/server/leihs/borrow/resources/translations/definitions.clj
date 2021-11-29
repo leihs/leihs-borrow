@@ -253,13 +253,13 @@
                         :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
 
               :fulfillment-state-label {; states flowchart: <https://flowchart.fun/c#AoexBsHkCcBMFNoCgAEKCWBnFmCuAjAW3QBcT5YV8BPFAY10xJEMQC4UAKASQDkB9AILBgAJUgA1QQBkAlEiQARdNHh0So+JkQA3AIYl0IAHaoM2OqoMUqtQnuN6A5uy4AVSP2DcAwgGl+AFVgeQBtPiERcSlpAF0UCOExSRkzFxJsPQAHLOgQHQoOTg8vXwDg+TQsFFUAKzVyWCLRAFEAKRafNxbFSvN6Bzp4cEKuH0FeHxbpHrCS738g4Hj5sqWzaqz0OgBrG1wsooAhSFFxAHVZpFCTs8hLxXjbi56N7FUSXGhjUc5Wt0Col4V1C-0BwMeKDBQNeoPanW6kNaHS6sPGk2mPXi6KmM0UQA>
-                                        :IN_APPROVAL {:de-CH "Genehmigung" :en-GB "In Approval"}
-                                        :TO_PICKUP {:de-CH "Abholung" :en-GB "To pick up"}
-                                        :TO_RETURN {:de-CH "Rückgabe" :en-GB "To return"}
+                                        :IN_APPROVAL {:de-CH "Genehmigung" :en-GB "Approval"}
+                                        :TO_PICKUP {:de-CH "Abholung" :en-GB "Pickup"}
+                                        :TO_RETURN {:de-CH "Rückgabe" :en-GB "Return"}
                                         :RETURNED {:de-CH "Alle Gegenstände zurückgebracht" :en-GB "All items returned"}
                                         :REJECTED {:de-CH "Ausleihe wurde abgelehnt" :en-GB "Rental was rejected"}
                                         :CANCELED {:de-CH "Ausleihe wurde storniert" :en-GB "Rental was canceled"}
-                                        :EXPIRED {:de-CH "Ausleihe abgelaufen" :en-GB "Rental expired"}
+                                        :EXPIRED {:de-CH "Nicht abgeholt" :en-GB "Not picked up"}
                                         :OVERDUE {:de-CH "Rückgabe überfällig" :en-GB "Overdue"}}
 
               :summary-line
@@ -334,7 +334,11 @@
                  :en-GB "{totalCount, plural,
                           =1 {{doneCount} of {totalCount} item returned}
                           other {{doneCount} of {totalCount} items returned}
-                        }"}}}}
+                        }"}}
+
+               :partial-status {:REJECTED {:de-CH " ({count} abgelehnt)" :en-GB " ({count} rejected)"}
+                                :EXPIRED {:de-CH " ({count} abgelaufen)" :en-GB " ({count} expired)"}
+                                :OVERDUE {:de-CH " ({count} überfällig)" :en-GB " ({count} overdue)"}}}}
 
     :rental-show {:page-title {:de-CH "Ausleihe" :en-GB "Rental"}
                   :state {:de-CH "Status" :en-GB "State"}
@@ -359,12 +363,15 @@
                                 }"}}
                   :reservation-status-label {:DRAFT {:de-CH "DRAFT" :en-GB "DRAFT"} ; (will never appear in this view)
                                              :UNSUBMITTED {:de-CH "UNSUBMITTED" :en-GB "UNSUBMITTED"} ; (will never appear in this view)
-                                             :SUBMITTED {:de-CH "Genehmigung" :en-GB "In approval"}
-                                             :APPROVED {:de-CH "Abholung" :en-GB "To pickup"}
+                                             :SUBMITTED {:de-CH "In Genehmigung" :en-GB "In approval"}
+                                             :APPROVED {:de-CH "Abholung" :en-GB "To pick up"}
                                              :REJECTED {:de-CH "Abgelehnt" :en-GB "Rejected"}
                                              :SIGNED {:de-CH "Rückgabe bis {endDate, date, short}" :en-GB "To return until {endDate, date, short}"}
                                              :CLOSED {:de-CH "Zurückgebracht" :en-GB "Returned"}
-                                             :CANCELED {:de-CH "Ausleihe storniert" :en-GB "Canceled"}}
+                                             :CANCELED {:de-CH "Ausleihe storniert" :en-GB "Canceled"}
+                                             ; Temporal statusses:
+                                             :EXPIRED-UNAPPROVED {:de-CH "Nicht bewilligt bis {endDate, date, short}" :en-GB "Not approved until {endDate, date, short}"}
+                                             :EXPIRED {:de-CH "Nicht abgeholt bis {endDate, date, short}" :en-GB "Not picked up until {endDate, date, short}"}}
                   :cancellation-dialog {:title {:de-CH "Ausleihe stornieren" :en-GB "Cancel rental"}
                                         :confirm {:de-CH "Stornieren" :en-GB "Cancel rental"}
                                         :cancel {:de-CH "Abbrechen" :en-GB "Abort"}}}

@@ -34,6 +34,7 @@
    :child-categories categories/get-children
    :delegation delegations/get-one
    :delegations delegations/get-multiple
+   :expired-unapproved-rental-quantity orders/expired-unapproved-rental-quantity
    :expired-rental-quantity orders/expired-rental-quantity
    :favorite-models-connection models/get-favorites-connection
    :has-reservable-items inventory-pools/has-reservable-items?
@@ -55,7 +56,6 @@
    :orders-connection orders/get-connection
    :overdue-rental-quantity orders/overdue-rental-quantity
    :pickup-fulfillment visits/pickup-fulfillment
-   :pickup-rental-quantity orders/pickup-rental-quantity
    :pool-order orders/get-one-by-pool
    :pool-orders orders/get-multiple-by-pool
    :pool-orders-count orders/pool-orders-count
@@ -66,7 +66,6 @@
    :reservations reservations/get-multiple
    :responsible delegations/responsible
    :return-fulfillment visits/return-fulfillment
-   :return-rental-quantity orders/return-rental-quantity
    :root-categories categories/get-roots
    :submitted-pool-orders-count orders/submitted-pool-orders-count
    :suspensions suspensions/get-multiple

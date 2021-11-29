@@ -59,8 +59,8 @@
                    (->> (map (set/map-invert
                               refined-rental-state->reservation-status)))
                    (cond->
-                     expired? (conj :EXPIRED)
-                     overdue? (conj :OVERDUE))
+                    expired? (conj :EXPIRED)
+                    overdue? (conj :OVERDUE))
                    distinct)]
     (assoc row :refined_rental_state states)))
 
@@ -93,13 +93,25 @@
            (map :quantity)
            (apply +))))
 
+(defn expired-unapproved-rental-quantity
+  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  (-> (sql/select :*)
+      (sql/from :reservations)
+      (sql/where [:in :id reservation-ids])
+      (sql/merge-where [:in :reservations.status ["submitted"]])
+      (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.end_date])
+      sql/format
+      (->> (jdbc/query tx)
+           (map :quantity)
+           (apply +))))
+
 (defn expired-rental-quantity
   [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
-      (sql/merge-where [:in :reservations.status ["submitted" "approved"]])
-      (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.start_date])
+      (sql/merge-where [:in :reservations.status ["approved"]])
+      (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.end_date])
       sql/format
       (->> (jdbc/query tx)
            (map :quantity)
@@ -111,28 +123,6 @@
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
       (sql/merge-where [:= :status "rejected"])
-      sql/format
-      (->> (jdbc/query tx)
-           (map :quantity)
-           (apply +))))
-
-(defn pickup-rental-quantity
-  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
-  (-> (sql/select :*)
-      (sql/from :reservations)
-      (sql/where [:in :id reservation-ids])
-      (sql/merge-where [:= :status "approved"])
-      sql/format
-      (->> (jdbc/query tx)
-           (map :quantity)
-           (apply +))))
-
-(defn return-rental-quantity
-  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
-  (-> (sql/select :*)
-      (sql/from :reservations)
-      (sql/where [:in :id reservation-ids])
-      (sql/merge-where [:= :status "signed"])
       sql/format
       (->> (jdbc/query tx)
            (map :quantity)
@@ -208,7 +198,7 @@
    value]
   (-> (multiple-base-sqlmap user-id)
       (cond->
-        states
+       states
         (sql/merge-where (equal-condition
                           :unified_customer_orders.state
                           (->> states
@@ -255,7 +245,7 @@
                     context
                     args
                     value
-                    #(map (partial row-fn tx) %))) 
+                    #(map (partial row-fn tx) %)))
 
 (defn orders-columns [tx]
   (as-> (database/columns tx "orders") <>
@@ -281,7 +271,7 @@
       (->> (jdbc/query tx))
       count))
 
-(defn pool-orders-count 
+(defn pool-orders-count
   [{{:keys [tx]} :request} _ {:keys [id]}]
   (count (pool-orders tx id)))
 
@@ -303,14 +293,14 @@
 (defn get-multiple-by-pool [{{:keys [tx]} :request :as context}
                             {:keys [order-by]}
                             value]
-  (-> (pool-orders-sqlmap tx (:id value)) 
+  (-> (pool-orders-sqlmap tx (:id value))
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by :orders)))
       sql/format
       (as-> <>
-        (jdbc/query tx
-                    <>
-                    {:row-fn pool-order-row}))))
+            (jdbc/query tx
+                        <>
+                        {:row-fn pool-order-row}))))
 
 (defn valid-until [tx user-id]
   (-> (rs/unsubmitted-sqlmap tx user-id)

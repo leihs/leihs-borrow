@@ -305,9 +305,8 @@
                              :submittedPoolOrdersCount {:type Int :resolve :submitted-pool-orders-count}
                              :poolOrdersCount {:type (non-null Int) :resolve :pool-orders-count}
                              :totalQuantity {:type (non-null Int) :resolve :total-rental-quantity}
-                             :pickupQuantity {:type (non-null Int) :resolve :pickup-rental-quantity}
-                             :returnQuantity {:type (non-null Int) :resolve :return-rental-quantity}
                              :rejectedQuantity {:type (non-null Int) :resolve :rejected-rental-quantity}
+                             :expiredUnapprovedQuantity {:type (non-null Int) :resolve :expired-unapproved-rental-quantity}
                              :expiredQuantity {:type (non-null Int) :resolve :expired-rental-quantity}
                              :overdueQuantity {:type (non-null Int) :resolve :overdue-rental-quantity}
                              :subOrdersByPool {:type (list :PoolOrder)

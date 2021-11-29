@@ -8,20 +8,31 @@ fragment rentalProps on Rental {
   fromDate
   untilDate
   totalDays
-  approvedPoolOrdersCount
-  rejectedPoolOrdersCount
-  submittedPoolOrdersCount
+
   totalQuantity
-  pickupQuantity
-  returnQuantity
+
+  approveFulfillment {
+    fulfilledQuantity
+    toFulfillQuantity
+  }
+
+  rejectedQuantity
+  expiredUnapprovedQuantity
+
   pickupFulfillment {
     fulfilledQuantity
     toFulfillQuantity
   }
+
+  expiredQuantity
+
   returnFulfillment {
     fulfilledQuantity
     toFulfillQuantity
   }
+
+  overdueQuantity
+
   subOrdersByPool {
     id
     inventoryPool {

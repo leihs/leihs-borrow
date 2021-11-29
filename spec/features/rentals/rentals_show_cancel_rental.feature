@@ -24,8 +24,8 @@ Feature: Rentals - Show - Cancel rental
 
     Then I see the page title "My Order"
     And I see the following status rows in the "State" section:
-      | title       | progressbar | info                  |
-      | In Approval | [0 of 2]    | 0 of 2 items approved |
+      | title    | progressbar | info                  |
+      | Approval | [0 of 2]    | 0 of 2 items approved |
 
     When I click on "Cancel rental"
     And I accept the "Cancel rental" dialog

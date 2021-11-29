@@ -1,9 +1,9 @@
 query myRentals(
-  $userId: UUID,
-  $searchTerm: NonEmptyText,
-  $refinedRentalState: RefinedRentalStateEnum,
-  $poolIds: [UUID!],
-  $from: Date,
+  $userId: UUID
+  $searchTerm: NonEmptyText
+  $refinedRentalState: RefinedRentalStateEnum
+  $poolIds: [UUID!]
+  $from: Date
   $until: Date
 ) {
   openRentals: rentals(
@@ -56,15 +56,26 @@ fragment rentalProps on Rental {
   totalDays
   totalQuantity
 
+  approveFulfillment {
+    fulfilledQuantity
+    toFulfillQuantity
+  }
+
+  rejectedQuantity
+  expiredUnapprovedQuantity
+
   pickupFulfillment {
     fulfilledQuantity
     toFulfillQuantity
   }
+  expiredQuantity
 
   returnFulfillment {
     fulfilledQuantity
     toFulfillQuantity
   }
+
+  overdueQuantity
 
   createdAt
   updatedAt
