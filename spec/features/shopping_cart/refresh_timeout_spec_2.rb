@@ -2,7 +2,11 @@ require "spec_helper"
 require_relative "../../graphql/graphql_helper"
 # require_relative "../shared/common"
 
-feature "refresh timeout" do
+# NOTE: UUIDs are hardcoded quickly find the context from a test failure message cointaining an ID
+
+describe "refresh timeout" do
+  pending "FIX User Suspension, Max Visits Cases"
+
   let(:inventory_pool) do
     FactoryBot.create(:inventory_pool, id: "00843766-b48d-4a7d-89cc-565ced81bbf9", name: "Pool One")
   end
@@ -31,6 +35,10 @@ feature "refresh timeout" do
     FactoryBot.create(:inventory_pool, id: "01d60223-cfe4-45d7-a1e0-73ad3b318e2d", name: "Pool Seven")
   end
 
+  let(:inventory_pool_8_suspended) do
+    FactoryBot.create(:inventory_pool, id: "ee7fe76b-6182-45d0-aa4a-e8bf6a76bcbf", name: "Pool Eight with Suspension")
+  end
+
   let(:user) do
     u = FactoryBot.create(:user, id: "8c360361-f70c-4b31-a271-b4050d4b9d26")
     [inventory_pool,
@@ -38,9 +46,14 @@ feature "refresh timeout" do
      inventory_pool_3_max_visits,
      inventory_pool_4_advance_days,
      inventory_pool_6_holiday,
-     inventory_pool_7_no_workday].each do |ip|
+     inventory_pool_7_no_workday,
+     inventory_pool_8_suspended].each do |ip|
       FactoryBot.create(:direct_access_right, inventory_pool: ip, user: u)
     end
+
+    # user is currently suspended in a certain pool
+    FactoryBot.create(:suspension, user: u, inventory_pool: inventory_pool_8_suspended)
+
     u
   end
 
@@ -52,6 +65,7 @@ feature "refresh timeout" do
     u
   end
 
+  # this user is "blocking" the maximum daily visits of a pool with returns and pickup
   let(:user_3_max_visits) do
     u = FactoryBot.create(:user, id: "ebe016ce-3d73-4e5a-ac90-3475b43b8def")
     FactoryBot.create(:direct_access_right,
@@ -115,7 +129,7 @@ feature "refresh timeout" do
   end
 
   let(:model_6) do
-    model = FactoryBot.create(:leihs_model, product: "Max Visits Count",
+    model = FactoryBot.create(:leihs_model, product: "Max Visits Count Pickup",
                                             id: "755a44b2-7ae8-4325-98ea-bbc553f147bf")
     2.times do
       model.add_item(FactoryBot.create(:item,
@@ -125,7 +139,18 @@ feature "refresh timeout" do
     model
   end
 
-  let(:model_6_b) do
+  let(:model_6_return) do
+    model = FactoryBot.create(:leihs_model, product: "Max Visits Count Return",
+                                            id: "eb20fabe-768d-4285-8c65-47f0c11f5d7d")
+    2.times do
+      model.add_item(FactoryBot.create(:item,
+                                       is_borrowable: true,
+                                       responsible: inventory_pool_3_max_visits))
+    end
+    model
+  end
+
+  let(:model_6_x) do
     model = FactoryBot.create(:leihs_model, product: "Another User is Returning This Causing Max Visits Reached",
                                             id: "83ecc0e0-2bfe-4548-86cb-1ed43bf31014")
     2.times do
@@ -180,6 +205,17 @@ feature "refresh timeout" do
     model
   end
 
+  let(:model_11_suspended) do
+    model = FactoryBot.create(:leihs_model, product: "User is Suspended",
+                                            id: "816bdd15-fc4f-4c8f-a464-a33fb2009f56")
+    2.times do
+      model.add_item(FactoryBot.create(:item,
+                                       is_borrowable: true,
+                                       responsible: inventory_pool_8_suspended))
+    end
+    model
+  end
+
   let(:model_without_items) do
     FactoryBot.create(:leihs_model, product: "Model With No Items",
                                     id: "70e6153f-6a33-4942-a12d-dbd80ab4c156")
@@ -225,7 +261,9 @@ feature "refresh timeout" do
                                                              end_date: (test_advance_days + 1).days.from_now,
                                                              user: user)
     #####################################################################################################
-    # max visits count reached: only 1 is allowed, and another user already has a return on same day
+    # max visits count reached: only 1 is allowed, but
+    #   * another user already has a pickup on same day
+    #   * another user already has a return on same day
     Workday.find(inventory_pool_id: inventory_pool_3_max_visits.id).update(max_visits: { "1": "1",
                                                                                          "2": "1",
                                                                                          "3": "1",
@@ -233,21 +271,41 @@ feature "refresh timeout" do
                                                                                          "5": "1",
                                                                                          "6": "1",
                                                                                          "0": "1" })
-    r1c_max_visits_count_reached = FactoryBot.create(:reservation,
-                                                     leihs_model: model_6_b,
-                                                     inventory_pool: inventory_pool_3_max_visits,
-                                                     #  start_date: 3.days.ago,
-                                                     #  end_date: Date.today,
-                                                     start_date: Date.today,
-                                                     end_date: 3.days.from_now,
-                                                     user: user_3_max_visits)
-    r1c_max_visits_count_reached = FactoryBot.create(:reservation,
-                                                     id: "7f2c1eb2-5f0a-4156-a21a-d3c116780458",
-                                                     leihs_model: model_6,
-                                                     inventory_pool: inventory_pool_3_max_visits,
-                                                     start_date: Date.today,
-                                                     end_date: Date.tomorrow,
-                                                     user: user)
+    # this reservations return-visit blocks the pickup (in 4 days)
+    r1c_max_visits_count_reached_other_pickup = FactoryBot.create(:reservation,
+                                                                  id: "3d98b789-5dd5-48ed-9002-79623be71789",
+                                                                  leihs_model: model_6_x,
+                                                                  inventory_pool: inventory_pool_3_max_visits,
+                                                                  start_date: 2.days.from_now,
+                                                                  end_date: 4.days.from_now,
+                                                                  user: user_3_max_visits)
+    # this reservations pickup-visit blocks the return (in 12 days)
+    r1c_max_visits_count_reached_other_return = FactoryBot.create(:reservation,
+                                                                  id: "dcef87fc-2e09-4a30-8492-22acd1c27215",
+                                                                  leihs_model: model_6_x,
+                                                                  inventory_pool: inventory_pool_3_max_visits,
+                                                                  start_date: 12.days.from_now,
+                                                                  end_date: 14.days.from_now,
+                                                                  start_date: Date.today,
+                                                                  end_date: 3.days.from_now,
+                                                                  user: user_3_max_visits)
+
+    # this reservation is blocked at the pickup (in 4 days)
+    r1c_max_visits_count_reached_at_pickup = FactoryBot.create(:reservation,
+                                                               id: "7f2c1eb2-5f0a-4156-a21a-d3c116780458",
+                                                               leihs_model: model_6,
+                                                               inventory_pool: inventory_pool_3_max_visits,
+                                                               start_date: 4.days.from_now,
+                                                               end_date: 6.days.from_now,
+                                                               user: user)
+    # this reservation is blocked at the return (in 12 days)
+    r1c_max_visits_count_reached_at_return = FactoryBot.create(:reservation,
+                                                               id: "314446a7-7d07-48d6-b7a3-5fbf66e693d1",
+                                                               leihs_model: model_6_return,
+                                                               inventory_pool: inventory_pool_3_max_visits,
+                                                               start_date: 10.days.from_now,
+                                                               end_date: 12.days.from_now,
+                                                               user: user)
     #####################################################################################################
     # no access for inventory pool
     r1d_no_access_to_pool = FactoryBot.create(:reservation,
@@ -352,6 +410,15 @@ feature "refresh timeout" do
                                             end_date: Date.tomorrow,
                                             user: user)
     #####################################################################################################
+    # FIXME: suspension
+    # r6_user_is_suspended = FactoryBot.create(:reservation,
+    #                                          id: "b403139c-9b46-48ba-8aca-d35e2f1e05ab",
+    #                                          leihs_model: model_11_suspended,
+    #                                          inventory_pool: inventory_pool_8_suspended,
+    #                                          start_date: Date.today,
+    #                                          end_date: Date.tomorrow,
+    #                                          user: user)
+    #####################################################################################################
 
     m_result = query(m, user.id).deep_symbolize_keys
     expect(m_result[:errors]).to be_nil
@@ -364,31 +431,38 @@ feature "refresh timeout" do
     draft_ids = reservations.select { |r| r[:status] == "DRAFT" }.map { |r| r[:id] }
     invalid_ids = m_result.dig(:data, :refreshTimeout, :unsubmittedOrder, :invalidReservationIds)
 
-    log_in_as_user_with_email(user.email)
-    visit "/app/borrow/order"
     binding.pry
+    # log_in_as_user_with_email(user.email)
+    # visit "/app/borrow/order"
 
-    expect(unsubmitted_ids.to_set).to eq [r4_timed_out_ok, r5_not_timed_out_ok].map(&:id).to_set
-    expect(draft_ids.to_set).to eq [r1a_invalid_start_date,
-                                    r1b_invalid_reservation_advance_days,
-                                    r1c_max_visits_count_reached,
-                                    r1d_no_access_to_pool,
-                                    r1e_holiday,
-                                    r1f_no_workday,
-                                    r1g_max_reservation_time,
-                                    r2_not_timed_out_with_invalid_avail_1,
-                                    r3_timed_out_with_invalid_avail_1,
-                                    r3_timed_out_with_invalid_avail_2].map(&:id).to_set
-    expect(invalid_ids.to_set).to eq [r1a_invalid_start_date,
-                                      r1b_invalid_reservation_advance_days,
-                                      r1c_max_visits_count_reached,
-                                      r1d_no_access_to_pool,
-                                      r1e_holiday,
-                                      r1f_no_workday,
-                                      r1g_max_reservation_time,
-                                      r2_not_timed_out_with_invalid_avail_1,
-                                      r3_timed_out_with_invalid_avail_1,
-                                      r3_timed_out_with_invalid_avail_2].map(&:id).to_set
+    expect(unsubmitted_ids.to_set).to match_array [r4_timed_out_ok, r5_not_timed_out_ok].map(&:id),
+                                                  "unsubmitted reservations"
+    expect(draft_ids.to_set).to match_array [r1a_invalid_start_date,
+                                             r1b_invalid_reservation_advance_days,
+                                             r1c_max_visits_count_reached_at_pickup,
+                                             r1c_max_visits_count_reached_at_return,
+                                             r1d_no_access_to_pool,
+                                             r1e_holiday,
+                                             r1f_no_workday,
+                                             r1g_max_reservation_time,
+                                             r2_not_timed_out_with_invalid_avail_1,
+                                             r3_timed_out_with_invalid_avail_1,
+                                             r3_timed_out_with_invalid_avail_2,
+                                             r6_user_is_suspended].map(&:id),
+                                            "draft reservations"
+    expect(invalid_ids.to_set).to match_array [r1a_invalid_start_date,
+                                               r1b_invalid_reservation_advance_days,
+                                               r1c_max_visits_count_reached_at_pickup,
+                                               r1c_max_visits_count_reached_at_return,
+                                               r1d_no_access_to_pool,
+                                               r1e_holiday,
+                                               r1f_no_workday,
+                                               r1g_max_reservation_time,
+                                               r2_not_timed_out_with_invalid_avail_1,
+                                               r3_timed_out_with_invalid_avail_1,
+                                               r3_timed_out_with_invalid_avail_2,
+                                               r6_user_is_suspended].map(&:id),
+                                              "invalid reservation"
     expect(valid_until.try(:utc)).to eq (DateTime.now.utc + 30.minutes).change(usec: 0)
   end
 end
