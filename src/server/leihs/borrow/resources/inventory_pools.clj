@@ -5,7 +5,7 @@
             [hugsql.core :as hugsql]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
-            [leihs.core.settings :refer [settings!]]
+            [leihs.borrow.resources.settings :as settings]
             [leihs.core.sql :as sql]))
 
 (hugsql/def-sqlvec-fns "sql/pools_to_reserve_from.sql")
@@ -77,21 +77,21 @@
 
 (defn has-reservable-items? [{{:keys [tx]} :request} _ {:keys [id]}]
   (-> (sql/select
-        (sql/call :exists
-                  (-> (sql/select :*)
-                      (sql/from :items)
-                      (sql/where [:and
-                                  [:= :inventory_pool_id id]
-                                  [:is :retired nil]
-                                  :is_borrowable
-                                  [:is :parent_id nil]]))))
-    sql/format
-    (->> (jdbc/query tx))
-    first
-    :exists))
+       (sql/call :exists
+                 (-> (sql/select :*)
+                     (sql/from :items)
+                     (sql/where [:and
+                                 [:= :inventory_pool_id id]
+                                 [:is :retired nil]
+                                 :is_borrowable
+                                 [:is :parent_id nil]]))))
+      sql/format
+      (->> (jdbc/query tx))
+      first
+      :exists))
 
 (defn maximum-reservation-time [{{:keys [tx]} :request} _ _]
-  (-> tx settings! :maximum_reservation_time))
+  (-> tx settings/get :maximum_reservation_time))
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

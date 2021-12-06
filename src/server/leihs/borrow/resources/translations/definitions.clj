@@ -164,11 +164,13 @@
                     :catalog {:en-GB "Catalog"
                               :de-CH "Katalog"}
                     :shopping-cart {:en-GB "New Rental"
-                                    :de-CH "Neue Ausleihe"}}
+                                    :de-CH "Neue Ausleihe"}
+                    :pools {:en-GB "Pools"
+                            :de-CH "Geräteparks"}
+                    :favorite-models {:en-GB "Favorites"
+                                      :de-CH "Favoriten"}}
            :user {:rentals {:en-GB "My Rentals"
                             :de-CH "Meine Ausleihen"}
-                  :favorite-models {:en-GB "Favorites"
-                                    :de-CH "Favoriten"}
                   :current-user {:en-GB "User Account"
                                  :de-CH "Benutzerkonto"}
                   :logout {:en-GB "Logout"
@@ -205,14 +207,18 @@
                                  :de-CH "Nichts gefunden"}}
     :pools {:title {:en-GB "Pools"
                     :de-CH "Geräteparks"}
-            :access-suspended {:en-GB "Your access is suspended"
+            :available-pools {:en-GB "Available pools"
+                              :de-CH "Verfügbare Geräteparks"}
+            :access-suspended {:en-GB "Access suspended"
                                :de-CH "Zugang gesperrt"}
-            :no-reservable-models {:en-GB "No reservable models"
-                                   :de-CH "Keine reservierbaren Modelle"}
-            :maximum-reservation-pre {:en-GB "Maximum reservation of "
-                                      :de-CH "Maximale Reservierung von "}
-            :maximum-reservation-post {:en-GB " days"
-                                       :de-CH " Tagen"}}
+            :no-reservable-models {:en-GB "No reservable items"
+                                   :de-CH "Keine reservierbaren Gegenstände"}
+            :maximum-reservation-time {:en-GB "Maximum reservation time {days} days"
+                                       :de-CH "Maximale Reservationsdauer {days} Tage"}}
+    :pool-show {:email {:en-GB "E-mail"
+                        :de-CH "E-Mail"}
+                :description {:en-GB "Description"
+                              :de-CH "Beschreibung"}}
 
     :rentals {:title {:en-GB "My Rentals"
                       :de-CH "Meine Ausleihen"}

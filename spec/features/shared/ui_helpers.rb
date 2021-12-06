@@ -50,7 +50,7 @@ def get_ui_list_cards(scope = page)
       link: c.find(":scope > a")[:href],
       title: divs[0].text,
       body: divs[1].text,
-      foot: divs[2].text,
+      foot: divs.count > 2 ? divs[2].text : "",
     }
   end
 end
@@ -61,9 +61,10 @@ end
 
 def get_ui_page_layout
   within(find_ui_page_layout) do
+    h2s = all("h2", wait: false)
     {
       title: first("h1").text,
-      subtitle: first("h2").text,
+      subtitle: h2s.count > 0 ? h2s[0].text : "",
     }
   end
 end

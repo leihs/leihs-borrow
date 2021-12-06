@@ -80,11 +80,13 @@
 
       [:> UI/Components.Design.Menu.Group {:title (t :borrow/section-title)}
        [menu-link (routing/path-for ::routes/home) (t :borrow/catalog)]
-       [menu-link (routing/path-for ::routes/shopping-cart) (t :borrow/shopping-cart)]]
+       [menu-link (routing/path-for ::routes/shopping-cart) (t :borrow/shopping-cart)]
+       [menu-link (routing/path-for ::routes/models-favorites) (t :borrow/favorite-models)]
+       [menu-link (routing/path-for ::routes/inventory-pools-index) (t :borrow/pools)]]
 
       [:> UI/Components.Design.Menu.Group {:title user-name}
        [menu-link (routing/path-for ::routes/rentals-index) (t :user/rentals)]
-       [menu-link (routing/path-for ::routes/models-favorites) (t :user/favorite-models)]
+
        [menu-link (routing/path-for ::routes/current-user-show) (t :user/current-user)]
        [:> UI/Components.Design.Menu.Button {:type "submit" :form "sign-out-form"} (t :user/logout)]
        [:form.visually-hidden {:id "sign-out-form" :action "/sign-out" :method "POST"} [csrf/token-field]]]

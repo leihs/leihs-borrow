@@ -61,9 +61,7 @@
        [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/delegations-index)}
         (t :borrow.delegations/title)]
        [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/templates-index)}
-        (t :borrow.templates/title)]
-       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/inventory-pools-index)}
-        (t :borrow.pools/title)]]]]
+        (t :borrow.templates/title)]]]]
 
 
     [:> UI/Components.Design.Section {:title "Dev nav" :collapsible true}

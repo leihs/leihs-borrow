@@ -1,10 +1,12 @@
 (ns leihs.borrow.features.pools.show
   (:require ["autolinker" :as autolinker]
+            [reagent.core :as r]
             [re-frame.core :as rf]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
             [re-graph.core :as re-graph]
             [shadow.resource :as rc]
             [leihs.borrow.components :as ui]
+            [leihs.borrow.features.current-user.core :as current-user]
             [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                                reg-event-db
                                                reg-sub
@@ -13,9 +15,11 @@
                                                dispatch]]
             [leihs.borrow.lib.localstorage :as ls]
             [leihs.borrow.lib.routing :as routing]
-            [leihs.borrow.features.pools.core :refer [badge]]
+            [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
             [leihs.borrow.client.routes :as routes]
             ["/leihs-ui-client-side-external-react" :as UI]))
+
+(set-default-translate-path :borrow.pool-show)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -49,25 +53,31 @@
   (let [routing @(subscribe [:routing/routing])
         pool-id (get-in routing [:bidi-match :route-params :inventory-pool-id])
         pool @(subscribe [::pool pool-id])
+        suspensions (filter #(= (get-in % [:inventory-pool :id]) (:id pool)) @(subscribe [::current-user/suspensions]))
         errors @(subscribe [::errors pool-id])
         is-loading? (not (or pool errors))]
     [:<>
      [:> UI/Components.Design.PageLayout.Header
-      {:title (cond (:name pool) (:name pool) :else "…")}]
+      {:title (cond (:name pool) (:name pool) :else "…")
+       :sub-title (when (seq suspensions)
+                    (r/as-element [:> UI/Components.Design.Warning (t :!borrow.pools.access-suspended)]))}]
      (cond
        is-loading? [ui/loading]
        errors [ui/error-view errors]
        :else
-       [:<>
-        [:div (badge pool)]
+       [:> UI/Components.Design.Stack {:space 4}
 
-        (if-let [email (:email pool)]
-          [:a {:href (str "mailto:" email)}
-           email])
+        (cond
+          (-> pool :has-reservable-items not)
+          [:div  (t :!borrow.pools.no-reservable-models)]
+          (-> pool :maximum-reservation-time)
+          [:div  (t :!borrow.pools.maximum-reservation-time {:days (-> pool :maximum-reservation-time)})])
 
-        [:p.py-4.border-b-2.border-gray-300.text-base.preserve-linebreaks
-         (if-let [description (some-> pool :description autolinker/link)]
-           {:dangerouslySetInnerHTML {:__html description}}
-           [:i "No description provided for this pool."])]
+        (when-let [email (:email pool)]
+          [:> UI/Components.Design.Section {:collapsible true :title (t :email)}
+           [:a {:href (str "mailto:" email)}
+            email]])
 
-        #_[:p.debug (pr-str pool)]])]))
+        (when-let [description (some-> pool :description autolinker/link)]
+          [:> UI/Components.Design.Section {:collapsible true :title (t :description)}
+           [:div {:class "preserve-linebreaks text-break" :dangerouslySetInnerHTML {:__html description}}]])])]))

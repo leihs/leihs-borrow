@@ -7,7 +7,6 @@
    [shadow.resource :as rc]
    [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.borrow.features.pools.core :refer [badge]]
    [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                       reg-event-db
                                       reg-event-ctx
@@ -16,40 +15,54 @@
                                       subscribe
                                       dispatch]]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.translate :refer [t]]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.client.routes :as routes]
    ["/leihs-ui-client-side-external-react" :as UI]))
+
+(set-default-translate-path :borrow.pools)
 
 ; is kicked off from router when this view is loaded
 (reg-event-ctx ::routes/inventory-pools-index
                (fn-traced [ctx _] ctx))
 
-(defn pool-line [pool]
-  [:<> (:name pool) [badge pool]])
+(defn pool-line [pool suspensions]
+  (let [href (routing/path-for ::routes/inventory-pools-show
+                               :inventory-pool-id
+                               (:id pool))]
+    [:> UI/Components.Design.ListCard {:href href}
 
-(defn pools-list [pools]
-  [:ul.list-group
-   (doall
-    (for [pool pools]
-      [:a.list-group-item.d-flex.justify-content-between.align-items-center
-       {:key (:id pool)
-        :href (routing/path-for ::routes/inventory-pools-show
-                                :inventory-pool-id
-                                (:id pool))}
-       [pool-line pool]]))])
+     [:> UI/Components.Design.ListCard.Title
+      [:a {:href href :class "stretched-link"} (:name pool)]]
+
+     [:> UI/Components.Design.ListCard.Body
+      (cond
+        (-> pool :has-reservable-items not)
+        [:div  (t :no-reservable-models)]
+        (-> pool :maximum-reservation-time)
+        [:div  (t :maximum-reservation-time {:days (-> pool :maximum-reservation-time)})])]
+
+     (when (some #(= (get-in % [:inventory-pool :id]) (:id pool)) suspensions)
+       [:> UI/Components.Design.ListCard.Foot
+        [:> UI/Components.Design.Badge {:colorClassName "bg-danger"}
+         (t :access-suspended)]])]))
 
 (defn view []
   (let [pools @(subscribe [::current-user/pools])
-        is-loading? (not pools)]
+        is-loading? (not pools)
+        suspensions @(subscribe [::current-user/suspensions])]
     [:<>
      [:> UI/Components.Design.PageLayout.Header
-      {:title (t :borrow.pools/title)}]
+      {:title (t :title)}]
 
      (cond
        is-loading? [ui/loading]
        ; errors [ui/error-view errors]
        :else
        [:<>
-        (when-not (empty? pools)
-          [:div.mt-3
-           [pools-list pools ""]])])]))
+
+        [:> UI/Components.Design.Section {:title (t :available-pools) :collapsible true}
+         [:> UI/Components.Design.ListCard.Stack
+          (doall
+           (for [pool pools]
+             [:<> {:key (:id pool)}
+              [pool-line pool suspensions]]))]]])]))
