@@ -52,21 +52,27 @@
   [:<>
    [:> UI/Components.Design.Section
     {:title (t :borrow.delegations/responsible)
-     :collapsible true}]
-   [:div (fullname user)]
-   (if-let [email (:email user)]
-     [:a {:href (str "mailto:" email)}
-      email])])
+     :collapsible true}
+    [:> UI/Components.Design.ListCard.Stack
+     [:> UI/Components.Design.ListCard
+      [:> UI/Components.Design.ListCard.Title
+       (fullname user)]
+      (if-let [email (:email user)]
+        [:> UI/Components.Design.ListCard.Body
+         [:a {:href (str "mailto:" email)}
+          email]])]]]])
 
 (defn members-list [members]
   [:<>
    [:> UI/Components.Design.Section
     {:title (t :borrow.delegations/members)
-     :collapsible true}]
-   [:ul.list-inline
-    (doall
-     (for [member members]
-       [:li {:key (:id member)} (fullname member)]))]])
+     :collapsible true}
+    [:> UI/Components.Design.ListCard.Stack
+     (doall
+      (for [member members]
+        [:> UI/Components.Design.ListCard {:key (:id member)}
+         [:> UI/Components.Design.ListCard.Title
+          (fullname member)]]))]]])
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])
@@ -80,7 +86,7 @@
      (cond
        is-loading? [ui/loading (t :borrow.delegations/loading)]
        errors [ui/error-view errors]
-       :else [:> UI/Components.Design.Stack {:space 4}
-              [responsible (:responsible delegation)]
-              [members-list (:members delegation)]
-              #_[:p.debug (pr-str delegation)]])]))
+       :else
+       [:> UI/Components.Design.Stack {:space 5}
+        [responsible (:responsible delegation)]
+        [members-list (:members delegation)]])]))

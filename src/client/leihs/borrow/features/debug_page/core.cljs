@@ -58,8 +58,6 @@
         (t :borrow.debug-page/title)]
        [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/draft-order)}
         (t :borrow.shopping-cart.draft/title)]
-       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/delegations-index)}
-        (t :borrow.delegations/title)]
        [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/templates-index)}
         (t :borrow.templates/title)]]]]
 

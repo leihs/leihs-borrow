@@ -11,9 +11,7 @@
                  ["/" [#".+" :categories-path]] ::categories-show}
    "current-user" ::current-user-show
    "debug" ::debug-page
-   "delegations" {"" ::delegations-index
-                  "/" ::delegations-index
-                  ["/" :delegation-id] ::delegations-show}
+   "delegations" {["/" :delegation-id] ::delegations-show}
    "models" {"" ::models
              "/" ::models
              "/favorites" ::models-favorites

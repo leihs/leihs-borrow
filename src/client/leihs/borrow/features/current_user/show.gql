@@ -21,14 +21,11 @@ query getCurrentUserProfilePage {
         id
         name
         responsible {
-          name
+          firstname
+          lastname
         }
       }
 
-      # NOTE: those are not in the design spec, but should also be listed
-      inventoryPools(orderBy: [{ attribute: SHORTNAME, direction: ASC }]) {
-        ...poolProps
-      }
       suspensions {
         id
         suspendedUntil

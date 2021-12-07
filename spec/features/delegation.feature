@@ -80,3 +80,20 @@ Feature: Delegations
     # check the content of the order
     When I click on "My order"
     Then I see "1× Kamera"
+
+  Scenario: Delegations in user account
+    Given I log in as the user
+
+    When I visit "/app/borrow/current-user"
+    And I see the page title "User account"
+
+    Then I see the following lines in the "Delegations" section:
+      | title        |
+      | Delegation D |
+
+    When I click on "Delegation D"
+
+    Then I see the page title "Delegation D"
+    And I see the "Responsible" section
+    And I see the "Members" section
+

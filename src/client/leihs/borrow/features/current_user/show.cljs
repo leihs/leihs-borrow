@@ -25,17 +25,17 @@
 (reg-event-fx
  ::routes/current-user-show
  (fn-traced [_ _]
-            {:dispatch [::re-graph/query
-                        (rc/inline "leihs/borrow/features/current_user/show.gql")
-                        {}
-                        [::on-fetched-data]]}))
+   {:dispatch [::re-graph/query
+               (rc/inline "leihs/borrow/features/current_user/show.gql")
+               {}
+               [::on-fetched-data]]}))
 
 (reg-event-db
  ::on-fetched-data
  (fn-traced [db [_ {:keys [data errors]}]]
-            (-> db
-                (cond-> errors (assoc ::errors errors))
-                (assoc ::data (or data {})))))
+   (-> db
+       (cond-> errors (assoc ::errors errors))
+       (assoc ::data (or data {})))))
 
 (reg-sub ::data
          (fn [db _] (::data db)))
@@ -52,6 +52,16 @@
       errors [ui/error-view errors]
       :else
       (let [current-user (:current-user data)
+            user (:user current-user)
+            delegations
+            (doall
+             (for [delegation (get-in user [:delegations])]
+               {:id (:id delegation)
+                :name (:name delegation)
+                :responsible-name (str (-> delegation :responsible :firstname) " " (-> delegation :responsible :lastname))
+                :href (routing/path-for ::routes/delegations-show
+                                        :delegation-id
+                                        (:id delegation))}))
             contracts
             (doall
              (for [edge (get-in current-user [:user :contracts :edges])]
@@ -66,11 +76,15 @@
         [:<>
          [:> UI/Components.UserProfilePage
           (h/camel-case-keys
-           {:currentUser current-user
+           {:user user
+            :delegations delegations
             :contracts contracts
             :txt {:pageTitle (t :title)
+                  :sectionUserData (t :user-data)
                   :sectionContracts (t :!borrow.terms.contracts)
-                  :sectionDelegations (t :!borrow.terms.delegations)}})]
+                  :sectionDelegations (t :!borrow.terms.delegations)
+                  :logout (t :!borrow.logout)
+                  :noContracts (t :no-contracts)}})]
 
          [:> UI/Components.Design.PageLayout.MetadataWithDetails
           {:summary (t :metadata-summary {:userId (:id (:user current-user))})

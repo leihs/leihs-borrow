@@ -65,7 +65,7 @@
        is-loading? [ui/loading]
        errors [ui/error-view errors]
        :else
-       [:> UI/Components.Design.Stack {:space 4}
+       [:> UI/Components.Design.Stack {:space 5}
 
         (cond
           (-> pool :has-reservable-items not)

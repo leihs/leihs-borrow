@@ -101,7 +101,9 @@
                    :user-data {:en-GB "User data"
                                :de-CH "Nutzerdaten"}
                    :metadata-summary {:en-GB "ID {userId}"
-                                      :de-CH "ID {userId}"}}
+                                      :de-CH "ID {userId}"}
+                   :no-contracts {:en-GB "None"
+                                  :de-CH "Noch keine"}}
 
     :debug-page {:title {:en-GB "Debugging"
                          :de-CH "Debugging"}}
