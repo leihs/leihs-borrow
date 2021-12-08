@@ -265,7 +265,9 @@
         (merge-search-conditions search-term))
       (cond-> (not (nil? is-favorited))
         (-> (sql/merge-left-join :favorite_models
-                                 [:= :favorite_models.model_id :models.id])
+                                 [:and
+                                  [:= :favorite_models.model_id :models.id]
+                                  [:= :favorite_models.user_id user-id]])
             (sql/merge-where [(if is-favorited :!= :=)
                               :favorite_models.model_id
                               nil])))
