@@ -23,6 +23,7 @@ query getCurrentUserProfilePage {
         responsible {
           firstname
           lastname
+          email
         }
       }
 

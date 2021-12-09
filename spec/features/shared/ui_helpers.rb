@@ -46,8 +46,9 @@ end
 def get_ui_list_cards(scope = page)
   find_ui_list_cards(scope).map do |c|
     divs = c.all(":scope > div")
+    links = c.all(":scope > a", wait: false)
     {
-      link: c.find(":scope > a")[:href],
+      link: links.count > 0 ? links[0][:href] : "",
       title: divs[0].text,
       body: divs[1].text,
       foot: divs.count > 2 ? divs[2].text : "",

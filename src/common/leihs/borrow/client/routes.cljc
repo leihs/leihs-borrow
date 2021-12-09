@@ -11,7 +11,6 @@
                  ["/" [#".+" :categories-path]] ::categories-show}
    "current-user" ::current-user-show
    "debug" ::debug-page
-   "delegations" {["/" :delegation-id] ::delegations-show}
    "models" {"" ::models
              "/" ::models
              "/favorites" ::models-favorites

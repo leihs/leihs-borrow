@@ -91,9 +91,4 @@ Feature: Delegations
       | title        |
       | Delegation D |
 
-    When I click on "Delegation D"
-
-    Then I see the page title "Delegation D"
-    And I see the "Responsible" section
-    And I see the "Members" section
 

@@ -59,9 +59,7 @@
                {:id (:id delegation)
                 :name (:name delegation)
                 :responsible-name (str (-> delegation :responsible :firstname) " " (-> delegation :responsible :lastname))
-                :href (routing/path-for ::routes/delegations-show
-                                        :delegation-id
-                                        (:id delegation))}))
+                :responsible-email (-> delegation :responsible :email)}))
             contracts
             (doall
              (for [edge (get-in current-user [:user :contracts :edges])]

@@ -108,14 +108,6 @@
     :debug-page {:title {:en-GB "Debugging"
                          :de-CH "Debugging"}}
 
-    :delegations {:title {:en-GB "Delegations"
-                          :de-CH "Delegationen"}
-                  :responsible {:en-GB "Responsible"
-                                :de-CH "Verantwortliche Person"}
-                  :members {:en-GB "Members"
-                            :de-CH "Mitglieder"}
-                  :loading {:en-GB "Loading delegation"
-                            :de-CH "Delegation wird geladen"}}
     :favorite-models {:title {:en-GB "My Favorites"
                               :de-CH "Meine Favoriten"}
                       :items {:en-GB "Items"
