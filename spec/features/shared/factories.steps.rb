@@ -4,6 +4,13 @@ step "there is a user" do
   @user = FactoryBot.create(:user)
 end
 
+step "there is a user :full_name" do |full_name|
+  first, last = full_name.split
+  login = user_login_from_full_name(full_name)
+  email = Faker::Internet.email(name: full_name)
+  @user = User.find(login: login) || FactoryBot.create(:user, firstname: first, lastname: last, login: login, email: email)
+end
+
 step "there is a delegation :name" do |name|
   @delegation = FactoryBot.create(:delegation, name: name)
 end
@@ -86,14 +93,24 @@ step "the user is inventory manager of pool :name" do |name|
                     role: :inventory_manager)
 end
 
-step "the user is customer of pool :name" do |name|
-  pool = InventoryPool.find(name: name) ||
-         FactoryBot.create(:inventory_pool, name: name)
+def user_is_customer_of_pool(user, pool)
+  pool = InventoryPool.find(name: pool) ||
+         FactoryBot.create(:inventory_pool, name: pool)
 
   FactoryBot.create(:direct_access_right,
-                    user_id: @user.id,
+                    user_id: user.id,
                     inventory_pool_id: pool.id,
                     role: :customer)
+end
+
+step "the user is customer of pool :pool" do |pool|
+  expect(@user).to be_a User
+  user_is_customer_of_pool(@user, pool)
+end
+
+step "the user :full_name is customer of pool :pool" do |name, pool|
+  user = find_user_by_full_name!(name)
+  user_is_customer_of_pool(user, pool)
 end
 
 step "the delegation :delegation is customer of pool :name" do |delegation, name|
@@ -218,4 +235,12 @@ step "parent of category :child_name is category :parent_name" do |child_name, p
   parent = Category.find(name: parent_name)
   child = Category.find(name: child_name)
   parent.add_child(child)
+end
+
+def user_login_from_full_name(full_name)
+  full_name.to_s.parameterize.underscore
+end
+
+def find_user_by_full_name!(name)
+  User.find(login: user_login_from_full_name(name)) || fail("Could not find User '#{name}'!")
 end
