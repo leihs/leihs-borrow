@@ -9,6 +9,7 @@ task_defaults:
     - cider-ci/translations_task-component.yml
     - cider-ci/service_task-component.yml
     - cider-ci/legacy_service-task_component.yml
+  max_trials: 5 # NOTE: should be 2-3, but the CI has reduced capacity at the moment
   traits:
     JDK 8: true
     Leiningen 2: true
