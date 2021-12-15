@@ -132,3 +132,24 @@ java -jar ./target/leihs-borrow.jar run
 - we need to install `tslib` in our `package.json`,so that `intl-messageformat` works correctly
   - see bug report https://github.com/formatjs/formatjs/issues/2645
   - we are using a newer version of the package which is fixed, but the `tslib` dep is not picked up. we dont know why, hence the workaround of installing it ourselves
+
+#### developing and building on Apple Silicon
+
+Some fixes needed for Apple Silicon and/or newer macOS versions.
+
+```sh
+# ruby 2.6.6
+RUBY_CFLAGS=-DUSE_FFI_CLOSURE_ALLOC rbenv install 2.6.6
+
+# JAVA 11
+brew install java11
+brew install clojure
+
+# boot needs a not-yet-released fix
+git clone https://github.com/eins78/boot && cd boot
+echo 'version=2.8.4-fix.1' > version.properties
+make deps && make install
+
+export BOOT_VERSION=2.8.4-fix.1
+bin/build
+```
