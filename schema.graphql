@@ -31,7 +31,13 @@ type Category {
   """
   Includes only direct ones or all from self and the descendent sub-categories.
   """
-  models(after: String, directOnly: Boolean, first: Int, orderBy: [ModelsOrderByInput], searchTerm: String): ModelsConnection
+  models(
+    after: String
+    directOnly: Boolean
+    first: Int
+    orderBy: [ModelsOrderByInput]
+    searchTerm: String
+  ): ModelsConnection
 
   """
   A name is either a label for the child-parent connection (if such exists) or the name of the category itself.
@@ -82,7 +88,9 @@ enum ContractStateEnum {
 }
 
 type CurrentUser {
-  """Same as user ID"""
+  """
+  Same as user ID
+  """
   id: UUID!
 
   """
@@ -144,6 +152,7 @@ type InventoryPool {
   isActive: Boolean!
   maximumReservationTime: Int
   name: String!
+  reservationAdvanceDays: Int
   shortname: String!
 }
 
@@ -173,8 +182,20 @@ type Language {
 
 type Model {
   attachments: [Attachment]
-  availability(endDate: Date!, excludeReservationIds: [UUID!], inventoryPoolIds: [UUID!], startDate: Date!, userId: UUID): [ModelInventoryPoolAvailability]
-  availableQuantityInDateRange(endDate: Date!, excludeReservationIds: [UUID!], inventoryPoolIds: [UUID!], startDate: Date!, userId: UUID): Int!
+  availability(
+    endDate: Date!
+    excludeReservationIds: [UUID!]
+    inventoryPoolIds: [UUID!]
+    startDate: Date!
+    userId: UUID
+  ): [ModelInventoryPoolAvailability]
+  availableQuantityInDateRange(
+    endDate: Date!
+    excludeReservationIds: [UUID!]
+    inventoryPoolIds: [UUID!]
+    startDate: Date!
+    userId: UUID
+  ): Int!
   coverImage: Image
   description: String
   id: UUID!
@@ -183,7 +204,9 @@ type Model {
   isReservable: Boolean!
   manufacturer: String
 
-  """A name consists of product name and its version."""
+  """
+  A name consists of product name and its version.
+  """
   name: String!
   properties: [Property]
   recommends(first: Int): ModelsConnection
@@ -216,7 +239,9 @@ input ModelsOrderByInput {
   direction: OrderByDirectionEnum!
 }
 
-"""Root of all mutations."""
+"""
+Root of all mutations.
+"""
 type MutationRoot {
   addToCart(ids: [UUID!], userId: UUID): [Reservation]
   applyTemplate(endDate: Date!, id: UUID!, startDate: Date!): [Reservation]
@@ -239,7 +264,11 @@ type MutationRoot {
   deleteReservationLines(ids: [UUID!]): [UUID!]
   favoriteModel(id: UUID!): Model!
   refreshTimeout(userId: UUID): RefreshTimeoutResult
-  submitOrder(purpose: NonEmptyText!, title: NonEmptyText!, userId: UUID): Rental!
+  submitOrder(
+    purpose: NonEmptyText!
+    title: NonEmptyText!
+    userId: UUID
+  ): Rental!
   testing(sleepSecs: Int): String
   unfavoriteModel(id: UUID!): Model!
 }
@@ -252,7 +281,9 @@ type Option {
   inventoryPool: InventoryPool!
   manufacturer: String
 
-  """A name consists of product name and its version."""
+  """
+  A name consists of product name and its version.
+  """
   name: String!
   price: Float
   product: String!
@@ -275,7 +306,12 @@ type PickupFulfillment implements Fulfillment {
 }
 
 type PoolOrder {
-  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
+  contracts(
+    after: String
+    first: Int
+    orderBy: [ContractsOrderByInput]
+    states: [ContractStateEnum]
+  ): ContractsConnection
   createdAt: DateTime!
   id: UUID!
   inventoryPool: InventoryPool!
@@ -309,7 +345,9 @@ type Property {
   value: String!
 }
 
-"""Root of all queries."""
+"""
+Root of all queries.
+"""
 type QueryRoot {
   categories(
     ids: [UUID!]
@@ -324,13 +362,30 @@ type QueryRoot {
   ): [Category!]
   category(id: UUID!, parentId: UUID): Category
   contract(id: UUID!, userId: UUID): Contract!
-  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
+  contracts(
+    after: String
+    first: Int
+    orderBy: [ContractsOrderByInput]
+    states: [ContractStateEnum]
+  ): ContractsConnection
   currentUser(userId: UUID): CurrentUser!
   delegation(id: UUID!): Delegation!
   inventoryPool(id: UUID!): InventoryPool
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
   model(id: UUID!): Model!
-  models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], poolIds: [UUID!], quantity: Int, searchTerm: String, userId: UUID): ModelsConnection
+  models(
+    after: String
+    categoryId: UUID
+    first: Int
+    ids: [UUID!]
+    isFavorited: Boolean
+    onlyAvailable: Boolean
+    orderBy: [ModelsOrderByInput]
+    poolIds: [UUID!]
+    quantity: Int
+    searchTerm: String
+    userId: UUID
+  ): ModelsConnection
   rental(id: UUID!): Rental!
   rentals(
     after: String
@@ -359,7 +414,12 @@ type QueryRoot {
   template(id: UUID!): Template!
   templates: [Template!]
   testing(sleepSecs: Int): String
-  users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
+  users(
+    limit: Int
+    offset: Int
+    orderBy: [UsersOrderByInput]
+    searchTerm: String
+  ): [User]
 }
 
 enum RefinedRentalStateEnum {
@@ -381,7 +441,12 @@ type RefreshTimeoutResult {
 type Rental {
   approveFulfillment: ApproveFulfillment
   approvedPoolOrdersCount: Int
-  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
+  contracts(
+    after: String
+    first: Int
+    orderBy: [ContractsOrderByInput]
+    states: [ContractStateEnum]
+  ): ContractsConnection
   createdAt: DateTime!
   expiredQuantity: Int!
   expiredUnapprovedQuantity: Int!
@@ -403,7 +468,9 @@ type Rental {
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   returnFulfillment: ReturnFulfillment
 
-  """List of distinct states of all the sub-orders."""
+  """
+  List of distinct states of all the sub-orders.
+  """
   state: [PoolOrderStateEnum!]
   subOrdersByPool(orderBy: [PoolOrdersOrderByInput]): [PoolOrder]
   submittedPoolOrdersCount: Int
@@ -536,11 +603,24 @@ A `User` represents a human agent that can log into and use the system.
 """
 type User {
   badgeId: String
-  contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
+  contracts(
+    after: String
+    first: Int
+    orderBy: [ContractsOrderByInput]
+    states: [ContractStateEnum]
+  ): ContractsConnection
   delegations: [Delegation!]
   draftOrder: DraftOrder
   email: String
-  favoriteModels(after: String, endDate: Date, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: Date): ModelsConnection
+  favoriteModels(
+    after: String
+    endDate: Date
+    first: Int
+    inventoryPoolIds: [UUID!]
+    orderBy: [ModelsOrderByInput]
+    searchTerm: String
+    startDate: Date
+  ): ModelsConnection
   firstname: String
   id: UUID!
   inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]

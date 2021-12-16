@@ -51,42 +51,71 @@
              :timespan {:en-GB "Time span" :de-CH "Zeitraum"}
              :from {:en-GB "From" :de-CH "Von"}
              :until {:en-GB "Until" :de-CH "Bis"}}
-     :validate {:start-after-end
-                {:de-CH "Enddatum muss nach Beginndatum sein"
-                 :en-GB "End date must be after start date"}
-                :user-delegation-cant-be-changed-active-cart
-                {:en-GB "The delegation can't be changed, as an active cart already exists."
-                 :de-CH "Die Delegation kann nicht geändert werden, da schon ein aktiver Warenkorb existiert."}
-                :missing-quantity
+     :validate {:missing-quantity
                 {:de-CH "Verfügbarkeit kann nicht geprüft werden, da die Anzahl fehlt"
                  :en-GB "Availability can not be checked because the quantity is missing"}
-                :quantity-to-large-in-range
-                {:de-CH
-                 "Gegenstand ist in diesem Zeitraum nicht in der gewünschten Menge verfügbar"
-                 :en-GB
-                 "Item is not available in the desired quantity during this period"}
-                :pool-closed-at-end-date
-                {:de-CH "Gerätepark ist am {endDate, date, small} geschlossen"
-                 :en-GB "Inventory Pool is closed on {endDate, date, small}"}
-                :end-date-to-late
-                {:de-CH "Datum darf nicht nach {maxDate, date, small} sein"
-                 :en-GB "Date must not be after {maxDate, date, small}"}
-                :quantity-to-large-at-day
-                {:de-CH
-                 "Gegenstand ist am {startDate, date, small} nicht in der gewünschten Menge verfügbar"
-                 :en-GB "Item is not available in the requested quantity on {startDate, date, small}."}
-                :pool-closed-at-start-date
-                {:de-CH "Gerätepark ist am {startDate, date, small} geschlossen"
-                 :en-GB "Inventory Pool is closed on {startDate, date, small}"}
-                :start-date-to-early
-                {:de-CH "Datum darf nicht vor {minDate, date, small} sein"
-                 :en-GB "Date must not be before {minDate, date, small}"}
+
                 :invalid-start-date
                 {:de-CH "Ungültiges Beginndatum"
                  :en-GB "Invalid start date"}
                 :invalid-end-date
                 {:de-CH "Ungültiges Enddatum"
-                 :en-GB "Invalid end date"}}}
+                 :en-GB "Invalid end date"}
+                :start-after-end
+                {:de-CH "Enddatum muss nach Beginndatum sein"
+                 :en-GB "End date must be after start date"}
+                :end-date-too-late
+                {:de-CH "Datum darf nicht nach {maxDate, date, small} sein"
+                 :en-GB "Date must not be after {maxDate, date, small}"}
+
+                :start-date-in-past
+                {:de-CH "Abholdatum liegt in der Vergangenheit"
+                 :en-GB "Pickup date is in the past"}
+                :start-date-not-before
+                {:de-CH "{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens heute in # Tagen}}"
+                 :en-GB "{days, plural, =1 {Earliest pickup date is tomorrow} other {Earliest pickup date in # days from now}}"}
+
+                :quantity-to-large-at-day
+                {:de-CH
+                 "Gegenstand ist am {startDate, date, small} nicht in der gewünschten Menge verfügbar"
+                 :en-GB "Item is not available in the requested quantity on {startDate, date, small}."}
+                :quantity-to-large-in-range
+                {:de-CH "Gegenstand ist in diesem Zeitraum nicht in der gewünschten Menge verfügbar"
+                 :en-GB "Item is not available in the desired quantity during this period"}
+
+                :pool-closed-at-start-date
+                {:de-CH "Abholung am {startDate, date, small} nicht möglich"
+                 :en-GB "Pickup not possible on {startDate, date, small}"}
+                :pool-closed-at-end-date
+                {:de-CH "Rückgabe am {endDate, date, small} nicht möglich"
+                 :en-GB "Return not possible on {endDate, date, small}"}
+                :pool-closed-at-start-and-end-date
+                {:de-CH "Abholung/Rückgabe am {startDate, date, small} nicht möglich"
+                 :en-GB "Pickup/return not possible on {startDate, date, small}"}
+                :pool-closed-max-visits
+                {:de-CH " (maximale Besucherzahl erreicht)"
+                 :en-GB " (maximum visitor capacity reached)"}
+
+                :maximum-reservation-time
+                {:de-CH "Maximale Reservationsdauer ist beschränkt auf {days} Tage"
+                 :en-GB "Maximum reservation time is restricted to {days} days"}
+
+                :no-pool-access
+                {:de-CH "Keine Berechtigung für diesen Gerätepark"
+                 :en-GB "No access to this inventory pool"}
+                :pool-suspension
+                {:de-CH "Sperre für diesen Gerätepark"
+                 :en-GB "Suspension for this inventory pool"}
+                :item-not-available-in-pool
+                {:de-CH "Gegenstand in diesem Gerätepark nicht verfügbar"
+                 :en-GB "Item not available in this inventory pool"}
+                :unknown-pool
+                {:de-CH "Unbekannter Gerätepark"
+                 :en-GB "Unknown inventory pool"}
+
+                :user-delegation-cant-be-changed-active-cart
+                {:en-GB "The delegation can't be changed, as an active cart already exists."
+                 :de-CH "Die Delegation kann nicht geändert werden, da schon ein aktiver Warenkorb existiert."}}}
 
   ; --- PER FEATURE TRANSLATIONS --- 
 

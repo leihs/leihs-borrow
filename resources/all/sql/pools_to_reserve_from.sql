@@ -45,7 +45,7 @@ AND
        AND visits.date = CAST(:start-date AS date) )
     <
     coalesce(
-      (max_visits->>(to_char(CAST(:start-date AS date), 'ID')::int + 1)::text)::integer,
+      (max_visits->>(EXTRACT(DOW FROM CAST(:start-date AS date))::int)::text)::integer,
       2147483647
     )
 -- max amount of visits is not exceeded yet for the end-date and pool
@@ -56,6 +56,6 @@ AND
        AND visits.date = CAST(:end-date AS date) )
     <
     coalesce(
-      (max_visits->>(to_char(CAST(:end-date AS date), 'ID')::int + 1)::text)::integer,
+      (max_visits->>(EXTRACT(DOW FROM CAST(:end-date AS date))::int)::text)::integer,
       2147483647
     )

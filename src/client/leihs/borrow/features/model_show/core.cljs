@@ -206,20 +206,27 @@
 
 (reg-sub
   ::pools
-  (fn [[_ id] _] (rf/subscribe [::model-data id]))
-  (fn [m _]
-    (letfn [(assoc-borrowable-quantity [p]
-              (assoc p
+  (fn [[_ id] _]
+    [(rf/subscribe [::model-data id])
+     (rf/subscribe [::current-user/suspensions])])
+  (fn [[model suspensions] _]
+    (letfn [(assoc-borrowable-quantity [pool]
+              (assoc pool
                      :total-borrowable-quantity
-                     (->> m
+                     (->> model
                           :total-borrowable-quantities
-                          (filter #(-> % :inventory-pool :id (= (:id p))))
+                          (filter #(-> % :inventory-pool :id (= (:id pool))))
                           first
-                          :quantity)))]
-      (->> m
-        :availability
-        (map :inventory-pool)
-        (map assoc-borrowable-quantity)))))
+                          :quantity)))
+            (assoc-suspension [pool]
+              (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id)) suspensions)]
+                (merge pool
+                       (when is-suspended? {:user-is-suspended true}))))]
+      (->> model
+           :availability
+           (map :inventory-pool)
+           (map assoc-borrowable-quantity)
+           (map assoc-suspension)))))
 
 (reg-sub ::user-id
          :<- [::cart/user-id]

@@ -5,7 +5,7 @@
             [leihs.core.sql :as sql]))
 
 (defn holiday? [tx date pool]
-  (let [date* (sql/call :cast date :date)] 
+  (let [date* (sql/call :cast date :date)]
     (-> (sql/select true)
         (sql/from :holidays)
         (sql/where [:= :inventory_pool_id (:id pool)])
@@ -41,7 +41,7 @@
                   local-date
                   .getDayOfWeek
                   .getValue
-                  (- 1)
+                  (#(if (= % 7) 0 %)) ; convert from 1-based mon-sun to 0-based sun-sat
                   str
                   keyword)
         max_visits (some-> pool :max_visits index Integer.)]
@@ -68,8 +68,8 @@
 (def past-date? #(before? (local-date %) (local-date)))
 
 (defn validate-date-with-avail [tx date-with-avail pool]
-  (assoc date-with-avail 
-         :start-date-restriction 
+  (assoc date-with-avail
+         :start-date-restriction
          (start-date-restriction tx date-with-avail pool)
-         :end-date-restriction 
+         :end-date-restriction
          (end-date-restriction tx date-with-avail pool)))

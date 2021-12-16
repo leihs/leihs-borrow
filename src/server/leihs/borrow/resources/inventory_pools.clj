@@ -6,6 +6,7 @@
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.settings :as settings]
+            [leihs.borrow.resources.workdays :as workdays]
             [leihs.core.sql :as sql]))
 
 (hugsql/def-sqlvec-fns "sql/pools_to_reserve_from.sql")
@@ -92,6 +93,10 @@
 
 (defn maximum-reservation-time [{{:keys [tx]} :request} _ _]
   (-> tx settings/get :maximum_reservation_time))
+
+(defn reservation-advance-days [{{:keys [tx]} :request} _ {:keys [id]}]
+  (-> tx (workdays/get id) :reservation_advance_days))
+
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

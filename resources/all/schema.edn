@@ -56,7 +56,9 @@
                                     :hasReservableItems {:type (non-null Boolean)
                                                          :resolve :has-reservable-items}
                                     :maximumReservationTime {:type Int
-                                                             :resolve :maximum-reservation-time}}}
+                                                             :resolve :maximum-reservation-time}
+                                    :reservationAdvanceDays {:type Int
+                                                             :resolve :reservation-advance-days}}}
            :Suspension {:fields {:id {:type (non-null :UUID)}
                                  :inventoryPool {:type (non-null :InventoryPool)
                                                  :resolve :inventory-pool}

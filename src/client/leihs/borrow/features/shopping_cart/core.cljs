@@ -54,6 +54,13 @@
          (filter #(-> % :quantity (> 0)))
          (map #(-> % :inventory-pool :id)))))
 
+(defn set-loading-as-ended [edit-mode, availability]
+  (when edit-mode
+    (merge edit-mode
+           {:fetching-until-date nil
+            :fetched-until-date (:fetching-until-date edit-mode)
+            :availability availability})))
+
 (reg-event-fx
  ::fetch-availability
  (fn-traced [{:keys [db]} [_ start-date end-date]]
@@ -62,24 +69,20 @@
          model (:model edit-mode)
          exclude-reservation-ids (map :id (:res-lines edit-mode))
          pool-ids (pool-ids-with-borrowable-quantity db)]
-     {:db (assoc-in db [::edit-mode :fetching-until-date] end-date)
-      :dispatch [::re-graph/query
-                 (rc/inline "leihs/borrow/features/model_show/getAvailability.gql")
-                 {:modelId (:id model)
-                  :userId user-id
-                  :poolIds pool-ids
-                  :startDate start-date
-                  :endDate end-date
-                  :excludeReservationIds exclude-reservation-ids}
-                 [::on-fetched-availability]]})))
-
-
-(defn set-loading-as-ended [edit-mode, availability]
-  (when edit-mode
-    (merge edit-mode
-           {:fetching-until-date nil
-            :fetched-until-date (:fetching-until-date edit-mode)
-            :availability availability})))
+     (if (seq pool-ids)
+       {:db (assoc-in db [::edit-mode :fetching-until-date] end-date)
+        :dispatch [::re-graph/query
+                   (rc/inline "leihs/borrow/features/model_show/getAvailability.gql")
+                   {:modelId (:id model)
+                    :userId user-id
+                    :poolIds pool-ids
+                    :startDate start-date
+                    :endDate end-date
+                    :excludeReservationIds exclude-reservation-ids}
+                   [::on-fetched-availability]]}
+       ; else 
+       {:db (update-in db [::edit-mode]
+                       #(set-loading-as-ended % []))}))))
 
 (reg-event-db
  ::on-fetched-availability
@@ -145,6 +148,7 @@
            res-line (first res-lines)
            user-id (-> res-line :user :id)
            model (:model res-line)
+           inventory-pool (:inventory-pool res-line)
            start-date (:start-date res-line)
            end-date (:end-date res-line)
            quantity (count res-lines)
@@ -154,11 +158,12 @@
                                datefn/endOfMonth)]
        {:db (assoc-in db [::edit-mode]
                       {:res-lines res-lines
+                       :model model
+                       :inventory-pool inventory-pool
                        :start-date start-date
                        :end-date end-date
                        :quantity quantity
-                       :user-id user-id
-                       :model model})
+                       :user-id user-id})
         :dispatch [::fetch-availability
                    (h/date-format-day min-date-loaded)
                    (h/date-format-day max-date-loaded)]}))))
@@ -313,10 +318,33 @@
         start-date (datefn/parseISO (:start-date edit-mode-data))
         end-date (datefn/parseISO (:end-date edit-mode-data))
         quantity (:quantity edit-mode-data)
-        pool-id (:pool-id edit-mode-data)
+        suspensions @(subscribe [::current-user/suspensions])
+
+        ; Transformators for the pools list
+        flatten-pool (fn [{{id :id name :name} :inventory-pool quantity :quantity}]
+                       {:id id
+                        :name name
+                        :total-borrowable-quantity quantity})
+        has-items-or-is-selected (fn [selected-pool-id pool]
+                                   (or (> (:total-borrowable-quantity pool) 0)
+                                       (= (:id pool) selected-pool-id)))
+        assoc-suspension (fn [pool suspensions]
+                           (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id)) suspensions)]
+                             (merge pool
+                                    (when is-suspended? {:user-is-suspended true}))))
+        add-inaccessible-pool (fn [selected-pool pools]
+                                (concat pools
+                                        (when
+                                         (and selected-pool (not-any? #(= (:id %) (:id selected-pool)) pools))
+                                          [(merge selected-pool {:user-has-no-access true})])))
+
+        pool-id-and-name (:inventory-pool edit-mode-data)
         pools (->> model :total-borrowable-quantities
-                   (filter #(> (:quantity %) 0))
-                   (map #(-> % :inventory-pool (merge {:totalBorrowableQuantity (:quantity %)}))))
+                   (map flatten-pool)
+                   (filter #(has-items-or-is-selected (:id pool-id-and-name) %))
+                   (map #(-> % (assoc-suspension suspensions)))
+                   (add-inaccessible-pool pool-id-and-name))
+
         fetching-until-date (some-> edit-mode-data
                                     :fetching-until-date
                                     js/Date.
@@ -337,7 +365,7 @@
         {:initialQuantity quantity
          :initialStartDate start-date
          :initialEndDate end-date
-         :initialInventoryPoolId pool-id
+         :initialInventoryPoolId (:id pool-id-and-name)
          :inventoryPools (map h/camel-case-keys pools)
          :minDateLoaded min-date-loaded
          :maxDateLoaded max-date-loaded

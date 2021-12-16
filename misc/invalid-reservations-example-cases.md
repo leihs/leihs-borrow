@@ -8,65 +8,86 @@ this is not mentioned in each example.
 TODO:
 
 - case for `models.maintenance_period` (likely not used at ZHdK, maybe ignore for now)
-- next: also check the order panel (on model detail page) for all those cases. now we check what happens when i already have a reservation, but we should also check that i can not create one.
+
+Description of expectations per invalidity condition:
+
+- cart / refresh-timeout: existing item in the cart is marked invalid (red badge) when condition is true
+- error message: "edit reservation" dialog has an understandable message explaining why the item is invalid
+- order panel: "edit reservation" dialog does allow to fix the problem (by editing or deleting the item)
+- calendar decoration:
+- add to cart: the user can not create an invalid reservation when the condition is true beforehand
 
 ### Reservation Advance Days
 
-- error message: PENDING
-- order panel: OK
-- calendar decoration: ?
-
-### Invalid Start Date
-
+- cart / refresh-timeout: OK
 - error message: OK
 - order panel: OK
 - calendar decoration: OK
+- add to cart: OK
+
+### Start Date In Past
+
+- cart / refresh-timeout: OK
+- error message: OK
+- order panel: OK
+- calendar decoration: OK
+- add to cart: OK
 
 ### No Access To Pool
 
-- error message: PENDING
-- order panel: PENDING
-- calendar decoration: PENDING
+- cart / refresh-timeout: OK
+- error message: OK
+- order panel: OK
+- calendar decoration: OK (calendar hidden)
+- add to cart: OK (pool not selectable)
 
 ### Holiday on End Date
 
-- error message: OK
-- order panel: OK
-- calendar decoration: TO BE DEFINED
-
-### Max Visits Count Pick Up
-
-- possible API bug!
-
-- error message: PENDING
-- order panel: PENDING
-- calendar decoration: PENDING
-
-### Max Visits Count Return
-
-- possible API bug!
-
-- error message: PENDING
-- order panel: PENDING
-- calendar decoration: PENDING
-
-### Maximum Reservation Time
-
-- error message: PENDING
-- order panel: PENDING
-- calendar decoration: PENDING
-
-### Quantity To High
-
+- cart / refresh-timeout: OK
 - error message: OK
 - order panel: OK
 - calendar decoration: OK
+- add to cart: XXXXXXXXXXXX
+
+### Max Visits Count Pick Up
+
+- cart / refresh-timeout: OK
+- error message: OK
+- order panel: OK
+- calendar decoration: OK
+- add to cart: OK
+
+### Max Visits Count Return
+
+- cart / refresh-timeout: OK
+- error message: OK
+- order panel: OK
+- calendar decoration: OK
+- add to cart: OK
+
+### Maximum Reservation Time
+
+- cart / refresh-timeout: OK
+- error message: OK
+- order panel: OK
+- calendar decoration: OK
+- add to cart: OK
+
+### Quantity Too High
+
+- cart / refresh-timeout: OK
+- error message: OK
+- order panel: OK
+- calendar decoration: OK
+- add to cart: OK
 
 ### Model With No Items
 
-- error message: PENDING
-- order panel: PENDING
-- calendar decoration: NONE
+- cart / refresh-timeout: OK
+- error message: OK
+- order panel: OK
+- calendar decoration: OK (calendar hidden)
+- add to cart: OK (pool not selectable)
 
 ### OK and Timed Out
 
@@ -78,12 +99,16 @@ TODO:
 
 ### Not A Workday
 
+- cart / refresh-timeout: OK
 - error message: OK
 - order panel: OK
-- calendar decoration: PENDING
+- calendar decoration: OK
+- add to cart: OK
 
 ### User is Supended
 
-- error message: PENDING
-- order panel: PENDING
-- calendar decoration: TO BE DEFINED (we might want to show a normal order panel, but make it non-submitable)
+- cart / refresh-timeout: PENDING
+- error message: OK
+- order panel: OK
+- calendar decoration: OK (calendar hidden)
+- add to cart: OK

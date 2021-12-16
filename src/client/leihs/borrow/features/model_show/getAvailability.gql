@@ -17,6 +17,8 @@ query getAvailability(
       inventoryPool {
         id
         name
+        maximumReservationTime
+        reservationAdvanceDays
       }
       dates {
         date

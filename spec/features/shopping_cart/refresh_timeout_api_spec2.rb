@@ -82,7 +82,7 @@ describe "refresh timeout", type: :feature do # NOTE: only needed for developmen
   end
 
   let(:model_1) do
-    model = FactoryBot.create(:leihs_model, product: "Invalid Start Date",
+    model = FactoryBot.create(:leihs_model, product: "Start Date In Past",
                                             id: "db3197f4-7fef-4139-83e1-09f79abfa691")
     2.times do
       model.add_item(FactoryBot.create(:item,
@@ -93,7 +93,7 @@ describe "refresh timeout", type: :feature do # NOTE: only needed for developmen
   end
 
   let(:model_2) do
-    model = FactoryBot.create(:leihs_model, product: "Quantity To High",
+    model = FactoryBot.create(:leihs_model, product: "Quantity Too High",
                                             id: "a9105e4f-4eef-4d44-8d2b-cb635a220c09")
     2.times do
       model.add_item(FactoryBot.create(:item, is_borrowable: true,
@@ -268,12 +268,11 @@ describe "refresh timeout", type: :feature do # NOTE: only needed for developmen
                                                              end_date: (test_advance_days + 1).days.from_now,
                                                              user: user)
     #####################################################################################################
-    # PENDING: does not work – i think the cases are correct. maybe the API has a bug. let's wait for matus.
-    #          also compare to the first version of the spec – "max visits" worked but in a simplified case.
 
     # max visits count reached: only 1 is allowed, but
-    #   * another user already has a pickup on same day
-    #   * another user already has a return on same day
+    #   * another user already has a pickup on the day I would pickup
+    #   * another user already has a pickup on the day I would return
+    #   * TODO: another user already has a signed order with return on the day I would visit
     Workday.find(inventory_pool_id: inventory_pool_3_max_visits.id).update(max_visits: { "1": "1",
                                                                                          "2": "1",
                                                                                          "3": "1",
@@ -281,23 +280,34 @@ describe "refresh timeout", type: :feature do # NOTE: only needed for developmen
                                                                                          "5": "1",
                                                                                          "6": "1",
                                                                                          "0": "1" })
-    # this reservations return-visit blocks the pickup (in 4 days)
+
+    user_3_max_visits_customer_order = FactoryBot.create(:order,
+                                                         user: user_3_max_visits)
+    user_3_max_visits_order = FactoryBot.create(:pool_order,
+                                                user: user_3_max_visits,
+                                                inventory_pool: inventory_pool_3_max_visits,
+                                                state: :submitted,
+                                                order: user_3_max_visits_customer_order)
+
+    # this reservations pickup-visit blocks my pickup (in 4 days)
     r1c_max_visits_count_reached_other_pickup = FactoryBot.create(:reservation,
                                                                   id: "3d98b789-5dd5-48ed-9002-79623be71789",
+                                                                  status: :submitted,
+                                                                  order: user_3_max_visits_order,
                                                                   leihs_model: model_6_x,
                                                                   inventory_pool: inventory_pool_3_max_visits,
-                                                                  start_date: 2.days.from_now,
-                                                                  end_date: 4.days.from_now,
+                                                                  start_date: 4.days.from_now,
+                                                                  end_date: 6.days.from_now,
                                                                   user: user_3_max_visits)
-    # this reservations pickup-visit blocks the return (in 12 days)
+    # this reservations pickup-visit blocks my return (in 12 days)
     r1c_max_visits_count_reached_other_return = FactoryBot.create(:reservation,
                                                                   id: "dcef87fc-2e09-4a30-8492-22acd1c27215",
+                                                                  status: :submitted,
+                                                                  order: user_3_max_visits_order,
                                                                   leihs_model: model_6_x,
                                                                   inventory_pool: inventory_pool_3_max_visits,
                                                                   start_date: 12.days.from_now,
                                                                   end_date: 14.days.from_now,
-                                                                  start_date: Date.today,
-                                                                  end_date: 3.days.from_now,
                                                                   user: user_3_max_visits)
 
     # this reservation is blocked at the pickup (in 4 days)
@@ -485,12 +495,12 @@ def dev_take_screenshots_of_each_order_panel
   dir = "tmp/dev-screenshots/invalid-reservations/"
 
   find_ui_list_cards.each.with_index do |line, index|
+    title = line.find(".mb-1").text
     line.click
 
     wait_until { page.has_no_text? "LOADING" }
     sleep 0.2
 
-    title = line.find(".mb-1").text
     take_screenshot(dir, "#{(index + 1).to_s.rjust(2, "0")}_#{title}")
 
     # binding.pry
