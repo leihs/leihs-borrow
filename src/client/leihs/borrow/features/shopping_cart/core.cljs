@@ -194,6 +194,18 @@
               (assoc-in [::data :order-success] {:rental rental})
               (dissoc-in [::data :order-dialog]))})))
 
+(reg-event-db
+ ::close-order-success-notification
+ (fn-traced [db]
+   (dissoc-in db [::data :order-success])))
+
+(reg-event-fx
+ ::order-success-notification-confirm
+ (fn-traced [_ [_ rental-id]]
+   {:fx [[:dispatch [::close-order-success-notification]]
+         [:dispatch [:routing/navigate [::routes/rentals-show
+                                        {:rental-id rental-id}]]]]}))
+
 (reg-event-fx
  ::update-reservations
  (fn-traced [{:keys [db]} [_ args]]
@@ -501,8 +513,7 @@
     (let [notification-data @(subscribe [::order-success-data])
           {rental :rental} notification-data
           {:keys [title purpose]} rental
-          on-confirm #(dispatch [:routing/navigate
-                                 [::routes/rentals-show {:rental-id (-> notification-data :rental :id)}]])]
+          on-confirm #(dispatch [::order-success-notification-confirm (-> notification-data :rental :id)])]
       [:> UI/Components.Design.ConfirmDialog
        {:shown (some? notification-data)
         :title (t :order-success-notification/title)
