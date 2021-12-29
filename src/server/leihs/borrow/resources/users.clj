@@ -58,7 +58,9 @@
 (defn get-navigation [{{:keys [tx]} :request} _ {user-id :id}]
   {:legacy-url
    (str (:external_base_url (settings/get-system-and-security tx))
-        "/borrow/")})
+        "/borrow/")
+   :documentation-url
+   (:documentation_link (settings/get tx))})
 
 ;#### debug ###################################################################
 ; (logging-config/set-logger! :level :debug)

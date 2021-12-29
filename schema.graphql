@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Tue Nov 30 2021 15:38:10 GMT+0100 (Central European Standard Time)
+# timestamp: Wed Dec 29 2021 13:23:50 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -557,6 +557,7 @@ type User {
 }
 
 type UserNavigation {
+  documentationUrl: String
   legacyUrl: String!
 }
 

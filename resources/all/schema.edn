@@ -72,7 +72,8 @@
                                :locale {:type String}
                                :default {:type Boolean}
                                :active {:type Boolean}}}
-           :UserNavigation {:fields {:legacyUrl {:type (non-null String)}}}
+           :UserNavigation {:fields {:legacyUrl {:type (non-null String)}
+                                     :documentationUrl {:type String}}}
            :User {:description "A `User` represents a human agent that can log into and use the system."
                   :fields {:id {:type (non-null :UUID)}
                            :firstname {:type String}

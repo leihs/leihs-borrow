@@ -51,11 +51,11 @@
         user-name @(subscribe [::user-name])
         user-nav @(subscribe [::current-user/user-nav])
         legacy-url (:legacy-url user-nav)
-        documentation-url nil
+        documentation-url (:documentation-url user-nav)
         support-url nil
         languages [{:id "de" :title "Deutsch"}]]
 
-    ; TODO: provide documentation-url, support-url in user-nav
+    ; TODO: provide support-url in user-nav
     ; TODO: provide languages, implement language switch
 
     [:> UI/Components.Design.Navbar.MenuWrapper
@@ -91,10 +91,8 @@
        [:> UI/Components.Design.Menu.Button {:type "submit" :form "sign-out-form"} (t :user/logout)]
        [:form.visually-hidden {:id "sign-out-form" :action "/sign-out" :method "POST"} [csrf/token-field]]]
 
-      (when (or documentation-url support-url)
-        [:> UI/Components.Design.Menu.Group {:title (t :help/section-title)}
-         (when documentation-url [menu-link documentation-url (t :help/documentation)])
-         (when support-url [menu-link support-url (t :help/support)])])
+      ; (documentation and support are in the "Leihs" group, keeping number of groups low)
+      (comment [:> UI/Components.Design.Menu.Group {:title (t :help/section-title)}])
 
       (when (> (count languages) 1)
         [:> UI/Components.Design.Menu.Group {:title (t :language/section-title)}
@@ -103,4 +101,6 @@
             [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::TODO-switch-language (:id language)])} (:title language)]))])
 
       [:> UI/Components.Design.Menu.Group {:title "Leihs"}
-       [menu-link legacy-url (t :desktop-version)]]]]))
+       [menu-link legacy-url (t :desktop-version)]
+       (when documentation-url [menu-link documentation-url (t :help/documentation)])
+       (when support-url [menu-link support-url (t :help/support)])]]]))
