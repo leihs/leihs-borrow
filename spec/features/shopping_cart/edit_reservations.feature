@@ -37,8 +37,8 @@ Feature: Shopping Cart - Editing Reservations
       | label          | value           |
       | Quantity       | 1               |
       | Inventory Pool | Pool A (max. 3) |
-      | From           | 02/01/2032      |
-      | Until          | 02/03/2032      |
+      | From           | 01/02/2032      |
+      | Until          | 03/02/2032      |
 
     When I enter "3" in the "Quantity" field
     Then the "Quantity" field has "3"

@@ -265,17 +265,18 @@
          :<- [::reservations]
          (fn [lines _]
            (->> lines
-                (sort-by
-                 (fn [line]
-                   [(get-in line [:start-date])
-                    (get-in line [:inventory-pool :name])
-                    (get-in line [:model :name])]))
                 (group-by
                  (fn [line]
-                   [(get-in line [:model :id])
-                    (get-in line [:start-date])
-                    (get-in line [:end-date])
-                    (get-in line [:inventory-pool :id])])))))
+                   [(get-in line [:start-date])
+                    (get-in line [:inventory-pool :id])
+                    (get-in line [:model :id])
+                    (get-in line [:end-date])]))
+                (sort-by
+                 (fn [[_ [line0]]]
+                   [(get-in line0 [:start-date])
+                    (get-in line0 [:inventory-pool :name])
+                    (get-in line0 [:model :name])
+                    (get-in line0 [:end-date])])))))
 
 (reg-sub ::current-user-or-delegation-name
          :<- [::current-user/user-data]

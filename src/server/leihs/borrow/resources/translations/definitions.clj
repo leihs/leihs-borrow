@@ -104,8 +104,8 @@
                 {:de-CH "Keine Berechtigung für diesen Gerätepark"
                  :en-GB "No access to this inventory pool"}
                 :pool-suspension
-                {:de-CH "Sperre für diesen Gerätepark"
-                 :en-GB "Suspension for this inventory pool"}
+                {:de-CH "Benutzer für diesen Gerätepark gesperrt"
+                 :en-GB "User suspended for this inventory pool"}
                 :item-not-available-in-pool
                 {:de-CH "Gegenstand in diesem Gerätepark nicht verfügbar"
                  :en-GB "Item not available in this inventory pool"}
