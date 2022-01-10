@@ -36,3 +36,4 @@
 (def-attribute-override-fn date-until-date :until_date date-format)
 (def-attribute-override-fn date-time-created-at :created_at date-time-format)
 (def-attribute-override-fn date-time-updated-at :updated_at date-time-format)
+(def-attribute-override-fn date-suspended-until :suspended_until date-format)
