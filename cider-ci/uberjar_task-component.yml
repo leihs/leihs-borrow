@@ -11,7 +11,7 @@ traits:
   Leiningen 2: true
 
 environment_variables:
-  NVM_NODEJS_VERSION: '14'
+  NVM_NODEJS_VERSION: '16'
 
 scripts:
   build-leihs-ui-for-borrow:
