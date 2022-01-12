@@ -122,6 +122,7 @@
         ;; NOTE: should be in API
         total-days (+ 1 (datefn/differenceInCalendarDays end-date start-date))
         title (t :reservation-line.title {:itemCount quantity, :itemName name})
+        inventory-code (-> reservation :item :inventory-code)
         duration (t :reservation-line.duration {:totalDays total-days, :fromDate start-date})
         sub-title (get-in reservation [:inventory-pool :name])
         href (when model (routing/path-for ::routes/models-show :model-id (:id (:model reservation))))
@@ -134,7 +135,7 @@
     [:<>
      [:> UI/Components.Design.ListCard {:href href}
       [:> UI/Components.Design.ListCard.Title
-       title]
+       title (when inventory-code [:span.fw-light " (" inventory-code ")"])]
 
       [:> UI/Components.Design.ListCard.Body
        sub-title]
