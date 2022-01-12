@@ -78,12 +78,37 @@ step "the following items exist:" do |table|
   end
 end
 
+# "date is ${Time.now}" -> "date is 31/12/21"
+def interpolate_dates_short(s)
+  custom_interpolation(s, ->(o) { Locales.format_date_short(o, @user) })
+end
+
+# Override for the equally named step, but with date interpolation
+step "the page subtitle is :subtitle" do |subtitle|
+  subtitle = interpolate_dates_short(subtitle)
+  expect(@page).to be
+  expect(@page[:subtitle]).to eq subtitle
+end
+
 step "I see the following status rows in the :name section:" do |section_name, table|
   section = find_ui_section(title: section_name)
   status_rows = get_ui_progress_infos(section)
   # ignore keys that are not present in the expectations table by removing them:
-  expected_status_rows = status_rows.map { |l| l.slice(*table.headers.map(&:to_sym)) }
-  expect(expected_status_rows).to eq symbolize_hash_keys(table.hashes)
+  actual_status_rows = status_rows.map { |l| l.slice(*table.headers.map(&:to_sym)) }
+  expect(actual_status_rows).to eq symbolize_hash_keys(table.hashes)
+end
+
+# Override for the equally named step, but with date interpolation for the foot
+step "I see the following lines in the :name section:" do |section_name, table|
+  items_section = find_ui_section(title: section_name)
+  item_lines = get_ui_list_cards(items_section)
+  # ignore keys that are not present in the expectations table by removing them:
+  actual_lines = item_lines.map { |l| l.slice(*table.headers.map(&:to_sym)) }
+
+  # interpolate dates in expected foot
+  expected_lines = table.hashes.map { |h| h.merge({ "foot" => interpolate_dates_short(h["foot"]) }) }
+
+  expect(actual_lines).to eq symbolize_hash_keys(expected_lines)
 end
 
 step "I accept the :title dialog" do |title|

@@ -23,24 +23,24 @@ Feature: Rentals - Show
 
   Scenario: General example (2 approved items)
     Given a customer order with title "My Order" and the following reservations exists for the user:
-      | user | quantity | model       | pool   | start-date | end-date   | state    |
-      | user | 1        | Tripod      | Pool B | 2101-02-01 | 2101-02-02 | approved |
-      | user | 1        | DSLR Camera | Pool A | 2101-02-01 | 2101-02-02 | approved |
+      | user | quantity | model       | pool   | start-date | end-date | state    |
+      | user | 1        | Tripod      | Pool B | today      | tomorrow | approved |
+      | user | 1        | DSLR Camera | Pool A | today      | tomorrow | approved |
 
     When I log in as the user
     And I visit "/app/borrow/rentals/"
     And I click on "My Order"
 
     Then I see the page title "My Order"
-    And the page subtitle is "2 days from 01/02/01, 2 items"
+    And the page subtitle is "Between ${Date.today} and ${Date.tomorrow}, 2 items"
     And I see the following status rows in the "State" section:
       | title  | progressbar | info                   |
       | Pickup | [0 of 2]    | 0 of 2 items picked up |
     And I see the "Purpose" section
     And I see the following lines in the "Items" section:
-      | title          | body   | foot                            |
-      | 1× DSLR Camera | Pool A | 2 days from 01/02/01 To pick up |
-      | 1× Tripod      | Pool B | 2 days from 01/02/01 To pick up |
+      | title          | body   | foot                                 |
+      | 1× DSLR Camera | Pool A | 2 days from ${Date.today} To pick up |
+      | 1× Tripod      | Pool B | 2 days from ${Date.today} To pick up |
     And I see the "Delegation" section
 
 
@@ -73,24 +73,21 @@ Feature: Rentals - Show
       | 1× DSLR Camera | Pool A | 2 days from 01/04/01 To pick up |
 
 
-  # pending: "And the page subtitle is..." fails, because 'today' is used as rental start date instead of 01/02/2021
-  @pending
   Scenario: Status: 2 picked up items
     Given a customer order with title "My Order" and the following reservations exists for the user:
-      | user | quantity | model       | pool   | start-date | end-date   | state  |
-      | user | 1        | Tripod      | Pool B | 2101-02-01 | 2101-02-02 | signed |
-      | user | 1        | DSLR Camera | Pool A | 2101-02-01 | 2101-02-02 | signed |
+      | user | quantity | model       | pool   | start-date | end-date | state  |
+      | user | 1        | Tripod      | Pool B | today      | tomorrow | signed |
+      | user | 1        | DSLR Camera | Pool A | today      | tomorrow | signed |
 
     When I log in as the user
     And I visit "/app/borrow/rentals/"
     And I click on "My Order"
-
     Then I see the page title "My Order"
-    And the page subtitle is "2 days from 01/02/01, 2 items"
+    And the page subtitle is "Between ${Date.today} and ${Date.tomorrow}, 2 items"
     And I see the following status rows in the "State" section:
       | title  | progressbar | info                  |
       | Return | [0 of 2]    | 0 of 2 items returned |
     And I see the following lines in the "Items" section:
-      | title          | body   | foot                                          |
-      | 1× DSLR Camera | Pool A | 2 days from 01/02/01 To return until 02/02/01 |
-      | 1× Tripod      | Pool B | 2 days from 01/02/01 To return until 02/02/01 |
+      | title          | body   | foot                                                       |
+      | 1× DSLR Camera | Pool A | 2 days from ${Date.today} To return until ${Date.tomorrow} |
+      | 1× Tripod      | Pool B | 2 days from ${Date.today} To return until ${Date.tomorrow} |

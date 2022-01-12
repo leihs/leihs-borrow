@@ -37,19 +37,6 @@ def create_reservations_from_table_for_user(user, table)
   end
 end
 
-# spec args given as "${some_ruby_code}" -> eval(some_ruby_code)
-def custom_eval(spec_string)
-  ruby_code = spec_string.to_s.match(/^\$\{(.*)\}$/)[1]
-  eval(ruby_code)
-end
-
-# spec args given as "A${1+1}Z" -> "A#{1+1}Z" -> "A2Z"
-def custom_interpolation(spec_string, format_func = ->(x) { x })
-  spec_string.gsub(/\$\{([^\$]*)\}/) do |s|
-    format_func.call(custom_eval(s))
-  end
-end
-
 step "the following reservations exist for the user:" do |table|
   expect(@user).to be_a User
   create_reservations_from_table_for_user(@user, table)

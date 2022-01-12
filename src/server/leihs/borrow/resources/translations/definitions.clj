@@ -302,42 +302,42 @@
               :summary-line
               {:open {:de-CH "{totalDays, plural,
                                 =1 {{itemCount, plural,
-                                  =1 {{totalDays} Tag ab {fromDate, date, short}, {itemCount} Gegenstand}
-                                  other {{totalDays} Tag ab {fromDate, date, short}, {itemCount} Gegenstände}
+                                  =1 {Am {fromDate, date, short}, {itemCount} Gegenstand}
+                                  other {Am {fromDate, date, short}, {itemCount} Gegenstände}
                                 }}
                                 other {{itemCount, plural,
-                                  =1 {{totalDays} Tage ab {fromDate, date, short}, {itemCount} Gegenstand}
-                                  other {{totalDays} Tage ab {fromDate, date, short}, {itemCount} Gegenstände}
+                                  =1 {Zwischen {fromDate, date, short} und {untilDate, date, short}, {itemCount} Gegenstand}
+                                  other {Zwischen {fromDate, date, short} und {untilDate, date, short}, {itemCount} Gegenstände}
                                 }}
                               }"
                       :en-GB "{totalDays, plural,
                                 =1 {{itemCount, plural,
-                                  =1 {{totalDays} day from {fromDate, date, short}, {itemCount} item}
-                                  other {{totalDays} day from {fromDate, date, short}, {itemCount} items}
+                                  =1 {On {fromDate, date, short}, {itemCount} item}
+                                  other {On {fromDate, date, short}, {itemCount} items}
                                 }}
                                 other {{itemCount, plural,
-                                  =1 {{totalDays} days from {fromDate, date, short}, {itemCount} item}
-                                  other {{totalDays} days from {fromDate, date, short}, {itemCount} items}
+                                  =1 {Between {fromDate, date, short} and {untilDate, date, short}, {itemCount} item}
+                                  other {Between {fromDate, date, short} and {untilDate, date, short}, {itemCount} items}
                                 }}
                               }"}
                :closed {:de-CH "{totalDays, plural,
                                 =1 {{itemCount, plural,
-                                  =1 {{totalDays} Tag bis {untilDate, date, short}, {itemCount} Gegenstand}
-                                  other {{totalDays} Tag bis {untilDate, date, short}, {itemCount} Gegenstände}
+                                  =1 {Am {fromDate, date, short}, {itemCount} Gegenstand}
+                                  other {Am {fromDate, date, short}, {itemCount} Gegenstände}
                                 }}
                                 other {{itemCount, plural,
-                                  =1 {{totalDays} Tage bis {untilDate, date, short}, {itemCount} Gegenstand}
-                                  other {{totalDays} Tage bis {untilDate, date, short}, {itemCount} Gegenstände}
+                                  =1 {Zwischen {fromDate, date, short} und {untilDate, date, short}, {itemCount} Gegenstand}
+                                  other {Zwischen {fromDate, date, short} und {untilDate, date, short}, {itemCount} Gegenstände}
                                 }}
                               }"
                         :en-GB "{totalDays, plural,
                                 =1 {{itemCount, plural,
-                                  =1 {{totalDays} day until {untilDate, date, short}, {itemCount} item}
-                                  other {{totalDays} day until {untilDate, date, short}, {itemCount} items}
+                                  =1 {On {fromDate, date, short}, {itemCount} item}
+                                  other {On {fromDate, date, short}, {itemCount} items}
                                 }}
                                 other {{itemCount, plural,
-                                  =1 {{totalDays} days until {untilDate, date, short}, {itemCount} item}
-                                  other {{totalDays} days until {untilDate, date, short}, {itemCount} items}
+                                  =1 {Between {fromDate, date, short} and {untilDate, date, short}, {itemCount} item}
+                                  other {Between {fromDate, date, short} and {untilDate, date, short}, {itemCount} items}
                                 }}
                               }"}}
                ;

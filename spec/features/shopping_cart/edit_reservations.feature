@@ -69,7 +69,7 @@ Feature: Shopping Cart - Editing Reservations
       Order was submitted but still needs to be approved!
       My Movie
       My Movie
-      3 days from 01/02/32, 4 items
+      Between 01/02/32 and 03/02/32, 4 items
       """
     Then I have been redirected to the newly created order
     Then the newly created order in the DB has:

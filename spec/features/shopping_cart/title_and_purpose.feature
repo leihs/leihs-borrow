@@ -30,7 +30,7 @@ Feature: Shopping Cart - Filling out title and purpose
       Order was submitted but still needs to be approved!
       Movie Shoot
       for my diploma film
-      2 days from 01/02/32, 1 item
+      Between 01/02/32 and 02/02/32, 1 item
       """
     Then I have been redirected to the newly created order
     And I see the page title "Movie Shoot"
