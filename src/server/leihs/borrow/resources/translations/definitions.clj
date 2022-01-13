@@ -295,8 +295,9 @@
                                         :TO_RETURN {:de-CH "Rückgabe" :en-GB "Return"}
                                         :RETURNED {:de-CH "Alle Gegenstände zurückgebracht" :en-GB "All items returned"}
                                         :REJECTED {:de-CH "Ausleihe wurde abgelehnt" :en-GB "Rental was rejected"}
+                                        :EXPIRED-UNAPPROVED {:de-CH "Abgelaufen (nicht genehmigt)" :en-GB "Expired (not approved)"}
                                         :CANCELED {:de-CH "Ausleihe wurde storniert" :en-GB "Rental was canceled"}
-                                        :EXPIRED {:de-CH "Nicht abgeholt" :en-GB "Not picked up"}
+                                        :EXPIRED {:de-CH "Abgelaufen (nicht abgeholt)" :en-GB "Expired (not picked up)"}
                                         :OVERDUE {:de-CH "Rückgabe überfällig" :en-GB "Overdue"}}
 
               :summary-line

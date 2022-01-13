@@ -126,10 +126,12 @@
              done-count (+ approved-count rejected-count expired-unapproved-count)
              all-approved? (= approved-count total-count)
              all-rejected? (= rejected-count total-count)
+             all-expired-unapproved? (= expired-unapproved-count total-count)
              title (cond
                      all-rejected? (t :fulfillment-state-label.REJECTED)
+                     all-expired-unapproved? (t :fulfillment-state-label.EXPIRED-UNAPPROVED)
                      :else (t :fulfillment-state-label.IN_APPROVAL))
-             info (when (not all-rejected?)
+             info (when (not (or all-rejected? all-expired-unapproved?))
                     (str
                      (t :fulfillment-state.summary-line.IN_APPROVAL {:totalCount total-count :doneCount approved-count})
                      (when (> rejected-count 0)

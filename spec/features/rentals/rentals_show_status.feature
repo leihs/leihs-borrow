@@ -260,8 +260,8 @@ Feature: Rentals - Show - Status
     And I see the page title "All expired unapproved"
 
     Then I see the following status rows in the "State" section:
-      | title    | progressbar | info                              |
-      | Approval |             | 0 of 2 items approved (2 expired) |
+      | title                  | progressbar | info |
+      | Expired (not approved) |             |      |
     And I see the following lines in the "Items" section:
       | title      | body   | foot                                             |
       | 1× Elefant | Pool A | 2 days from 01/02/00 Not approved until 02/02/00 |
@@ -291,8 +291,8 @@ Feature: Rentals - Show - Status
     And I see the page title "Expired order"
 
     Then I see the following status rows in the "State" section:
-      | title         | progressbar | info |
-      | Not picked up |             |      |
+      | title                   | progressbar | info |
+      | Expired (not picked up) |             |      |
     And I see the following lines in the "Items" section:
       | title      | body   | foot                                              |
       | 1× Elefant | Pool A | 2 days from 01/02/00 Not picked up until 02/02/00 |
