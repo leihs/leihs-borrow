@@ -9,18 +9,14 @@ Feature: Request framework
 
   Scenario: Login and retry after having been logged out
     Given I log in as the user
-    # FIXME! ###############################################
-    # The sleeps are needed, otherwise errors are shown and
-    # elements are missing.
-    And I sleep "0.25"
-    When I visit the model show page for the borrowable item
-    And I sleep "0.25"
-    And I clear the browser cookies
-    And I sleep "0.25"
+    And I visit the model show page for the borrowable item
+    And I see "Add item"
+
+    When I clear the browser cookies
     And I click on "Add item"
     And the order panel is shown
     And I click on Add and I approve the alert
-    ########################################################
+
     Then I see one retry banner
     And I see one login banner
 

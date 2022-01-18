@@ -29,6 +29,13 @@ mutation updateReservations(
         id
         imageUrl
       }
+      totalBorrowableQuantities {
+        inventoryPool {
+          id
+          name
+        }
+        quantity
+      }
     }
     startDate
     endDate

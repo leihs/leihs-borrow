@@ -269,7 +269,9 @@
 
 (defn order-panel
   [model filters shown?]
-  (let [now (js/Date.)
+  (let [form-valid? (reagent/atom false)]
+    (fn [model filters shown?] 
+    (let [now (js/Date.)
         user-locale @(subscribe [:leihs.borrow.features.current-user.core/locale])
         filter-start-date (some-> filters :start-date datefn/parseISO)
         filter-end-date (some-> filters :end-date datefn/parseISO)
@@ -303,6 +305,7 @@
                                   :quantity (int (:quantity args))
                                   :poolIds [(:poolId args)]
                                   :userId user-id}])))
+        on-validate (fn [v] (reset! form-valid? v))
         order-panel-data @(subscribe [::order-panel-data])
         is-saving? (:is-saving? order-panel-data)]
     
@@ -350,14 +353,15 @@
           :initialInventoryPoolId (:pool-id filters)
           :inventoryPools (map h/camel-case-keys pools)
           :onSubmit on-submit
+          :onValidate on-validate
           :modelData (h/camel-case-keys model)
           :locale user-locale
           :txt (cart/order-panel-texts)}]]
        [:> UI/Components.Design.ModalDialog.Footer
-        [:button.btn.btn-primary {:form :order-dialog-form :type :submit :disabled is-saving?} 
+        [:button.btn.btn-primary {:form :order-dialog-form :type :submit :disabled is-saving? :class (when (not @form-valid?) "disabled pe-auto")} 
          (when is-saving? [:> UI/Components.Design.Spinner]) " "
          (t :order-dialog/add)]
-        [:button.btn.btn-secondary {:on-click on-cancel} (t :order-dialog/cancel)]]])))
+        [:button.btn.btn-secondary {:on-click on-cancel} (t :order-dialog/cancel)]]])))))
 
 (defn enrich-recommends-with-href [m]
   (update-in m
@@ -405,7 +409,6 @@
                                                            ::unfavorite-model
                                                            ::favorite-model) (:id model)])
                                      :onOrderClick #(dispatch [::open-order-panel])
-                                    ;;  :orderPanelTmp (when order-panel-open? (reagent/as-element [order-panel model filters]))
                                      }]
 
         ; NOTE: order panel is inside a modal, so we dont need to pass it through as a child to `ModelShow` 

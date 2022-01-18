@@ -308,107 +308,111 @@
    :validate (clj->js (get-in dict [:borrow :order-panel :validate]))})
 
 (defn edit-dialog []
-  (let [now (js/Date.)
-        edit-mode-data @(subscribe [::edit-mode-data])
-        res-lines (:res-lines edit-mode-data)
-        user-locale @(subscribe [:leihs.borrow.features.current-user.core/locale])
-        user-id (:user-id edit-mode-data)
-        model (:model edit-mode-data)
-        loading? (nil? (:availability edit-mode-data))
-        availability (or (:availability edit-mode-data) [])
-        start-date (datefn/parseISO (:start-date edit-mode-data))
-        end-date (datefn/parseISO (:end-date edit-mode-data))
-        quantity (:quantity edit-mode-data)
-        suspensions @(subscribe [::current-user/suspensions])
+  (let [form-valid? (reagent/atom false)]
 
-        ; Transformators for the pools list
-        flatten-pool (fn [{{id :id name :name} :inventory-pool quantity :quantity}]
-                       {:id id
-                        :name name
-                        :total-borrowable-quantity quantity})
-        has-items-or-is-selected (fn [selected-pool-id pool]
-                                   (or (> (:total-borrowable-quantity pool) 0)
-                                       (= (:id pool) selected-pool-id)))
-        assoc-suspension (fn [pool suspensions]
-                           (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id)) suspensions)]
-                             (merge pool
-                                    (when is-suspended? {:user-is-suspended true}))))
-        add-inaccessible-pool (fn [selected-pool pools]
-                                (concat pools
-                                        (when
-                                         (and selected-pool (not-any? #(= (:id %) (:id selected-pool)) pools))
-                                          [(merge selected-pool {:user-has-no-access true})])))
+    (fn []
+      (let [now (js/Date.)
+            edit-mode-data @(subscribe [::edit-mode-data])
+            res-lines (:res-lines edit-mode-data)
+            user-locale @(subscribe [:leihs.borrow.features.current-user.core/locale])
+            user-id (:user-id edit-mode-data)
+            model (:model edit-mode-data)
+            loading? (nil? (:availability edit-mode-data))
+            availability (or (:availability edit-mode-data) [])
+            start-date (datefn/parseISO (:start-date edit-mode-data))
+            end-date (datefn/parseISO (:end-date edit-mode-data))
+            quantity (:quantity edit-mode-data)
+            suspensions @(subscribe [::current-user/suspensions])
 
-        pool-id-and-name (:inventory-pool edit-mode-data)
-        pools (->> model :total-borrowable-quantities
-                   (map flatten-pool)
-                   (filter #(has-items-or-is-selected (:id pool-id-and-name) %))
-                   (map #(-> % (assoc-suspension suspensions)))
-                   (add-inaccessible-pool pool-id-and-name))
+            ; Transformators for the pools list
+            flatten-pool (fn [{{id :id name :name} :inventory-pool quantity :quantity}]
+                           {:id id
+                            :name name
+                            :total-borrowable-quantity quantity})
+            has-items-or-is-selected (fn [selected-pool-id pool]
+                                       (or (> (:total-borrowable-quantity pool) 0)
+                                           (= (:id pool) selected-pool-id)))
+            assoc-suspension (fn [pool suspensions]
+                               (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id)) suspensions)]
+                                 (merge pool
+                                        (when is-suspended? {:user-is-suspended true}))))
+            add-inaccessible-pool (fn [selected-pool pools]
+                                    (concat pools
+                                            (when
+                                             (and selected-pool (not-any? #(= (:id %) (:id selected-pool)) pools))
+                                              [(merge selected-pool {:user-has-no-access true})])))
 
-        fetching-until-date (some-> edit-mode-data
-                                    :fetching-until-date
-                                    js/Date.
-                                    datefn/endOfDay)
-        min-date-loaded (datefn/startOfMonth now)
-        max-date-loaded (-> edit-mode-data
-                            :fetched-until-date
-                            js/Date.
-                            datefn/endOfDay)
-        is-saving? (:is-saving? edit-mode-data)]
+            pool-id-and-name (:inventory-pool edit-mode-data)
+            pools (->> model :total-borrowable-quantities
+                       (map flatten-pool)
+                       (filter #(has-items-or-is-selected (:id pool-id-and-name) %))
+                       (map #(-> % (assoc-suspension suspensions)))
+                       (add-inaccessible-pool pool-id-and-name))
 
-    [:> UI/Components.Design.ModalDialog {:shown true
-                                          :title (t :edit-dialog/dialog-title)
-                                          :class "ui-booking-calendar"}
-     [:> UI/Components.Design.ModalDialog.Body
-      [:> UI/Components.Design.Stack {:space 4}
-       [:> UI/Components.OrderPanel
-        {:initialQuantity quantity
-         :initialStartDate start-date
-         :initialEndDate end-date
-         :initialInventoryPoolId (:id pool-id-and-name)
-         :inventoryPools (map h/camel-case-keys pools)
-         :minDateLoaded min-date-loaded
-         :maxDateLoaded max-date-loaded
-         :onShownDateChange (fn [date-object]
-                              (let [until-date (get (js->clj date-object) "date")]
-                                (h/log "Calendar shows until: " (h/date-format-day until-date))
-                                (if (or fetching-until-date
-                                        (datefn/isEqual until-date max-date-loaded)
-                                        (datefn/isBefore until-date max-date-loaded))
-                                  (h/log "We are either fetching or already have until: "
-                                         (h/date-format-day until-date))
-                                  (dispatch [::fetch-availability
+            fetching-until-date (some-> edit-mode-data
+                                        :fetching-until-date
+                                        js/Date.
+                                        datefn/endOfDay)
+            min-date-loaded (datefn/startOfMonth now)
+            max-date-loaded (-> edit-mode-data
+                                :fetched-until-date
+                                js/Date.
+                                datefn/endOfDay)
+            is-saving? (:is-saving? edit-mode-data)]
+
+        [:> UI/Components.Design.ModalDialog {:shown true
+                                              :title (t :edit-dialog/dialog-title)
+                                              :class "ui-booking-calendar"}
+         [:> UI/Components.Design.ModalDialog.Body
+          [:> UI/Components.Design.Stack {:space 4}
+           [:> UI/Components.OrderPanel
+            {:initialQuantity quantity
+             :initialStartDate start-date
+             :initialEndDate end-date
+             :initialInventoryPoolId (:id pool-id-and-name)
+             :inventoryPools (map h/camel-case-keys pools)
+             :minDateLoaded min-date-loaded
+             :maxDateLoaded max-date-loaded
+             :onShownDateChange (fn [date-object]
+                                  (let [until-date (get (js->clj date-object) "date")]
+                                    (h/log "Calendar shows until: " (h/date-format-day until-date))
+                                    (if (or fetching-until-date
+                                            (datefn/isEqual until-date max-date-loaded)
+                                            (datefn/isBefore until-date max-date-loaded))
+                                      (h/log "We are either fetching or already have until: "
+                                             (h/date-format-day until-date))
+                                      (dispatch [::fetch-availability
                                             ; Always fetching from min-date-loaded for the
                                             ; time being, as there are issue if scrolling
                                             ; too fast and was not sure if there was something
                                             ; wrong with concating the availabilities.
-                                             (-> min-date-loaded h/date-format-day)
-                                             (-> until-date (datefn/addMonths 6) h/date-format-day)]))))
-         :onSubmit (fn [jsargs]
-                     (let [args (js->clj jsargs :keywordize-keys true)]
-                       (dispatch [::update-reservations
-                                  {:ids (map :id res-lines)
-                                   :modelId (:id model)
-                                   :startDate (h/date-format-day (:startDate args))
-                                   :endDate (h/date-format-day (:endDate args))
-                                   :quantity (int (:quantity args))
-                                   :poolIds [(:poolId args)]
-                                   :userId user-id}])))
-         :modelData (h/camel-case-keys (merge model {:availability availability}))
-         :locale user-locale
-         :txt (order-panel-texts)}]
-       [:> UI/Components.Design.ActionButtonGroup
-        [:button.btn.btn-secondary
-         {:on-click #(dispatch [::delete-reservations (map :id res-lines)])}
-         (t :edit-dialog/delete-reservation)]]]]
-     [:> UI/Components.Design.ModalDialog.Footer
-      [:button.btn.btn-primary
-       {:form "order-dialog-form" :type :submit :disabled (or loading? is-saving?)}
-       (when is-saving? [:> UI/Components.Design.Spinner]) " "
-       (t :edit-dialog/confirm)]
-      [:button.btn.btn-secondary {:on-click #(dispatch [::cancel-edit])}
-       (t :edit-dialog/cancel)]]]))
+                                                 (-> min-date-loaded h/date-format-day)
+                                                 (-> until-date (datefn/addMonths 6) h/date-format-day)]))))
+             :onSubmit (fn [jsargs]
+                         (let [args (js->clj jsargs :keywordize-keys true)]
+                           (dispatch [::update-reservations
+                                      {:ids (map :id res-lines)
+                                       :modelId (:id model)
+                                       :startDate (h/date-format-day (:startDate args))
+                                       :endDate (h/date-format-day (:endDate args))
+                                       :quantity (int (:quantity args))
+                                       :poolIds [(:poolId args)]
+                                       :userId user-id}])))
+             :onValidate (fn [v] (reset! form-valid? v))
+             :modelData (h/camel-case-keys (merge model {:availability availability}))
+             :locale user-locale
+             :txt (order-panel-texts)}]
+           [:> UI/Components.Design.ActionButtonGroup
+            [:button.btn.btn-secondary
+             {:on-click #(dispatch [::delete-reservations (map :id res-lines)])}
+             (t :edit-dialog/delete-reservation)]]]]
+         [:> UI/Components.Design.ModalDialog.Footer
+          [:button.btn.btn-primary
+           {:form "order-dialog-form" :type :submit :disabled (or loading? is-saving?) :class (when (not @form-valid?) "disabled pe-auto")}
+           (when is-saving? [:> UI/Components.Design.Spinner]) " "
+           (t :edit-dialog/confirm)]
+          [:button.btn.btn-secondary {:on-click #(dispatch [::cancel-edit])}
+           (t :edit-dialog/cancel)]]]))))
 
 (defn reservation [res-lines invalid-res-ids]
   (let [exemplar (first res-lines)
