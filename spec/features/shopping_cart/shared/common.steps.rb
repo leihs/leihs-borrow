@@ -47,19 +47,15 @@ step "the following reservations exist for the user :username:" do |username, ta
   create_reservations_from_table_for_user(user, table)
 end
 
-step "I have been redirected to the newly created order" do
-  wait_until { get_ui_page_layout }
-  # FIXME: we should not have to wait here!
-  # @order = wait_until { Order.order(Sequel.desc(:created_at)).first }
-  @order = Order.order(Sequel.desc(:created_at)).first
-  current_path == "/app/borrow/rentals/#{@order.id}"
-  expect(current_path).to eq "/app/borrow/rentals/#{@order.id}"
+step "I have been redirected to the orders list" do
+  expect(current_path).to eq "/app/borrow/rentals/"
 end
 
 step "the newly created order in the DB has:" do |table|
-  expect(@order).to be
+  order = Order.order(Sequel.desc(:created_at)).first
+  expect(order).to be
   expect(table.rows.length).to be 1
   table.hashes.first.each do |key, val|
-    expect(@order[key.to_sym]).to eq val
+    expect(order[key.to_sym]).to eq val
   end
 end

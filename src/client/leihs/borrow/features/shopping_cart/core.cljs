@@ -206,10 +206,9 @@
 
 (reg-event-fx
  ::order-success-notification-confirm
- (fn-traced [_ [_ rental-id]]
+ (fn-traced [_ _]
    {:fx [[:dispatch [::close-order-success-notification]]
-         [:dispatch [:routing/navigate [::routes/rentals-show
-                                        {:rental-id rental-id}]]]]}))
+         [:dispatch [:routing/navigate [::routes/rentals-index]]]]}))
 
 (reg-event-fx
  ::update-reservations
@@ -546,7 +545,7 @@
     (let [notification-data @(subscribe [::order-success-data])
           {rental :rental} notification-data
           {:keys [title purpose]} rental
-          on-confirm #(dispatch [::order-success-notification-confirm (-> notification-data :rental :id)])]
+          on-confirm #(dispatch [::order-success-notification-confirm])]
       [:> UI/Components.Design.ConfirmDialog
        {:shown (some? notification-data)
         :title (t :order-success-notification/title)

@@ -32,10 +32,11 @@ Feature: Shopping Cart - Filling out title and purpose
       for my diploma film
       Between 01/02/32 and 02/02/32, 1 item
       """
-    Then I have been redirected to the newly created order
-    And I see the page title "Movie Shoot"
-    And I see "for my diploma film"
+    Then I have been redirected to the orders list
     And the newly created order in the DB has:
       | title       | purpose             |
       | Movie Shoot | for my diploma film |
 
+    When I click on the card with title "Movie Shoot"
+    Then I see the page title "Movie Shoot"
+    And I see "for my diploma film"

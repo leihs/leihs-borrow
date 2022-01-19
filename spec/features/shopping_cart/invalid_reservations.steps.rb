@@ -8,16 +8,6 @@ step "I log in as the user" do
   log_in_as_user_with_email(user.email)
 end
 
-step "I click on the card with title :title" do |title|
-  card = find_ui_list_cards().find do |c|
-    divs = c.all(":scope > div")
-    card_title = divs[0].text
-    card_title == title
-  end
-  expect(card).to be
-  card.click
-end
-
 step "the :title dialog did not close" do |title|
   # Same as shared step "I see the :title dialog". Just so I can say "I click on the button, but the dialog did not close"
   dialog = find_ui_modal_dialog(title: title)

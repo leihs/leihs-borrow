@@ -71,7 +71,7 @@ Feature: Shopping Cart - Editing Reservations
       My Movie
       Between 01/02/32 and 03/02/32, 4 items
       """
-    Then I have been redirected to the newly created order
+    Then I have been redirected to the orders list
     Then the newly created order in the DB has:
       | title    | purpose  |
       | My Movie | My Movie |

@@ -44,3 +44,13 @@ step "I see the following lines in the :name section:" do |section_name, table|
   expected_item_lines = item_lines.map { |l| l.slice(*table.headers.map(&:to_sym)) }
   expect(expected_item_lines).to eq symbolize_hash_keys(table.hashes)
 end
+
+step "I click on the card with title :title" do |title|
+  card = find_ui_list_cards().find do |c|
+    divs = c.all(":scope > div")
+    card_title = divs[0].text
+    card_title == title
+  end
+  expect(card).to be
+  card.click
+end
