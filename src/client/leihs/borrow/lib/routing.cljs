@@ -68,7 +68,7 @@
                (assoc-in [:meta :app :fatal-errors] nil)
                (assoc-in [:ls :leihs.borrow.ui.main-nav/data :is-menu-open?] nil)
                (dissoc ::requests/retry-mutation))
-       :dispatch-n (list [::requests/abort-running-queries] 
+       :dispatch-n (list #_[::requests/abort-running-queries] ; disabled for now, see #1294
                          [::scroll-to-top true]
                          [(:handler bidi-match) bidi-match]
                          [:leihs.borrow.features.shopping-cart.timeout/refresh])})))

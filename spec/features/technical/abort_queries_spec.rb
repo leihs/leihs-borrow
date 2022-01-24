@@ -4,6 +4,8 @@ require_relative '../shared/common.rb'
 
 feature 'abort queries' do
   scenario 'main' do
+    pending "Query abort is currently disabled, see issue #1294"
+
     @user = FactoryBot.create(:user)
     login(@user)
     visit "/app/borrow/testing/step-1"
