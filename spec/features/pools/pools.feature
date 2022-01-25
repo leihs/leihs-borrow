@@ -11,9 +11,9 @@ Feature: Pools
   Scenario: Pools index
     When I log in as the user
     And I visit "/app/borrow/inventory-pools"
-    And I see the page title "Pools"
+    And I see the page title "Inventory Pools"
 
-    Then I see the following lines in the "Available pools" section:
+    Then I see the following lines in the "Available inventory pools" section:
       | title  | body                | foot |
       | Pool A | No reservable items |      |
       | Pool B | No reservable items |      |

@@ -26,13 +26,13 @@ Feature: Rentals
       | Delegation D | 1        | DSLR Camera | Pool A | 2101-03-01 | 2101-03-02 | approved |
     When I log in as the user
     And I visit "/app/borrow/rentals/"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 1 |
     When I click on "Show search/filter"
     And I select "Delegation D" from "Delegation"
     And I click on "Apply"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 2 |
     When I click on "Show search/filter"
@@ -48,20 +48,20 @@ Feature: Rentals
       | 1        | Tripod      | Pool B | 2101-03-01 | 2101-03-02 | submitted |
     When I log in as the user
     And I visit "/app/borrow/rentals/"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 1 |
       | Order 2 |
     When I click on "Show search/filter"
     And I select "In approval" from "Status"
     And I click on "Apply"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 2 |
     When I click on "Show search/filter"
     And I select "Pickup" from "Status"
     And I click on "Apply"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 1 |
       | Order 2 |
@@ -71,7 +71,7 @@ Feature: Rentals
   Scenario: Filtering according date (until date only)
 
     If only until date is given, then -infinity (or a date representing that) is implied for from date.
-    For rentals with state TO_RETURN or RETURNED, the pickup date (or the created date of contract) is
+    For orders with state TO_RETURN or RETURNED, the pickup date (or the created date of contract) is
     taken as from date.
 
     Given a customer order with title "Order 1" and the following reservations exists for the user:
@@ -88,7 +88,7 @@ Feature: Rentals
       | 1        | DSLR Camera | Pool A | 9999-12-30 | 9999-12-31 | approved |             |
     When I log in as the user
     And I visit "/app/borrow/rentals/"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 1 |
       | Order 2 |
@@ -97,7 +97,7 @@ Feature: Rentals
     When I click on "Show search/filter"
     And I enter "day after tomorrow" in the "Until" field
     And I click on "Apply"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 1 |
       | Order 2 |
@@ -106,7 +106,7 @@ Feature: Rentals
   # When I click on "Show search/filter"
   # And I enter "yesterday" in the "Until" field
   # And I click on "Apply"
-  # Then I see the following rentals:
+  # Then I see the following orders:
   #   | title   |
   #   | Order 1 |
   #   | Order 2 |
@@ -123,21 +123,21 @@ Feature: Rentals
       | 1        | Tripod      | Pool B | 2101-03-01 | 2101-03-02 | submitted |
     When I log in as the user
     And I visit "/app/borrow/rentals/"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 1 |
       | Order 2 |
     When I click on "Show search/filter"
     And I select "Pool A" from "Inventory pools"
     And I click on "Apply"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 1 |
       | Order 2 |
     When I click on "Show search/filter"
     And I select "Pool B" from "Inventory pools"
     And I click on "Apply"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 2 |
     When I click on "Show search/filter"
@@ -153,14 +153,14 @@ Feature: Rentals
       | 1        | Tripod      | Pool B | 2101-03-01 | 2101-03-02 | submitted |
     When I log in as the user
     And I visit "/app/borrow/rentals/"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 1 |
       | Order 2 |
     When I click on "Show search/filter"
     And I enter "Order 1" in the "Search term" field
     And I click on "Apply"
-    Then I see the following rentals:
+    Then I see the following orders:
       | title   |
       | Order 1 |
     When I click on "Show search/filter"

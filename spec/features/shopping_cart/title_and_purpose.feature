@@ -1,5 +1,5 @@
 Feature: Shopping Cart - Filling out title and purpose
-  As a customer, when submitting the cart I have to enter title and purpose of my order.
+  As a customer, when submitting the cart I have to enter title and purpose of Order 1.
   The purpose is prefilled with the text entered in the title (both fields show the same text in real-time),
   but only as long as something is entered into the purpose field.
 
@@ -14,17 +14,17 @@ Feature: Shopping Cart - Filling out title and purpose
     And I log in as the user
     And I navigate to the cart
 
-    When I click on "Confirm rental"
+    When I click on "Confirm order"
 
-    When I enter "My Order" as title
-    Then the purpose contains "My Order"
+    When I enter "Order 1" as title
+    Then the purpose contains "Order 1"
     When I enter "for my diploma film" as purpose
-    Then the title contains "My Order"
+    Then the title contains "Order 1"
     When I enter "Movie Shoot" as title
     Then the purpose contains "for my diploma film"
 
     When I submit the form
-    And the "Confirm new rental" dialog has closed
+    And the "Confirm order" dialog has closed
     And I accept the "Order submitted" dialog with the text:
       """
       Order was submitted but still needs to be approved!

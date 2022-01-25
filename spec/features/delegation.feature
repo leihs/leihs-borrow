@@ -34,13 +34,13 @@ Feature: Delegations
     And the "Add item" dialog has closed
     And I accept the "Item added" dialog with the text:
       """
-      The item was added to the new rental
+      The item was added to the cart
       """
     And the "Item added" dialog has closed
 
     # check the cart
     When I click on the menu
-    And I click on "New Rental"
+    And I click on "Cart"
     Then I see the following lines in the "Items" section:
       | title     | body   |
       | 1× Kamera | Pool A |
@@ -54,11 +54,11 @@ Feature: Delegations
 
     # submit the order
     When I click on the menu
-    And I click on "New Rental"
-    And I click on "Confirm rental"
-    And I name the order as "My order"
+    And I click on "Cart"
+    And I click on "Confirm order"
+    And I name the order as "Order 1"
     And I click on "Confirm"
-    And the "Confirm new rental" dialog has closed
+    And the "Confirm order" dialog has closed
     And I accept the "Order submitted" dialog
     And the "Order submitted" dialog has closed
 
@@ -71,21 +71,21 @@ Feature: Delegations
     # FIXME: wait for menu open
     And I sleep 1
     And I click on the menu
-    And I click on "My Rentals"
+    And I click on "My Orders"
     And I click on "Show search/filter"
     And I select "Delegation D" xxx
     And I click button "Apply"
-    Then I see the order "My order" under open orders
+    Then I see the order "Order 1" under open orders
 
     # check the content of the order
-    When I click on "My order"
+    When I click on "Order 1"
     Then I see "1× Kamera"
 
   Scenario: Delegations in user account
     Given I log in as the user
 
     When I visit "/app/borrow/current-user"
-    And I see the page title "User account"
+    And I see the page title "User Account"
 
     Then I see the following lines in the "Delegations" section:
       | title        |

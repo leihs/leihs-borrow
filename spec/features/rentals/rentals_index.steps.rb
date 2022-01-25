@@ -1,4 +1,4 @@
-step "I see the following rentals:" do |table|
+step "I see the following orders:" do |table|
   table.hashes.each do |h|
     find(".ui-list-card", text: h["title"])
   end

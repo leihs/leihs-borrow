@@ -147,7 +147,7 @@ Feature: Invalid reservations
 
     When I click on the card with title "1× Model With No Items"
     Then I see the "Edit reservation" dialog
-    But I see the following warnings in the "Inventory Pool" section:
+    But I see the following warnings in the "Inventory pool" section:
       | text                                      |
       | Item not available in this inventory pool |
     And I click on "Confirm"
@@ -159,7 +159,7 @@ Feature: Invalid reservations
 
     When I click on the card with title "1× No Access To Pool"
     Then I see the "Edit reservation" dialog
-    But I see the following warnings in the "Inventory Pool" section:
+    But I see the following warnings in the "Inventory pool" section:
       | text                             |
       | No access to this inventory pool |
     And I click on "Confirm"
@@ -171,7 +171,7 @@ Feature: Invalid reservations
 
     When I click on the card with title "1× User is Suspended"
     Then I see the "Edit reservation" dialog
-    But I see the following warnings in the "Inventory Pool" section:
+    But I see the following warnings in the "Inventory pool" section:
       | text                                   |
       | User suspended for this inventory pool |
     And I click on "Confirm"
@@ -205,5 +205,5 @@ Feature: Invalid reservations
       | 1× Holiday on End Date      |
       | 1× Max Visits Count Return  |
 
-    When I click on "Confirm rental"
-    Then I see the "Confirm new rental" dialog
+    When I click on "Confirm order"
+    Then I see the "Confirm order" dialog

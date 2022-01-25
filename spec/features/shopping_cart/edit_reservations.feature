@@ -36,7 +36,7 @@ Feature: Shopping Cart - Editing Reservations
     Then the form has exactly these fields:
       | label          | value           |
       | Quantity       | 1               |
-      | Inventory Pool | Pool A (max. 3) |
+      | Inventory pool | Pool A (max. 3) |
       | From           | 01/02/2032      |
       | Until          | 03/02/2032      |
 
@@ -60,10 +60,10 @@ Feature: Shopping Cart - Editing Reservations
       | 3× DSLR Camera | Pool A | 3 days from 01/02/32 |
       | 1× Tripod      | Pool A | 2 days from 01/02/32 |
 
-    When I click on "Confirm rental"
+    When I click on "Confirm order"
     And I enter "My Movie" in the "Title" field
     And I click on "Confirm"
-    And the "Confirm new rental" dialog has closed
+    And the "Confirm order" dialog has closed
     And I accept the "Order submitted" dialog with the text:
       """
       Order was submitted but still needs to be approved!

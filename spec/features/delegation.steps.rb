@@ -28,7 +28,7 @@ step "I click on :text and accept the alert" do |text|
 end
 
 step "the cart page is loaded" do
-  expect(page).to have_content ["New rental", "Status"].join("\n")
+  expect(page).to have_content ["Cart", "Status"].join("\n")
 end
 
 step "the reservation has quantity :n" do |n|

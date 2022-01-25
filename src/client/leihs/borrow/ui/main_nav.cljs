@@ -84,7 +84,7 @@
        [menu-link (routing/path-for ::routes/models-favorites) (t :borrow/favorite-models)]
        [menu-link (routing/path-for ::routes/inventory-pools-index) (t :borrow/pools)]]
 
-      [:> UI/Components.Design.Menu.Group {:title user-name}
+      [:> UI/Components.Design.Menu.Group {:title (t :user/section-title)}
        [menu-link (routing/path-for ::routes/rentals-index) (t :user/rentals)]
 
        [menu-link (routing/path-for ::routes/current-user-show) (t :user/current-user)]

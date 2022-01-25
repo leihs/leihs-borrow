@@ -22,16 +22,16 @@ Feature: Rentals - Show
 
 
   Scenario: General example (2 approved items)
-    Given a customer order with title "My Order" and the following reservations exists for the user:
+    Given a customer order with title "Order 1" and the following reservations exists for the user:
       | user | quantity | model       | pool   | start-date | end-date | state    |
       | user | 1        | Tripod      | Pool B | today      | tomorrow | approved |
       | user | 1        | DSLR Camera | Pool A | today      | tomorrow | approved |
 
     When I log in as the user
     And I visit "/app/borrow/rentals/"
-    And I click on "My Order"
+    And I click on "Order 1"
 
-    Then I see the page title "My Order"
+    Then I see the page title "Order 1"
     And the page subtitle is "Between ${Date.today} and ${Date.tomorrow}, 2 items"
     And I see the following status rows in the "State" section:
       | title  | progressbar | info                   |
@@ -49,7 +49,7 @@ Feature: Rentals - Show
     Lines are sorted by start-date, then name of Pool, then name of Model.
     Unlike in the shopping cart each single item is listed (no grouping by same period, pool and model)
 
-    Given a customer order with title "My Order" and the following reservations exists for the user:
+    Given a customer order with title "Order 1" and the following reservations exists for the user:
       | user | quantity | model       | pool   | start-date | end-date   | state    |
       | user | 1        | DSLR Camera | Pool A | 2101-02-01 | 2101-02-02 | approved |
       | user | 1        | DSLR Camera | Pool A | 2101-04-01 | 2101-04-02 | approved |
@@ -60,7 +60,7 @@ Feature: Rentals - Show
 
     When I log in as the user
     And I visit "/app/borrow/rentals/"
-    And I click on "My Order"
+    And I click on "Order 1"
 
     Then I see the following lines in the "Items" section:
       | title          | body   | foot                            |
@@ -74,15 +74,15 @@ Feature: Rentals - Show
 
 
   Scenario: Status: 2 picked up items
-    Given a customer order with title "My Order" and the following reservations exists for the user:
+    Given a customer order with title "Order 1" and the following reservations exists for the user:
       | user | quantity | model       | pool   | start-date | end-date | state  |
       | user | 1        | Tripod      | Pool B | today      | tomorrow | signed |
       | user | 1        | DSLR Camera | Pool A | today      | tomorrow | signed |
 
     When I log in as the user
     And I visit "/app/borrow/rentals/"
-    And I click on "My Order"
-    Then I see the page title "My Order"
+    And I click on "Order 1"
+    Then I see the page title "Order 1"
     And the page subtitle is "Between ${Date.today} and ${Date.tomorrow}, 2 items"
     And I see the following status rows in the "State" section:
       | title  | progressbar | info                  |

@@ -1,7 +1,7 @@
 Feature: Rentals - Show - Status
 
   Tests for the relevant status situations.
-  - Status summary (as specified in Leihs UI Storybook - MobileApp/Wireframes/Meine Ausleihen/Status Summary)
+  - Status summary (as specified in Leihs UI Storybook - MobileApp/Wireframes/Meine Bestellungen/Status Summary)
   - Status badges in the reservation list
 
   # TODO: Add asserts for "the page subtitle is ..."
@@ -174,8 +174,8 @@ Feature: Rentals - Show - Status
     And I see the page title "Canceled order"
 
     Then I see the following status rows in the "State" section:
-      | title               | progressbar | info |
-      | Rental was canceled |             |      |
+      | title              | progressbar | info |
+      | Order was canceled |             |      |
     And I see the following lines in the "Items" section:
       | title      | body   | foot                          |
       | 1× Elefant | Pool A | 2 days from 01/02/01 Canceled |
@@ -188,8 +188,8 @@ Feature: Rentals - Show - Status
     Then I see the page title "Rejected order"
 
     Then I see the following status rows in the "State" section:
-      | title               | progressbar | info |
-      | Rental was rejected |             |      |
+      | title              | progressbar | info |
+      | Order was rejected |             |      |
     And I see the following lines in the "Items" section:
       | title      | body   | foot                          |
       | 1× Elefant | Pool A | 2 days from 01/02/01 Rejected |

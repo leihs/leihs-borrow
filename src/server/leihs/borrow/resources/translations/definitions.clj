@@ -45,7 +45,7 @@
     {:label {:quantity {:en-GB "Quantity" :de-CH "Anzahl"}
              :minus {:en-GB "Minus" :de-CH "Minus"}
              :plus {:en-GB "Plus" :de-CH "Plus"}
-             :pool {:en-GB "Inventory Pool" :de-CH "Gerätepark"}
+             :pool {:en-GB "Inventory pool" :de-CH "Inventarpark"}
              :pool-max-amount {:en-GB "{pool} (max. {amount, number})" :de-CH "{pool} (max. {amount, number})"}
              :user-delegation {:en-GB "Delegation" :de-CH "Delegation"}
              :timespan {:en-GB "Time span" :de-CH "Zeitraum"}
@@ -101,16 +101,16 @@
                  :en-GB "Maximum reservation time is restricted to {days} days"}
 
                 :no-pool-access
-                {:de-CH "Keine Berechtigung für diesen Gerätepark"
+                {:de-CH "Keine Berechtigung für diesen Inventarpark"
                  :en-GB "No access to this inventory pool"}
                 :pool-suspension
-                {:de-CH "Benutzer für diesen Gerätepark gesperrt"
+                {:de-CH "Benutzer für diesen Inventarpark gesperrt"
                  :en-GB "User suspended for this inventory pool"}
                 :item-not-available-in-pool
-                {:de-CH "Gegenstand in diesem Gerätepark nicht verfügbar"
+                {:de-CH "Gegenstand in diesem Inventarpark nicht verfügbar"
                  :en-GB "Item not available in this inventory pool"}
                 :unknown-pool
-                {:de-CH "Unbekannter Gerätepark"
+                {:de-CH "Unbekannter Inventarpark"
                  :en-GB "Unknown inventory pool"}
 
                 :user-delegation-cant-be-changed-active-cart
@@ -125,7 +125,7 @@
                                   :de-CH "Unterkategorien"}
                  :items {:en-GB "Items"
                          :de-CH "Gegenstände"}}
-    :current-user {:title {:en-GB "User account"
+    :current-user {:title {:en-GB "User Account"
                            :de-CH "Benutzerkonto"}
                    :user-data {:en-GB "User data"
                                :de-CH "Nutzerdaten"}
@@ -137,8 +137,8 @@
     :debug-page {:title {:en-GB "Debugging"
                          :de-CH "Debugging"}}
 
-    :favorite-models {:title {:en-GB "My Favorites"
-                              :de-CH "Meine Favoriten"}
+    :favorite-models {:title {:en-GB "Favorites"
+                              :de-CH "Favoriten"}
                       :items {:en-GB "Items"
                               :de-CH "Gegenstände"}}
     :filter {:search {:title {:en-GB "Search term"
@@ -149,7 +149,7 @@
                            :de-CH "{n, plural, =1 {Delegation} other {Delegationen}}"}
              :for {:en-GB "For"
                    :de-CH "Für"}
-             :time-span {:title {:en-GB "Time Span"
+             :time-span {:title {:en-GB "Timespan"
                                  :de-CH "Zeitraum"}
                          :undefined {:en-GB "undefined"
                                      :de-CH "unbestimmt"}
@@ -161,7 +161,7 @@
                             :de-CH "Verfügbarkeit"}
              :show-only-available {:en-GB "Show available only"
                                    :de-CH "Nur verfügbare anzeigen"}
-             :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"}
+             :pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
                      :all {:en-GB "All" :de-CH "Alle"}}
              :from {:en-GB "From"
                     :de-CH "Von"}
@@ -169,8 +169,6 @@
                      :de-CH "Bis"}
              :quantity {:en-GB "Quantity"
                         :de-CH "Anzahl"}
-             :get-results {:en-GB "Get Results"
-                           :de-CH "Resultate anzeigen"}
              :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
              :apply {:en-GB "Apply" :de-CH "Anwenden"}
              :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
@@ -186,14 +184,16 @@
                                     :de-CH "Ausleihen"}
                     :catalog {:en-GB "Catalog"
                               :de-CH "Katalog"}
-                    :shopping-cart {:en-GB "New Rental"
-                                    :de-CH "Neue Ausleihe"}
-                    :pools {:en-GB "Pools"
-                            :de-CH "Geräteparks"}
+                    :shopping-cart {:en-GB "Cart"
+                                    :de-CH "Warenkorb"}
+                    :pools {:en-GB "Inventory Pools"
+                            :de-CH "Inventarparks"}
                     :favorite-models {:en-GB "Favorites"
                                       :de-CH "Favoriten"}}
-           :user {:rentals {:en-GB "My Rentals"
-                            :de-CH "Meine Ausleihen"}
+           :user {:section-title {:en-GB "User"
+                                  :de-CH "Benutzer"}
+                  :rentals {:en-GB "My Orders"
+                            :de-CH "Meine Bestellungen"}
                   :current-user {:en-GB "User Account"
                                  :de-CH "Benutzerkonto"}
                   :logout {:en-GB "Logout"
@@ -206,12 +206,12 @@
                             :de-CH "Unterstützung"}}
            :language {:section-title {:en-GB "Language"
                                       :de-CH "Sprache"}}
-           :desktop-version {:en-GB "Desktop version"
+           :desktop-version {:en-GB "Desktop Version"
                              :de-CH "Desktop-Version"}}
-    :model-show {:loading {:en-GB "Loading model"
-                           :de-CH "Modell wird geladen"}
-                 :compatibles {:en-GB "Compatible Models"
-                               :de-CH "Ergänzende Modelle"}
+    :model-show {:loading {:en-GB "Loading item"
+                           :de-CH "Gegenstand wird geladen"}
+                 :compatibles {:en-GB "Compatible Items"
+                               :de-CH "Ergänzende Gegenstände"}
                  :add-item-to-cart {:en-GB "Add item"
                                     :de-CH "Gegenstand hinzufügen"}
                  :add-to-favorites {:en-GB "Add to favorites"
@@ -222,16 +222,16 @@
                                 :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
                                 :add {:en-GB "Add" :de-CH "Hinzufügen"}}
                  :order-success-notification {:title {:en-GB "Item added" :de-CH "Gegenstand hinzugefügt"}
-                                              :item-was-added {:en-GB "The item was added to the new rental" :de-CH "Der Gegenstand wurde zur Neuen Ausleihe hinzugefügt"}}}
+                                              :item-was-added {:en-GB "The item was added to the cart" :de-CH "Der Gegenstand wurde zum Warenkorb hinzugefügt"}}}
     :models {:title {:en-GB "Search results" :de-CH "Suchresultate"}}
     :pagination {:load-more {:en-GB "Load more"
                              :de-CH "Mehr laden"}
                  :nothing-found {:en-GB "Nothing found"
                                  :de-CH "Nichts gefunden"}}
-    :pools {:title {:en-GB "Pools"
-                    :de-CH "Geräteparks"}
-            :available-pools {:en-GB "Available pools"
-                              :de-CH "Verfügbare Geräteparks"}
+    :pools {:title {:en-GB "Inventory Pools"
+                    :de-CH "Inventarparks"}
+            :available-pools {:en-GB "Available inventory pools"
+                              :de-CH "Verfügbare Inventarparks"}
             :access-suspended {:en-GB "Access suspended"
                                :de-CH "Zugang gesperrt"}
             :no-reservable-models {:en-GB "No reservable items"
@@ -243,10 +243,8 @@
                 :description {:en-GB "Description"
                               :de-CH "Beschreibung"}}
 
-    :rentals {:title {:en-GB "My Rentals"
-                      :de-CH "Meine Ausleihen"}
-              :filter-bubble-label {:en-GB "All Rentals"
-                                    :de-CH "Alle Ausleihen"}
+    :rentals {:title {:en-GB "My Orders"
+                      :de-CH "Meine Bestellungen"}
               :section-title-open-rentals {:en-GB "Open"
                                            :de-CH "Offen"}
               :section-title-closed-rentals {:en-GB "Closed"
@@ -260,14 +258,14 @@
                                       :de-CH "{n, plural, =1 {Delegation} other {Delegationen}}"}
                         :for {:en-GB "For"
                               :de-CH "Für"}
-                        :time-span {:title {:en-GB "Time Span"
+                        :time-span {:title {:en-GB "Timespan"
                                             :de-CH "Zeitraum"}
                                     :undefined {:en-GB "undefined"
                                                 :de-CH "unbestimmt"}
                                     :errors {:start-date-equal-or-before-end-date
                                              {:en-GB "Start date must be equal to or before end date."
                                               :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
-                        :pools {:title {:en-GB "Inventory pools" :de-CH "Geräteparks"}
+                        :pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
                                 :all {:en-GB "All" :de-CH "Alle"}}
                         :states {:title {:en-GB "Status" :de-CH "Status"}
                                  :all {:en-GB "All" :de-CH "Alle"}
@@ -283,8 +281,6 @@
                                :de-CH "Von"}
                         :until {:en-GB "Until"
                                 :de-CH "Bis"}
-                        :get-results {:en-GB "Get Results"
-                                      :de-CH "Resultate anzeigen"}
                         :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
                         :apply {:en-GB "Apply" :de-CH "Anwenden"}
                         :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
@@ -294,9 +290,9 @@
                                         :TO_PICKUP {:de-CH "Abholung" :en-GB "Pickup"}
                                         :TO_RETURN {:de-CH "Rückgabe" :en-GB "Return"}
                                         :RETURNED {:de-CH "Alle Gegenstände zurückgebracht" :en-GB "All items returned"}
-                                        :REJECTED {:de-CH "Ausleihe wurde abgelehnt" :en-GB "Rental was rejected"}
+                                        :REJECTED {:de-CH "Bestellung wurde abgelehnt" :en-GB "Order was rejected"}
                                         :EXPIRED-UNAPPROVED {:de-CH "Abgelaufen (nicht genehmigt)" :en-GB "Expired (not approved)"}
-                                        :CANCELED {:de-CH "Ausleihe wurde storniert" :en-GB "Rental was canceled"}
+                                        :CANCELED {:de-CH "Bestellung wurde storniert" :en-GB "Order was canceled"}
                                         :EXPIRED {:de-CH "Abgelaufen (nicht abgeholt)" :en-GB "Expired (not picked up)"}
                                         :OVERDUE {:de-CH "Rückgabe überfällig" :en-GB "Overdue"}}
 
@@ -378,11 +374,11 @@
                                 :EXPIRED {:de-CH " ({count} abgelaufen)" :en-GB " ({count} expired)"}
                                 :OVERDUE {:de-CH " ({count} überfällig)" :en-GB " ({count} overdue)"}}}}
 
-    :rental-show {:page-title {:de-CH "Ausleihe" :en-GB "Rental"}
+    :rental-show {:page-title {:de-CH "Bestellung" :en-GB "Order"}
                   :state {:de-CH "Status" :en-GB "State"}
-                  :cancel-action-label {:de-CH "Ausleihe stornieren" :en-GB "Cancel rental"}
+                  :cancel-action-label {:de-CH "Bestellung stornieren" :en-GB "Cancel order"}
                   :purpose {:de-CH "Zweck" :en-GB "Purpose"}
-                  :pools-section-title {:de-CH "Geräteparks" :en-GB "Inventory pools"}
+                  :pools-section-title {:de-CH "Inventarparks" :en-GB "Inventory pools"}
                   :items-section-title {:de-CH "Gegenstände" :en-GB "Items"}
                   :documents-section-title {:de-CH "Dokumente" :en-GB "Documents"}
                   :user-or-delegation-section-title {:de-CH "Delegation" :en-GB "Delegation"}
@@ -406,12 +402,12 @@
                                              :REJECTED {:de-CH "Abgelehnt" :en-GB "Rejected"}
                                              :SIGNED {:de-CH "Rückgabe bis {endDate, date, short}" :en-GB "To return until {endDate, date, short}"}
                                              :CLOSED {:de-CH "Zurückgebracht" :en-GB "Returned"}
-                                             :CANCELED {:de-CH "Ausleihe storniert" :en-GB "Canceled"}
+                                             :CANCELED {:de-CH "Storniert" :en-GB "Canceled"}
                                              ; Temporal statusses:
                                              :EXPIRED-UNAPPROVED {:de-CH "Nicht genehmigt bis {endDate, date, short}" :en-GB "Not approved until {endDate, date, short}"}
                                              :EXPIRED {:de-CH "Nicht abgeholt bis {endDate, date, short}" :en-GB "Not picked up until {endDate, date, short}"}}
-                  :cancellation-dialog {:title {:de-CH "Ausleihe stornieren" :en-GB "Cancel rental"}
-                                        :confirm {:de-CH "Stornieren" :en-GB "Cancel rental"}
+                  :cancellation-dialog {:title {:de-CH "Bestellung stornieren" :en-GB "Cancel order"}
+                                        :confirm {:de-CH "Stornieren" :en-GB "Cancel order"}
                                         :cancel {:de-CH "Abbrechen" :en-GB "Abort"}}}
                   ;
 
@@ -422,10 +418,10 @@
                            :de-CH "Editieren"}
                     :draft {:title {:en-GB "Draft"
                                     :de-CH "Draft"}
-                            :add-to-cart {:en-GB "Add To Cart"
-                                          :de-CH "Add To Cart"}
-                            :delete {:en-GB "Delete Draft"
-                                     :de-CH "Delete Draft"}
+                            :add-to-cart {:en-GB "Add to cart"
+                                          :de-CH "Add to cart"}
+                            :delete {:en-GB "Delete draft"
+                                     :de-CH "Delete draft"}
                             :empty {:en-GB "Your draft is empty"
                                     :de-CH "Your draft is empty"}}
                     :countdown {:section-title {:en-GB "Status"
@@ -481,17 +477,17 @@
                                   :delete-reservation {:en-GB "Remove reservation" :de-CH "Reservation entfernen"}
                                   :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
                                   :confirm {:en-GB "Confirm" :de-CH "Bestätigen"}}
-                    :confirm-order {:en-GB "Confirm rental"
-                                    :de-CH "Ausleihe bestätigen"}
-                    :delete-order {:en-GB "Delete rental"
-                                   :de-CH "Ausleihe löschen"}
-                    :order-overview {:en-GB "New rental"
-                                     :de-CH "Neue Ausleihe"}
+                    :confirm-order {:en-GB "Confirm order"
+                                    :de-CH "Bestellung bestätigen"}
+                    :delete-order {:en-GB "Delete cart"
+                                   :de-CH "Warenkorb löschen"}
+                    :order-overview {:en-GB "Cart"
+                                     :de-CH "Warenkorb"}
                     :empty-order {:en-GB "No items added"
                                   :de-CH "Noch keine Gegenstände hinzugefügt"}
                     :borrow-items {:en-GB "Go to catalog"
                                    :de-CH "Hier geht's zum Katalog"}
-                    :confirm-dialog {:dialog-title {:en-GB "Confirm new rental" :de-CH "Neue Ausleihe bestätigen"}
+                    :confirm-dialog {:dialog-title {:en-GB "Confirm order" :de-CH "Bestellung bestätigen"}
                                      :title {:en-GB "Title" :de-CH "Titel"}
                                      :purpose {:en-GB "Purpose" :de-CH "Zweck"}
                                      :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
@@ -499,8 +495,8 @@
                     :order-success-notification {:title {:en-GB "Order submitted" :de-CH "Bestellung übermittelt"}
                                                  :order-submitted {:en-GB "Order was submitted but still needs to be approved!"
                                                                    :de-CH "Die Bestellung wurde übermittelt, muss aber noch genehmigt werden!"}}
-                    :delete-dialog {:dialog-title {:en-GB "Delete new rental"
-                                                   :de-CH "Neue Ausleihe löschen"}
+                    :delete-dialog {:dialog-title {:en-GB "Delete cart"
+                                                   :de-CH "Warenkorb löschen"}
                                     :really-delete-order {:en-GB "Really remove all reservations?"
                                                           :de-CH "Wirklich alle Reservationen entfernen?"}
                                     :cancel {:en-GB "Cancel"
