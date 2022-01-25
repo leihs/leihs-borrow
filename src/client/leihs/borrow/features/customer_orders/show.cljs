@@ -166,6 +166,8 @@
         :onConfirm #(dispatch [::cancel-order id])
         :confirmLabel (t :cancellation-dialog/confirm)
         :confirmIsLoading (:is-saving? dialog-data)
+        :dismissible true
+        :onDismiss #(dispatch [::close-cancellation-dialog])
         :onCancel #(dispatch [::close-cancellation-dialog])
         :cancelLabel (t :cancellation-dialog/cancel)}
        [:<>

@@ -360,6 +360,8 @@
             is-saving? (:is-saving? edit-mode-data)]
 
         [:> UI/Components.Design.ModalDialog {:shown true
+                                              :dismissible true
+                                              :on-dismiss #(dispatch [::cancel-edit])
                                               :title (t :edit-dialog/dialog-title)
                                               :class "ui-booking-calendar"}
          [:> UI/Components.Design.ModalDialog.Body
@@ -483,6 +485,8 @@
             is-saving? (:is-saving? dialog-data)]
         [:> UI/Components.Design.ModalDialog {:id :confirm-order
                                               :shown (some? dialog-data)
+                                              :dismissible true
+                                              :on-dismiss #(dispatch [::close-order-dialog])
                                               :title (t :confirm-dialog/dialog-title)
                                               :class "ui-confirm-order-dialog"}
          [:> UI/Components.Design.ModalDialog.Body
@@ -549,7 +553,7 @@
       [:> UI/Components.Design.ConfirmDialog
        {:shown (some? notification-data)
         :title (t :order-success-notification/title)
-        :onConfirm #(on-confirm)}
+        :onConfirm on-confirm}
        [:<>
         [:p (t :order-success-notification/order-submitted)]
         [:> UI/Components.Design.Section {:title title :collapsible true}
@@ -565,6 +569,8 @@
         :onConfirm #(dispatch [::delete-all-reservations (map :id reservations)])
         :confirmLabel (t :delete-dialog/confirm)
         :confirmIsLoading (:is-saving? dialog-data)
+        :dismissible true
+        :onDismiss #(dispatch [::close-delete-dialog])
         :onCancel #(dispatch [::close-delete-dialog])
         :cancelLabel (t :delete-dialog/cancel)}
        [:p (t :delete-dialog/really-delete-order)]])))

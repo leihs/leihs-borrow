@@ -311,6 +311,8 @@
     
     (when (and filters-loaded? has-availability?)
       [:> UI/Components.Design.ModalDialog {:shown shown?
+                                            :dismissible true
+                                            :on-dismiss on-cancel
                                             :title (t :order-dialog/title)
                                             :class "ui-booking-calendar"}
        [:> UI/Components.Design.ModalDialog.Body
@@ -377,7 +379,9 @@
   [:> UI/Components.Design.ConfirmDialog
    {:shown (:success? order-panel-data)
     :title (t :order-success-notification/title)
-    :onConfirm #(dispatch [::dismiss-order-success])}
+    :onConfirm #(dispatch [::dismiss-order-success])
+    :dismissible true
+    :onDismiss #(dispatch [::dismiss-order-success])}
    [:<>
     [:p
      (t :order-success-notification/item-was-added)]]])
