@@ -23,5 +23,5 @@
     (->> [query] (jdbc/query tx) (map :id))))
 
 (comment
-  (descendent-ids (leihs.core.ds/get-ds)
+  (descendent-ids (leihs.core.db/get-ds)
                   "9a1dc177-a2b2-4a16-8fbf-6552b5313f38"))

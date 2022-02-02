@@ -28,7 +28,7 @@
 (defn wrap-resolver-with-target-user-id [resolver]
   (fn [{{:keys [tx]
          {auth-user-id :id} :authenticated-entity
-         :as request} :request 
+         :as request} :request
         container ::lacinia/container-type-name
         target-user-id ::target-user/id
         :as context}
@@ -54,7 +54,7 @@
         (resolver (assoc context ::target-user/id target-user-id*)
                   args
                   value)
-        {::target-user/id target-user-id*})))) 
+        {::target-user/id target-user-id*}))))
 
 (defn wrap-debug [resolver]
   (fn [context args value]
@@ -70,8 +70,5 @@
                                  wrap-resolver-with-dates-validation))))
 
 ;#### debug ###################################################################
-; (logging-config/set-logger! :level :debug)
-; (logging-config/set-logger! :level :info)
-; (debug/debug-ns 'cider-ci.utils.shutdown)
 ; (debug/debug-ns *ns*)
 ; (debug/undebug-ns *ns*)

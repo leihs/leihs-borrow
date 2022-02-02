@@ -7,8 +7,7 @@ include:
     submodule: [leihs-ui]
 
 traits:
-  JDK 8: true
-  Leiningen 2: true
+  OpenJDK: true
 
 environment_variables:
   NVM_NODEJS_VERSION: '16'

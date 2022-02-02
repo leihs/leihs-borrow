@@ -1,0 +1,16 @@
+#!/bin/bash -eu
+
+PROJECT_DIR="$(dirname ${BASH_SOURCE})/.."
+
+cd "${PROJECT_DIR}"
+echo "PWD: $PWD"
+
+# add our clojure version to the path
+source $PROJECT_DIR/shared-clj/clojure/bin/activate
+
+npm i
+npx shadow-cljs compile leihs-borrow-js
+
+cd -
+
+# vi: ft=sh
