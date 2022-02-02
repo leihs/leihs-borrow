@@ -7,8 +7,7 @@ include:
     submodule: [leihs-ui]
 
 traits:
-  JDK 8: true
-  Leiningen 2: true
+  OpenJDK: true
 
 environment_variables:
   NVM_NODEJS_VERSION: '16'
@@ -31,5 +30,7 @@ scripts:
       shared ui was built:
         script_key: build-leihs-ui-for-borrow
     body: |
+      cd ${LEIHS_BORROW_DIR}/spec/support/legacy-api && git reset --hard HEAD
+      cd ${LEIHS_BORROW_DIR}
       . ~/.nvm/nvm.sh && nvm use "$NVM_NODEJS_VERSION"
       ${LEIHS_BORROW_DIR}/bin/build

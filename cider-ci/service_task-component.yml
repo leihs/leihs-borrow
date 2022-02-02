@@ -1,31 +1,31 @@
 scripts:
 
-  run-borrow-service:
+  borrow-service-run:
     start_when:
       uberjar has been built:
         script_key: build-borrow-uberjar
       database has been created:
         script_key: create-database
     body: |
-      set -euxo 
+      set -eux
       cd $LEIHS_BORROW_DIR
+      export LEGACY_HTTP_PORT=${LEIHS_LEGACY_HTTP_PORT}
+      export DB_NAME=${LEIHS_DATABASE_NAME}
+      export HTTP_PORT=${LEIHS_BORROW_HTTP_PORT}
       mkdir tmp
-      if [ -n "${LEGACY_MOCK_SERVER_PORT:-}" ]; then
-        export LEIHS_LEGACY_HTTP_BASE_URL=http://localhost:${LEGACY_MOCK_SERVER_PORT}
-      fi
-      java -jar target/leihs-borrow.jar run
+      java -jar target/leihs-borrow.jar run --pid-file tmp/service.pid
 
   borrow-service-is-running:
     body: |
-      set -euxo 
+      set -euxo
       until curl --silent --fail -I \
-        -H 'Accept: application/json' -H "Authorization: secret $CIDER_CI_TRIAL_ID" \
+        -H 'Accept: application/json' \
         ${LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/status;
         do sleep 1;
       done
     start_when:
       run server is executing:
-        script_key: run-borrow-service
+        script_key: borrow-service-run
         states: [executing]
 
   test:
@@ -33,12 +33,12 @@ scripts:
       borrow service is running:
         script_key: borrow-service-is-running
 
-  shutdown-borrow-service:
+  borrow-service-stop:
     body: |
-      set -euxo 
+      set -euxo
       cd $LEIHS_BORROW_DIR
       export PID=$(cat tmp/service.pid)
-      kill $PID 
+      kill $PID
       tail --pid=$PID -f /dev/null
     start_when:
       test is terminal:
@@ -47,6 +47,6 @@ scripts:
 
   delete-database:
     start_when:
-       shutdown-borrow-service is in terminal state:
-        script_key: shutdown-borrow-service
+       borrow-service-stop is in terminal state:
+        script_key: borrow-service-stop
         states: [aborted, defective, passed, failed, skipped]

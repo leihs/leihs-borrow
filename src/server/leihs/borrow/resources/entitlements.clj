@@ -49,5 +49,5 @@
 (def all-sql
   (first (all-entitlements-sqlvec)))
 
-(comment 
-  (->> [all-sql] (jdbc/query (leihs.core.ds/get-ds))))
+(comment
+  (->> [all-sql] (jdbc/query (leihs.core.db/get-ds))))

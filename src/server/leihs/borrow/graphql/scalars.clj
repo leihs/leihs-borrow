@@ -1,7 +1,10 @@
 (ns leihs.borrow.graphql.scalars
-  (:require java-time
-            [clojure.tools.logging :as log]
-            [leihs.core.core :refer [spy-with presence]])
+  (:require
+    [java-time]
+    [clojure.tools.logging :as log]
+    [leihs.core.core :refer [spy-with presence]]
+    [taoensso.timbre :refer [debug info warn error spy]]
+    )
   (:import [java.util UUID]
            [java.time.format DateTimeFormatter]
            [java.time ZoneOffset]))
@@ -21,6 +24,8 @@
     (.toString local-date)))
 
 (defn date-serialize [x]
+  (debug 'date-serialize {:value x
+                          :type (type x)})
   (try (-> x
            (->> (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE))
            .atStartOfDay

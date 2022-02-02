@@ -1,78 +1,73 @@
 (ns leihs.borrow.main
-  (:gen-class)
-  (:refer-clojure :exclude [str keyword])
-  (:require [clj-pid.core :as pid]
-            [clojure.pprint :refer [pprint]]
-            [clojure.spec.alpha :as spec]
-            [clojure.tools.logging :as log]
-            [leihs.core.core :refer [keyword str]]
-            [leihs.core.ds :as ds]
-            [leihs.core.http-server :as http-server]
-            [leihs.core.shutdown :as shutdown]
-            [leihs.core.status :as status]
-            [leihs.borrow.cli :as cli]
-            [leihs.borrow.graphql :as graphql]
-            [leihs.borrow.graphql.connections :as graphql-connections]
-            [leihs.borrow.legacy :as legacy]
-            [leihs.borrow.routes :as routes]
-            [leihs.borrow.resources.translations.core :as translations]
-            [logbug.catcher :as catcher]
-            [signal.handler]
-            ))
+  (:require
+    [clj-yaml.core :as yaml]
+    [clojure.pprint :refer [pprint]]
+    [clojure.tools.cli :as cli :refer [parse-opts]]
+    [environ.core :refer [env]]
+    [leihs.borrow.run :as run]
+    [leihs.borrow.translations.main :as translations.main]
+    [leihs.core.logging]
+    [leihs.core.repl :as repl]
+    [logbug.catcher :as catcher]
+    [logbug.debug :as debug]
+    [logbug.thrown :as thrown]
+    [taoensso.timbre :refer [debug info warn error]])
+  (:gen-class))
 
-(defn- main-usage
-  [options-summary & more]
-  (->>
-    ["Leihs Borrow"
-     ""
-     "usage: leihs-borrow [<opts>] SCOPE [<scope-opts>] [<args>]"
-     ""
-     "Options:"
-     options-summary
-     ""
-     ""
-     (when more
-       ["-------------------------------------------------------------------"
-        (with-out-str (pprint more))
-        "-------------------------------------------------------------------"])]
-    flatten
-    (clojure.string/join \newline)))
+(thrown/reset-ns-filter-regex #"^(leihs|cider)\..*")
 
-(defn- run
-  [options]
-  (catcher/snatch {:return-fn (fn [e] (System/exit -1))}
-    (log/info "Invoking run with options: " options)
-    ; (settings/init options)
-    (shutdown/init options)
-    (legacy/init options)
-    (graphql/init options)
-    (graphql-connections/init options)
-    (let [status (status/init)]
-      (ds/init (:database-url options)
-               (:health-check-registry status)))
-    (when (log/spy :info (:load-translations options))
-      (translations/reload))
-    (let [app-handler (routes/init)]
-      (http-server/start (:http-base-url options) app-handler))
-    nil))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn -main
-  [& args]
-  (require 'pg-types.all)
-  ; ---------------------------------------------------
-  ; provide implementation fo render-page-base function
-  (require 'leihs.borrow.ssr)
-  ; ---------------------------------------------------
-  (spec/check-asserts true)
+(def cli-options
+  (concat
+    [["-h" "--help"]
+     [nil "--dev-mode DEV_MODE" "dev mode"
+      :default (or (some-> :dev-mode env yaml/parse-string) false)
+      :parse-fn #(yaml/parse-string %)
+      :validate [boolean? "Must parse to a boolean"]]]
+    repl/cli-options))
 
-  (let [{:keys [options summary]} (cli/parse (rest args))]
-    (letfn [(print-main-usage-summary
-              []
-              (println (main-usage summary {:args args, :options options})))]
-      (if (:help options)
-        (print-main-usage-summary)
-        (case (-> args
-                  first
-                  keyword)
-          :run (run options)
-          (println (print-main-usage-summary)))))))
+(defn main-usage [options-summary & more]
+  (->> ["Leihs Borrow"
+        ""
+        "usage: leihs-borrow [<opts>] SCOPE [<scope-opts>] [<args>]"
+        ""
+        "Options:"
+        options-summary
+        ""
+        ""
+        (when more
+          ["-------------------------------------------------------------------"
+           (with-out-str (pprint more))
+           "-------------------------------------------------------------------"])]
+       flatten (clojure.string/join \newline)))
+
+
+(defonce args* (atom nil))
+
+(defn main []
+  (leihs.core.logging/init)
+  (info 'main @args*)
+  (let [args @args*
+        {:keys [options arguments
+                errors summary]} (cli/parse-opts
+                                   args cli-options :in-order true)
+        cmd (some-> arguments first keyword)
+        options (into (sorted-map) options)
+        print-summary #(println (main-usage summary {:args args :options options}))]
+    (repl/init options)
+    (cond (:help options) (print-summary)
+          :else (case cmd
+                  :dump-translations (translations.main/main
+                                       options (rest arguments))
+                  :run (run/main options (rest arguments))
+                  (print-summary)))))
+
+; dynamic restart on require
+(when @args* (main))
+
+(defn -main [& args]
+  (reset! args* args)
+  (main))
+
+;(main)

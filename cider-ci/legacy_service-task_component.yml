@@ -2,34 +2,27 @@ git_options:
   submodules:
     include_match: ^.*$
 
+include:
+  - path: cider-ci/shared/legacy-ruby_env.yml
+    submodule: [spec/support/legacy-api]
+  - path: cider-ci/task-components/bundle-rspec-ruby.yml
+    submodule: [spec/support/legacy-api]
+
 scripts:
-
-  legacy-bundle-rspec-ruby:
-    exclusive_executor_resource: ruby-install_{{$RUBY}}
-    timeout: 5 Minutes
+  legacy-service-configure:
+    start_when:
+      database-configured:
+        script_key: database-configure-rails-db
+        states: [passed]
     body: |
-      #!/usr/bin/env bash
       set -eux
+      cp database/config/database.yml spec/support/legacy-api/config/
 
-      cd $LEIHS_LEGACY_DIR
-
-      export PATH=~/.rubies/$RUBY/bin:$PATH
-
-      if [ ! -d ~/.rubies/$RUBY ]; then
-      ruby-install --no-install-deps $RUBY_ENGINE $RUBY_VERSION
-      fi
-
-      if [ ! -f ~/.rubies/$RUBY/bin/bundle ]; then
-      gem install bundler
-      fi
-
-      bundle install
-
-  run-legacy-service:
+  legacy-service-run:
     body: |
-      set -euxo
+      set -eux
       cd $LEIHS_LEGACY_DIR
-      export PATH=~/.rubies/$RUBY/bin:$PATH
+      export PATH=~/.rubies/$LEGACY_RUBY/bin:$PATH
       export RAILS_SERVE_STATIC_FILES=yes
       ruby -S \
       bundle exec puma \
@@ -47,7 +40,7 @@ scripts:
       uberjar has passed: # this is not a real dependency but is to prevent timeout issues
         script_key: build-borrow-uberjar
 
-  stop-legacy-service:
+  legacy-service-stop:
     timeout: 5 Seconds
     body: |
       set -eux
@@ -61,5 +54,5 @@ scripts:
   test:
     start_when:
       legacy service is running:
-        script_key: run-legacy-service
+        script_key: legacy-service-run
         states: [executing]

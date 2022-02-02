@@ -1,0 +1,11 @@
+#!/bin/bash -eu
+
+echo "starting legacy API in test mode on port ${LEGACY_HTTP_PORT}"
+export DATABASE_URL="postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+set -x
+
+cd spec/support/legacy-api/
+
+bundle
+
+bundle exec rails s -p "$LEGACY_HTTP_PORT"

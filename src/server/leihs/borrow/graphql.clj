@@ -1,19 +1,21 @@
 (ns leihs.borrow.graphql
-  (:require [clj-logging-config.log4j :as logging-config]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.java.jdbc :as jdbc]
-            [clojure.tools.logging :as log]
-            [com.walmartlabs.lacinia :as lacinia]
-            [com.walmartlabs.lacinia.parser :as graphql-parser]
-            [com.walmartlabs.lacinia.resolve :as graphql-resolve]
-            [com.walmartlabs.lacinia.schema :as graphql-schema]
-            [com.walmartlabs.lacinia.util :as graphql-util]
-            [leihs.borrow.graphql.resolvers :as resolvers]
-            [leihs.borrow.graphql.scalars :as scalars]
-            [leihs.core.ds :as ds]
-            [leihs.core.graphql.helpers :as helpers]
-            [leihs.core.ring-exception :refer [get-cause]]))
+  (:require
+    [clojure.edn :as edn]
+    [clojure.java.io :as io]
+    [clojure.java.jdbc :as jdbc]
+    [com.walmartlabs.lacinia :as lacinia]
+    [com.walmartlabs.lacinia.parser :as graphql-parser]
+    [com.walmartlabs.lacinia.resolve :as graphql-resolve]
+    [com.walmartlabs.lacinia.schema :as graphql-schema]
+    [com.walmartlabs.lacinia.util :as graphql-util]
+    [leihs.borrow.after-tx :as after-tx]
+    [leihs.borrow.graphql.resolvers :as resolvers]
+    [leihs.borrow.graphql.scalars :as scalars]
+    [leihs.core.db :as ds]
+    [leihs.core.graphql.helpers :as helpers]
+    [leihs.core.ring-exception :refer [get-cause]]
+    [taoensso.timbre :refer [debug info warn error spy]]
+    ))
 
 (def lacinia-enable-timing (atom nil))
 
@@ -21,18 +23,32 @@
   (reset! lacinia-enable-timing
           (:leihs-borrow-lacinia-enable-timing options))
   (if @lacinia-enable-timing
-    (log/info (str "Lacinia timing is enabled."))))
+    (info (str "Lacinia timing is enabled."))))
 
-(defn load-schema
-  []
-  (-> (io/resource "schema.edn")
-      slurp
-      edn/read-string
-      (graphql-util/attach-resolvers resolvers/resolvers)
-      (graphql-util/attach-scalar-transformers scalars/scalars)
-      graphql-schema/compile))
+;###############################################################################
 
-(def schema (load-schema))
+(def schema* (atom nil))
+
+
+(defn load-schema! []
+  (or (some-> (io/resource "schema.edn")
+              slurp edn/read-string
+              (graphql-util/attach-resolvers resolvers/resolvers)
+              (graphql-util/attach-scalar-transformers scalars/scalars)
+              graphql-schema/compile)
+      (throw (ex-info "Failed to load schema" {}))))
+
+
+
+(defn init-schema! []
+  (reset! schema* (load-schema!))
+  (or @schema* ))
+
+(defn schema []
+  (or @schema* (throw (ex-info  "Schema not initialized " {}))))
+
+;###############################################################################
+
 
 (defn parse-query-with-exception-handling
   [schema query]
@@ -43,25 +59,27 @@
                n (-> e*
                      .getClass
                      .getSimpleName)]
-           (log/warn (or m n))
-           (log/debug e)
+           (warn (or m n))
+           (debug e)
            (helpers/error-as-graphql-object "API_ERROR" m)))))
 
 (defn schema? [query]
   (->> query
-       (parse-query-with-exception-handling schema)
+       (parse-query-with-exception-handling (schema))
        graphql-parser/operations
        :operations
        (= #{:__schema})))
 
+
+
 (defn exec-query
   [query-string request]
-  (log/debug "graphql query" query-string
+  (debug "graphql query" query-string
              "with variables" (-> request
                                   :body
                                   :variables))
   (if (or (:authenticated-entity request) (schema? query-string))
-    (lacinia/execute schema
+    (lacinia/execute (schema)
                      query-string
                      (-> request
                          :body
@@ -80,20 +98,20 @@
 
 (defn base-handler
   [{{query :query} :body, :as request}]
-  (binding [ds/after-tx nil]
-    (let [result (-> query 
+  (binding [after-tx/after-tx nil]
+    (let [result (-> query
                      (exec-query request)
                      (cond-> @lacinia-enable-timing helpers/attach-overall-timing)
                      rearrange-keys)
           resp {:body result
-                :after-tx ds/after-tx}]
+                :after-tx after-tx/after-tx}]
       (if (:errors result)
-        (do (log/debug result) (assoc resp :graphql-error true))
+        (do (debug result) (assoc resp :graphql-error true))
         resp))))
 
 (defn mutation? [query]
   (->> query
-       (parse-query-with-exception-handling schema)
+       (parse-query-with-exception-handling (schema))
        graphql-parser/operations
        :type
        (= :mutation)))
@@ -106,11 +124,12 @@
                                  (assoc request :tx)
                                  base-handler)]
                (when (:graphql-error response)
-                 (log/warn "Rolling back transaction because of graphql error")
+                 (warn "Rolling back transaction because of graphql error "
+                       response)
                  (jdbc/db-set-rollback-only! tx))
                response)
              (catch Throwable th
-               (log/warn "Rolling back transaction because of " th)
+               (warn "Rolling back transaction because of " th)
                (jdbc/db-set-rollback-only! tx)
                (throw th))))
       (base-handler request)))
@@ -121,9 +140,17 @@
     (base-handler request)
     (handler-with-operation-type-check request)))
 
+
 ;#### debug ###################################################################
-; (logging-config/set-logger! :level :debug)
-; (logging-config/set-logger! :level :info)
+
+(defn init []
+  (info "Initializing graphQL schema...")
+  (init-schema!)
+  (info "initialized graphQL schema."))
+
+
+
+;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
 ; (debug/debug-ns *ns*)
 ; (debug/undebug-ns *ns*)

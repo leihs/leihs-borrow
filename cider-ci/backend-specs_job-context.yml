@@ -2,9 +2,10 @@ generate_tasks:
   include_match: spec/graphql/.*_spec.rb
 task_defaults:
   include:
+    - path: cider-ci/task-components/database.yml
+      submodule: [database]
     - cider-ci/bundle-ruby_task-component.yml
     - cider-ci/environment_variables.yml
-    - cider-ci/database_task-component.yml
     - cider-ci/uberjar_task-component.yml
     - cider-ci/translations_task-component.yml
     - cider-ci/service_task-component.yml
@@ -19,7 +20,7 @@ task_defaults:
     LEIHS_BORROW_HTTP_PORT:
       min: 3300
       max: 3399
-    LEGACY_MOCK_SERVER_PORT:
+    LEIHS_LEGACY_HTTP_PORT:
       min: 3400
       max: 3499
   git_options:

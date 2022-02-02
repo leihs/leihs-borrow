@@ -3,7 +3,7 @@
             [clojure.java.jdbc :as jdbc]
             [hugsql.core :as hugsql]
             [leihs.core.sql :as sql]
-            [leihs.core.ds :as ds]
+            [leihs.core.db :as ds]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.paths :refer [path]]
             [leihs.borrow.resources.images :as images]
@@ -108,8 +108,6 @@
       first))
 
 ;#### debug ###################################################################
-; (logging-config/set-logger! :level :debug)
-; (logging-config/set-logger! :level :info)
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
 ; (debug/debug-ns *ns*)
 ; (debug/undebug-ns *ns*)

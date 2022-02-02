@@ -41,11 +41,9 @@
           #_(hiccup.page/include-js (cache-buster/cache-busted-path
                                      "/borrow/leihs-shared-bundle.js"))
           (hiccup.page/include-js
-           (cache-buster/cache-busted-path "/app/borrow/js/app.js")))})
+           (cache-buster/cache-busted-path "/app/borrow/js/main.js")))})
 
 
 ;#### debug ###################################################################
-;(logging-config/set-logger! :level :debug)
-;(logging-config/set-logger! :level :info)
 ;(debug/debug-ns 'cider-ci.utils.shutdown)
 ;(debug/debug-ns *ns*)

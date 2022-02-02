@@ -1,0 +1,12 @@
+#!/bin/bash -eu
+
+PROJECT_DIR="$(dirname ${BASH_SOURCE})/.."
+cd "${PROJECT_DIR}"
+
+echo "PWD: $PWD"
+
+rm -rf resources/all/public/borrow/js/
+
+cd -
+
+# vi: ft=sh

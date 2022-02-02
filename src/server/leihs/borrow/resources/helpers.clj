@@ -7,7 +7,7 @@
   ([order table]
    (map #(as-> % <>
            (into (sorted-map) <>)
-           (update <> 
+           (update <>
                    :attribute
                    (comp (partial sql/qualify table)
                          string/lower-case

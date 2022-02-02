@@ -4,12 +4,13 @@ BORROW_DIR="$(dirname ${BASH_SOURCE})/.."
 cd "${BORROW_DIR}"
 echo "PWD: $PWD"
 
-if ! ./bin/build; then
-  cd leihs-ui
-  ./bin/build || bin/build-core
-  cd -
-  bin/build-core
-fi
+./bin/build
+# if ! ./bin/build; then
+#   cd leihs-ui
+#   ./bin/build || bin/build-core
+#   cd -
+#   bin/build-core
+# fi
 
 java -jar target/leihs-borrow.jar run "$@"
 

@@ -1,0 +1,28 @@
+#!/bin/bash -eu
+
+# usage: source ./bin/set-env && some-command
+
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+
+# read in local env file
+if ! . ${PROJECT_DIR}/.env.local; then
+  echo 'set-env ERROR: could not source env file! try `cp .env.local-example .env.local`'
+  echo "set-env ERROR: we looked for: '${PROJECT_DIR}/.env.local'"
+  return 1 # not exit, because we are being sourced and dont want to close the partent shell!
+fi
+
+# export all the vars
+export DB_NAME
+export DB_USER
+export DB_PASSWORD
+export DB_HOST
+export DB_PORT
+
+export HTTP_HOST
+export HTTP_PORT
+
+export LEGACY_HTTP_PROTOCOL
+export LEGACY_HTTP_HOST
+export LEGACY_HTTP_PORT
+
+export FIREFOX_ESR_60_PATH

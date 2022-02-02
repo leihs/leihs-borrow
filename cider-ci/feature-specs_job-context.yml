@@ -2,18 +2,18 @@ generate_tasks:
   include_match: spec\/features\/(.*)(\.feature|_spec\.rb)$
 task_defaults:
   include:
+    - path: cider-ci/task-components/database.yml
+      submodule: [database]
     - cider-ci/bundle-ruby_task-component.yml
     - cider-ci/environment_variables.yml
-    - cider-ci/database_task-component.yml
     - cider-ci/uberjar_task-component.yml
     - cider-ci/translations_task-component.yml
     - cider-ci/service_task-component.yml
     - cider-ci/legacy_service-task_component.yml
-  max_trials: 5 # NOTE: should be 2-3, but the CI has reduced capacity at the moment
+  max_trials: 1
   traits:
-    JDK 8: true
-    Leiningen 2: true
-    Firefox ESR 60: true
+    OpenJDK: true
+    Firefox ESR: true
   ports:
     LEIHS_LEGACY_HTTP_PORT:
       min: 3200

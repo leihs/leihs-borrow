@@ -1,49 +1,32 @@
-require 'addressable'
 require 'sequel'
 
-DB_ENV = ENV['LEIHS_DATABASE_URL'].presence
+require 'logger'
 
-def http_uri
-  # trick Addressable to parse db urls
-  @http_uri ||=
-    Addressable::URI.parse DB_ENV.gsub(/^jdbc:postgresql/, 'http').gsub(
-                             /^postgres/,
-                             'http'
-                           )
+def db_name
+  ENV['LEIHS_DATABASE_NAME'] || ENV['DB_NAME'] || 'leihs'
+end
+
+def db_port
+  Integer(ENV['DB_PORT'].presence || ENV['PGPORT'].presence || 5432)
+end
+
+def db_con_str
+  logger = Logger.new(STDOUT)
+  s = 'postgres://' \
+    + (ENV['PGUSER'].presence || 'postgres') \
+    + ((pw = (ENV['DB_PASSWORD'].presence || ENV['PGPASSWORD'].presence)) ? ":#{pw}" : "") \
+    + '@' + (ENV['PGHOST'].presence || 'localhost') \
+    + ':' + (db_port).to_s \
+    + '/' + (db_name)
+  logger.info "SEQUEL CONN #{s}"
+  s
 end
 
 def database
-  @database ||=
-    begin
-      db_url =
-        'postgres://' +
-          (http_uri.user.presence || ENV['PGUSER'].presence || 'postgres') +
-          (
-            if (pw = (http_uri.password.presence || ENV['PGPASSWORD'].presence))
-              ":#{pw}"
-            else
-              ''
-            end
-          ) +
-          '@' +
-          (
-            http_uri.host.presence || ENV['PGHOST'].presence ||
-              ENV['PGHOSTADDR'].presence ||
-              'localhost'
-          ) +
-          ':' +
-          (http_uri.port.presence || ENV['PGPORT'].presence || 5_432).to_s +
-          '/' +
-          (
-            http_uri.path.presence.try(:gsub, %r{^\/}, '') ||
-              ENV['PGDATABASE'].presence ||
-              'leihs_test'
-          ) +
-          '?pool=5'
-
-      Sequel.connect(db_url)
-    end
+  @database ||= Sequel.connect(db_con_str)
 end
+
+
 
 def with_disabled_trigger(table, trigger)
   t_sql = trigger == :all ? 'ALL' : trigger
@@ -78,13 +61,11 @@ end
 RSpec.configure do |config|
   config.before(:example) do
     clean_db
-    system(
-      "DATABASE_NAME=#{http_uri.basename} ./database/scripts/restore-seeds"
-    )
+    system("LEIHS_DATABASE_NAME=#{db_name} ./database/scripts/restore-seeds")
     if sql_file = ENV["SQL_FILE"].presence
-      system("cat #{sql_file} | psql --quiet -d #{http_uri.basename}")
+      system("cat #{sql_file} | psql --quiet -d #{db_name}")
     else
-      system("bin/get-translations | psql --quiet -d #{http_uri.basename}")
+      system("bin/get-translations | psql --quiet -d #{db_name}")
     end
   end
   # config.after(:suite) do

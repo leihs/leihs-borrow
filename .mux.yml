@@ -1,7 +1,13 @@
-name: LEIHS/v5/borrow
+name: LEIHS/leihs/borrow
 windows:
   2:
-    name: app
+    name: dev-run-backend
+    command: |
+      ./bin/dev-run-backend
+  3:
+    name: dev-run-frontend
+    command: |
+      ./bin/dev-run-frontend
   5:
     name: psql
     command: |
@@ -10,3 +16,15 @@ windows:
     name: db
     command: |
       cd database
+  7:
+    name: test
+    command: |
+      export RAILS_ENV=test
+  8:
+    name: shared-clj
+    command: |
+      cd shared-clj
+  9:
+    name: legacy-api
+    command: |
+      cd spec/support/legacy-api

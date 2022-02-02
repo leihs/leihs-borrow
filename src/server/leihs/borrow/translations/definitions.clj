@@ -1,9 +1,9 @@
-(ns leihs.borrow.resources.translations.definitions)
+(ns leihs.borrow.translations.definitions)
 
 (def definitions
   {:borrow
 
-  ; --- GENERAL TERMS --- 
+  ; --- GENERAL TERMS ---
   ; prefer using those over something like `example-page-section-title-contracts`
   ; but NOT for interpolation / string concating (that assumes to much about the languages)
   ; TODO: implement fallback keys so we can have both: `(t [:example-page-section-title-contracts :terms.contracts])
@@ -13,7 +13,7 @@
             :delegation {:de-CH "Delegation" :en-GB "Delegation"}
             :delegations {:de-CH "Delegationen" :en-GB "Delegations"}}
 
-  ; --- GENERAL PHRASES --- 
+  ; --- GENERAL PHRASES ---
   ; use them for consistency between different parts of the app
   ; but NOT for interpolation / string concating (that assumes to much about the languages)
     :phrases
@@ -39,7 +39,7 @@
     :all {:en-GB "All"
           :de-CH "Alle"}
 
-  ; --- PER COMPONENT TRANSLATIONS (reused between some features) --- 
+  ; --- PER COMPONENT TRANSLATIONS (reused between some features) ---
 
     :order-panel
     {:label {:quantity {:en-GB "Quantity" :de-CH "Anzahl"}
@@ -113,7 +113,7 @@
                 {:de-CH "Unbekannter Inventarpark"
                  :en-GB "Unknown inventory pool"}}}
 
-  ; --- PER FEATURE TRANSLATIONS --- 
+  ; --- PER FEATURE TRANSLATIONS ---
 
     :categories {:title {:en-GB "Categories"
                          :de-CH "Kategorien"}
