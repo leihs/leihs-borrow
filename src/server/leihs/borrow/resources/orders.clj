@@ -3,6 +3,7 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.set :as set]
             [clojure.string :refer [upper-case]]
+            [leihs.borrow.after-tx :as after-tx]
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.mails :as mails]
@@ -11,7 +12,7 @@
             [leihs.borrow.resources.reservations :as rs]
             [leihs.borrow.time :refer [past?]]
             [leihs.core.database.helpers :as database]
-            [leihs.core.ds :as ds]
+            [leihs.core.db :as ds]
             [leihs.core.sql :as sql])
   (:import java.time.format.DateTimeFormatter))
 
@@ -377,7 +378,7 @@
                 (rs/query tx))
             (recur remainder
                    (conj mails #(mails/send-received context order))))
-          (do (set! ds/after-tx mails)
+          (do (set! after-tx/after-tx mails)
               (get-one-by-id tx user-id uuid)))))))
 
 (defn cancel

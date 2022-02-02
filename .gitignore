@@ -1,19 +1,18 @@
 .calva
 .clj-kondo/.cache
 .cpcache
+.lsp
 .nrepl-history
 .nrepl-port
 .rebel_readline_history
 .shadow-cljs
-.lsp
+/.env*
 /leihs-ui.tgz
 log
 node_modules
-resources/all/public/app/borrow/js
-resources/all/sql/translations.sql
+resources/built-info.yml
+resources/public/app/borrow/js
+resources/sql/translations.sql
 scratch*
 target
 tmp/
-
-# local env files
-/.env*

@@ -13,7 +13,7 @@ scripts:
       #!/usr/bin/env bash
       set -eux
       export PATH=~/.rubies/$RUBY/bin:$PATH
-      bundle exec ruby spec/mock/legacy-mock-server.rb -p ${LEGACY_MOCK_SERVER_PORT}
+      bundle exec ruby spec/mock/legacy-mock-server.rb -p ${LEIHS_LEGACY_HTTP_PORT}
 
   legacy-mock-server_is-serving:
     timeout: 30 seconds
@@ -24,7 +24,7 @@ scripts:
     body: |
       #!/usr/bin/env bash
       set -ux
-      until curl --silent --fail -I "http://localhost:${LEGACY_MOCK_SERVER_PORT}/status" ; do
+      until curl --silent --fail -I "http://localhost:${LEIHS_LEGACY_HTTP_PORT}/status" ; do
         sleep 1;
       done
 
@@ -38,7 +38,7 @@ scripts:
     timeout: 3 Seconds
     body: |
       set -eux
-      kill -INT $(lsof -t -wni tcp:${LEGACY_MOCK_SERVER_PORT})
+      kill -INT $(lsof -t -wni tcp:${LEIHS_LEGACY_HTTP_PORT})
       sleep 1
     start_when:
       test is terminal:
