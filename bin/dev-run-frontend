@@ -1,0 +1,22 @@
+#!/bin/bash -eu
+
+PROJECT_DIR="$(dirname ${BASH_SOURCE})/.."
+cd "${PROJECT_DIR}"
+echo "PWD: $PWD"
+source $PROJECT_DIR/shared-clj/clojure/bin/activate
+
+function prepare_shared_ui () {
+  cd leihs-ui
+  test -d node_modules && npm i || { npm ci || npm i ;} || exit 1
+  npm run build:theme || exit 1
+  npm run build:ssr || exit 1
+  cd -
+}
+
+# UI: try to get from cache, otherwise do a FULL REBUILD!
+./leihs-ui/bin/build || prepare_shared_ui
+
+./bin/cljs-watch
+cd -
+
+# vi: ft=sh

@@ -66,7 +66,7 @@
 
 (defn get-one
   [{{:keys [tx]} :request user-id ::target-user/id}
-   {:keys [id]} 
+   {:keys [id]}
    {:keys [contract-id]}]
   (-> (base-sqlmap tx user-id)
       (sql/merge-where [:= :contracts.id (or id contract-id)])
@@ -78,11 +78,9 @@
   (connections/wrap get-connection-sql-map
                     context
                     args
-                    value)) 
+                    value))
 
 ;#### debug ###################################################################
-; (logging-config/set-logger! :level :debug)
-; (logging-config/set-logger! :level :info)
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
 ; (debug/debug-ns *ns*)
 ; (debug/undebug-ns *ns*)
