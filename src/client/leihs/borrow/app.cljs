@@ -135,7 +135,7 @@
   (rdom/render [main-view views]
                (.getElementById js/document "app")))
 
-(defn ^:export main []
+(defn ^:export ^:dev/after-load main []
   (translate/fetch-and-init
    (fn callback []
       ; start the app framework; NOTE: order is important!
@@ -145,4 +145,5 @@
       ; start the ui
      (mount-root))))
 
-(main)
+; ??? braucht es imho nicht (mehr) TS
+;(main)

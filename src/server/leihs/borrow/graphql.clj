@@ -1,19 +1,21 @@
 (ns leihs.borrow.graphql
-  (:require [clj-logging-config.log4j :as logging-config]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.java.jdbc :as jdbc]
-            [clojure.tools.logging :as log]
-            [com.walmartlabs.lacinia :as lacinia]
-            [com.walmartlabs.lacinia.parser :as graphql-parser]
-            [com.walmartlabs.lacinia.resolve :as graphql-resolve]
-            [com.walmartlabs.lacinia.schema :as graphql-schema]
-            [com.walmartlabs.lacinia.util :as graphql-util]
-            [leihs.borrow.graphql.resolvers :as resolvers]
-            [leihs.borrow.graphql.scalars :as scalars]
-            [leihs.core.ds :as ds]
-            [leihs.core.graphql.helpers :as helpers]
-            [leihs.core.ring-exception :refer [get-cause]]))
+  (:require
+    [clojure.edn :as edn]
+    [clojure.java.io :as io]
+    [clojure.java.jdbc :as jdbc]
+    [clojure.tools.logging :as log]
+    [com.walmartlabs.lacinia :as lacinia]
+    [com.walmartlabs.lacinia.parser :as graphql-parser]
+    [com.walmartlabs.lacinia.resolve :as graphql-resolve]
+    [com.walmartlabs.lacinia.schema :as graphql-schema]
+    [com.walmartlabs.lacinia.util :as graphql-util]
+    [leihs.borrow.after-tx :as after-tx]
+    [leihs.borrow.graphql.resolvers :as resolvers]
+    [leihs.borrow.graphql.scalars :as scalars]
+    [leihs.core.db :as ds]
+    [leihs.core.graphql.helpers :as helpers]
+    [leihs.core.ring-exception :refer [get-cause]]
+    ))
 
 (def lacinia-enable-timing (atom nil))
 
@@ -80,13 +82,13 @@
 
 (defn base-handler
   [{{query :query} :body, :as request}]
-  (binding [ds/after-tx nil]
-    (let [result (-> query 
+  (binding [after-tx/after-tx nil]
+    (let [result (-> query
                      (exec-query request)
                      (cond-> @lacinia-enable-timing helpers/attach-overall-timing)
                      rearrange-keys)
           resp {:body result
-                :after-tx ds/after-tx}]
+                :after-tx after-tx/after-tx}]
       (if (:errors result)
         (do (log/debug result) (assoc resp :graphql-error true))
         resp))))

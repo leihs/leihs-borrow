@@ -1,7 +1,8 @@
 task_defaults:
   include:
+    - path: cider-ci/task-components/database.yml
+      submodule: [database]
     - cider-ci/environment_variables.yml
-    - cider-ci/database_task-component.yml
     - cider-ci/uberjar_task-component.yml
     - cider-ci/translations_task-component.yml
     - cider-ci/service_task-component.yml
