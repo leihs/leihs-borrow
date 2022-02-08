@@ -1,5 +1,5 @@
 .calva
-.clj-kondo/.cache
+.clj-kondo
 .cpcache
 .lsp
 .nrepl-history
@@ -10,9 +10,12 @@
 /leihs-ui.tgz
 log
 node_modules
-resources/built-info.yml
-resources/public/app/borrow/js
-resources/sql/translations.sql
 scratch*
 target
 tmp/
+
+resources/built-info.yml
+resources/public/app/borrow/js
+resources/sql/translations.sql
+resources/all/public/app/borrow/js
+resources/all/sql/translations.sql
