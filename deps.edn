@@ -1,15 +1,15 @@
 {:paths [:cljc-paths :resource-paths]
  :deps {
         akiroz.re-frame/storage {:mvn/version "0.1.4"}
-        better-cond {:mvn/version "2.1.0"}
+        better-cond/better-cond {:mvn/version "2.1.0"}
         binaryage/devtools {:mvn/version "0.9.10"}
-        camel-snake-kebab {:mvn/version "0.4.1"}
+        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.1"}
         ;; cider/cider-nrepl {:mvn/version "0.22.4"}
-        clj-http {:mvn/version "3.10.0"}
-        clj-kondo {:mvn/version "RELEASE"}
-        cljs-ajax {:mvn/version "0.7.5"}
+        clj-http/clj-http {:mvn/version "3.10.0"}
+        clj-kondo/clj-kondo {:mvn/version "2022.01.15"}
+        cljs-ajax/cljs-ajax {:mvn/version "0.7.5"}
         cljsjs/moment {:mvn/version "2.24.0-0"}
-        clojure.java-time {:mvn/version "0.3.2"}
+        clojure.java-time/clojure.java-time {:mvn/version "0.3.2"}
         com.andrewmcveigh/cljs-time {:mvn/version "0.5.2"}
         com.cemerick/url {:mvn/version "0.1.1"}
         com.layerware/hugsql {:mvn/version "0.5.1"}
@@ -22,10 +22,10 @@
         mattinieminen/re-fill {:mvn/version "0.2.0"}
         org.clojure/spec.alpha {:mvn/version "0.2.176"}
         org.threeten/threeten-extra {:mvn/version "1.2"}
-        re-frame {:mvn/version "1.1.1"}
-        re-graph  {:mvn/version "0.1.14" :exclusions [re-graph.hato]}
-        reagent {:mvn/version "0.10.0"}
-        reagent-utils {:mvn/version "0.3.3"}
+        re-frame/re-frame {:mvn/version "1.1.1"}
+        re-graph/re-graph  {:mvn/version "0.1.14" :exclusions [re-graph.hato]}
+        reagent/reagent {:mvn/version "0.10.0"}
+        reagent-utils/reagent-utils {:mvn/version "0.3.3"}
         threatgrid/ring-graphql-ui {:mvn/version "0.1.1"}
 
         org.clojure/clojure {:mvn/version "1.10.3"}
