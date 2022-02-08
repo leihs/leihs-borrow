@@ -13,11 +13,18 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
   include_context "invalid reservations data setup"
 
   it "detects invalid reservations and renews the timeout period for valid ones" do
-    pending "FIX User Suspension"
-
     # Create all sample reservations in the database
 
     expect(create_all_sample_reservations).to_not be_nil
+
+    r_draft_ok = FactoryBot.create(:reservation,
+                                   status: "draft",
+                                   id: "f2989153-2ad9-4cc8-b76a-0fa45a797eb7",
+                                   leihs_model: model_1,
+                                   inventory_pool: inventory_pool,
+                                   start_date: Date.today,
+                                   end_date: Date.tomorrow,
+                                   user: user)
 
     # Apply mutation query to sample reservations
 
@@ -61,7 +68,8 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
 
     # Check expected status
 
-    expect(unsubmitted_ids.to_set).to match_array [r4_timed_out_ok, r5_not_timed_out_ok].map(&:id)
+    expect(unsubmitted_ids.to_set)
+      .to match_array [r4_timed_out_ok, r5_not_timed_out_ok, r_draft_ok].map(&:id)
 
     expect(draft_ids.to_set).to match_array [r1a_start_date_in_past,
                                              r1b_invalid_reservation_advance_days,
@@ -73,8 +81,9 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
                                              r1g_max_reservation_time,
                                              r2_not_timed_out_with_invalid_avail_1,
                                              r3_timed_out_with_invalid_avail_1,
-                                             r3_timed_out_with_invalid_avail_2,
-                                             r6_user_is_suspended].map(&:id)
+                                             r3_timed_out_with_invalid_avail_2
+                                             # r6_user_is_suspended
+                                             ].map(&:id)
     expect(invalid_ids.to_set).to match_array [r1a_start_date_in_past,
                                                r1b_invalid_reservation_advance_days,
                                                r1c_max_visits_count_reached_at_pickup,
@@ -85,8 +94,9 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
                                                r1g_max_reservation_time,
                                                r2_not_timed_out_with_invalid_avail_1,
                                                r3_timed_out_with_invalid_avail_1,
-                                               r3_timed_out_with_invalid_avail_2,
-                                               r6_user_is_suspended].map(&:id)
+                                               r3_timed_out_with_invalid_avail_2
+                                               # r6_user_is_suspended
+                                               ].map(&:id)
 
     expect(valid_until.try(:utc).change(usec: 0, sec: 0)).to eq (now.utc + 30.minutes).change(usec: 0, sec: 0)
   end

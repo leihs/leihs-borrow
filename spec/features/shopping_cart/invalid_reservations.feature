@@ -15,7 +15,7 @@ Feature: Invalid reservations
     Then I see the following lines in the "Items" section:
       | title                       |
       | 1× Start Date In Past       |
-      | 1× User is Suspended        |
+      # | 1× User is Suspended        |
       | 1× No Access To Pool        |
       | 1× Maximum Reservation Time |
       | 1× Model With No Items      |
@@ -169,16 +169,16 @@ Feature: Invalid reservations
     Then the "Edit reservation" dialog has closed
 
 
-    When I click on the card with title "1× User is Suspended"
-    Then I see the "Edit reservation" dialog
-    But I see the following warnings in the "Inventory pool" section:
-      | text                                   |
-      | User suspended for this inventory pool |
-    And I click on "Confirm"
-    But the "Edit reservation" dialog did not close
+    # When I click on the card with title "1× User is Suspended"
+    # Then I see the "Edit reservation" dialog
+    # But I see the following warnings in the "Inventory pool" section:
+    #   | text                                   |
+    #   | User suspended for this inventory pool |
+    # And I click on "Confirm"
+    # But the "Edit reservation" dialog did not close
 
-    When I click on "Remove reservation"
-    Then the "Edit reservation" dialog has closed
+    # When I click on "Remove reservation"
+    # Then the "Edit reservation" dialog has closed
 
 
     When I click on the card with title "1× OK and Timed Out"

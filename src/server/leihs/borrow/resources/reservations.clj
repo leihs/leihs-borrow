@@ -205,6 +205,14 @@
       sql/format
       (->> (jdbc/execute! tx))))
 
+(defn draft->unsubmitted [tx user-id]
+  (-> (sql/update :reservations)
+      (sql/set {:status "unsubmitted"})
+      (sql/merge-where [:= :status "draft"])
+      (sql/merge-where [:= :user_id user-id])
+      sql/format
+      (->> (jdbc/execute! tx))))
+
 (defn get-drafts
   ([tx user-id] (get-drafts tx user-id nil))
   ([tx user-id ids]

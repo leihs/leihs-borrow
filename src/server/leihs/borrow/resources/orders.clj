@@ -402,6 +402,7 @@
 
 (defn refresh-timeout
   [{{:keys [tx]} :request user-id ::target-user/id :as context} args value]
+  (rs/draft->unsubmitted tx user-id)
   (when-some [broken-rs (not-empty (rs/broken tx user-id))]
     (->> broken-rs (map :id) (rs/unsubmitted->draft tx)))
   (when-some [invalid-rs (not-empty (rs/unsubmitted-with-invalid-availability context))]

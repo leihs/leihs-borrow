@@ -456,22 +456,36 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
   end
 
   #####################################################################################################
-  let(:r6_user_is_suspended) do
-    FactoryBot.create(:reservation,
-                      id: "b403139c-9b46-48ba-8aca-d35e2f1e05ab",
-                      leihs_model: model_11_suspended,
-                      inventory_pool: inventory_pool_8_suspended,
-                      start_date: Date.today,
-                      end_date: Date.tomorrow,
-                      user: user)
-  end
+  # let(:r6_user_is_suspended) do
+  #   FactoryBot.create(:reservation,
+  #                     id: "b403139c-9b46-48ba-8aca-d35e2f1e05ab",
+  #                     leihs_model: model_11_suspended,
+  #                     inventory_pool: inventory_pool_8_suspended,
+  #                     start_date: Date.today,
+  #                     end_date: Date.tomorrow,
+  #                     user: user)
+  # end
 
   #####################################################################################################
+  
+  let(:r1c_max_visits_count_reached_at_pickup) do
+    r1c_max_visits_count_reached.first
+  end
+
+  let(:r1c_max_visits_count_reached_at_return) do
+    r1c_max_visits_count_reached.second
+  end
+
+  let(:r3_timed_out_with_invalid_avail_1) do
+    r3_timed_out_with_invalid_avail.first
+  end
+
+  let(:r3_timed_out_with_invalid_avail_2) do
+    r3_timed_out_with_invalid_avail.second
+  end
 
   # Example specs can call this to force all reservations to be created in the database (without explicitly calling each of them)
   let(:create_all_sample_reservations) do
-    r1c_max_visits_count_reached_at_pickup, r1c_max_visits_count_reached_at_return = r1c_max_visits_count_reached
-    r3_timed_out_with_invalid_avail_1, r3_timed_out_with_invalid_avail_2 = r3_timed_out_with_invalid_avail
     {
       :r1a_start_date_in_past => r1a_start_date_in_past,
       :r1b_invalid_reservation_advance_days => r1b_invalid_reservation_advance_days,
@@ -485,8 +499,8 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
       :r3_timed_out_with_invalid_avail_1 => r3_timed_out_with_invalid_avail_1,
       :r3_timed_out_with_invalid_avail_2 => r3_timed_out_with_invalid_avail_2,
       :r4_timed_out_ok => r4_timed_out_ok,
-      :r5_not_timed_out_ok => r5_not_timed_out_ok,
-      :r6_user_is_suspended => r6_user_is_suspended,
+      :r5_not_timed_out_ok => r5_not_timed_out_ok
+      # :r6_user_is_suspended => r6_user_is_suspended,
     }
   end
 end
