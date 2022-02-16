@@ -5,10 +5,8 @@
     "date-fns": "^2.9.0",
     "highlight.js": "^9.18.1",
     "intl-messageformat": "^9.9.0",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
-    "react-flip-move": "3.0.3",
-    "react-highlight.js": "1.0.7",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
     "tslib": "^2.3.1"
   },
   "scripts": {
@@ -24,7 +22,7 @@
     "shadow-cljs": "^2.16.12"
   },
   "engines": {
-    "node": ">=14.17.0"
+    "node": ">=16.x.x"
   },
   "prettier": {
     "printWidth": 80,
