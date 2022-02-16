@@ -1,6 +1,6 @@
 (ns leihs.borrow.lib.translate
   (:require-macros [leihs.borrow.lib.translate])
-  (:require ["/leihs-ui-client-side-external-react" :as UI]
+  (:require ["@leihs/ui" :as UI]
             #_["intl-messageformat" :as intl]
             [ajax.core :refer [GET]]
             [clojure.string :as string]

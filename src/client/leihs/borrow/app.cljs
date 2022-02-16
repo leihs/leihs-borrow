@@ -39,7 +39,7 @@
    [leihs.borrow.features.templates.index :as templates-index]
    [leihs.borrow.features.templates.show :as templates-show]
 ;; [leihs.borrow.shared-ui :as UI]
-   ["/leihs-ui-client-side-external-react" :as UI]
+   ["@leihs/ui" :as UI]
    [leihs.borrow.testing.step-1 :as testing-step-1]
    [leihs.borrow.testing.step-2 :as testing-step-2]))
 

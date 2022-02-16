@@ -11,7 +11,7 @@
    [leihs.borrow.csrf :as csrf]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.shopping-cart.core :as cart]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["@leihs/ui" :as UI]))
 
 (set-default-translate-path :borrow.menu)
 

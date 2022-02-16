@@ -19,7 +19,7 @@
     [leihs.borrow.client.routes :as routes]
     [leihs.borrow.lib.routing :as routing]
     [leihs.borrow.ui.icons :as icons]
-    ["/leihs-ui-client-side-external-react" :as UI]
+    ["@leihs/ui" :as UI]
     ["date-fns" :as datefn]
     [leihs.borrow.lib.helpers :as h :refer [spy log]]
     [leihs.borrow.features.favorite-models.events :as favs]

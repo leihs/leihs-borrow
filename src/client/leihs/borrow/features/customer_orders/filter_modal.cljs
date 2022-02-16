@@ -19,7 +19,7 @@
    [leihs.core.core :refer [remove-nils presence update-vals]]
    ["date-fns" :as date-fns]
    ["date-fns/locale" :as locale]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["@leihs/ui" :as UI]))
 
 (reg-event-db ::save-filter-options
               (fn-traced [db [_ query-params]]

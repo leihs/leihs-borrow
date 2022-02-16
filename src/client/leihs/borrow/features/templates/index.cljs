@@ -15,7 +15,7 @@
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.current-user.core :as current-user]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["@leihs/ui" :as UI]))
 
 (set-default-translate-path :borrow.templates)
 

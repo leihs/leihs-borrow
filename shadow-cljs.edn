@@ -4,6 +4,10 @@
   {:output-dir "resources/public/app/borrow/js"
    :asset-path "/app/borrow/js"
    :target :browser
+
+   :js-options
+   {:resolve {"@leihs/ui" {:target :file
+                           :file "leihs-ui/dist/leihs-ui-client-side-external-react.js"}}}
    ; NOTE: comment out and adjust in order for re-frame-10x to work
    ; :main leihs.borrow.app/main
    ;

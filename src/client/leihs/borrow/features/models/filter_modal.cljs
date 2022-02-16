@@ -19,7 +19,7 @@
    [leihs.core.core :refer [remove-blanks presence update-vals]]
    ["date-fns" :as date-fns]
    ["date-fns/locale" :as locale]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["@leihs/ui" :as UI]))
 
 (defn default-dispatch-fn [query-params]
   (dispatch [:routing/navigate

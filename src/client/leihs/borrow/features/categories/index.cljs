@@ -21,7 +21,7 @@
 ;;     [leihs.borrow.lib.localstorage :as ls]
 ;;     [leihs.borrow.client.routes :as routes]
 ;;     [leihs.borrow.features.categories.core :as categories]
-;;     ["/leihs-ui-client-side-external-react" :as UI]))
+;;     ["@leihs/ui" :as UI]))
 
 ;; (set-default-translate-path :borrow.categories)
 

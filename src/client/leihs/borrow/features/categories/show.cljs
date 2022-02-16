@@ -20,7 +20,7 @@
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.components :as ui]
    [leihs.borrow.lib.helpers :as h]
-   ["/leihs-ui-client-side-external-react" :as UI]
+   ["@leihs/ui" :as UI]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.models.filter-modal :refer [filter-comp] :as filter-modal]
    [leihs.borrow.features.models.core :as models]

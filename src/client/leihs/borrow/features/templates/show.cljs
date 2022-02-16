@@ -17,7 +17,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.models.filter-modal :as filter-modal]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["@leihs/ui" :as UI]))
 
 (set-default-translate-path :borrow.templates)
 

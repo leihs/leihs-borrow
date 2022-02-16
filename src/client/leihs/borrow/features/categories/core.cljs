@@ -19,7 +19,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.models.filter-modal :as filter-modal]
-   ["/leihs-ui-client-side-external-react" :as UI]
+   ["@leihs/ui" :as UI]
    #_[leihs.borrow.components :as ui]))
 
 (def dispatch-fetch-index-handler

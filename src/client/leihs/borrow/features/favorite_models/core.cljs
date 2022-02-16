@@ -10,7 +10,7 @@
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.components :as ui]
-   ["/leihs-ui-client-side-external-react" :as UI]
+   ["@leihs/ui" :as UI]
    [leihs.borrow.features.models.core :as models]))
 
 (set-default-translate-path :borrow.favorite-models)

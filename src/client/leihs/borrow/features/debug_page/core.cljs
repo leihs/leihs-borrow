@@ -11,7 +11,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.features.models.filter-modal :as filter-modal]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["@leihs/ui" :as UI]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx

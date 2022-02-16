@@ -25,7 +25,7 @@
    [leihs.borrow.features.customer-orders.index :refer [status-summary]]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [dissoc-in]]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["@leihs/ui" :as UI]))
 
 (set-default-translate-path :borrow.rental-show)
 

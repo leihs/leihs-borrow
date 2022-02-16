@@ -24,7 +24,7 @@
    [leihs.core.core :refer [dissoc-in presence]]
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.customer-orders.core :as rentals]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["@leihs/ui" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
 
