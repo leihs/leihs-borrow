@@ -8,6 +8,13 @@ INNER JOIN access_rights ON access_rights.inventory_pool_id = inventory_pools.id
 INNER JOIN workdays ON workdays.inventory_pool_id = inventory_pools.id
 WHERE inventory_pools.is_active = TRUE
 AND access_rights.user_id = CAST(:user-id AS uuid)
+AND NOT EXISTS (
+  SELECT 1
+  FROM suspensions
+  WHERE suspensions.inventory_pool_id = inventory_pools.id
+    AND suspensions.user_id = :user-id
+    AND CURRENT_DATE <= suspensions.suspended_until
+)
 AND (CAST(:start-date AS date) - CURRENT_DATE) >= workdays.reservation_advance_days
 -- start_date does not fall on holiday
 AND NOT EXISTS

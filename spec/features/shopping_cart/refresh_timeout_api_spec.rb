@@ -81,9 +81,8 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
                                              r1g_max_reservation_time,
                                              r2_not_timed_out_with_invalid_avail_1,
                                              r3_timed_out_with_invalid_avail_1,
-                                             r3_timed_out_with_invalid_avail_2
-                                             # r6_user_is_suspended
-                                             ].map(&:id)
+                                             r3_timed_out_with_invalid_avail_2,
+                                             r6_user_is_suspended].map(&:id)
     expect(invalid_ids.to_set).to match_array [r1a_start_date_in_past,
                                                r1b_invalid_reservation_advance_days,
                                                r1c_max_visits_count_reached_at_pickup,
@@ -94,9 +93,8 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
                                                r1g_max_reservation_time,
                                                r2_not_timed_out_with_invalid_avail_1,
                                                r3_timed_out_with_invalid_avail_1,
-                                               r3_timed_out_with_invalid_avail_2
-                                               # r6_user_is_suspended
-                                               ].map(&:id)
+                                               r3_timed_out_with_invalid_avail_2,
+                                               r6_user_is_suspended].map(&:id)
 
     expect(valid_until.try(:utc).change(usec: 0, sec: 0)).to eq (now.utc + 30.minutes).change(usec: 0, sec: 0)
   end
