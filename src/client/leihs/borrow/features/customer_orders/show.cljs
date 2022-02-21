@@ -112,6 +112,11 @@
 (reg-sub ::cancellation-dialog-data
          (fn [db _] (get-in db [::data :cancellation-dialog])))
 
+(reg-sub ::can-change-profile?
+         :<- [::current-user/can-change-profile?]
+         (fn [can-change-profile? _] can-change-profile?))
+
+
 (defn ui-item-line [reservation]
   (let [model (:model reservation)
         option (:option reservation)
@@ -188,7 +193,8 @@
         is-cancelable? (= ["IN_APPROVAL"] (:fulfillment-states rental))
         contracts (map :node (get-in rental [:contracts :edges]))
         user-data @(subscribe [::current-user/user-data])
-        user-id (-> rental :user :id)]
+        can-change-profile? @(subscribe [::can-change-profile?])
+        rental-user-id (-> rental :user :id)]
 
     [:<>
      (cond
@@ -224,21 +230,21 @@
               [:button.btn.btn-secondary {:onClick #(dispatch [::open-cancellation-dialog rental-id])} (t :cancel-action-label)]])]]
 
          [:> UI/Components.Design.Section
+          {:title (t :user-or-delegation-section-title) :collapsible true}
+          (if (or (nil? rental-user-id) (= rental-user-id (:id user-data)))
+            [:<> (:name user-data) (when can-change-profile? (t :!borrow.phrases.user-or-delegation-personal-postfix))]
+            [:<> (->> (:delegations user-data)
+                      (filter #(= rental-user-id (:id %)))
+                      first
+                      :name)])]
+
+         [:> UI/Components.Design.Section
           {:title (t :purpose) :collapsible true}
           (:purpose rental)]
 
          [:> UI/Components.Design.Section
           {:title (t :items-section-title) :collapsible true}
           (ui-items-list grouped-reservations)]
-
-         [:> UI/Components.Design.Section
-          {:title (t :user-or-delegation-section-title) :collapsible true}
-          (if (or (nil? user-id) (= user-id (:id user-data)))
-            [:<> (:name user-data) (t :!borrow.phrases.user-or-delegation-personal-postfix)]
-            [:<> (->> (:delegations user-data)
-                      (filter #(= user-id (:id %)))
-                      first
-                      :name)])]
 
          (when (seq contracts)
            [:> UI/Components.Design.Section

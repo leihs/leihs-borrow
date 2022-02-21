@@ -45,15 +45,14 @@
            (->> db :ls ::options (update-vals #(or % "")))))
 
 (reg-sub ::pools-with-reservable-items
-         (fn [] (subscribe [::current-user/pools]))
-         (fn [pools _]
-           (filter #(:has-reservable-items %) pools)))
+         :<- [::current-user/current-profile]
+         (fn [current-profile _]
+           (filter #(:has-reservable-items %) (:inventory-pools current-profile))))
 
-(defn filter-modal [hide! dispatch-fn saved-opts locale auth-user-id]
+(defn filter-modal [hide! dispatch-fn saved-opts locale]
   (let [format-date #(some-> %
                              (date-fns/parse "yyyy-MM-dd" (js/Date.))
                              (date-fns/format "P" #js {:locale locale}))
-        user-id (r/atom (or (:user-id saved-opts) auth-user-id))
         term (r/atom (or (:term saved-opts) ""))
         pool-id (r/atom (or (:pool-id saved-opts) ""))
         only-available (r/atom (let [oa (:only-available saved-opts)]
@@ -61,11 +60,9 @@
         start-date (r/atom (or (some-> saved-opts :start-date format-date) ""))
         end-date (r/atom (or (some-> saved-opts :end-date format-date) ""))
         quantity (r/atom (or (:quantity saved-opts) 1))]
-    (fn [hide! dispatch-fn saved-opts locale auth-user-id]
+    (fn [hide! dispatch-fn saved-opts locale]
       (let [pools @(subscribe [::pools-with-reservable-items])
-            auth-user @(subscribe [::current-user/user-data])
-            target-users @(subscribe [::current-user/target-users
-                                      (t :!borrow.phrases.user-or-delegation-personal-postfix)])
+            is-unselectable-pool (not-any? #{@pool-id} (concat ["" "all"] (map #(:id %) pools)))
             locale-to-use @(subscribe [::translate/locale-to-use])
             locale (case locale-to-use :de-CH locale/de :en-GB locale/enGB)
             start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
@@ -92,20 +89,11 @@
                                              (date-fns/format "yyyy-MM-dd")))]
                              {:term @term
                               :pool-id (if (= @pool-id "all") nil @pool-id)
-                              :user-id (when (not= @user-id (:id auth-user)) @user-id)
                               :only-available (when @only-available @only-available)
                               :start-date (when @only-available (format-date @start-date))
                               :end-date (when @only-available (format-date @end-date))
                               :quantity (when @only-available @quantity)}))))}
              [:> UI/Components.Design.Stack {:space 4}
-              [:> UI/Components.Design.Section {:title (t :delegations {:n 1})
-                                                :collapsible true}
-               [:label.visually-hidden {:html-for "user-id"} (t :pools.title)]
-               [:select.form-select
-                {:name "user-id" :id "user-id" :value @user-id
-                 :on-change (fn [e] (reset! user-id (-> e .-target .-value)))}
-                (doall (for [{:keys [id name]} target-users]
-                         [:option {:value id :key id} name]))]]
 
               [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
                [:label.visually-hidden {:html-for "term"} (t :search.title)]
@@ -119,9 +107,14 @@
                [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
                [:select.form-select {:name "pool-id" :id "pool-id" :value (or @pool-id "all")
                                      :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
-                [:option {:value "all" :key "all"} (t :pools.all)]
+                [:option {:value "all" } (t :pools.all)]
+                (when is-unselectable-pool
+                  [:option {:value @pool-id} (t :pools.invalid-option)])
                 (doall (for [{pool-id :id pool-name :name} pools]
-                         [:option {:value pool-id :key pool-id} pool-name]))]]
+                         [:option {:value pool-id :key pool-id} pool-name]))]
+               (when is-unselectable-pool
+                 [:> UI/Components.Design.Warning {:class "mt-2"} 
+                  (t :pools.invalid-option-info)])]
 
               [:> UI/Components.Design.Section {:title (t :availability) :collapsible true}
                [:div.form-check.mb-3
@@ -173,7 +166,6 @@
              {:type "button"
               :onClick #(do (reset! term "")
                             (reset! pool-id "all")
-                            (reset! user-id "")
                             (reset! only-available false)
                             (reset! start-date "")
                             (reset! end-date "")
@@ -185,13 +177,12 @@
     (fn [dispatch-fn]
       (let [hide! #(reset! modal-shown? false)
             show! #(reset! modal-shown? true)
-            auth-user @(subscribe [::current-user/user-data])
             saved-opts @(subscribe [::options])
             locale @(subscribe [::translate/i18n-locale])
             debug? @(subscribe [::filter-labels])]
         [:<>
          (when @modal-shown?
-           [filter-modal hide! dispatch-fn saved-opts locale (:id auth-user)])
+           [filter-modal hide! dispatch-fn saved-opts locale])
          [:> UI/Components.Design.FilterButton {:onClick show!}
           (if debug?
             (js/JSON.stringify (clj->js saved-opts))

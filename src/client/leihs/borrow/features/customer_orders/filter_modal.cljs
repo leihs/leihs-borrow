@@ -28,10 +28,14 @@
 (reg-sub ::options
          (fn [db _] (->> db :ls ::options (update-vals #(or % "")))))
 
+(reg-sub ::inventory-pools
+         :<- [::current-user/current-profile]
+         (fn [current-profile _]
+           (:inventory-pools current-profile)))
+
 (defn filter-modal
-  [filter-opts hide! dispatch-fn locale auth-user-id]
-  (let [user-id (r/atom (or (:user-id filter-opts) auth-user-id))
-        term (r/atom (or (:term filter-opts) ""))
+  [filter-opts hide! dispatch-fn locale]
+  (let [term (r/atom (or (:term filter-opts) ""))
         pool-id (r/atom (or (:pool-id filter-opts) "all"))
         state (r/atom (or (:state filter-opts) "all"))
         start-date (r/atom (or (some-> filter-opts
@@ -46,11 +50,9 @@
                                      (date-fns/parse "yyyy-MM-dd" (js/Date.))
                                      (date-fns/format "P" #js {:locale locale}))
                              ""))]
-    (fn [filter-opts hide! dispatch-fn locale auth-user-id]
-      (let [pools @(subscribe [::current-user/pools])
-            auth-user @(subscribe [::current-user/user-data])
-            target-users @(subscribe [::current-user/target-users
-                                      (t :!borrow.phrases.user-or-delegation-personal-postfix)])
+    (fn [filter-opts hide! dispatch-fn locale]
+      (let [pools @(subscribe [::inventory-pools])
+            is-unselectable-pool (not-any? #{@pool-id} (concat ["" "all"] (map #(:id %) pools)))
             start-date-equal-or-before-end-date?
             #(let [s (some-> @start-date presence (date-fns/parse "P" (js/Date.) #js {:locale locale}))
                    e (some-> @end-date presence (date-fns/parse "P" (js/Date.) #js {:locale locale}))]
@@ -62,15 +64,6 @@
           [:> UI/Components.Design.ModalDialog {:title "Filter" :shown true :dismissible true :onDismiss hide!}
            [:> UI/Components.Design.ModalDialog.Body
             [:> UI/Components.Design.Stack {:space 4}
-             [:> UI/Components.Design.Section {:title (t :delegations {:n 1})
-                                               :collapsible true}
-              [:label.visually-hidden {:html-for "user-id"} (t :delegations {:n 1})]
-              [:select.form-select
-               {:name "user-id" :id "user-id" :value (or (presence @user-id)
-                                                         (-> target-users first :id))
-                :on-change (fn [e] (reset! user-id (-> e .-target .-value)))}
-               (doall (for [{:keys [id name]} target-users]
-                        [:option {:value id :key id} name]))]]
 
              [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
               [:label.visually-hidden {:html-for "term"} (t :search.title)]
@@ -124,9 +117,14 @@
               [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
               [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
                                     :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
-               [:option {:value "all" :key "all"} (t :pools.all)]
+               [:option {:value "all"} (t :pools.all)]
+               (when is-unselectable-pool
+                 [:option {:value @pool-id} (t :pools.invalid-option)])
                (doall (for [{pool-id :id pool-name :name} pools]
-                        [:option {:value pool-id :key pool-id} pool-name]))]]]]
+                        [:option {:value pool-id :key pool-id} pool-name]))]
+              (when is-unselectable-pool
+                [:> UI/Components.Design.Warning {:class "mt-2"}
+                 (t :pools.invalid-option-info)])]]]
 
            [:> UI/Components.Design.ModalDialog.Footer
             [:button.btn.btn-primary
@@ -139,7 +137,6 @@
                      {:term (presence @term)
                       :pool-id (if (= @pool-id "all") nil @pool-id)
                       :state (if (= @state "all") nil @state)
-                      :user-id (presence @user-id)
                       :from (some-> @start-date
                                     presence
                                     (date-fns/parse "P" (js/Date.) #js {:locale locale})
@@ -153,7 +150,6 @@
              {:type "button"
               :onClick #(do (reset! term "")
                             (reset! pool-id "all")
-                            (reset! user-id (:id auth-user))
                             (reset! start-date "")
                             (reset! end-date "")
                             (reset! state "all"))}
@@ -165,10 +161,9 @@
       (let [hide! #(reset! modal-shown? false)
             show! #(reset! modal-shown? true)
             locale @(subscribe [::translate/i18n-locale])
-            filter-opts @(subscribe [::options])
-            auth-user @(subscribe [::current-user/user-data])]
+            filter-opts @(subscribe [::options])]
         [:<>
          (when @modal-shown?
-           [filter-modal filter-opts hide! dispatch-fn locale (:id auth-user)])
+           [filter-modal filter-opts hide! dispatch-fn locale])
          [:> UI/Components.Design.FilterButton {:onClick show!}
           (t :!borrow.home-page.show-search-and-filter)]]))))

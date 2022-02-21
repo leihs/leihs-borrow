@@ -46,9 +46,9 @@
 (defn get-multiple
   [{{tx :tx} :request user-id ::target-user/id}
    {:keys [order-by ids]}
-   _]
+   {value-user-id :id}]
   (-> base-sqlmap
-      (accessible-to-user-condition user-id)
+      (accessible-to-user-condition (or value-user-id user-id))
       (cond-> (seq ids)
         (-> (sql/merge-where [:in :inventory_pools.id ids])))
       (cond-> (seq order-by)

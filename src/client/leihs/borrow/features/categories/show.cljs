@@ -24,7 +24,6 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.models.filter-modal :refer [filter-comp] :as filter-modal]
    [leihs.borrow.features.models.core :as models]
-   [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]
    [leihs.core.core :refer [dissoc-in]]))
 
@@ -48,7 +47,6 @@
 
               ;; FIXME: this flickers when navigation and in general should be 1 single query!
      {:dispatch-n (list [::filter-modal/save-options query-params]
-                        [::current-user/set-chosen-user-id (:user-id query-params)]
                          ; We include the actual category itself because the
                          ; backend validates if all categories in the path
                          ; are still among the reservable ones.

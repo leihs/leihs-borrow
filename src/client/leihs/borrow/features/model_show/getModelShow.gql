@@ -1,5 +1,11 @@
-query getModelShow($modelId: UUID!) {
-  model(id: $modelId) {
+query getModelShow(
+  $modelId: UUID!
+  $userId: UUID
+) {
+  model(
+    userId: $userId
+    id: $modelId
+  ) {
     id
     name
     manufacturer

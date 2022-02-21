@@ -69,7 +69,12 @@
                                  :responsible {:type (non-null :User)
                                                :resolve :responsible}
                                  :members {:type (list (non-null :User))
-                                           :resolve :members}}}
+                                           :resolve :members}
+                                 :inventoryPools {:args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
+                                                  :type (list :InventoryPool)
+                                                  :resolve :inventory-pools}
+                                 :suspensions {:type (list :Suspension)
+                                               :resolve :suspensions}}}
            :Language {:fields {:name {:type String}
                                :locale {:type String}
                                :default {:type Boolean}
@@ -164,7 +169,6 @@
                             :availability {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
                                                   :startDate {:type (non-null :Date)}
                                                   :endDate {:type (non-null :Date)}
-                                                  :userId {:type :UUID}
                                                   :excludeReservationIds {:type (list (non-null :UUID))}}
                                            :type (list :ModelInventoryPoolAvailability)
                                            :resolve :model-availability}
@@ -389,7 +393,8 @@
                             :userId {:type :UUID}
                             :orderBy {:type (list :RentalsOrderByInput)}}
                      :type :RentalsConnection}
-           :model {:args {:id {:type (non-null :UUID)}}
+           :model {:args {:id {:type (non-null :UUID)}
+                          :userId {:type :UUID}}
                    :resolve :model
                    :type (non-null :Model)}
            :template {:args {:id {:type (non-null :UUID)}}
@@ -461,10 +466,12 @@
              :cancelOrder {:args {:id {:type (non-null :UUID)}}
                            :resolve :cancel-order
                            :type (non-null :Rental)}
-             :favoriteModel {:args {:id {:type (non-null :UUID)}}
+             :favoriteModel {:args {:id {:type (non-null :UUID)}
+                                    :userId {:type :UUID}}
                              :resolve :favorite-model
                              :type (non-null :Model)}
-             :unfavoriteModel {:args {:id {:type (non-null :UUID)}}
+             :unfavoriteModel {:args {:id {:type (non-null :UUID)}
+                                      :userId {:type :UUID}}
                                :resolve :unfavorite-model
                                :type (non-null :Model)}
              :refreshTimeout {:args {:userId {:type :UUID}}

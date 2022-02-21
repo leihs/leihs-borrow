@@ -15,8 +15,7 @@
              "/" ::models
              "/favorites" ::models-favorites
              ["/" :model-id] ::models-show}
-   "order" {"" ::shopping-cart
-            "/draft" ::draft-order}
+   "order" {"" ::shopping-cart}
    "rentals" {"/" ::rentals-index
               ["/" :rental-id] ::rentals-show}
    "templates" {"/" ::templates-index

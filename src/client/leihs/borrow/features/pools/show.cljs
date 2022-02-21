@@ -49,11 +49,16 @@
          (fn [db [_ id]]
            (get-in db [::errors id])))
 
+(reg-sub ::suspensions
+         :<- [::current-user/current-profile]
+         (fn [current-profile _]
+           (:suspensions current-profile)))
+
 (defn view []
   (let [routing @(subscribe [:routing/routing])
         pool-id (get-in routing [:bidi-match :route-params :inventory-pool-id])
         pool @(subscribe [::pool pool-id])
-        suspensions (filter #(= (get-in % [:inventory-pool :id]) (:id pool)) @(subscribe [::current-user/suspensions]))
+        suspensions (filter #(= (get-in % [:inventory-pool :id]) (:id pool)) @(subscribe [::suspensions]))
         errors @(subscribe [::errors pool-id])
         is-loading? (not (or pool errors))]
     [:<>

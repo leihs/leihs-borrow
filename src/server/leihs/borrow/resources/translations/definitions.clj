@@ -47,7 +47,7 @@
              :plus {:en-GB "Plus" :de-CH "Plus"}
              :pool {:en-GB "Inventory pool" :de-CH "Inventarpark"}
              :pool-max-amount {:en-GB "{pool} (max. {amount, number})" :de-CH "{pool} (max. {amount, number})"}
-             :user-delegation {:en-GB "Delegation" :de-CH "Delegation"}
+             :user-delegation {:en-GB "Order for" :de-CH "Bestellung für"}
              :timespan {:en-GB "Time span" :de-CH "Zeitraum"}
              :from {:en-GB "From" :de-CH "Von"}
              :until {:en-GB "Until" :de-CH "Bis"}}
@@ -111,11 +111,7 @@
                  :en-GB "Item not available in this inventory pool"}
                 :unknown-pool
                 {:de-CH "Unbekannter Inventarpark"
-                 :en-GB "Unknown inventory pool"}
-
-                :user-delegation-cant-be-changed-active-cart
-                {:en-GB "The delegation can't be changed, as an active cart already exists."
-                 :de-CH "Die Delegation kann nicht geändert werden, da schon ein aktiver Warenkorb existiert."}}}
+                 :en-GB "Unknown inventory pool"}}}
 
   ; --- PER FEATURE TRANSLATIONS --- 
 
@@ -145,8 +141,6 @@
                               :de-CH "Stichwort"}
                       :placeholder {:en-GB "Enter search term"
                                     :de-CH "Suchbegriff eingeben"}}
-             :delegations {:en-GB "{n, plural, =1 {Delegation} other {Delegations}}"
-                           :de-CH "{n, plural, =1 {Delegation} other {Delegationen}}"}
              :for {:en-GB "For"
                    :de-CH "Für"}
              :time-span {:title {:en-GB "Timespan"
@@ -162,7 +156,10 @@
              :show-only-available {:en-GB "Show available only"
                                    :de-CH "Nur verfügbare anzeigen"}
              :pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
-                     :all {:en-GB "All" :de-CH "Alle"}}
+                     :all {:en-GB "All" :de-CH "Alle"}
+                     :invalid-option {:en-GB "Invalid selection" :de-CH "Ungültige Auswahl"}
+                     :invalid-option-info {:en-GB "The pre-selected inventory pool is not available for the current profile" 
+                                           :de-CH "Der vorher gewählte Inventarpark ist für das aktuelle Profil nicht verfügbar"}}
              :from {:en-GB "From"
                     :de-CH "Von"}
              :until {:en-GB "Until"
@@ -224,6 +221,8 @@
                                     :de-CH "Zu Favoriten hinzufügen"}
                  :remove-from-favorites {:en-GB "Remove from favorites"
                                          :de-CH "Von Favoriten entfernen"}
+                 :not-available-for-current-profile {:en-GB "Item not available for current profile"
+                                                     :de-CH "Gegenstand für das aktuelle Profil nicht verfügbar"}
                  :order-dialog {:title {:en-GB "Add item" :de-CH "Gegenstand hinzufügen"}
                                 :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
                                 :add {:en-GB "Add" :de-CH "Hinzufügen"}}
@@ -249,6 +248,9 @@
                 :description {:en-GB "Description"
                               :de-CH "Beschreibung"}}
 
+    :profile-menu {:title {:en-GB "Switch Profile"
+                           :de-CH "Profil wechseln"}}
+
     :rentals {:title {:en-GB "My Orders"
                       :de-CH "Meine Bestellungen"}
               :section-title-open-rentals {:en-GB "Open"
@@ -260,8 +262,6 @@
                                          :de-CH "Stichwort"}
                                  :placeholder {:en-GB "Enter search term"
                                                :de-CH "Suchbegriff eingeben"}}
-                        :delegations {:en-GB "{n, plural, =1 {Delegation} other {Delegations}}"
-                                      :de-CH "{n, plural, =1 {Delegation} other {Delegationen}}"}
                         :for {:en-GB "For"
                               :de-CH "Für"}
                         :time-span {:title {:en-GB "Timespan"
@@ -272,7 +272,10 @@
                                              {:en-GB "Start date must be equal to or before end date."
                                               :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
                         :pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
-                                :all {:en-GB "All" :de-CH "Alle"}}
+                                :all {:en-GB "All" :de-CH "Alle"}
+                                :invalid-option {:en-GB "Invalid selection" :de-CH "Ungültige Auswahl"}
+                                :invalid-option-info {:en-GB "The pre-selected inventory pool is not available for the current profile"
+                                                      :de-CH "Der vorher gewählte Inventarpark ist für das aktuelle Profil nicht verfügbar"}}
                         :states {:title {:en-GB "Status" :de-CH "Status"}
                                  :all {:en-GB "All" :de-CH "Alle"}
                                  :state-filter-label {:IN_APPROVAL {:de-CH "In Genehmigung" :en-GB "In approval"}
@@ -387,7 +390,7 @@
                   :pools-section-title {:de-CH "Inventarparks" :en-GB "Inventory pools"}
                   :items-section-title {:de-CH "Gegenstände" :en-GB "Items"}
                   :documents-section-title {:de-CH "Dokumente" :en-GB "Documents"}
-                  :user-or-delegation-section-title {:de-CH "Delegation" :en-GB "Delegation"}
+                  :user-or-delegation-section-title {:de-CH "Bestellung für" :en-GB "Order for"}
                   :metadata-summary {:de-CH "ID {rentalId}" :en-GB "ID {rentalId}"}
                   :reservation-line
                   {:title
@@ -448,7 +451,7 @@
                                           :de-CH "Abgelaufen"}
                                 :reset {:en-GB "Reset time limit"
                                         :de-CH "Zeitlimit zurückstellen"}}
-                    :delegation {:section-title {:de-CH "Delegation" :en-GB "Delegation"}}
+                    :delegation {:section-title {:de-CH "Bestellung für" :en-GB "Order for"}}
                     :line {:section-title {:en-GB "Items"
                                            :de-CH "Gegenstände"}
                            :total {:en-GB "Total"

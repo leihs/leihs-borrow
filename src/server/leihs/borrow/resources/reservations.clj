@@ -317,32 +317,32 @@
         sql/format
         (query tx))))
 
-(defn unsubmitted-for-affiliated-user-exists?
-  "Returns true if there exists some reservation created either
+#_(defn unsubmitted-for-affiliated-user-exists?
+    "Returns true if there exists some reservation created either
   for oneself or for one's delegation which is different from `user-id`.
   It means that there is already some shopping cart open for such a user.
   A user can have only one shopping cart open: either for oneself or for
   one's delegation."
-  [tx user-id auth-user-id]
-  (let [d-ids (->> auth-user-id
-                   (delegations/get-multiple-by-user-id tx)
-                   (map :id))]
-    (-> (sql/select {:exists
-                     (-> (sql/select true)
-                         (sql/from :reservations)
-                         (sql/where [:= :status "unsubmitted"])
-                         (sql/merge-where (cond
-                                           (and (= user-id auth-user-id) (not (empty? d-ids)))
-                                           [:in :user_id d-ids]
-                                           (and (= user-id auth-user-id) (empty? d-ids))
-                                           false
-                                           (some #{user-id} d-ids)
-                                           [:= :user_id auth-user-id]
-                                           :else (raise "No condition met."))))})
-        sql/format
-        (->> (jdbc/query tx))
-        first
-        :exists)))
+    [tx user-id auth-user-id]
+    (let [d-ids (->> auth-user-id
+                     (delegations/get-multiple-by-user-id tx)
+                     (map :id))]
+      (-> (sql/select {:exists
+                       (-> (sql/select true)
+                           (sql/from :reservations)
+                           (sql/where [:= :status "unsubmitted"])
+                           (sql/merge-where (cond
+                                              (and (= user-id auth-user-id) (not (empty? d-ids)))
+                                              [:in :user_id d-ids]
+                                              (and (= user-id auth-user-id) (empty? d-ids))
+                                              false
+                                              (some #{user-id} d-ids)
+                                              [:= :user_id auth-user-id]
+                                              :else (raise "No condition met."))))})
+          sql/format
+          (->> (jdbc/query tx))
+          first
+          :exists)))
 
 (defn create
   [{{:keys [tx] {auth-user-id :id} :authenticated-entity} :request
@@ -356,8 +356,8 @@
    _]
   (when-not (models/reservable? context args {:id model-id})
     (raise "Model either does not exist or is not reservable by the user."))
-  (when (unsubmitted-for-affiliated-user-exists? tx user-id auth-user-id)
-    (raise "There already exists an unsubmitted reservation for another user."))
+  #_(when (unsubmitted-for-affiliated-user-exists? tx user-id auth-user-id)
+      (raise "There already exists an unsubmitted reservation for another user."))
   (when-not (->> (pools/to-reserve-from tx user-id start-date end-date)
                  (map :id)
                  (some #{pool-id}))
@@ -376,6 +376,7 @@
                 (assoc :end_date (sql/call :cast end-date :date))
                 (assoc :quantity 1
                        :user_id user-id
+                       :delegated_user_id (when (not= auth-user-id user-id) auth-user-id)
                        :status "unsubmitted"
                        :created_at (time/now tx)
                        :updated_at (time/now tx)))

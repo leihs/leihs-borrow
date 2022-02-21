@@ -1,8 +1,8 @@
-mutation setModelFavorite($modelId: UUID!, $isFav: Boolean!) {
-  favoriteModel(id: $modelId) @include(if: $isFav) {
+mutation setModelFavorite($modelId: UUID!, $isFav: Boolean!, $userId: UUID) {
+  favoriteModel(id: $modelId, userId: $userId) @include(if: $isFav) {
     id
   }
-  unfavoriteModel(id: $modelId) @skip(if: $isFav) {
+  unfavoriteModel(id: $modelId, userId: $userId) @skip(if: $isFav) {
     id
   }
 }

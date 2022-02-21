@@ -1,4 +1,4 @@
-query getCurrentUser {
+query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID) {
   currentUser {
     user {
       id
@@ -28,6 +28,21 @@ query getCurrentUser {
     nav {
       legacyUrl
       documentationUrl
+    }
+  }
+  delegation(id: $delegationId) @include(if: $includeDelegation) {
+    id
+    name
+    inventoryPools(orderBy: [{ attribute: NAME, direction: ASC }]) {
+      id
+      name
+      maximumReservationTime
+      hasReservableItems
+    }
+    suspensions {
+      inventoryPool {
+        id
+      }
     }
   }
 }

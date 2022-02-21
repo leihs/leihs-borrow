@@ -17,7 +17,7 @@ Feature: Rentals
       | B1   | DSLR Camera | Pool B |
       | B2   | Tripod      | Pool B |
 
-  Scenario: Filtering according user
+  Scenario: Switching profile
     Given a customer order with title "Order 1" and the following reservations exists for the user:
       | user | quantity | model       | pool   | start-date | end-date   | state    |
       | user | 1        | DSLR Camera | Pool A | 2101-02-01 | 2101-02-02 | approved |
@@ -29,14 +29,12 @@ Feature: Rentals
     Then I see the following orders:
       | title   |
       | Order 1 |
-    When I click on "Show search/filter"
-    And I select "Delegation D" from "Delegation"
-    And I click on "Apply"
-    Then I see the following orders:
+    And I click on the profile button
+    And I click on "Delegation D"
+    Then the profile button shows "DD"
+    And I see the following orders:
       | title   |
       | Order 2 |
-    When I click on "Show search/filter"
-    Then the "Delegation" select field contains value "Delegation D"
 
   Scenario: Filtering according state
     Given a customer order with title "Order 1" and the following reservations exists for the user:

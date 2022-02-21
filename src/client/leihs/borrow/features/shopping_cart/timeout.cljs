@@ -20,9 +20,8 @@
 
 (reg-event-fx
  ::refresh
- (fn-traced [{:keys [db]} [_ ev-user-id]]
-   (let [cart-user-id (-> db :ls :leihs.borrow.features.shopping-cart.core/data :user-id)
-         user-id (or ev-user-id cart-user-id)]
+ (fn-traced [{:keys [db]} [_ _]]
+   (let [user-id (current-user/get-current-profile-id db)]
      {:dispatch [::re-graph/mutate
                  (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql")
                  {:userId user-id}

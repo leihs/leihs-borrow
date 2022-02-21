@@ -33,16 +33,14 @@
 ;-; EVENTS 
 (reg-event-fx
  ::routes/models
- (fn-traced [_ [_ {:keys [query-params]}]]
+ (fn-traced [{:keys [db]} [_ {:keys [query-params]}]]
    {:dispatch-n (list [::filter-modal/save-options query-params]
-                      [::current-user/set-chosen-user-id (:user-id query-params)]
                       [::get-models query-params])}))
 
 (defn prepare-query-vars [filters]
   (let [term (:term filters)
         start-date (:start-date filters)
         end-date (:end-date filters)
-        user-id (:user-id filters)
         pool-id (:pool-id filters)
         quantity (:quantity filters)
         only-available (:only-available filters)
@@ -59,9 +57,7 @@
       (when dates-valid? only-available)
       (assoc :onlyAvailable only-available)
       pool-id
-      (assoc :poolIds [pool-id])
-      user-id
-      (assoc :userId user-id))))
+      (assoc :poolIds [pool-id]))))
 
 (def BOOLEANS #{:only-available})
 (def INTEGERS #{:quantity})
@@ -74,24 +70,25 @@
                        :else v)]))
        (into {})))
 
-(defn get-query-vars [query-params extra-vars]
+; Arguments for the graphql query
+(defn get-query-vars [query-params extra-vars profile-id]
   (-> query-params
       with-parsed-json-values
       remove-blanks
       prepare-query-vars
-      (merge extra-vars)))
+      (merge extra-vars {:userId profile-id})))
 
 (defn number-of-cached [db cache-key]
   (some-> db :ls ::data (get cache-key) :edges count))
 
-(defn get-cache-key [query-params extra-vars]
-  (-> query-params (get-query-vars extra-vars) hash))
+(defn get-cache-key [query-params]
+  (-> query-params hash))
 
 (reg-event-fx
  ::get-models
  (fn-traced [{:keys [db]} [_ query-params extra-vars]]
-   (let [query-vars (get-query-vars query-params extra-vars)
-         cache-key (get-cache-key query-params extra-vars)
+   (let [query-vars (get-query-vars query-params extra-vars (current-user/get-current-profile-id db))
+         cache-key (get-cache-key query-vars)
          n (number-of-cached db cache-key)]
      {:dispatch [::re-graph/query
                  query-gql
@@ -122,7 +119,7 @@
 
 (reg-sub ::cache-key
          (fn [db [_ filter-opts extra-vars]]
-           (get-cache-key filter-opts extra-vars)))
+           (get-cache-key (get-query-vars filter-opts extra-vars (current-user/get-current-profile-id db)))))
 
 (reg-sub ::data-under-cache-key
          (fn [db [_ cache-key]]
@@ -157,30 +154,6 @@
        :class (str "form-control " (get input-props :class))
        :style (merge (get input-props :style))})]]])
 
-(defn search-panel [submit-fn clear-fn extra-vars]
-  (let [current-user-data @(subscribe [::current-user/data])
-        user-data (:user current-user-data)
-        filters @(subscribe [::filter-modal/options])
-        pools @(subscribe [::current-user/pools])
-        routing @(subscribe [:routing/routing])
-        cache-key @(subscribe [::cache-key filters extra-vars])
-        on-search-view? (= (get-in routing [:bidi-match :handler]) ::routes/models)]
-    [:> UI/Components.ModelFilterForm
-     {:key cache-key ; force reload of internal state when filters etc change
-      :className (str "mt-3 mb-3" (when on-search-view? ""))
-      :initialTerm (:term filters)
-      :initialUserId (:user-id filters)
-      :initialPoolId (:pool-id filters)
-      :initialOnlyAvailable (:only-available filters)
-      :initialStartDate (:start-date filters)
-      :initialEndDate (:end-date filters)
-      :initialQuantity (:quantity filters)
-      :user user-data
-      :delegations (:delegations user-data)
-      :pools pools
-      :onSubmit #(submit-fn (obj->map %))
-      :onClear clear-fn}]))
-
 (defn models-list [models]
   (let
    [debug? @(subscribe [:is-debug?])
@@ -203,7 +176,8 @@
      (when debug? [:p (pr-str @(subscribe [::data]))])]))
 
 (defn load-more [cache-key extra-vars]
-  (let [fetching-more? @(subscribe [::fetching cache-key])
+  (let [profile-id @(subscribe [::current-user/current-profile-id])
+        fetching-more? @(subscribe [::fetching cache-key])
         has-next-page? @(subscribe [::has-next-page? cache-key])
         filters @(subscribe [::filter-modal/options])
         dates-valid? (<= (:start-date filters) (:end-date filters))]
@@ -215,7 +189,7 @@
           [:button.border.border-black.p-2.rounded
            {:on-click #(dispatch [::pagination/get-more
                                   query-gql
-                                  (get-query-vars filters extra-vars)
+                                  (get-query-vars filters extra-vars profile-id)
                                   [:ls ::data cache-key]
                                   [:models]])}
            (t :!borrow.pagination/load-more)]]))]))

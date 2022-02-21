@@ -6,12 +6,14 @@ query getAvailability(
   $poolIds: [UUID!]
   $excludeReservationIds: [UUID!]
 ) {
-  model(id: $modelId) {
+  model(
+    userId: $userId
+    id: $modelId
+  ) {
     availability(
       startDate: $startDate
       endDate: $endDate
       inventoryPoolIds: $poolIds
-      userId: $userId
       excludeReservationIds: $excludeReservationIds
     ) {
       inventoryPool {

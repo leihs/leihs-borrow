@@ -56,8 +56,6 @@
       [:> UI/Components.Design.Menu.Group
        [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/debug-page)}
         (t :borrow.debug-page/title)]
-       [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/draft-order)}
-        (t :borrow.shopping-cart.draft/title)]
        [:> UI/Components.Design.Menu.Link {:href (routing/path-for ::routes/templates-index)}
         (t :borrow.templates/title)]]]]
 

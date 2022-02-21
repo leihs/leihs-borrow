@@ -25,6 +25,16 @@
 (reg-event-ctx ::routes/inventory-pools-index
                (fn-traced [ctx _] ctx))
 
+(reg-sub ::suspensions
+         :<- [::current-user/current-profile]
+         (fn [current-profile _]
+           (:suspensions current-profile)))
+
+(reg-sub ::inventory-pools
+         :<- [::current-user/current-profile]
+         (fn [current-profile _]
+           (:inventory-pools current-profile)))
+
 (defn pool-line [pool suspensions]
   (let [href (routing/path-for ::routes/inventory-pools-show
                                :inventory-pool-id
@@ -47,9 +57,9 @@
          (t :access-suspended)]])]))
 
 (defn view []
-  (let [pools @(subscribe [::current-user/pools])
+  (let [pools @(subscribe [::inventory-pools])
         is-loading? (not pools)
-        suspensions @(subscribe [::current-user/suspensions])]
+        suspensions @(subscribe [::suspensions])]
     [:<>
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}]

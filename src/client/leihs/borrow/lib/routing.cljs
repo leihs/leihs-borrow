@@ -36,97 +36,97 @@
         (assoc :query-params query-params))))
 
 (reg-fx
-  :routing/init-routing
-  (fn [routes]
-    (let [pushy-instance (get-in @db/app-db [:routing/routing :pushy-instance])]
-      (if-not pushy-instance
-        (let [dispatch-fn (fn [arg]
-                            (current-user/fetch-and-save
-                              #(dispatch [:routing/change-view arg])))
-              match-fn (fn [path] 
-                         (let [is-routed? (:handler (bidi/match-route routes path))]
-                           (if is-routed? path false)))]
-          (->> (pushy/pushy dispatch-fn match-fn)
-               (swap! db/app-db assoc-in [:routing/routing :pushy-instance])
-               :routing/routing
-               :pushy-instance
-               pushy/start!))))))
+ :routing/init-routing
+ (fn [routes]
+   (let [pushy-instance (get-in @db/app-db [:routing/routing :pushy-instance])]
+     (if-not pushy-instance
+       (let [dispatch-fn (fn [arg]
+                           (current-user/fetch-and-save
+                            #(dispatch [:routing/change-view arg])))
+             match-fn (fn [path]
+                        (let [is-routed? (:handler (bidi/match-route routes path))]
+                          (if is-routed? path false)))]
+         (->> (pushy/pushy dispatch-fn match-fn)
+              (swap! db/app-db assoc-in [:routing/routing :pushy-instance])
+              :routing/routing
+              :pushy-instance
+              pushy/start!))))))
 
 (reg-event-fx
-  :routing/init-routing
-  (fn-traced [{:keys [db]} [_ routes]]
-    {:db (assoc-in db [:routing/routing :routes] routes)
-     :routing/init-routing routes}))
+ :routing/init-routing
+ (fn-traced [{:keys [db]} [_ routes]]
+   {:db (assoc-in db [:routing/routing :routes] routes)
+    :routing/init-routing routes}))
 
 (reg-event-fx
-  :routing/change-view
-  (fn-traced [{:keys [db]} [_ token]]
-    (let [{:keys [routes]} (:routing/routing db)
-          bidi-match (bidi-match-route-with-query-params routes token)]
-      {:db (-> db
-               (assoc-in [:routing/routing :bidi-match] bidi-match)
-               (assoc-in [:meta :app :fatal-errors] nil)
-               (assoc-in [:ls :leihs.borrow.ui.main-nav/data :is-menu-open?] nil)
-               (dissoc ::requests/retry-mutation))
-       :dispatch-n (list #_[::requests/abort-running-queries] ; disabled for now, see #1294
-                         [::scroll-to-top true]
-                         [(:handler bidi-match) bidi-match]
-                         [:leihs.borrow.features.shopping-cart.timeout/refresh])})))
+ :routing/change-view
+ (fn-traced [{:keys [db]} [_ token]]
+   (let [{:keys [routes]} (:routing/routing db)
+         bidi-match (bidi-match-route-with-query-params routes token)]
+     {:db (-> db
+              (assoc-in [:routing/routing :bidi-match] bidi-match)
+              (assoc-in [:meta :app :fatal-errors] nil)
+              (assoc-in [:ls :leihs.borrow.ui.main-nav/data] nil)
+              (dissoc ::requests/retry-mutation))
+      :dispatch-n (list #_[::requests/abort-running-queries] ; disabled for now, see #1294
+                        [::scroll-to-top true]
+                        [(:handler bidi-match) bidi-match]
+                        [:leihs.borrow.features.shopping-cart.timeout/refresh])})))
 
 (reg-event-fx
-  :routing/navigate
-  (fn-traced [_ [_ [route-key route-args]]]
-    (let
-      [bidi-args (dissoc route-args :query-params)
-       query-params (get route-args :query-params)]
-      {:routing/navigate [route-key bidi-args query-params]})))
+ :routing/navigate
+ (fn-traced [_ [_ [route-key route-args]]]
+   (let
+    [bidi-args (dissoc route-args :query-params)
+     query-params (get route-args :query-params)]
+     {:routing/navigate [route-key bidi-args query-params]})))
 
 (reg-fx
-  :routing/navigate
-  (fn [[route-key bidi-args query-params]]
-    (let [{:keys [pushy-instance routes]} (:routing/routing @db/app-db)
-          bidi-path (->> bidi-args
-                         seq
-                         flatten
-                         (apply bidi/path-for routes route-key))
-          query-string (when-not (empty? query-params) 
-                         (str "?" (cemerick.url/map->query query-params)))
-          path (str bidi-path query-string)]
-      (if path
-        (pushy/set-token! pushy-instance path)
-        (js/console.error "No matching route for" bidi-args)))))
+ :routing/navigate
+ (fn [[route-key bidi-args query-params]]
+   (let [{:keys [pushy-instance routes]} (:routing/routing @db/app-db)
+         bidi-path (->> bidi-args
+                        seq
+                        flatten
+                        (apply bidi/path-for routes route-key))
+         query-string (when-not (empty? query-params)
+                        (str "?" (cemerick.url/map->query query-params)))
+         path (str bidi-path query-string)]
+     (if path
+       (pushy/set-token! pushy-instance path)
+       (js/console.error "No matching route for" bidi-args)))))
 
 (reg-fx
-  :routing/navigate-raw
-  (fn [url]
-    (aset (.-location js/window) "href" url)))
+ :routing/navigate-raw
+ (fn [url]
+   (aset (.-location js/window) "href" url)))
 
 (reg-event-fx
-  :routing/navigate-raw
-  (fn-traced [_ [_ url]]
-    {:routing/navigate-raw url}))
+ :routing/navigate-raw
+ (fn-traced [_ [_ url]]
+   {:routing/navigate-raw url}))
 
 (reg-event-fx
-  :routing/refresh-page
-  (fn-traced [_] {:routing/refresh-page nil}))
+ :routing/refresh-page
+ (fn-traced [_] {:routing/refresh-page nil}))
 
 (reg-event-fx
-  :routing/navigate-back
-  (fn [_]
-    (js/window.history.back)))
+ :routing/navigate-back
+ (fn [_]
+   (js/window.history.back)))
 
 (reg-fx
-  :routing/refresh-page
-  (fn [_]
-    (.reload (.-location js/window))))
+ :routing/refresh-page
+ (fn [_]
+   (.reload (.-location js/window))))
 
 (reg-event-fx ::scroll-to-top (fn-traced [_] {::scroll-to-top nil}))
 (reg-fx ::scroll-to-top (fn [_] (js/window.scrollTo 0 0)))
 
 (reg-sub
-  :routing/routing
-  (fn [db _]
-    (:routing/routing db)))
+ :routing/routing
+ (fn [db _]
+   (:routing/routing db)))
 
 (defn routed-view
   [views]
@@ -149,5 +149,5 @@
 ; TODO: define this next to routes (so this lib does not need to import routes!)
 (defn path-for [name & args]
   (apply
-    bidi-path-for-with-query-params routes/routes-map name
-    args))
+   bidi-path-for-with-query-params routes/routes-map name
+   args))

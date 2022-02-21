@@ -30,7 +30,6 @@
         until (:until filters)
         term (:term filters)
         state (:state filters)
-        user-id (:user-id filters)
         pool-id (:pool-id filters)]
     (cond-> {}
       term
@@ -42,9 +41,7 @@
       state
       (assoc :refinedRentalState state)
       pool-id
-      (assoc :poolIds [pool-id])
-      user-id
-      (assoc :userId user-id))))
+      (assoc :poolIds [pool-id]))))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -52,10 +49,10 @@
  (fn-traced [{:keys [db]} [_ {:keys [query-params]}]]
    {:dispatch-n
     (list [::filter-modal/save-filter-options query-params]
-          [::current-user/set-chosen-user-id (:user-id query-params)]
           [::re-graph/query
            (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
-           (prepare-query-vars query-params)
+           (merge {:userId (current-user/get-current-profile-id db)}
+                  (prepare-query-vars query-params))
            [::on-fetched-data]])}))
 
 (reg-event-db
@@ -92,10 +89,6 @@
    (->> (get-in data [:closed-rentals :edges])
         (map :node)
         not-empty)))
-
-(reg-sub ::user-id
-         :<- [::current-user/chosen-user-id]
-         (fn [user-id _] user-id))
 
 ;; UI
 

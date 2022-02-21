@@ -35,7 +35,7 @@
    {:db (assoc db ::edit-mode nil)
     :dispatch [::re-graph/query
                (rc/inline "leihs/borrow/features/shopping_cart/getShoppingCart.gql")
-               {:userId (current-user/chosen-user-id db)}
+               {:userId (current-user/get-current-profile-id db)}
                [::on-fetched-data]]}))
 
 (reg-event-db
@@ -65,7 +65,7 @@
  ::fetch-availability
  (fn-traced [{:keys [db]} [_ start-date end-date]]
    (let [edit-mode (get-in db [::edit-mode])
-         user-id (-> edit-mode :user :id)
+         user-id (-> edit-mode :user-id)
          model (:model edit-mode)
          exclude-reservation-ids (map :id (:res-lines edit-mode))
          pool-ids (pool-ids-with-borrowable-quantity db)]
@@ -129,16 +129,15 @@
 (reg-event-fx
  ::on-delete-reservations
  (fn-traced [{:keys [db]} [_ {{ids :delete-reservation-lines} :data errors :errors}]]
-   (let [user-id (-> db :ls ::data :user-id)]
-     (if errors
-       {:db (dissoc-in db [:ls ::data :pending-count])
-        :alert (str "FAIL! " (pr-str errors))}
-       {:db (-> db
-                (update-in [:ls ::data :reservations]
-                           (partial filter #(->> % :id ((set ids)) not)))
-                (dissoc-in [:ls ::data :pending-count])
-                (dissoc-in [::data :delete-dialog]))
-        :dispatch [::timeout/refresh user-id]}))))
+   (if errors
+     {:db (dissoc-in db [:ls ::data :pending-count])
+      :alert (str "FAIL! " (pr-str errors))}
+     {:db (-> db
+              (update-in [:ls ::data :reservations]
+                         (partial filter #(->> % :id ((set ids)) not)))
+              (dissoc-in [:ls ::data :pending-count])
+              (dissoc-in [::data :delete-dialog]))
+      :dispatch [::timeout/refresh]})))
 
 (reg-event-fx
  ::edit-reservation
@@ -185,7 +184,7 @@
             (assoc-in [::data :order-dialog :is-saving?] true))
     :dispatch [::re-graph/mutate
                (rc/inline "leihs/borrow/features/shopping_cart/submitOrderMutation.gql")
-               (merge args {:userId (current-user/chosen-user-id db)})
+               (merge args {:userId (current-user/get-current-profile-id db)})
                [::on-submit-order-result]]}))
 
 (reg-event-fx
@@ -277,20 +276,21 @@
                     (get-in line0 [:model :name])
                     (get-in line0 [:end-date])])))))
 
-(reg-sub ::current-user-or-delegation-name
-         :<- [::current-user/user-data]
-         :<- [::current-user/chosen-user-id]
-         (fn [[user-data user-id] _]
-           (if (or (nil? user-id) (= user-id (:id user-data)))
-             (str (:name user-data) (t :!borrow.phrases.user-or-delegation-personal-postfix))
-             (->> (:delegations user-data)
-                  (filter #(= user-id (:id %)))
-                  first
-                  :name))))
+(reg-sub ::current-profile
+         :<- [::current-user/current-profile]
+         (fn [current-profile _] current-profile))
+
+(reg-sub ::can-change-profile?
+         :<- [::current-user/can-change-profile?]
+         (fn [current-profile _] current-profile))
 
 (reg-sub ::user-id
          :<- [::data]
          (fn [d _] (:user-id d)))
+
+(reg-sub ::user-locale
+         :<- [::current-user/locale]
+         (fn [l _] l))
 
 (reg-sub ::delete-dialog-data
          (fn [db _] (-> db (get-in [::data :delete-dialog]))))
@@ -312,8 +312,11 @@
     (fn []
       (let [now (js/Date.)
             edit-mode-data @(subscribe [::edit-mode-data])
+            current-profile @(subscribe [::current-profile])
+            can-change-profile? @(subscribe [::can-change-profile?])
+            profile-name (when can-change-profile? (:name current-profile))
             res-lines (:res-lines edit-mode-data)
-            user-locale @(subscribe [:leihs.borrow.features.current-user.core/locale])
+            user-locale @(subscribe [::user-locale])
             user-id (:user-id edit-mode-data)
             model (:model edit-mode-data)
             loading? (nil? (:availability edit-mode-data))
@@ -321,7 +324,7 @@
             start-date (datefn/parseISO (:start-date edit-mode-data))
             end-date (datefn/parseISO (:end-date edit-mode-data))
             quantity (:quantity edit-mode-data)
-            suspensions @(subscribe [::current-user/suspensions])
+            suspensions (:suspensions current-profile)
 
             ; Transformators for the pools list
             flatten-pool (fn [{{id :id name :name} :inventory-pool quantity :quantity}]
@@ -400,6 +403,7 @@
                                        :userId user-id}])))
              :onValidate (fn [v] (reset! form-valid? v))
              :modelData (h/camel-case-keys (merge model {:availability availability}))
+             :profileName profile-name
              :locale user-locale
              :txt (order-panel-texts)}]
            [:> UI/Components.Design.ActionButtonGroup
@@ -445,16 +449,23 @@
         duration]]]]))
 
 (defn delegation-section []
-  (let [delegation-name @(subscribe [::current-user-or-delegation-name])]
-    [:> UI/Components.Design.Section {:title (t :delegation/section-title) :collapsible true}
-     delegation-name]))
+  (let [user-data @(subscribe [::current-user/user-data])
+        can-change-profile? @(subscribe [::can-change-profile?])
+        cart-user-id @(subscribe [::user-id])]
+    [:> UI/Components.Design.Section
+     {:title (t :delegation/section-title) :collapsible true}
+     (if (or (nil? cart-user-id) (= cart-user-id (:id user-data)))
+       [:<> (:name user-data) (when can-change-profile? (t :!borrow.phrases.user-or-delegation-personal-postfix))]
+       [:<> (->> (:delegations user-data)
+                 (filter #(= cart-user-id (:id %)))
+                 first
+                 :name)])]))
 
 
 (defn countdown []
   (reagent/with-let [now (reagent/atom (js/Date.))
                      timer-fn  (js/setInterval #(reset! now (js/Date.)) 1000)]
     (let [data @(subscribe [::data])
-          user-id @(subscribe [::current-user/chosen-user-id])
           valid-until (-> data :valid-until datefn/parseISO)
           total-minutes 30
           remaining-seconds  (max 0 (datefn/differenceInSeconds valid-until @now))

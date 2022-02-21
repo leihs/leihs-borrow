@@ -13,9 +13,11 @@
           (helpers/date-suspended-until :suspensions))))
 
 (defn get-multiple
-  [{{:keys [tx]} :request user-id ::target-user/id} _ _]
+  [{{:keys [tx]} :request user-id ::target-user/id}
+   _
+   {value-user-id :id}]
   (-> (apply sql/select (columns tx))
       (sql/from :suspensions)
-      (sql/where [:= :user_id user-id])
+      (sql/where [:= :user_id (or value-user-id user-id)])
       sql/format
       (->> (jdbc/query tx))))

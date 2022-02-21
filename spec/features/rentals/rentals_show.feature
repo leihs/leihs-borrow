@@ -41,7 +41,7 @@ Feature: Rentals - Show
       | title          | body   | foot                                 |
       | 1× DSLR Camera | Pool A | 2 days from ${Date.today} To pick up |
       | 1× Tripod      | Pool B | 2 days from ${Date.today} To pick up |
-    And I see the "Delegation" section
+    And I see the "Order for" section
 
 
   Scenario: Sort order of the Reservation Lines

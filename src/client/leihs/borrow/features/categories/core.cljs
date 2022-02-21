@@ -24,21 +24,21 @@
 
 (def dispatch-fetch-index-handler
   (fn-traced [{:keys [db]} _]
-             {:dispatch [::re-graph/query
-                         (rc/inline "leihs/borrow/features/categories/getRootCategories.gql")
-                         {:userId (current-user/chosen-user-id db)
-                          :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
-                                     [pool-id])}
-                         [::on-fetched-categories-index]]}))
+    {:dispatch [::re-graph/query
+                (rc/inline "leihs/borrow/features/categories/getRootCategories.gql")
+                {:userId (current-user/get-current-profile-id db)
+                 :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
+                            [pool-id])}
+                [::on-fetched-categories-index]]}))
 
 (reg-event-fx ::fetch-index dispatch-fetch-index-handler)
 
 (reg-event-fx
  ::on-fetched-categories-index
  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
-            (if errors
-              {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
-              {:db (assoc-in db [:ls ::data] (get-in data [:categories]))})))
+   (if errors
+     {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
+     {:db (assoc-in db [:ls ::data] (get-in data [:categories]))})))
 
 (reg-sub
  ::categories-index
