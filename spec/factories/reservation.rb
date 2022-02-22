@@ -5,6 +5,7 @@ class Reservation < Sequel::Model
   many_to_one(:inventory_pool)
   many_to_one(:item)
   many_to_one(:leihs_model, key: :model_id)
+  many_to_one(:option)
 end
 
 FactoryBot.define do

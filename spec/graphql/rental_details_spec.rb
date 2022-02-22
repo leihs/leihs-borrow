@@ -442,78 +442,89 @@ describe "rental details" do
     end
   end
 
-  # context "customer order with additional hand over reservation" do
-  #   let(:q) do
-  #     <<~GQL
-  #       query customerOrderShow($id: UUID!) {
-  #         rental(id: $id) {
-  #           id
-  #           reservations {
-  #             id
-  #           }
-  #         }
-  #       }
-  #     GQL
-  #   end
+  context "customer order with additional hand over reservation" do
+    let(:q) do
+      <<~GQL
+        query customerOrderShow($id: UUID!) {
+          rental(id: $id) {
+            id
+            reservations {
+              id
+            }
+          }
+        }
+      GQL
+    end
 
-  #   example "works" do
-  #     pool_order = FactoryBot.create(:pool_order,
-  #                                    order: order,
-  #                                    user: user,
-  #                                    inventory_pool: inventory_pool_1,
-  #                                    state: "approved")
+    example "works" do
+      pool_order = FactoryBot.create(:pool_order,
+                                     order: order,
+                                     user: user,
+                                     inventory_pool: inventory_pool_1,
+                                     state: "approved")
 
-  #     open_contract = Contract.create_with_disabled_triggers(
-  #       "f3051104-e493-4786-af5e-1473b71981ff",
-  #       user.id,
-  #       inventory_pool_1.id,
-  #       "open"
-  #     )
+      open_contract = Contract.create_with_disabled_triggers(
+        "f3051104-e493-4786-af5e-1473b71981ff",
+        user.id,
+        inventory_pool_1.id,
+        "open"
+      )
 
-  #     open_contract_2 = Contract.create_with_disabled_triggers(
-  #       "58af2065-0bae-4780-bb2c-dce7e11372ef",
-  #       user.id,
-  #       inventory_pool_1.id,
-  #       "open"
-  #     )
+      open_contract_2 = Contract.create_with_disabled_triggers(
+        "58af2065-0bae-4780-bb2c-dce7e11372ef",
+        user.id,
+        inventory_pool_1.id,
+        "open"
+      )
 
-  #     signed_reservation_1 = FactoryBot.create(:reservation,
-  #                                              user: user,
-  #                                              order: pool_order,
-  #                                              contract: open_contract,
-  #                                              inventory_pool: inventory_pool_1,
-  #                                              status: "signed",
-  #                                              leihs_model: model_1,
-  #                                              item: model_1.items.first)
+      signed_reservation_1 = FactoryBot.create(:reservation,
+                                               user: user,
+                                               order: pool_order,
+                                               contract: open_contract,
+                                               inventory_pool: inventory_pool_1,
+                                               status: "signed",
+                                               leihs_model: model_1,
+                                               item: model_1.items.first)
 
-  #     signed_reservation_2 = FactoryBot.create(:reservation,
-  #                                              user: user,
-  #                                              contract: open_contract,
-  #                                              inventory_pool: inventory_pool_1,
-  #                                              status: "signed",
-  #                                              leihs_model: model_2,
-  #                                              item: model_2.items.first)
+      signed_reservation_2 = FactoryBot.create(:reservation,
+                                               user: user,
+                                               contract: open_contract,
+                                               inventory_pool: inventory_pool_1,
+                                               status: "signed",
+                                               leihs_model: model_2,
+                                               item: model_2.items.first)
 
-  #     signed_reservation_3 = FactoryBot.create(:reservation,
-  #                                              user: user,
-  #                                              contract: open_contract_2,
-  #                                              inventory_pool: inventory_pool_1,
-  #                                              status: "signed",
-  #                                              leihs_model: model_4,
-  #                                              item: model_4.items.first)
+      signed_reservation_3 = FactoryBot.create(:reservation,
+                                               user: user,
+                                               contract: open_contract,
+                                               inventory_pool: inventory_pool_1,
+                                               status: "signed",
+                                               option: FactoryBot.create(:option,
+                                                                         inventory_pool: inventory_pool_1))
 
-  #     approved_reservation = FactoryBot.create(:reservation,
-  #                                              user: user,
-  #                                              inventory_pool: inventory_pool_1,
-  #                                              status: "approved",
-  #                                              leihs_model: model_3)
+      signed_reservation_4 = FactoryBot.create(:reservation,
+                                               user: user,
+                                               contract: open_contract_2,
+                                               inventory_pool: inventory_pool_1,
+                                               status: "signed",
+                                               leihs_model: model_4,
+                                               item: model_4.items.first)
 
-  #     vars = { id: order.id }
-  #     result = query(q, user.id, vars).deep_symbolize_keys
-  #     r_ids = result.dig(:data, :rental, :reservations).map { |r| r[:id] }
-  #     expect(r_ids.to_set).to eq [signed_reservation_1.id, signed_reservation_2.id].to_set
-  #   end
-  # end
+      approved_reservation = FactoryBot.create(:reservation,
+                                               user: user,
+                                               inventory_pool: inventory_pool_1,
+                                               status: "approved",
+                                               leihs_model: model_3)
+
+      vars = { id: order.id }
+      result = query(q, user.id, vars).deep_symbolize_keys
+      r_ids = result.dig(:data, :rental, :reservations).map { |r| r[:id] }
+      expect(r_ids.count).to eq 3
+      expect(r_ids.to_set).to eq [signed_reservation_1.id,
+                                  signed_reservation_2.id,
+                                  signed_reservation_3.id].to_set
+    end
+  end
 
   context "expired reservations considered as closed" do
     let(:q) do
