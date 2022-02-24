@@ -82,7 +82,7 @@
           initial-start-date (or filter-start-date now)
           initial-end-date (or filter-end-date
                                (datefn/addDays initial-start-date 1))
-          min-date-loaded (datefn/startOfMonth now)
+          start-of-current-month (datefn/startOfMonth now)
           max-date-loaded (-> initial-end-date
                               with-future-buffer
                               datefn/endOfMonth)]
@@ -92,7 +92,7 @@
                (assoc-in [:ls ::data @model-id] (:model data)))
        :dispatch [::fetch-availability
                   user-id
-                  (h/date-format-day min-date-loaded)
+                  (h/date-format-day start-of-current-month)
                   (h/date-format-day max-date-loaded)]})))
 
 (reg-event-fx
@@ -257,12 +257,17 @@
                (dissoc-in [:ls ::cart/data :pending-count])
                (assoc-in [::data :order-panel] nil))
        :alert (str "FAIL! " (pr-str errors))}
-      {:dispatch-n (list [::fetch-availability user-id (:startDate args) (-> args
-                                                                             :endDate
-                                                                             datefn/parseISO
-                                                                             with-future-buffer
-                                                                             datefn/endOfMonth
-                                                                             h/date-format-day)]
+      {:dispatch-n (list [::fetch-availability
+                          user-id
+                          (-> (js/Date.)
+                              datefn/startOfMonth
+                              h/date-format-day)
+                          (-> args
+                              :endDate
+                              datefn/parseISO
+                              with-future-buffer
+                              datefn/endOfMonth
+                              h/date-format-day)]
                          [::timeout/refresh user-id]
                          [::current-user/set-chosen-user-id user-id]
                          [::order-success data])}))) 
@@ -278,7 +283,7 @@
         initial-start-date (or filter-start-date now)
         initial-end-date (or filter-end-date
                              (datefn/addDays initial-start-date 1))
-        min-date-loaded (datefn/startOfMonth now)
+        start-of-current-month (datefn/startOfMonth now)
         max-date-loaded (-> model
                             :fetched-until-date
                             js/Date.
@@ -322,7 +327,6 @@
           ; START DYNAMIC FETCHING PROPS
           :initialStartDate initial-start-date,
           :initialEndDate initial-end-date,
-          :minDateLoaded min-date-loaded,
           :maxDateLoaded max-date-loaded,
           :userDelegations target-users,
           :initialUserDelegationId (or user-id ""),
@@ -338,19 +342,19 @@
                                    (h/log "We are either fetching or already have until: "
                                           (h/date-format-day until-date))
                                    (dispatch [::fetch-availability
-                                              ; Always fetching from min-date-loaded for the
+                                              ; Always fetching from start-of-current-month for the
                                               ; time being, as there are issue if scrolling
                                               ; too fast and was not sure if there was something
                                               ; wrong with concating the availabilities.
                                               user-id
-                                              (-> min-date-loaded h/date-format-day)
+                                              (-> start-of-current-month h/date-format-day)
                                               (-> until-date
                                                   with-future-buffer
                                                   h/date-format-day)]))))
           :onUserDelegationChange #(let [{user-id :delegationId} (js->clj % :keywordize-keys true)]
                                      (dispatch [::fetch-availability
                                                 user-id
-                                                (-> min-date-loaded h/date-format-day)
+                                                (-> start-of-current-month h/date-format-day)
                                                 (-> max-date-loaded h/date-format-day)]))
           :initialInventoryPoolId (:pool-id filters)
           :inventoryPools (map h/camel-case-keys pools)

@@ -152,7 +152,7 @@
            start-date (:start-date res-line)
            end-date (:end-date res-line)
            quantity (count res-lines)
-           min-date-loaded (datefn/startOfMonth now)
+           start-of-current-month (datefn/startOfMonth now)
            max-date-loaded (-> (datefn/parseISO end-date)
                                (datefn/addMonths 6)
                                datefn/endOfMonth)]
@@ -165,7 +165,7 @@
                        :quantity quantity
                        :user-id user-id})
         :dispatch [::fetch-availability
-                   (h/date-format-day min-date-loaded)
+                   (h/date-format-day start-of-current-month)
                    (h/date-format-day max-date-loaded)]}))))
 
 (reg-event-db
@@ -352,7 +352,7 @@
                                         :fetching-until-date
                                         js/Date.
                                         datefn/endOfDay)
-            min-date-loaded (datefn/startOfMonth now)
+            start-of-current-month (datefn/startOfMonth now)
             max-date-loaded (-> edit-mode-data
                                 :fetched-until-date
                                 js/Date.
@@ -372,7 +372,6 @@
              :initialEndDate end-date
              :initialInventoryPoolId (:id pool-id-and-name)
              :inventoryPools (map h/camel-case-keys pools)
-             :minDateLoaded min-date-loaded
              :maxDateLoaded max-date-loaded
              :onShownDateChange (fn [date-object]
                                   (let [until-date (get (js->clj date-object) "date")]
@@ -383,11 +382,11 @@
                                       (h/log "We are either fetching or already have until: "
                                              (h/date-format-day until-date))
                                       (dispatch [::fetch-availability
-                                            ; Always fetching from min-date-loaded for the
+                                            ; Always fetching from start-of-current-month for the
                                             ; time being, as there are issue if scrolling
                                             ; too fast and was not sure if there was something
                                             ; wrong with concating the availabilities.
-                                                 (-> min-date-loaded h/date-format-day)
+                                                 (-> start-of-current-month h/date-format-day)
                                                  (-> until-date (datefn/addMonths 6) h/date-format-day)]))))
              :onSubmit (fn [jsargs]
                          (let [args (js->clj jsargs :keywordize-keys true)]
