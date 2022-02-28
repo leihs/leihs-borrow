@@ -210,6 +210,12 @@
                              :de-CH "Desktop-Version"}}
     :model-show {:loading {:en-GB "Loading item"
                            :de-CH "Gegenstand wird geladen"}
+                 :description {:en-GB "Description"
+                               :de-CH "Beschreibung"}
+                 :properties {:en-GB "Properties"
+                              :de-CH "Eigenschaften"}
+                 :documents {:en-GB "Documents"
+                             :de-CH "Dokumente"}
                  :compatibles {:en-GB "Compatible Items"
                                :de-CH "Ergänzende Gegenstände"}
                  :add-item-to-cart {:en-GB "Add item"

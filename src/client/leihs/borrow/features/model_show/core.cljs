@@ -408,7 +408,11 @@
         [:> UI/Components.ModelShow {:model (-> model
                                                 h/camel-case-keys
                                                 enrich-recommends-with-href)
-                                     :t {:addItemToCart (t :add-item-to-cart)
+                                     :t {:description (t :description)
+                                         :properties (t :properties)
+                                         :documents (t :documents)
+                                         :compatibles (t :compatibles)
+                                         :addItemToCart (t :add-item-to-cart)
                                          :addToFavorites (t :add-to-favorites)
                                          :removeFromFavorites (t :remove-from-favorites)}
                                      :currentFilters (h/camel-case-keys filters)
