@@ -137,7 +137,9 @@
                               :de-CH "Favoriten"}
                       :items {:en-GB "Items"
                               :de-CH "Gegenstände"}}
-    :filter {:search {:title {:en-GB "Search term"
+    :filter {:show-all-filters {:en-GB "Filter"
+                                  :de-CH "Filter"}
+             :search {:title {:en-GB "Search term"
                               :de-CH "Stichwort"}
                       :placeholder {:en-GB "Enter search term"
                                     :de-CH "Suchbegriff eingeben"}}
@@ -171,12 +173,11 @@
              :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
              :apply {:en-GB "Apply" :de-CH "Anwenden"}
              :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
+    
     :home-page {:title {:en-GB "Home"
                         :de-CH "Home"}
                 :catalog {:en-GB "Catalog"
-                          :de-CH "Katalog"}
-                :show-search-and-filter {:en-GB "Show search/filter"
-                                         :de-CH "Zeige Suche/Filter"}}
+                          :de-CH "Katalog"}}
     :logout {:en-GB "Logout"
              :de-CH "Abmelden"}
     :menu {:borrow {:section-title {:en-GB "Borrow"
@@ -260,7 +261,9 @@
               :section-title-closed-rentals {:en-GB "Closed"
                                              :de-CH "Abgeschlossen"}
               :orderless-fallback-title {:de-CH "Direktausleihe"}
-              :filter  {:search {:title {:en-GB "Search term"
+              :filter  {:show-filters {:en-GB "Show search/filter"
+                                         :de-CH "Zeige Suche/Filter"}
+                        :search {:title {:en-GB "Search term"
                                          :de-CH "Stichwort"}
                                  :placeholder {:en-GB "Enter search term"
                                                :de-CH "Suchbegriff eingeben"}}

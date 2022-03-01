@@ -166,4 +166,4 @@
          (when @modal-shown?
            [filter-modal filter-opts hide! dispatch-fn locale])
          [:> UI/Components.Design.FilterButton {:onClick show!}
-          (t :!borrow.home-page.show-search-and-filter)]]))))
+          (t :!borrow.rentals.filter.show-filters)]]))))
