@@ -25,16 +25,30 @@
   (if @lacinia-enable-timing
     (info (str "Lacinia timing is enabled."))))
 
-(defn load-schema
-  []
-  (-> (io/resource "schema.edn")
-      slurp
-      edn/read-string
-      (graphql-util/attach-resolvers resolvers/resolvers)
-      (graphql-util/attach-scalar-transformers scalars/scalars)
-      graphql-schema/compile))
+;###############################################################################
 
-(def schema (load-schema))
+(def schema* (atom nil))
+
+
+(defn load-schema! []
+  (or (some-> (io/resource "schema.edn")
+              slurp edn/read-string
+              (graphql-util/attach-resolvers resolvers/resolvers)
+              (graphql-util/attach-scalar-transformers scalars/scalars)
+              graphql-schema/compile)
+      (throw (ex-info "Failed to load schema" {}))))
+
+
+
+(defn init-schema! []
+  (reset! schema* (load-schema!))
+  (or @schema* ))
+
+(defn schema []
+  (or @schema* (throw (ex-info  "Schema not initialized " {}))))
+
+;###############################################################################
+
 
 (defn parse-query-with-exception-handling
   [schema query]
@@ -51,10 +65,12 @@
 
 (defn schema? [query]
   (->> query
-       (parse-query-with-exception-handling schema)
+       (parse-query-with-exception-handling (schema))
        graphql-parser/operations
        :operations
        (= #{:__schema})))
+
+
 
 (defn exec-query
   [query-string request]
@@ -63,7 +79,7 @@
                                   :body
                                   :variables))
   (if (or (:authenticated-entity request) (schema? query-string))
-    (lacinia/execute schema
+    (lacinia/execute (schema)
                      query-string
                      (-> request
                          :body
@@ -95,7 +111,7 @@
 
 (defn mutation? [query]
   (->> query
-       (parse-query-with-exception-handling schema)
+       (parse-query-with-exception-handling (schema))
        graphql-parser/operations
        :type
        (= :mutation)))
@@ -123,6 +139,16 @@
   (if (schema? query)
     (base-handler request)
     (handler-with-operation-type-check request)))
+
+
+;#### debug ###################################################################
+
+(defn init []
+  (info "Initializing graphQL schema...")
+  (init-schema!)
+  (info "initialized graphQL schema."))
+
+
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)

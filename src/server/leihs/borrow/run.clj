@@ -5,6 +5,7 @@
     ;[leihs.borrow.paths]
     [clojure.pprint :refer [pprint]]
     [clojure.tools.cli :as cli :refer [parse-opts]]
+    [leihs.borrow.graphql :as graphql]
     [leihs.borrow.legacy :as legacy]
     [leihs.borrow.routes :as routes]
     [leihs.borrow.ssr]
@@ -30,6 +31,7 @@
     (legacy/init options)
     (ssr-engine/init options)
     (leihs.core.ssr/init leihs.borrow.ssr/render-page-base)
+    (graphql/init)
     (let [status (status/init)]
       (db/init options (:health-check-registry status)))
     (let [http-handler (routes/init)]
