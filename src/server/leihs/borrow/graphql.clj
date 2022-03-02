@@ -3,7 +3,6 @@
     [clojure.edn :as edn]
     [clojure.java.io :as io]
     [clojure.java.jdbc :as jdbc]
-    [clojure.tools.logging :as log]
     [com.walmartlabs.lacinia :as lacinia]
     [com.walmartlabs.lacinia.parser :as graphql-parser]
     [com.walmartlabs.lacinia.resolve :as graphql-resolve]
@@ -15,6 +14,7 @@
     [leihs.core.db :as ds]
     [leihs.core.graphql.helpers :as helpers]
     [leihs.core.ring-exception :refer [get-cause]]
+    [taoensso.timbre :refer [debug info warn error spy]]
     ))
 
 (def lacinia-enable-timing (atom nil))
@@ -23,7 +23,7 @@
   (reset! lacinia-enable-timing
           (:leihs-borrow-lacinia-enable-timing options))
   (if @lacinia-enable-timing
-    (log/info (str "Lacinia timing is enabled."))))
+    (info (str "Lacinia timing is enabled."))))
 
 (defn load-schema
   []
@@ -45,8 +45,8 @@
                n (-> e*
                      .getClass
                      .getSimpleName)]
-           (log/warn (or m n))
-           (log/debug e)
+           (warn (or m n))
+           (debug e)
            (helpers/error-as-graphql-object "API_ERROR" m)))))
 
 (defn schema? [query]
@@ -58,7 +58,7 @@
 
 (defn exec-query
   [query-string request]
-  (log/debug "graphql query" query-string
+  (debug "graphql query" query-string
              "with variables" (-> request
                                   :body
                                   :variables))
@@ -90,7 +90,7 @@
           resp {:body result
                 :after-tx after-tx/after-tx}]
       (if (:errors result)
-        (do (log/debug result) (assoc resp :graphql-error true))
+        (do (debug result) (assoc resp :graphql-error true))
         resp))))
 
 (defn mutation? [query]
@@ -108,11 +108,12 @@
                                  (assoc request :tx)
                                  base-handler)]
                (when (:graphql-error response)
-                 (log/warn "Rolling back transaction because of graphql error")
+                 (warn "Rolling back transaction because of graphql error "
+                       response)
                  (jdbc/db-set-rollback-only! tx))
                response)
              (catch Throwable th
-               (log/warn "Rolling back transaction because of " th)
+               (warn "Rolling back transaction because of " th)
                (jdbc/db-set-rollback-only! tx)
                (throw th))))
       (base-handler request)))
@@ -124,8 +125,6 @@
     (handler-with-operation-type-check request)))
 
 ;#### debug ###################################################################
-; (logging-config/set-logger! :level :debug)
-; (logging-config/set-logger! :level :info)
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
 ; (debug/debug-ns *ns*)
 ; (debug/undebug-ns *ns*)
