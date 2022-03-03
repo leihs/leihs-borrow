@@ -27,6 +27,7 @@
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.shopping-cart.core :as cart]
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
+   [leihs.borrow.features.model-show.availability :as availability]
    [leihs.core.core :refer [dissoc-in flip]]))
 
 ; TODO: 
@@ -37,9 +38,7 @@
 
 (def model-id (atom nil))
 
-(def MONTHS-BUFFER 6)
-(defn with-future-buffer [date]
-  (datefn/addMonths date MONTHS-BUFFER))
+(def max-date availability/max-date)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -73,7 +72,7 @@
  ::on-fetched-data
  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
    (let [now (js/Date.)
-         opts (::filter-modal/options db)
+         opts (get-in db [:ls ::filter-modal/options])
          start-date (:start-date opts)
          end-date (:end-date opts)
          user-id (current-user/get-current-profile-id db)
@@ -83,9 +82,8 @@
          initial-end-date (or filter-end-date
                               (datefn/addDays initial-start-date 1))
          start-of-current-month (datefn/startOfMonth now)
-         max-date-loaded (-> initial-end-date
-                             with-future-buffer
-                             datefn/endOfMonth)]
+         fetch-until-date (-> initial-end-date
+                              availability/with-future-buffer)]
      {:db (-> db
               (update-in [:ls ::data @model-id] (fnil identity {}))
               (cond-> errors (assoc-in [::errors @model-id] errors))
@@ -93,20 +91,27 @@
       :dispatch [::fetch-availability
                  user-id
                  (h/date-format-day start-of-current-month)
-                 (h/date-format-day max-date-loaded)]})))
+                 (h/date-format-day fetch-until-date)]})))
 
 (reg-event-fx
  ::fetch-availability
  (fn-traced [{:keys [db]} [_ user-id start-date end-date]]
    (let [model-id @model-id
-         pool-ids (pool-ids-with-borrowable-quantity db model-id)]
-     (if (empty? pool-ids)
+         pool-ids (pool-ids-with-borrowable-quantity db model-id)
+         start-date-exceeds-max? (> (js/Date. start-date) max-date)
+         end-or-max-date (if (> (js/Date. end-date) max-date)
+                           (h/date-format-day max-date)
+                           end-date)]
+     (cond
+       (empty? pool-ids)
        {:db (update-in db [:ls ::data model-id]
                        #(merge %
-                               {:fetching-until-date nil
-                                :fetched-until-date nil
-                                :availability []
-                                :availability-loaded? true}))}
+                               {:availability []
+                                :availability-ready? true}))}
+       start-date-exceeds-max?
+       {:db (update-in db [:ls ::data model-id]
+                       #(availability/set-loading-as-ended % end-date))}
+       :else
        {:db (assoc-in db
                       [:ls ::data model-id :fetching-until-date]
                       end-date)
@@ -116,22 +121,41 @@
                     :userId user-id
                     :poolIds pool-ids
                     :startDate start-date
-                    :endDate end-date}
-                   [::on-fetched-availability]]}))))
+                    :endDate end-or-max-date}
+                   [::on-fetched-availability end-date]]}))))
 
 (reg-event-db
  ::on-fetched-availability
  (fn-traced [db
-             [_ {{{new-availability :availability} :model} :data
-                 errors :errors}]]
+             [_  end-date {{{new-availability :availability} :model} :data
+                           errors :errors}]]
    (-> db
        (cond-> errors (assoc-in [::errors @model-id] errors))
        (update-in [:ls ::data @model-id]
-                  #(merge %
-                          {:fetching-until-date nil
-                           :fetched-until-date (:fetching-until-date %)
-                           :availability new-availability
-                           :availability-loaded? true})))))
+                  #(-> %
+                       (availability/update-availability new-availability)
+                       (availability/set-loading-as-ended end-date)
+                       (assoc :availability-ready? true))))))
+
+(reg-event-fx
+ ::ensure-availability-fetched-until
+ (fn-traced [{:keys [db]} [_ user-id requested-date]]
+   (let [model (get-in db [:ls ::data @model-id])
+         max-fetched-or-fetching (js/Date. (or (:fetching-until-date model) (:fetched-until-date model)))
+         range-start (datefn/addDays max-fetched-or-fetching 1)
+         range-end (availability/with-future-buffer requested-date)]
+     (when (datefn/isAfter requested-date max-fetched-or-fetching)
+       {:dispatch [::fetch-availability
+                   user-id
+                   (-> range-start h/date-format-day)
+                   (-> range-end h/date-format-day)]}))))
+
+(reg-event-db
+ ::clear-availability
+ (fn-traced [db _]
+   (update-in db [:ls ::data @model-id]
+              #(merge % {:availability []
+                         :availability-ready? false}))))
 
 (reg-event-fx
  ::favorite-model
@@ -243,7 +267,8 @@
               (dissoc-in [:ls ::cart/data :pending-count])
               (assoc-in [::data :order-panel] nil))
       :alert (str "FAIL! " (pr-str errors))}
-     {:dispatch-n (list [::fetch-availability
+     {:dispatch-n (list [::clear-availability]
+                        [::fetch-availability
                          user-id
                          (-> (js/Date.)
                              datefn/startOfMonth
@@ -251,8 +276,7 @@
                          (-> args
                              :endDate
                              datefn/parseISO
-                             with-future-buffer
-                             datefn/endOfMonth
+                             availability/with-future-buffer
                              h/date-format-day)]
                         [::timeout/refresh]
                         [::order-success data])})))
@@ -271,18 +295,13 @@
             initial-start-date (or filter-start-date now)
             initial-end-date (or filter-end-date
                                  (datefn/addDays initial-start-date 1))
-            start-of-current-month (datefn/startOfMonth now)
-            max-date-loaded (-> model
-                                :fetched-until-date
-                                js/Date.
-                                datefn/endOfDay)
-            fetching-until-date (some-> model
-                                        :fetching-until-date
-                                        js/Date.
-                                        datefn/endOfDay)
+            fetched-until-date (-> model
+                                   :fetched-until-date
+                                   js/Date.
+                                   datefn/endOfDay)
             user-id (:id current-profile)
             pools @(subscribe [::inventory-pools (:id model)])
-            availability-loaded? (:availability-loaded? model)
+            availability-ready? (:availability-ready? model)
             on-cancel #(dispatch [::close-order-panel])
             on-submit (fn [jsargs]
                         (let [args (js->clj jsargs :keywordize-keys true)]
@@ -297,7 +316,7 @@
             order-panel-data @(subscribe [::order-panel-data])
             is-saving? (:is-saving? order-panel-data)]
 
-        (when availability-loaded?
+        (when availability-ready?
           [:> UI/Components.Design.ModalDialog {:shown shown?
                                                 :dismissible true
                                                 :on-dismiss on-cancel
@@ -305,30 +324,18 @@
                                                 :class "ui-booking-calendar"}
            [:> UI/Components.Design.ModalDialog.Body
             [:> UI/Components.OrderPanel
-             {:initialOpen true,
-              :initialQuantity (or (:quantity filters) 1),
-              ; START DYNAMIC FETCHING PROPS
+             {:initialQuantity (or (:quantity filters) 1),
               :initialStartDate initial-start-date,
               :initialEndDate initial-end-date,
-              :maxDateLoaded max-date-loaded,
+              :maxDateLoaded fetched-until-date,
               :profileName profile-name
-              :isLoadingFuture (boolean fetching-until-date),
-              ; END DYNAMIC FETCHING PROPS
-              :onShownDateChange (fn [date-object]
-                                   (let [until-date (get (js->clj date-object) "date")]
-                                     (when (not (or fetching-until-date
-                                                    (datefn/isEqual until-date max-date-loaded)
-                                                    (datefn/isBefore until-date max-date-loaded)))
-                                       (dispatch [::fetch-availability
-                                              ; Always fetching from start-of-current-month for the
-                                              ; time being, as there are issue if scrolling
-                                              ; too fast and was not sure if there was something
-                                              ; wrong with concating the availabilities.
-                                                  user-id
-                                                  (-> start-of-current-month h/date-format-day)
-                                                  (-> until-date
-                                                      with-future-buffer
-                                                      h/date-format-day)]))))
+              :maxDateTotal max-date
+              :onCalendarNavigate (fn [date-object]
+                                    (let [until-date (get (js->clj date-object) "date")]
+                                      (dispatch [::ensure-availability-fetched-until user-id until-date])))
+              :onDatesChange (fn [formValues]
+                               (let [end-date (get (js->clj formValues) "endDate")]
+                                 (dispatch [::ensure-availability-fetched-until user-id end-date])))
               :initialInventoryPoolId (:pool-id filters)
               :inventoryPools (map h/camel-case-keys pools)
               :onSubmit on-submit
@@ -372,8 +379,10 @@
         errors @(subscribe [::errors model-id])
         order-panel-data @(subscribe [::order-panel-data])
         is-loading? (not (or model errors))
-        availability-loaded? (:availability-loaded? model)
-        any-availability? (boolean (seq (:availability model)))]
+        availability-ready? (:availability-ready? model)
+        any-availability? (boolean (seq (:availability model)))
+        current-profile @(subscribe [::current-profile])
+        user-id (:id current-profile)]
     [:section
      (cond
        is-loading? [ui/loading (t :loading)]
@@ -395,10 +404,10 @@
                                                         [(if (:is-favorited model)
                                                            ::unfavorite-model
                                                            ::favorite-model) (:id model)])
-                                     :onOrderClick #(dispatch [::open-order-panel])
-                                     :isAddButtonEnabled (and availability-loaded? any-availability?)
-                                     :isFavoriteButtonEnabled (and availability-loaded? any-availability?)
-                                     :buttonInfo (when (and availability-loaded? (not any-availability?)) (t :not-available-for-current-profile))}]
+                                     :onOrderClick #(dispatch [::open-order-panel user-id filters])
+                                     :isAddButtonEnabled (and availability-ready? any-availability?)
+                                     :isFavoriteButtonEnabled (and availability-ready? any-availability?)
+                                     :buttonInfo (when (and availability-ready? (not any-availability?)) (t :not-available-for-current-profile))}]
 
         ; NOTE: order panel is inside a modal, so we dont need to pass it through as a child to `ModelShow` 
         [order-panel model filters (:is-open? order-panel-data)]

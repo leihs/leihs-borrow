@@ -24,9 +24,12 @@
    [leihs.core.core :refer [dissoc-in presence]]
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.customer-orders.core :as rentals]
+   [leihs.borrow.features.model-show.availability :as availability]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
+
+(def max-date availability/max-date)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -54,13 +57,6 @@
          (filter #(-> % :quantity (> 0)))
          (map #(-> % :inventory-pool :id)))))
 
-(defn set-loading-as-ended [edit-mode, availability]
-  (when edit-mode
-    (merge edit-mode
-           {:fetching-until-date nil
-            :fetched-until-date (:fetching-until-date edit-mode)
-            :availability availability})))
-
 (reg-event-fx
  ::fetch-availability
  (fn-traced [{:keys [db]} [_ start-date end-date]]
@@ -68,8 +64,18 @@
          user-id (-> edit-mode :user-id)
          model (:model edit-mode)
          exclude-reservation-ids (map :id (:res-lines edit-mode))
-         pool-ids (pool-ids-with-borrowable-quantity db)]
-     (if (seq pool-ids)
+         pool-ids (pool-ids-with-borrowable-quantity db)
+         start-date-exceeds-max? (> (js/Date. start-date) max-date)
+         end-or-max-date (if (> (js/Date. end-date) max-date)
+                           (h/date-format-day max-date)
+                           end-date)]
+     (cond
+       (empty? pool-ids)
+       {:db (assoc-in db [::edit-mode :availability] [])}
+       start-date-exceeds-max?
+       {:db (update-in db [::edit-mode]
+                       #(availability/set-loading-as-ended % end-date))}
+       :else
        {:db (assoc-in db [::edit-mode :fetching-until-date] end-date)
         :dispatch [::re-graph/query
                    (rc/inline "leihs/borrow/features/model_show/getAvailability.gql")
@@ -77,23 +83,33 @@
                     :userId user-id
                     :poolIds pool-ids
                     :startDate start-date
-                    :endDate end-date
+                    :endDate end-or-max-date
                     :excludeReservationIds exclude-reservation-ids}
-                   [::on-fetched-availability]]}
-       ; else 
-       {:db (update-in db [::edit-mode]
-                       #(set-loading-as-ended % []))}))))
+                   [::on-fetched-availability end-date]]}))))
 
 (reg-event-db
  ::on-fetched-availability
  (fn-traced [db
-             [_ {{{availability :availability} :model} :data
-                 errors :errors}]]
+             [_ end-date {{{new-availability :availability} :model} :data
+                          errors :errors}]]
    (-> db
        (cond-> errors (assoc-in [::errors] errors))
        (update-in [::edit-mode]
-                  #(set-loading-as-ended % availability)))))
+                  #(-> %
+                       (availability/update-availability new-availability)
+                       (availability/set-loading-as-ended end-date))))))
 
+(reg-event-fx
+ ::ensure-availability-fetched-until
+ (fn-traced [{:keys [db]} [_ requested-date]]
+   (let [edit-mode (get-in db [::edit-mode])
+         max-fetched-or-fetching (js/Date. (or (:fetching-until-date edit-mode) (:fetched-until-date edit-mode)))
+         range-start (datefn/addDays max-fetched-or-fetching 1)
+         range-end (availability/with-future-buffer requested-date)]
+     (when (datefn/isAfter requested-date max-fetched-or-fetching)
+       {:dispatch [::fetch-availability
+                   (-> range-start h/date-format-day)
+                   (-> range-end h/date-format-day)]}))))
 (reg-event-db
  ::open-delete-dialog
  (fn-traced [db]
@@ -152,9 +168,8 @@
            end-date (:end-date res-line)
            quantity (count res-lines)
            start-of-current-month (datefn/startOfMonth now)
-           max-date-loaded (-> (datefn/parseISO end-date)
-                               (datefn/addMonths 6)
-                               datefn/endOfMonth)]
+           fetch-until-date (-> (datefn/parseISO end-date)
+                                availability/with-future-buffer)]
        {:db (assoc-in db [::edit-mode]
                       {:res-lines res-lines
                        :model model
@@ -165,7 +180,7 @@
                        :user-id user-id})
         :dispatch [::fetch-availability
                    (h/date-format-day start-of-current-month)
-                   (h/date-format-day max-date-loaded)]}))))
+                   (h/date-format-day fetch-until-date)]}))))
 
 (reg-event-db
  ::open-order-dialog
@@ -351,15 +366,10 @@
                        (map #(-> % (assoc-suspension suspensions)))
                        (add-inaccessible-pool pool-id-and-name))
 
-            fetching-until-date (some-> edit-mode-data
-                                        :fetching-until-date
-                                        js/Date.
-                                        datefn/endOfDay)
-            start-of-current-month (datefn/startOfMonth now)
-            max-date-loaded (-> edit-mode-data
-                                :fetched-until-date
-                                js/Date.
-                                datefn/endOfDay)
+            fetched-until-date (-> edit-mode-data
+                                   :fetched-until-date
+                                   js/Date.
+                                   datefn/endOfDay)
             is-saving? (:is-saving? edit-mode-data)]
 
         [:> UI/Components.Design.ModalDialog {:shown true
@@ -375,22 +385,14 @@
              :initialEndDate end-date
              :initialInventoryPoolId (:id pool-id-and-name)
              :inventoryPools (map h/camel-case-keys pools)
-             :maxDateLoaded max-date-loaded
-             :onShownDateChange (fn [date-object]
-                                  (let [until-date (get (js->clj date-object) "date")]
-                                    (h/log "Calendar shows until: " (h/date-format-day until-date))
-                                    (if (or fetching-until-date
-                                            (datefn/isEqual until-date max-date-loaded)
-                                            (datefn/isBefore until-date max-date-loaded))
-                                      (h/log "We are either fetching or already have until: "
-                                             (h/date-format-day until-date))
-                                      (dispatch [::fetch-availability
-                                            ; Always fetching from start-of-current-month for the
-                                            ; time being, as there are issue if scrolling
-                                            ; too fast and was not sure if there was something
-                                            ; wrong with concating the availabilities.
-                                                 (-> start-of-current-month h/date-format-day)
-                                                 (-> until-date (datefn/addMonths 6) h/date-format-day)]))))
+             :maxDateLoaded fetched-until-date
+             :maxDateTotal max-date
+             :onCalendarNavigate (fn [date-object]
+                                   (let [until-date (get (js->clj date-object) "date")]
+                                     (dispatch [::ensure-availability-fetched-until until-date])))
+             :onDatesChange (fn [formValues]
+                              (let [end-date (get (js->clj formValues) "endDate")]
+                                (dispatch [::ensure-availability-fetched-until end-date])))
              :onSubmit (fn [jsargs]
                          (let [args (js->clj jsargs :keywordize-keys true)]
                            (dispatch [::update-reservations
