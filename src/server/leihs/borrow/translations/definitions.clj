@@ -158,8 +158,10 @@
              :pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
                      :all {:en-GB "All" :de-CH "Alle"}
                      :invalid-option {:en-GB "Invalid selection" :de-CH "Ungültige Auswahl"}
-                     :invalid-option-info {:en-GB "The pre-selected inventory pool is not available for the current profile" 
-                                           :de-CH "Der vorher gewählte Inventarpark ist für das aktuelle Profil nicht verfügbar"}}
+                     :invalid-option-info {:en-GB "The pre-selected inventory pool is not available for the current profile"
+                                           :de-CH "Der vorher gewählte Inventarpark ist für das aktuelle Profil nicht verfügbar"}
+                     :pool-suspension {:de-CH "Benutzer für diesen Inventarpark gesperrt"
+                                       :en-GB "User suspended for this inventory pool"}}
              :from {:en-GB "From"
                     :de-CH "Von"}
              :until {:en-GB "Until"

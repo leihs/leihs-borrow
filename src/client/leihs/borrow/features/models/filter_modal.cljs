@@ -49,6 +49,11 @@
          (fn [current-profile _]
            (filter #(:has-reservable-items %) (:inventory-pools current-profile))))
 
+(reg-sub ::suspensions
+         :<- [::current-user/current-profile]
+         (fn [current-profile _]
+           (:suspensions current-profile)))
+
 (defn filter-modal [hide! dispatch-fn saved-opts locale]
   (let [format-date #(some-> %
                              (date-fns/parse "yyyy-MM-dd" (js/Date.))
@@ -63,6 +68,8 @@
     (fn [hide! dispatch-fn saved-opts locale]
       (let [pools @(subscribe [::pools-with-reservable-items])
             is-unselectable-pool (not-any? #{@pool-id} (concat ["" "all"] (map #(:id %) pools)))
+            suspensions @(subscribe [::suspensions])
+            user-suspended-in-pool? (->> suspensions (some #(= @pool-id (-> % :inventory-pool :id))))
             locale-to-use @(subscribe [::translate/locale-to-use])
             locale (case locale-to-use :de-CH locale/de :en-GB locale/enGB)
             start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
@@ -107,14 +114,17 @@
                [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
                [:select.form-select {:name "pool-id" :id "pool-id" :value (or @pool-id "all")
                                      :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
-                [:option {:value "all" } (t :pools.all)]
+                [:option {:value "all"} (t :pools.all)]
                 (when is-unselectable-pool
                   [:option {:value @pool-id} (t :pools.invalid-option)])
                 (doall (for [{pool-id :id pool-name :name} pools]
                          [:option {:value pool-id :key pool-id} pool-name]))]
                (when is-unselectable-pool
-                 [:> UI/Components.Design.Warning {:class "mt-2"} 
-                  (t :pools.invalid-option-info)])]
+                 [:> UI/Components.Design.Warning {:class "mt-2"}
+                  (t :pools.invalid-option-info)])
+               (when user-suspended-in-pool?
+                 [:> UI/Components.Design.Warning {:class "mt-2"}
+                  (t :pools.pool-suspension)])]
 
               [:> UI/Components.Design.Section {:title (t :availability) :collapsible true}
                [:div.form-check.mb-3
