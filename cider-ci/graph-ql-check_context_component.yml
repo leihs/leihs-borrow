@@ -15,6 +15,9 @@ task_defaults:
     LEIHS_BORROW_HTTP_PORT:
       min: 3300
       max: 3399
+    LEIHS_LEGACY_HTTP_PORT:
+      min: 3400
+      max: 3499
   git_options:
     submodules:
       include_match: ^.*$
@@ -32,4 +35,3 @@ tasks:
           sed -i '' -e "s/localhost:3250/localhost:${LEIHS_BORROW_HTTP_PORT}/" .graphqlconfig.yaml
           npm install --silent --no-audit
           ./scripts/diff-graphql-schema
-
