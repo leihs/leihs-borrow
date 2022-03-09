@@ -2,7 +2,7 @@
   (:require
     [java-time]
     [clojure.tools.logging :as log]
-    [leihs.core.core :refer [spy-with presence]]
+    [leihs.core.core :refer [spy-with presence raise]]
     [taoensso.timbre :refer [debug info warn error spy]]
     )
   (:import [java.util UUID]
@@ -26,7 +26,8 @@
 (defn date-serialize [x]
   (debug 'date-serialize {:value x
                           :type (type x)})
-  (try (-> x
+  (try (-> x ; expected type of java.lang.String
+           .toString ; for type of java.sql.Date
            (->> (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE))
            .atStartOfDay
            (.toInstant ZoneOffset/UTC)

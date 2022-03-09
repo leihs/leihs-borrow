@@ -13,4 +13,4 @@
 (defn past? [date]
   (java-time/after?
    (java-time/local-date)
-   (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE date)))
+   (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (.toString date))))
