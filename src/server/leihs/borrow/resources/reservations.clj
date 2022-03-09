@@ -28,12 +28,10 @@
 
 (defn columns [tx]
   (as-> (database/columns tx "reservations") <>
-    (remove #{:created_at :updated_at :start_date :end_date} <>)
+    (remove #{:created_at :updated_at} <>)
     (conj <>
           (helpers/date-time-created-at :reservations)
-          (helpers/date-time-updated-at :reservations)
-          (helpers/date-start-date :reservations)
-          (helpers/date-end-date :reservations))))
+          (helpers/date-time-updated-at :reservations))))
 
 (defn get-by-ids [tx ids]
   (-> (apply sql/select (columns tx))

@@ -31,8 +31,8 @@
                   :unified_customer_orders.title
                   :unified_customer_orders.state
                   :unified_customer_orders.rental_state
-                  (helpers/date-from-date :unified_customer_orders)
-                  (helpers/date-until-date :unified_customer_orders)
+                  :unified_customer_orders.from_date
+                  :unified_customer_orders.until_date
                   (helpers/date-time-created-at :unified_customer_orders)
                   (helpers/date-time-updated-at :unified_customer_orders)
                   [(sql/call := :unified_customer_orders.origin_table "customer_orders")
@@ -66,8 +66,14 @@
     (assoc row :refined_rental_state states)))
 
 (defn row-fn [tx r]
-  (let [from (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (:from_date r))
-        until (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE (:until_date r))]
+  (let [from (->> r
+                  :from_date
+                  .toString
+                  (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE))
+        until (->> r
+                   :until_date
+                   .toString
+                   (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE))]
     (-> r
         (assoc :total-days (+ 1 (java-time/time-between from until :days)))
         (->> (refine-rental-state tx)))))

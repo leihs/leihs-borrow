@@ -141,7 +141,7 @@
                                                          start-date
                                                          end-date)))]
         (if (or (before?
-                 (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
+                 (local-date DateTimeFormatter/ISO_LOCAL_DATE (.toString start-date))
                  (local-date))
                 (empty? pool-ids))
           0

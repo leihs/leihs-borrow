@@ -10,7 +10,7 @@ task_defaults:
     - cider-ci/translations_task-component.yml
     - cider-ci/service_task-component.yml
     - cider-ci/legacy_service-task_component.yml
-  max_trials: 1
+  max_trials: 3
   traits:
     OpenJDK: true
     Firefox ESR: true
