@@ -1,6 +1,0 @@
-#!/bin/sh
-
-. ./scripts/_dev-env.sh
-export LEIHS_LEGACY_HTTP_BASE_URL="http://localhost:3210"
-
-java -jar target/leihs-borrow.jar run

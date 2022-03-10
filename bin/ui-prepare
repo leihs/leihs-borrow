@@ -1,7 +1,12 @@
+#!/bin/bash -eu
+
 cd leihs-ui
 
 # try a cached build, if that doesnt work just a build
 bin/build || bin/build-core
+
+# install needed deps always
+bin/deps-install-dev
 
 cd -
 

@@ -1,4 +1,0 @@
-#!/bin/bash
-
-source ./scripts/_test-env.sh
-bundle exec ruby ./spec/mock/legacy-mock-server.rb -p $LEIHS_LEGACY_PORT

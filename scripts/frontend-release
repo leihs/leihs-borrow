@@ -1,4 +1,0 @@
-#!/bin/sh
-
-npm install --silent --no-audit
-npx shadow-cljs release app

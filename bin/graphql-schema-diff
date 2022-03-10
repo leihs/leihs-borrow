@@ -8,7 +8,7 @@ npm run -s graphql-schema-diff -- --version &> /dev/null || npm install --silent
 RES=1
 
 mv schema.graphql schema_orig.graphql
-./scripts/dump-graphql-schema
+bin/graphql-schema-dump
 
 npm run -s graphql-schema-diff -- \
   --fail-on-any-changes schema_orig.graphql schema.graphql \

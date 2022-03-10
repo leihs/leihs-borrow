@@ -34,4 +34,4 @@ tasks:
         body: |
           sed -i '' -e "s/localhost:3250/localhost:${LEIHS_BORROW_HTTP_PORT}/" .graphqlconfig.yaml
           npm install --silent --no-audit
-          ./scripts/diff-graphql-schema
+          ./bin/graphql-schema-diff

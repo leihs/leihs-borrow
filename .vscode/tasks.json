@@ -38,7 +38,7 @@
     {
       "label": "backend-dev",
       "type": "shell",
-      "command": "./scripts/start-backend-dev",
+      "command": "source bin/set-env && bin/dev-run-backend",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
@@ -54,7 +54,7 @@
     {
       "label": "frontend-dev",
       "type": "shell",
-      "command": "./scripts/start-frontend-dev",
+      "command": "source bin/set-env && bin/dev-run-frontend",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
@@ -70,7 +70,7 @@
     {
       "label": "legacy-dev",
       "type": "shell",
-      "command": "./scripts/start-legacy-dev",
+      "command": "source bin/set-env && bin/dev-run-legacy",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
@@ -134,7 +134,7 @@
     {
       "label": "prepare ui",
       "type": "shell",
-      "command": "./scripts/prepare-shared-ui.sh && cd leihs-ui && bin/deps-install-dev",
+      "command": "bin/ui-prepare",
       "problemMatcher": [],
       "presentation": {
         "echo": true,
@@ -179,7 +179,7 @@
     {
       "label": "migrate DB",
       "type": "shell",
-      "command": "./scripts/migrate-db-dev",
+      "command": "source bin/set-env && bin/db-migrate",
       "problemMatcher": [],
       "presentation": {
         "echo": true,

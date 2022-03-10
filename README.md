@@ -19,25 +19,26 @@
 quickstart:
 
 ```shell
-# DB config:
-echo 'DATABASE_URL=postgresql://localhost:5432/leihs?max-pool-size=5' > .env.local
+# ENV config: copy from template
+cp .env.local-example .env.local
 
 # preparation steps:
-# ensure correct version of shared code (ui/react and clojurescript)
+# ensure correct version of shared code (UI/React and ClojureScript) and DB migrations
 git submodule update --init --recursive --force
-./scripts/prepare-shared-ui.sh
 
 # In VS Code, do "Run Task" > "App Development" or manually start the following:
 # (when resuming work, preparation steps can be skipped by running the task "Frontend Development Services")
+bin/ui-prepare
+source bin/set-env && bin/db-migrate
 
 # run in a shell:
-./scripts/start-backend-dev
+source bin/set-env && bin/dev-run-backend
 
 # run in another shell:
-./scripts/start-frontend-dev
+source bin/set-env && bin/dev-run-frontend
 
 # run in another shell:
-./scripts/start-legacy-dev
+source bin/set-env && bin/dev-run-legacy
 
 # run in another shell:
 cd leihs-ui && npm run watch:lib

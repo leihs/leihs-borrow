@@ -12,7 +12,7 @@ contexts:
         scripts:
           main:
             body: |
-              ./scripts/lint-clojure
+              ./bin/lint-clojure
 
               # ignore errors (for now)
               exit 0
