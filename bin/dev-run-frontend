@@ -5,8 +5,6 @@ cd "${PROJECT_DIR}"
 echo "PWD: $PWD"
 source $PROJECT_DIR/shared-clj/clojure/bin/activate
 
-./bin/ui-prepare
-
 ./bin/cljs-watch
 cd -
 

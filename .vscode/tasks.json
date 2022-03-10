@@ -8,6 +8,7 @@
       "label": "App Development",
       "detail": "run all preparation steps and then start all services",
       "dependsOn": [
+        "env: switch to dev",
         "Development Preparations Steps",
         "Frontend Development Services"
       ],
@@ -25,12 +26,24 @@
       "label": "Frontend Development Services",
       "detail": "start all services (assumes preparations steps already ran)",
       "dependsOn": [
+        "env: switch to dev",
         "backend-dev",
         "frontend-dev",
         "legacy-dev",
         "leihs-ui: watch lib",
         "leihs-ui: watch theme",
         "storybook"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Services for Tests (Feature Specs)",
+      "detail": "start all services in test env",
+      "dependsOn": [
+        "env: switch to test",
+        "tests: run server",
+        "tests: run legacy API",
+        "tests: open shell for RSpec"
       ],
       "problemMatcher": []
     },
@@ -189,6 +202,90 @@
         "close": false,
         "clear": true,
         "group": "dev-prepare"
+      }
+    },
+    {
+      "label": "tests: build server",
+      "type": "shell",
+      "command": "bin/build",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": false,
+        "clear": true,
+        "group": "test"
+      }
+    },
+    {
+      "label": "tests: run server",
+      "type": "shell",
+      "command": "source bin/set-env && bin/run",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": false,
+        "clear": true,
+        "group": "test"
+      }
+    },
+    {
+      "label": "tests: run legacy API",
+      "type": "shell",
+      "command": "source bin/set-env && bin/test-run-legacy",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": false,
+        "clear": true,
+        "group": "test"
+      }
+    },
+    {
+      "label": "tests: open shell for RSpec",
+      "type": "shell",
+      "command": "source bin/set-env && bash",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": false,
+        "close": false,
+        "clear": true,
+        "group": "test"
+      }
+    },
+    {
+      "label": "env: switch to dev",
+      "type": "shell",
+      "command": "ln -sf .env.local.dev .env.local",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "focus": false,
+        "showReuseMessage": false,
+        "close": true
+      }
+    },
+    {
+      "label": "env: switch to test",
+      "type": "shell",
+      "command": "ln -sf .env.local.test .env.local",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "focus": false,
+        "showReuseMessage": false,
+        "close": true
       }
     }
   ]

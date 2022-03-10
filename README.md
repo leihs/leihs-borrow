@@ -20,7 +20,10 @@ quickstart:
 
 ```shell
 # ENV config: copy from template
-cp .env.local-example .env.local
+cp .env.local-example .env.local.dev
+cp .env.local-example .env.local.test
+ln -sf .env.local.dev .env.local
+# ln -sf .env.local.test .env.local # to switch settings to dev env
 
 # preparation steps:
 # ensure correct version of shared code (UI/React and ClojureScript) and DB migrations
