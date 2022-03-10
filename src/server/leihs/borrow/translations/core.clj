@@ -1,15 +1,22 @@
 (ns leihs.borrow.translations.core
   (:require
-    [clojure.string :as string]
-    [clojure.edn :as edn]
-    [clojure.java.jdbc :as jdbc]
-    [leihs.core.sql :as sql]
-    [leihs.core.db :as db]
-    [leihs.borrow.translations.definitions :refer [definitions]]
-    [taoensso.timbre :refer [debug info warn error]]
-    ))
+   [clojure.string :as string]
+   [clojure.edn :as edn]
+   [clojure.java.jdbc :as jdbc]
+   [environ.core :refer [env]]
+   [leihs.core.core :refer [presence]]
+   [leihs.core.sql :as sql]
+   [leihs.core.db :as db]
+   [leihs.borrow.translations.definitions :refer [definitions]]
+   [taoensso.timbre :refer [debug info warn error]]
+   ))
 
 (def loaded? (atom false))
+
+(def cli-options
+  [[nil "--load-translations LOAD_TRANSLATIONS"
+    :default (or (some-> :load-translations env presence) false)
+    :parse-fn boolean]])
 
 (defn keys-in
   "Returns a sequence of all key paths in a given map using DFS walk."

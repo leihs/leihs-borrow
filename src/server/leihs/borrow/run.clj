@@ -2,25 +2,26 @@
   (:refer-clojure :exclude [str keyword])
   (:require [leihs.core.core :refer [keyword str presence]])
   (:require
-    ;[leihs.borrow.paths]
-    [clojure.pprint :refer [pprint]]
-    [clojure.tools.cli :as cli :refer [parse-opts]]
-    [leihs.borrow.graphql :as graphql]
-    [leihs.borrow.legacy :as legacy]
-    [leihs.borrow.routes :as routes]
-    [leihs.borrow.ssr]
-    [leihs.core.db :as db]
-    [leihs.core.http-server :as http-server]
-    [leihs.core.shutdown :as shutdown]
-    [leihs.core.ssr-engine :as ssr-engine]
-    [leihs.core.ssr]
-    [leihs.core.status :as status]
-    [leihs.core.url.jdbc]
-    [logbug.catcher :as catcher]
-    [logbug.debug :as debug]
-    [logbug.thrown :as thrown]
-    [taoensso.timbre :refer [debug info warn error]]
-    ))
+   ;[leihs.borrow.paths]
+   [clojure.pprint :refer [pprint]]
+   [clojure.tools.cli :as cli :refer [parse-opts]]
+   [leihs.borrow.graphql :as graphql]
+   [leihs.borrow.legacy :as legacy]
+   [leihs.borrow.routes :as routes]
+   [leihs.borrow.ssr]
+   [leihs.borrow.translations.core :as translations]
+   [leihs.core.db :as db]
+   [leihs.core.http-server :as http-server]
+   [leihs.core.shutdown :as shutdown]
+   [leihs.core.ssr-engine :as ssr-engine]
+   [leihs.core.ssr]
+   [leihs.core.status :as status]
+   [leihs.core.url.jdbc]
+   [logbug.catcher :as catcher]
+   [logbug.debug :as debug]
+   [logbug.thrown :as thrown]
+   [taoensso.timbre :refer [debug info warn error]]
+   ))
 
 
 (defn run [options]
@@ -34,6 +35,8 @@
     (graphql/init)
     (let [status (status/init)]
       (db/init options (:health-check-registry status)))
+    (when (:load-translations options)
+      (translations/reload))
     (let [http-handler (routes/init)]
       (http-server/start options http-handler))))
 
@@ -46,7 +49,8 @@
      shutdown/pid-file-option]
     (http-server/cli-options :default-http-port 3250)
     legacy/cli-opts
-    db/cli-options))
+    db/cli-options
+    translations/cli-options))
 
 (defn main-usage [options-summary & more]
   (->> ["leihs-borrow"

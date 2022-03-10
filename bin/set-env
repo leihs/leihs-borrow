@@ -29,6 +29,8 @@ export LEGACY_HTTP_PROTOCOL
 export LEGACY_HTTP_HOST
 export LEGACY_HTTP_PORT
 
+export LOAD_TRANSLATIONS
+
 export FIREFOX_ESR_60_PATH
 
 # and for compatibility with rails:
