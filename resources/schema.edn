@@ -421,6 +421,7 @@
            :inventoryPools {:resolve :inventory-pools
                             :args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
                             :type (list :InventoryPool)}
+           :languages {:resolve :languages :type (list :Language)}
            :category {:args {:id {:type (non-null :UUID)}
                              :parentId {:type :UUID}}
                       :resolve :category

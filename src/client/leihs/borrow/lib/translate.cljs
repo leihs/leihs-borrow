@@ -5,9 +5,11 @@
             [ajax.core :refer [GET]]
             [clojure.string :as string]
             [cljs.test :refer-macros [deftest is testing run-tests]]
+            [day8.re-frame.tracing :refer-macros [fn-traced]]
             [leihs.borrow.features.current-user.core :as current-user]
+            ; [leihs.borrow.features.languages.core :as languages]
             [leihs.borrow.lib.helpers :as h :refer [spy log format]]
-            [leihs.borrow.lib.re-frame :refer [reg-sub]]
+            [leihs.borrow.lib.re-frame :refer [dispatch-sync reg-sub reg-event-db reg-event-fx]]
             [re-frame.db :as db]
             [shadow.resource :as rc]
             ["date-fns/locale" :as locale]))
@@ -17,6 +19,7 @@
 (declare dict)
 (def fallbacks {:gsw-CH :de-CH
                 :de-CH :en-US
+                :es :en-GB
                 :en-US :en-GB})
 
 (defn fetch-and-init
@@ -26,10 +29,10 @@
   (GET (str js/window.location.origin "/my/user/me/translations")
        {:format :json
         :params {:prefix "borrow"}
-        :handler #(let [dict (h/keywordize-keys %)]
+        :handler #(let [response (h/keywordize-keys %)]
                     (do (set! js/window.leihsBorrowTranslations dict)
-                        (def dict dict)
-                        (callback)))}))
+                        (def dict (:translations response))
+                        (callback (:languages response))))}))
 
 (def remove-first-char #(-> % str rest string/join))
 
@@ -58,8 +61,15 @@
       (UI/IntlMessageFormat. (name locale))
       (.format (clj->js values))))
 
+(def locale-to-use-path
+  [:ls ::current-user/data :language-to-use :locale])
+
 (defn locale-to-use [db]
-  (-> db :ls ::current-user/data :language-to-use :locale keyword))
+  (-> db (get-in locale-to-use-path) keyword))
+
+(reg-event-db ::set-locale-to-use
+              (fn-traced [db [_ lang]]
+                (assoc-in db locale-to-use-path (:locale lang))))
 
 (reg-sub ::locale-to-use
          (fn [db _] (locale-to-use db)))
@@ -129,13 +139,13 @@
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use {:locale "gsw-CH"}}}})]
-      (is (= (t-base :test nil) (missing-translation :test))
+      (is (= (t-base :test nil) (missing-translation [:test]))
           "No translation for language to use."))
     (with-redefs [dict {:test {:de-CH "de-CH"}}
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use nil}}})]
-      (is (= (t-base :test nil) (missing-translation :test))
+      (is (= (t-base :test nil) (missing-translation [:test]))
           "No language to use."))
     ))
 

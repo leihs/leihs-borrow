@@ -8,11 +8,12 @@
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path] :as translate]
    [leihs.borrow.csrf :as csrf]
    [leihs.borrow.lib.helpers :as h]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.current-user.profile-switch :as profile-switch]
+   [leihs.borrow.features.languages.core :as languages]
    [leihs.borrow.features.shopping-cart.core :as cart]
    [leihs.borrow.components :as ui]
    ["/leihs-ui-client-side-external-react" :as UI]))
@@ -94,7 +95,8 @@
         legacy-url (:legacy-url user-nav)
         documentation-url (:documentation-url user-nav)
         support-url nil
-        languages [{:id "de" :title "Deutsch"}]]
+        languages @(subscribe [::languages/data])
+        locale-to-use @(subscribe [::translate/locale-to-use])]
 
     ; TODO: provide support-url in user-nav
     ; TODO: provide languages, implement language switch
@@ -144,7 +146,12 @@
         [:> UI/Components.Design.Menu.Group {:title (t :language/section-title)}
          (doall
           (for [language languages]
-            [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::TODO-switch-language (:id language)])} (:title language)]))])
+            (let [locale (:locale language)]
+              [:> UI/Components.Design.Menu.Link
+               {:key locale
+                :isSelected (= (keyword locale) locale-to-use)
+                :on-click #(dispatch [::languages/switch locale])}
+               (:name language)])))])
 
       [:> UI/Components.Design.Menu.Group {:title "Leihs"}
        [menu-link legacy-url (t :desktop-version)]

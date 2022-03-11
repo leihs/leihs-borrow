@@ -1,6 +1,7 @@
 (ns leihs.borrow.lib.helpers
   (:require-macros leihs.borrow.lib.helpers)
   (:require [clojure.walk :refer [postwalk walk] :as walk]
+            [clojure.string :as string]
             [camel-snake-kebab.core :as csk]
             ["date-fns" :as datefn]
             [goog.string :as gstring]
@@ -37,3 +38,11 @@
   (-> x
       (js->clj :keywordize-keys true)
       kebab-case-keys))
+
+(defn body-encode [data]
+  (->> data
+       (map (fn [[k v]]
+              (vector (name k) "=" (str v))))
+       (interpose "&")
+       flatten
+       string/join))

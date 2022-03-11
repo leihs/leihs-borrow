@@ -24,6 +24,7 @@
             [leihs.borrow.lib.localstorage :as ls]
             [leihs.borrow.lib.requests :as requests]
             [leihs.borrow.features.current-user.core :as current-user]
+            [leihs.borrow.features.languages.core :as languages]
             [leihs.borrow.client.routes :as routes]))
 
 ; from <https://github.com/juxt/bidi/issues/51#issuecomment-344101759>

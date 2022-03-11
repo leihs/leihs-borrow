@@ -3,7 +3,7 @@
     [ajax.core :as ajax]
     [clojure.string :as string]
     [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [leihs.borrow.lib.helpers :refer [log spy]]
+    [leihs.borrow.lib.helpers :refer [log spy body-encode]]
     [leihs.borrow.csrf :as csrf]
     [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                        reg-event-db
@@ -24,14 +24,6 @@
 
 (reg-event-db ::on-failure
               (fn-traced [db _] (log "failure") db))
-
-(defn body-encode [data]
-  (->> data
-       (map (fn [[k v]]
-              (vector (name k) "=" (str v))))
-       (interpose "&")
-       flatten
-       string/join))
 
 (reg-event-fx
   ::submit

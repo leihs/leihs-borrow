@@ -14,7 +14,8 @@
                                       reg-sub
                                       reg-fx
                                       subscribe
-                                      dispatch]]
+                                      dispatch
+                                      dispatch-sync]]
    [leihs.borrow.lib.helpers :refer [spy]]
    [leihs.borrow.lib.requests :as requests]
    [leihs.borrow.lib.routing :as routing]
@@ -29,6 +30,7 @@
    [leihs.borrow.features.customer-orders.show :as customer-orders-show]
    [leihs.borrow.features.favorite-models.core :as favorite-models]
    [leihs.borrow.features.home-page.core :as home-page]
+   [leihs.borrow.features.languages.core :as languages]
    [leihs.borrow.features.model-show.core :as model-show]
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.pools.index :as pools-index]
@@ -44,13 +46,14 @@
 
 ;-; INIT APP & DB
 (reg-event-fx
- ::load-app
- (fn-traced [{:keys [db]}]
+ ::init-app-db
+ (fn-traced [{:keys [db]} [_ languages]]
    {:db (-> db
              ; NOTE: clear the routing instance on (re-)load,
              ; otherwise the event wont re-run when hot reloading!
             (dissoc , :routing/routing)
-            (assoc , :meta {:app {:debug false}}))}))
+            (assoc , :meta {:app {:debug false}})
+            (assoc-in , [::languages/data] languages))}))
 
 ;-; EVENTS
 (reg-event-db :set-debug
@@ -135,12 +138,12 @@
 
 (defn ^:export ^:dev/after-load main []
   (translate/fetch-and-init
-   (fn callback []
-      ; start the app framework; NOTE: order is important!
-     (re-graph/init)
-     (dispatch [::load-app])
-     (dispatch [:routing/init-routing routes/routes-map])
-      ; start the ui
+   (fn callback [languages]
+     ; start the app framework; NOTE: order is important!
+     (re-graph/init) ; dispatch-sync
+     (dispatch-sync [::init-app-db languages])
+     (dispatch-sync [:routing/init-routing routes/routes-map])
+     ; start the ui
      (mount-root))))
 
 ; ??? braucht es imho nicht (mehr) TS

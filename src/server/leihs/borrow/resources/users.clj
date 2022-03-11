@@ -2,24 +2,16 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.string :as clj-str]
             [clojure.tools.logging :as log]
+            [compojure.core :as cpj]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
+            [leihs.borrow.resources.languages :as languages]
             [leihs.borrow.resources.settings :as settings]
+            [leihs.borrow.resources.users.shared :refer [get-by-id base-sqlmap]]
+            [leihs.core.paths :refer [path]]
             [leihs.core.sql :as sql]
-            [leihs.core.user.queries :refer [merge-search-term-where-clause]]))
-
-(defn sql-order-users
-  [sqlmap]
-  (sql/order-by
-   sqlmap
-   (sql/call :concat :users.firstname :users.lastname :users.login :users.id)))
-
-(def base-sqlmap
-  (-> (sql/select
-       :users.*
-       [(sql/raw "users.firstname || ' ' || users.lastname") :name])
-      (sql/from :users)
-      sql-order-users))
+            [leihs.core.user.queries :refer [merge-search-term-where-clause]]
+            [leihs.core.user.core :refer [wrap-me-id]]))
 
 (defn get-multiple [context {:keys [offset limit order-by search-term]} _]
   (jdbc/query
@@ -34,13 +26,6 @@
          limit
          (sql/limit limit))
        sql/format)))
-
-(defn get-by-id [tx id]
-  (-> base-sqlmap
-      (sql/merge-where [:= :id id])
-      sql/format
-      (->> (jdbc/query tx))
-      first))
 
 (defn get-one
   [{{:keys [tx]} :request target-user-id ::target-user/id} _ {:keys [user-id]}]
@@ -61,6 +46,25 @@
         "/borrow/")
    :documentation-url
    (:documentation_link (settings/get tx))})
+
+(defn update-user
+  [{tx :tx
+    {user-id :user-id} :route-params
+    {locale :locale} :form-params
+    {referer :referer} :headers
+    :as request}]
+  (when user-id
+    (assert (= (jdbc/update! tx
+                             :users
+                             {:language_locale locale}
+                             ["id = ?" user-id])
+               '(1))))
+  (let [language (languages/get-by-locale tx locale)]
+    {:status 200, :body language}))
+
+(def routes
+  (cpj/routes
+   (cpj/POST (path :my-user) [] (-> update-user wrap-me-id))))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
