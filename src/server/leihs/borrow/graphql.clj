@@ -98,16 +98,14 @@
 
 (defn base-handler
   [{{query :query} :body, :as request}]
-  (binding [after-tx/after-tx nil]
-    (let [result (-> query
-                     (exec-query request)
-                     (cond-> @lacinia-enable-timing helpers/attach-overall-timing)
-                     rearrange-keys)
-          resp {:body result
-                :after-tx after-tx/after-tx}]
-      (if (:errors result)
-        (do (debug result) (assoc resp :graphql-error true))
-        resp))))
+  (let [result (-> query
+                   (exec-query request)
+                   (cond-> @lacinia-enable-timing helpers/attach-overall-timing)
+                   rearrange-keys)
+        resp {:body result}]
+    (if (:errors result)
+      (do (debug result) (assoc resp :graphql-error true))
+      resp)))
 
 (defn mutation? [query]
   (->> query

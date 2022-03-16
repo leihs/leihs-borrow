@@ -7,5 +7,5 @@ ln -sf .env.local-dev .env.local
 tmux send -t leihs-borrow:2.1 "source ./bin/set-env && ./bin/dev-run-backend" C-m
 tmux send -t leihs-borrow:3.1 "tail -f log/debug.log" C-m
 tmux send -t leihs-borrow:4.1 "./bin/dev-run-frontend" C-m
-tmux send -t leihs-borrow:5.1 "rails server -p 3210" C-m
+tmux send -t leihs-borrow:5.1 "source ../../../bin/set-env && bundle exec rails server -p 3210" C-m
 tmux send -t leihs-borrow:7.1 "./my-scripts/watch" C-m

@@ -3,7 +3,6 @@
   (:require [clojure.java.jdbc :as jdbc]
             [clojure.set :as set]
             [clojure.string :refer [upper-case]]
-            [leihs.borrow.after-tx :as after-tx]
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.mails :as mails]
@@ -343,7 +342,7 @@
                               (map :id <>))}))
 
 (defn submit
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+  [{{:keys [tx after-tx-hooks*]} :request user-id ::target-user/id :as context}
    {:keys [purpose title]}
    _]
   (let [reservations (rs/unsubmitted tx user-id)]
@@ -360,32 +359,29 @@
                    (->> (jdbc/query tx))
                    first
                    :id)]
-      (loop [[[pool-id rs :as group-el] & remainder]
-             (seq (group-by :inventory_pool_id reservations))
-             mails []]
-        (if (seq group-el)
-          (let [order (-> (sql/insert-into :orders)
-                          (sql/values [{:user_id user-id
-                                        :inventory_pool_id pool-id
-                                        :state "submitted"
-                                        :purpose purpose
-                                        :customer_order_id uuid}])
-                          (sql/returning :*)
-                          sql/format
-                          (->> (jdbc/query tx))
-                          first)]
-            (-> (sql/update :reservations)
-                (sql/set {:status "submitted"
-                          :inventory_pool_id pool-id
-                          :order_id (:id order)})
-                (sql/where [:in :id (map :id rs)])
-                (sql/returning :*)
-                sql/format
-                (rs/query tx))
-            (recur remainder
-                   (conj mails #(mails/send-received context order))))
-          (do (set! after-tx/after-tx mails)
-              (get-one-by-id tx user-id uuid)))))))
+      (doseq [[pool-id rs :as group-el]
+              (seq (group-by :inventory_pool_id reservations))]
+        (let [order (-> (sql/insert-into :orders)
+                        (sql/values [{:user_id user-id
+                                      :inventory_pool_id pool-id
+                                      :state "submitted"
+                                      :purpose purpose
+                                      :customer_order_id uuid}])
+                        (sql/returning :*)
+                        sql/format
+                        (->> (jdbc/query tx))
+                        first)]
+          (-> (sql/update :reservations)
+              (sql/set {:status "submitted"
+                        :inventory_pool_id pool-id
+                        :order_id (:id order)})
+              (sql/where [:in :id (map :id rs)])
+              (sql/returning :*)
+              sql/format
+              (rs/query tx))
+          (swap! after-tx-hooks* conj (fn [_req _resp]
+                                        (mails/send-received context order)))))
+      (get-one-by-id tx user-id uuid))))
 
 (defn cancel
   [{{:keys [tx]} :request user-id ::target-user/id} {:keys [id]} _]
