@@ -9,7 +9,27 @@ step 'there are :n different :model models with a borrowable items in :pool' do 
   end
 end
 
-step 'I see :n different :model models' do |n, model_name|
+step 'the model :model_name has 1 borrowable item in :pool_name' do |model_name, pool_name|
+  pool = InventoryPool.find(name: pool_name)
+  model = LeihsModel.find(product: model_name)
+  FactoryBot.create(
+    :item,
+    is_borrowable: true, leihs_model: model, responsible: pool, owner: pool
+  )
+end
+
+step 'there is a subcategory :subcat in :cat' do |subcat, cat|
+  parent_cat = Category.find(name: cat)
+  FactoryBot.create(:category, name: subcat, parents: [parent_cat])
+end
+
+step 'the model :model_name belongs to the :cat_name category' do |model_name, cat_name|
+  model = LeihsModel.find(product: model_name)
+  category = Category.find(name: cat_name)
+  model.add_category(category)
+end
+
+step 'I see :n (different) :model model(s)' do |n, model_name|
   find('.ui-models-list-item', match: :first)
   model_items = all('.ui-models-list-item', text: /#{model_name}/)
   expect(model_items.count).to eq n.to_i
@@ -52,6 +72,10 @@ step 'I enter :term in the search field' do |term|
   fill_in('Search', with: term)
 end
 
+step 'I enter :term in the main search field' do |term|
+  within('.ui-model-search-filter') { fill_in(:term, with: term) }
+end
+
 step 'I select pool :pool_name' do |pool_name|
   select(pool_name, from: 'pool-id')
 end
@@ -66,4 +90,12 @@ end
 
 step "I don't see any :model_name model" do |model_name|
   expect(page).not_to have_content model_name
+end
+
+step 'the search field contains :term' do |term|
+  expect(find_field('term').value).to eq term
+end
+
+step 'I press the enter key' do
+  send_keys :enter
 end

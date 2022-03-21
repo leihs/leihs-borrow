@@ -16,7 +16,7 @@ Feature: Favorites
     Then I see "Nothing found"
 
     When I visit "/app/borrow/"
-    And I click on "Show search/filter"
+    And I click on "Filter"
     And I click on "Apply"
     And I click on model "Beamer"
     And I click on "Add to favorites"
@@ -25,7 +25,7 @@ Feature: Favorites
     And I see model "Beamer"
 
     When I visit "/app/borrow/"
-    And I click on "Show search/filter"
+    And I click on "Filter"
     And I click on "Apply"
     And I click on model "Camera"
     And I click on "Add to favorites"
@@ -35,16 +35,16 @@ Feature: Favorites
     And I see model "Camera"
 
     When I visit "/app/borrow/"
-    And I click on "Show search/filter"
+    And I click on "Filter"
     And I click on "Apply"
     And I click on model "Beamer"
     And I click on "Remove from favorites"
     When I visit "/app/borrow/models/favorites"
     Then I see 1 favorite
     And I see model "Camera"
-    
+
     When I visit "/app/borrow/"
-    And I click on "Show search/filter"
+    And I click on "Filter"
     And I click on "Apply"
     And I click on model "Camera"
     And I click on "Remove from favorites"

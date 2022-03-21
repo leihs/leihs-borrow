@@ -44,14 +44,15 @@
  ::categories-index
  (fn [db] (get-in db [:ls ::data])))
 
-(defn categories-list [categories]
+(defn categories-list [categories model-filters]
   (let [list
         (doall
          (for [category categories]
            {:id (:id category)
             :href (or (:url category)
                       (routing/path-for ::routes/categories-show
-                                        :categories-path (:id category)))
+                                        :categories-path (:id category)
+                                        :query-params model-filters))
             :caption (:name category)
             :imgSrc (get-in category [:images 0 :image-url])}))]
 

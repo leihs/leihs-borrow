@@ -19,7 +19,7 @@ Feature: Search results (and caching)
 
   Scenario: Home page
     # Show all without filtering
-    When I click on "Show search/filter"
+    When I click on "Filter"
     And I click button "Apply"
     Then I see 20 different "Beamer" models
 
@@ -33,15 +33,22 @@ Feature: Search results (and caching)
     Then I see category "Cameras"
     And I see category "Beamers"
 
-    When I click on "Show search/filter"
+    When I click on "Filter"
     And I click button "Apply"
     Then I see 40 different "Beamer" models
     And I see 40 different "Camera" models
     And there is no "Load more" button
 
+  Scenario: Search term entered into main input field can be submitted with enter key
+    When I enter "Camera" in the main search field
+    And I press the enter key
+    Then the title of the page is "Search results"
+    And I see 20 different "Camera" models
+    And the search field contains "Camera"
+
   Scenario: Filter with search term (and caching)
     # Filter with search term
-    When I click on "Show search/filter"
+    When I click on "Filter"
     And I enter "Camera" in the search field
     And I click button "Apply"
     And I click on "Load more"
@@ -49,7 +56,7 @@ Feature: Search results (and caching)
     And there is no "Load more" button
 
     # Filter with another search term (without clearing)
-    When I click on "Show search/filter"
+    When I click on "Filter"
     And I enter "Beamer" in the search field
     And I click button "Apply"
     And I click on "Load more"
@@ -58,7 +65,7 @@ Feature: Search results (and caching)
 
     # Filter with previous search term:
     # All results are already cached and are refreshed accordingly.
-    When I click on "Show search/filter"
+    When I click on "Filter"
     And I enter "Camera" in the search field
     And I click button "Apply"
     Then I see 40 different "Camera" models
@@ -71,17 +78,47 @@ Feature: Search results (and caching)
     Then I see 40 different "Camera" models
     And there is no "Load more" button
 
-    When I click on "Show search/filter"
+    When I click on "Filter"
     And I select pool "Pool B"
     And I click button "Apply"
     Then there are no results
     And there is no "Load more" button
 
-    When I click on "Show search/filter"
+    When I click on "Filter"
     And I select all pools
     And I click button "Apply"
     Then I see 40 different "Camera" models
     And there is no "Load more" button
+
+  Scenario: Category pages, navigation keeps the filters
+    Given there is a subcategory "Analog Cameras" in "Cameras"
+      And there is a subcategory "Medium Format" in "Analog Cameras"
+      And there is a model "Hasselblad 500C"
+      And the model "Hasselblad 500C" belongs to the "Medium Format" category
+      And the model "Hasselblad 500C" has 1 borrowable item in "Pool A"
+
+    When I click on category "Cameras"
+    And I click on "Filter"
+    And I enter "Hasselblad" in the search field
+    And I click button "Apply"
+    Then I see 1 "Hasselblad 500C" model
+
+    When I expand the "Sub-categories" section
+    And I click on "Analog Cameras"
+    Then the title of the page is "Analog Cameras"
+    And I see the following breadcrumbs:
+      | category |
+      | Cameras  |
+    And I see 1 "Hasselblad 500C" model
+    And the search field contains "Hasselblad"
+
+    # FIXME: why is "Medium Format" subcategory no shown? ideally test should go 2 levels deep
+
+    When I click on "Cameras" within breadcrumbs
+    Then the title of the page is "Cameras"
+    And I don't see any breadcrumbs
+    And I see 1 "Hasselblad 500C" model
+    And the search field contains "Hasselblad"
 
   Scenario: Filter available with quantity > 1
     # Filter with search term
@@ -90,7 +127,7 @@ Feature: Search results (and caching)
     And there is a model "Model B"
     And there is 1 borrowable item for model "Model B" in pool "Pool A"
 
-    When I click on "Show search/filter"
+    When I click on "Filter"
     And I choose to filter by availabilty
     And I choose next working day as start date
     And I choose next next working day as end date

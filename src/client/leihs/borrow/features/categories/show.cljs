@@ -7,6 +7,7 @@
    [shadow.resource :as rc]
    [re-frame.std-interceptors :refer [path]]
    [clojure.string :refer [join split #_replace-first]]
+   [cemerick.url]
    [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                       reg-event-db
                                       reg-sub
@@ -45,24 +46,23 @@
          category-id (last category-ids)
          parent-id (last ancestor-ids)]
 
-              ;; FIXME: this flickers when navigation and in general should be 1 single query!
-     {:dispatch-n (list [::filter-modal/save-options query-params]
-                         ; We include the actual category itself because the
-                         ; backend validates if all categories in the path
-                         ; are still among the reservable ones.
-                        [::re-graph/query categories-query
-                         {:ids category-ids
-                          :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
-                                     [pool-id])}
-                         [::on-fetched-categories-data]]
-                         ; We fetch the actual category again to get the correct
-                         ; label in the context of the parent category.
-                        [::re-graph/query
-                         query
-                         {:categoryId category-id :parentId parent-id}
-                         [::on-fetched-category-data category-id]]
+     {:dispatch-n (list
+          ; We include the actual category itself because the
+          ; backend validates if all categories in the path
+          ; are still among the reservable ones.
+        [::re-graph/query categories-query
+          {:ids category-ids
+          :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
+                      [pool-id])}
+          [::on-fetched-categories-data]]
+          ; We fetch the actual category again to get the correct
+          ; label in the context of the parent category.
+        [::re-graph/query
+          query
+          {:categoryId category-id :parentId parent-id}
+          [::on-fetched-category-data category-id]]
 
-                        [::models/get-models query-params {:categoryId category-id}])})))
+        [::models/get-models query-params {:categoryId category-id}])})))
 
 (reg-event-db
  ::on-fetched-categories-data
@@ -129,10 +129,12 @@
         errors @(subscribe [::errors category-id])
         is-loading? (not (and category
                               (every? some? cat-ancestors)))
+        model-filters @(subscribe [::filter-modal/options])
         extra-search-args {:categoryId category-id}
 
-        ;; FIXME: get current url from router!
-        child-cats  (for [cat children] (merge cat {:url (-> js/window .-location .-pathname (str "/" (:id cat)))}))
+        ;; FIXME: get current url from router (bidi-match)!
+        child-cats  (for [cat children] (merge cat {:url (-> js/window .-location .-pathname
+                                                             (str "/" (:id cat) "?" (cemerick.url/map->query model-filters)))}))
         child-cats-collapsed? @(subscribe [::child-cats-collapsed? category-id])]
 
     [:<>
@@ -149,7 +151,10 @@
                         {:className "text-center"
                          :ancestorCats (h/camel-case-keys cat-ancestors)
                        ;; FIXME: either add url to all ancestor cats OR extend router to take list of ids (instead of prejoined path)
-                         :getPathForCategory (fn [path] (routing/path-for ::routes/categories-show :categories-path path))}]))}
+                         :getPathForCategory (fn [path] (routing/path-for 
+                                                         ::routes/categories-show 
+                                                         :categories-path path
+                                                         :query-params model-filters))}]))}
          [filter-comp
           #(dispatch [:routing/navigate
                       [::routes/categories-show
@@ -163,7 +168,7 @@
               :collapsible true
               :collapsed child-cats-collapsed?
               :on-toggle-collapse #(dispatch [::set-child-cats-collapsed category-id %])}
-             (categories/categories-list child-cats)])
+             (categories/categories-list child-cats model-filters)])
           [:> UI/Components.Design.Section
            {:title (t :items) :collapsible true}
            [models/search-results extra-search-args]]]]])]))

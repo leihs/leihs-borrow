@@ -13,7 +13,7 @@
                                       dispatch]]
    [leihs.borrow.lib.translate :as translate
     :refer [t set-default-translate-path with-translate-path]]
-   [leihs.borrow.lib.helpers :refer [log spy]]
+   [leihs.borrow.lib.helpers :as h :refer [log spy]]
    [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton UiDatepicker]]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [remove-blanks presence update-vals]]
@@ -25,24 +25,19 @@
   (dispatch [:routing/navigate
              [::routes/models {:query-params query-params}]]))
 
-(reg-event-db ::toggle-debug
-              (fn-traced [db [_ flag]]
-                (assoc-in db [:ls :debug ::filter-labels] flag)))
-
-(reg-event-db ::save-options
-              (fn-traced [db [_ query-params]]
-                (assoc-in db [:ls ::options] query-params)))
 
 (reg-event-db ::clear-options
               (fn-traced [db _]
                 (assoc-in db [:ls ::options] nil)))
 
-(reg-sub ::filter-labels
-         (fn [db _] (get-in db [:ls :debug ::filter-labels])))
-
 (reg-sub ::options
          (fn [db _]
-           (->> db :ls ::options (update-vals #(or % "")))))
+           ; NOTE: maybe this list should be somewhere in constants?
+           (let [known-filter-keys [:term :pool-id :only-available :start-date :end-date :quantity]]
+             (->> db 
+                  :routing/routing :bidi-match :query-params 
+                  ((fn [h] (select-keys h known-filter-keys)))
+                  (update-vals #(or % ""))))))
 
 (reg-sub ::pools-with-reservable-items
          :<- [::current-user/current-profile]
@@ -183,17 +178,58 @@
              (t :reset)]]])))))
 
 (defn filter-comp [dispatch-fn]
-  (let [modal-shown? (r/atom false)]
+  (let [modal-shown? (r/atom false)
+        entered-search-term (r/atom false)]
     (fn [dispatch-fn]
-      (let [hide! #(reset! modal-shown? false)
+      (let [set-entered-search-term #(reset! entered-search-term %)
+            hide! #(reset! modal-shown? false)
             show! #(reset! modal-shown? true)
-            saved-opts @(subscribe [::options])
+            saved-filters @(subscribe [::options])
+            pools-with-reservable-items @(subscribe [::pools-with-reservable-items])
             locale @(subscribe [::translate/i18n-locale])
-            debug? @(subscribe [::filter-labels])]
+            ;
+            available-filters {:pools (map (fn [p] {:type :pool :id (:id p) :label (:name p)}) pools-with-reservable-items)}
+            ; NOTE: sync state between main input and the one inside the panel!
+            current-search-term (or (presence @entered-search-term) (saved-filters :term))
+            current-filters (let [; NOTE: do not give just id but the same object like in `availableFilters`
+                                  pool (first (filter #(= (:id %) (saved-filters :pool-id)) (:pools available-filters)))]
+                              (-> saved-filters
+                                  ; NOTE: UI supports multiple selection of pools, fake it here until app supports it as well
+                                  (dissoc :pool-id) (assoc :pool-ids (when pool (vector pool)))
+                                  (assoc :term current-search-term)
+                                  h/camel-case-keys
+                                  clj->js))
+            ;
+            ; NOTE: needed to force update internal state of input field when term changes *from outside*,
+            ; either by app-db change or when navigating (using history length).
+            ; But: history length is does not change when using the back button! we'd need something like a "Location Key", see <https://github.com/remix-run/react-router/blob/82adc1601039a87e2f925690cb949ce85a766150/docs/getting-started/concepts.md#locations>
+            ; Alternative: listen to window.history and set a new key on route change
+            input-key (str (saved-filters :term) (->> js/window .-history .-length))
+            ;
+            on-input-submit #(let [term (presence (.-searchTerm %))]
+                               (dispatch-fn (assoc saved-filters :term term)))
+            on-clear-filter (fn [filter-to-clear]
+                              (dispatch-fn
+                               (case (.-type filter-to-clear)
+                                 "pool" (dissoc saved-filters :pool-id)
+                                 "onlyAvailable" (dissoc saved-filters :only-available))))]
+        
         [:<>
+
          (when @modal-shown?
-           [filter-modal hide! dispatch-fn saved-opts locale])
-         [:> UI/Components.Design.FilterButton {:onClick show!}
-          (if debug?
-            (js/JSON.stringify (clj->js saved-opts))
-            (t :borrow.home-page.show-search-and-filter))]]))))
+           [filter-modal
+            hide!
+            dispatch-fn
+            (assoc saved-filters :term current-search-term)
+            locale])
+
+         [:> UI/Components.ModelSearchFilter
+          {:key input-key
+           :availableFilters available-filters
+           :currentFilters current-filters
+           :onChangeSearchTerm set-entered-search-term
+           :onOpenPanel show!
+           :onClearFilter on-clear-filter
+           :onSubmit on-input-submit
+           :filterLabel (t :borrow.filter.show-all-filters)
+           :locale locale}]]))))

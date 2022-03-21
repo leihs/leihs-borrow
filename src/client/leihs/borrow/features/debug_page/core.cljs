@@ -37,13 +37,6 @@
 (defn crash-component [] (throw (js/Error. "I crashed!")))
 (def crash-atom (reagent/atom nil))
 
-(defn filter-debug-toggler []
-  (let [debug? @(subscribe [::filter-modal/filter-labels])]
-    [:select.form-select {:value (if debug? "on" "off")
-                          :on-change #(dispatch [::filter-modal/toggle-debug (= "on" (-> % .-target .-value))])}
-     [:option {:value "off"} "off"]
-     [:option {:value "on"} "on"]]))
-
 (defn view []
   [:<>
 
@@ -73,9 +66,6 @@
         "a sample model"]
        [:> UI/Components.Design.Menu.Link {:href "/app/borrow/graphiql/index.html"}
         "Graph" [:i "i"] "QL API console"]]]]
-
-    [:> UI/Components.Design.Section {:title "Filter modal debugging" :collapsible true}
-     [filter-debug-toggler]]
 
     [:> UI/Components.Design.Section {:title "Local storage" :collapsible true}
      [:button.btn.btn-secondary {:type :button :on-click #(dispatch [::ls/clear])} "Clear :ls"]]

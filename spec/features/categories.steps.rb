@@ -8,12 +8,6 @@ step 'I see model :model_name' do |model_name|
   find('.ui-models-list-item', text: model_name, match: :prefer_exact)
 end
 
-step 'I click on :name within breadcrumbs' do |name|
-  within '.ui-category-breadcrumbs' do
-    click_on(name)
-  end
-end
-
 step 'I visit the sub-category :name' do |name|
   category = Category.find(name: name)
   c_seq = categories_seq(category)

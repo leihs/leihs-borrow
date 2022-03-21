@@ -33,9 +33,8 @@
 ;-; EVENTS 
 (reg-event-fx
  ::routes/models
- (fn-traced [{:keys [db]} [_ {:keys [query-params]}]]
-   {:dispatch-n (list [::filter-modal/save-options query-params]
-                      [::get-models query-params])}))
+ (fn-traced [_ [_ {:keys [query-params]}]]
+   {:dispatch [::get-models query-params]}))
 
 (defn prepare-query-vars [filters]
   (let [term (:term filters)

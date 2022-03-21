@@ -21,7 +21,7 @@ Feature: Delegations
 
     # search for a model
     And I visit "/app/borrow/"
-    And I click on "Show search/filter"
+    And I click on "Filter"
     And I enter "Kamera" in the search field
     And I choose to filter by availabilty
     And I choose next working day as start date
