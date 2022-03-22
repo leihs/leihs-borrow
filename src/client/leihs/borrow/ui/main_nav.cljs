@@ -10,7 +10,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path] :as translate]
    [leihs.borrow.csrf :as csrf]
-   [leihs.borrow.lib.helpers :as h]
+   [leihs.borrow.lib.helpers :as h :refer [log]]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.current-user.profile-switch :as profile-switch]
    [leihs.borrow.features.languages.core :as languages]
@@ -147,11 +147,13 @@
          (doall
           (for [language languages]
             (let [locale (:locale language)]
-              [:> UI/Components.Design.Menu.Link
-               {:key locale
-                :isSelected (= (keyword locale) locale-to-use)
-                :on-click #(dispatch [::languages/switch locale])}
-               (:name language)])))])
+              [:<> {:key locale}
+               [:> UI/Components.Design.Menu.Button
+                {:isSelected (= (keyword locale) locale-to-use)
+                 :type "button"
+                 :value locale
+                 :on-click #(dispatch [::languages/switch (-> % .-target .-value)])}
+                (:name language)]])))])
 
       [:> UI/Components.Design.Menu.Group {:title "Leihs"}
        [menu-link legacy-url (t :desktop-version)]
