@@ -141,6 +141,9 @@ Some fixes needed for Apple Silicon and/or newer macOS versions.
 # ruby 2.6.6
 RUBY_CFLAGS=-DUSE_FFI_CLOSURE_ALLOC rbenv install 2.6.6
 
+# deps
+brew install openssl@1.1 libpq
+
 # JAVA 11
 brew install java11
 brew install clojure
