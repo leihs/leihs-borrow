@@ -95,9 +95,10 @@
    (-> db
        (cond-> errors (assoc-in [::errors] errors))
        (update-in [::edit-mode]
-                  #(-> %
-                       (availability/update-availability new-availability)
-                       (availability/set-loading-as-ended end-date))))))
+                  #(when %
+                     (-> %
+                         (availability/update-availability new-availability)
+                         (availability/set-loading-as-ended end-date)))))))
 
 (reg-event-fx
  ::ensure-availability-fetched-until
