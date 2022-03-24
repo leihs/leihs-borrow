@@ -99,7 +99,6 @@
         locale-to-use @(subscribe [::translate/locale-to-use])]
 
     ; TODO: provide support-url in user-nav
-    ; TODO: provide languages, implement language switch
 
     [:> UI/Components.Design.Navbar.MenuWrapper
      {:menuIsOpen (or is-menu-open? is-profile-menu-open?)}

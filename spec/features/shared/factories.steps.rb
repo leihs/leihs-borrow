@@ -113,6 +113,11 @@ step "the user :full_name is customer of pool :pool" do |name, pool|
   user_is_customer_of_pool(user, pool)
 end
 
+step "the delegation is customer of pool :pool" do |pool|
+  expect(@delegation).to be_a User
+  user_is_customer_of_pool(@delegation, pool)
+end
+
 step "the delegation :delegation is customer of pool :name" do |delegation, name|
   pool = InventoryPool.find(name: name) ||
          FactoryBot.create(:inventory_pool, name: name)

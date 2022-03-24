@@ -1,10 +1,6 @@
-; FIXME: cancel action
-; TODO: is-cancelable? from API
-
-
 (ns leihs.borrow.features.customer-orders.show
   (:require
-   ["date-fns" :as datefn]
+   ["date-fns" :as date-fns]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    #_[reagent.core :as reagent]
    [re-frame.core :as rf]
@@ -20,9 +16,10 @@
                                       dispatch]]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.lib.translate :as translate :refer [t set-default-translate-path]]
    [leihs.borrow.features.customer-orders.core :as rentals]
    [leihs.borrow.features.customer-orders.index :refer [status-summary]]
+   [leihs.borrow.features.customer-orders.repeat-order :as repeat-order]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [dissoc-in]]
    ["/leihs-ui-client-side-external-react" :as UI]))
@@ -112,6 +109,10 @@
 (reg-sub ::cancellation-dialog-data
          (fn [db _] (get-in db [::data :cancellation-dialog])))
 
+(reg-sub ::current-profile-id
+         :<- [::current-user/current-profile-id]
+         (fn [current-profile-id _] current-profile-id))
+
 (reg-sub ::can-change-profile?
          :<- [::current-user/can-change-profile?]
          (fn [can-change-profile? _] can-change-profile?))
@@ -125,14 +126,14 @@
         start-date (js/Date. (:start-date reservation))
         end-date (js/Date. (:end-date reservation))
         ;; NOTE: should be in API
-        total-days (+ 1 (datefn/differenceInCalendarDays end-date start-date))
+        total-days (+ 1 (date-fns/differenceInCalendarDays end-date start-date))
         title (t :reservation-line.title {:itemCount quantity, :itemName name})
         inventory-code (-> reservation :item :inventory-code)
         duration (t :reservation-line.duration {:totalDays total-days, :fromDate start-date})
         sub-title (get-in reservation [:inventory-pool :name])
         href (when model (routing/path-for ::routes/models-show :model-id (:id (:model reservation))))
         status (:status reservation)
-        is-over? (datefn/isAfter (js/Date.) (datefn/addDays end-date 1))
+        is-over? (date-fns/isAfter (js/Date.) (date-fns/addDays end-date 1))
         overdue? (and (= status "SIGNED") is-over?)
         expired-unapproved? (and (= status "SUBMITTED") is-over?)
         expired? (and (= status "APPROVED") is-over?)
@@ -140,7 +141,8 @@
     [:<>
      [:> UI/Components.Design.ListCard {:href href}
       [:> UI/Components.Design.ListCard.Title
-       title (when inventory-code [:span.fw-light " (" inventory-code ")"])]
+       title (when inventory-code [:span.fw-light " (" inventory-code ")"])
+       (when option [:span.fw-light " (" (t :reservation-line.option) ")"])]
 
       [:> UI/Components.Design.ListCard.Body
        sub-title]
@@ -184,6 +186,7 @@
   (let [routing @(subscribe [:routing/routing])
         rental-id (get-in routing [:bidi-match :route-params :rental-id])
         rental @(subscribe [::data rental-id])
+        reservations @(subscribe [::reservations rental-id])
         grouped-reservations @(subscribe [::reservations-grouped rental-id])
         errors @(subscribe [::errors rental-id])
         is-loading? (not (or rental errors))
@@ -193,8 +196,10 @@
         is-cancelable? (= ["IN_APPROVAL"] (:fulfillment-states rental))
         contracts (map :node (get-in rental [:contracts :edges]))
         user-data @(subscribe [::current-user/user-data])
+        current-profile-id @(subscribe [::current-profile-id])
         can-change-profile? @(subscribe [::can-change-profile?])
-        rental-user-id (-> rental :user :id)]
+        rental-user-id (-> rental :user :id)
+        date-fns-locale @(subscribe [::translate/i18n-locale])]
 
     [:<>
      (cond
@@ -216,6 +221,9 @@
 
         [cancellation-dialog rental]
 
+        [repeat-order/repeat-dialog rental reservations current-profile-id date-fns-locale]
+        [repeat-order/repeat-success-notification]
+
         [:> UI/Components.Design.Stack {:space 5}
 
          [:> UI/Components.Design.Section
@@ -225,9 +233,10 @@
 
            [status-summary rental false]
 
-           (when is-cancelable?
-             [:> UI/Components.Design.ActionButtonGroup
-              [:button.btn.btn-secondary {:onClick #(dispatch [::open-cancellation-dialog rental-id])} (t :cancel-action-label)]])]]
+           [:> UI/Components.Design.ActionButtonGroup
+            (when is-cancelable?
+              [:button.btn.btn-secondary {:onClick #(dispatch [::open-cancellation-dialog rental-id])} (t :cancel-action-label)])
+            [:button.btn.btn-secondary {:onClick #(dispatch [::repeat-order/open-repeat-dialog])} (t :repeat-action-label)]]]]
 
          [:> UI/Components.Design.Section
           {:title (t :user-or-delegation-section-title) :collapsible true}

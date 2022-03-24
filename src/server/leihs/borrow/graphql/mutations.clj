@@ -9,6 +9,7 @@
   {:add-to-cart reservations/add-to-cart
    :apply-template templates/apply
    :cancel-order orders/cancel
+   :repeat-order orders/repeat-order
    :create-reservation reservations/create
    :favorite-model favorites/create
    :delete-reservations reservations/delete

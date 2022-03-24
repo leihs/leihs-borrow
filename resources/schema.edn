@@ -467,6 +467,12 @@
              :cancelOrder {:args {:id {:type (non-null :UUID)}}
                            :resolve :cancel-order
                            :type (non-null :Rental)}
+             :repeatOrder {:args {:id {:type (non-null :UUID)}
+                                  :startDate {:type (non-null :Date)}
+                                  :endDate {:type (non-null :Date)}
+                                  :userId {:type :UUID}}
+                           :resolve :repeat-order
+                           :type (list :Reservation)}
              :favoriteModel {:args {:id {:type (non-null :UUID)}
                                     :userId {:type :UUID}}
                              :resolve :favorite-model

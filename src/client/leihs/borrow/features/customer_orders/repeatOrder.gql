@@ -1,0 +1,15 @@
+mutation repeatOrder(
+  $id: UUID!
+  $startDate: Date!
+  $endDate: Date!
+  $userId: UUID
+) {
+  repeatOrder(
+    id: $id
+    startDate: $startDate
+    endDate: $endDate
+    userId: $userId
+  ) {
+    id
+  }
+}

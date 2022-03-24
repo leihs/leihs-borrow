@@ -9,7 +9,7 @@
             [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as rs]
-            [leihs.borrow.time :refer [past?]]
+            [leihs.borrow.time :as time :refer [past?]]
             [leihs.core.database.helpers :as database]
             [leihs.core.db :as ds]
             [leihs.core.sql :as sql])
@@ -402,6 +402,36 @@
         sql/format
         (->> (jdbc/execute! tx)))
     (get-one-by-id tx user-id id)))
+
+(defn get-repeated-res [r user-id delegated-user-id start-date end-date now]
+  {:inventory_pool_id (:inventory_pool_id r)
+   :user_id user-id
+   :delegated_user_id delegated-user-id
+   :type (:type r)
+   :status "unsubmitted"
+   :model_id (:model_id r)
+   :quantity (:quantity r)
+   :start_date (sql/call :cast start-date :date)
+   :end_date (sql/call :cast end-date :date)
+   :created_at now
+   :updated_at now})
+
+(defn repeat-order
+  [{{:keys [tx] {auth-user-id :id} :authenticated-entity} :request
+    user-id ::target-user/id}
+   {:keys [id start-date end-date]} _]
+  (let [customer-order (get-one-by-id tx auth-user-id id)
+        reservations (rs/get-by-ids tx (:reservation_ids customer-order))
+        delegated-user-id (when (not= auth-user-id user-id) auth-user-id)
+        new-reservations (->> reservations
+                              (filter #(boolean (:model_id %)))
+                              (map #(get-repeated-res % user-id delegated-user-id start-date end-date (time/now tx))))
+        created-rs (-> (sql/insert-into :reservations)
+                       (sql/values new-reservations)
+                       (assoc :returning (rs/columns tx))
+                       sql/format
+                       (->> (jdbc/query tx)))]
+    created-rs))
 
 (defn refresh-timeout
   [{{:keys [tx]} :request user-id ::target-user/id :as context} args value]

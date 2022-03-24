@@ -392,6 +392,7 @@
     :rental-show {:page-title {:de-CH "Bestellung" :en-GB "Order"}
                   :state {:de-CH "Status" :en-GB "State"}
                   :cancel-action-label {:de-CH "Bestellung stornieren" :en-GB "Cancel order"}
+                  :repeat-action-label {:de-CH "Bestellung wiederholen" :en-GB "Repeat order"}
                   :purpose {:de-CH "Zweck" :en-GB "Purpose"}
                   :pools-section-title {:de-CH "Inventarparks" :en-GB "Inventory pools"}
                   :items-section-title {:de-CH "Gegenstände" :en-GB "Items"}
@@ -409,7 +410,10 @@
                               :en-GB "{totalDays, plural,
                                   =1 {# day from {fromDate, date, short}}
                                   other {# days from {fromDate, date, short}}
-                                }"}}
+                                }"}
+                   :option
+                   {:de-CH "Option"
+                    :en-GB "Option"}}
                   :reservation-status-label {:DRAFT {:de-CH "DRAFT" :en-GB "DRAFT"} ; (will never appear in this view)
                                              :UNSUBMITTED {:de-CH "UNSUBMITTED" :en-GB "UNSUBMITTED"} ; (will never appear in this view)
                                              :SUBMITTED {:de-CH "In Genehmigung" :en-GB "In approval"}
@@ -423,7 +427,43 @@
                                              :EXPIRED {:de-CH "Nicht abgeholt bis {endDate, date, short}" :en-GB "Not picked up until {endDate, date, short}"}}
                   :cancellation-dialog {:title {:de-CH "Bestellung stornieren" :en-GB "Cancel order"}
                                         :confirm {:de-CH "Stornieren" :en-GB "Cancel order"}
-                                        :cancel {:de-CH "Abbrechen" :en-GB "Abort"}}}
+                                        :cancel {:de-CH "Abbrechen" :en-GB "Abort"}}
+                  :repeat-order {:dialog {:title {:de-CH "Gegenstände hinzufügen" :en-GB "Add items"}
+                                          :info {:de-CH "{count, plural, 
+                                                         =1 {Ein Gegenstand wird zum Warenkorb hinzugefügt.}
+                                                         other {# Gegenstände werden zum Warenkorb hinzugefügt.}}"
+                                                 :en-GB "{count, plural, 
+                                                         =1 {One item will be added to the cart.}
+                                                         other {# items will be added to the cart.}}"}
+                                          :error-only-options {:de-CH "Optionen können nur durch die Verleihstelle hinzugefügt werden."
+                                                               :en-GB "Options can only be added by the lending desk."}
+                                          :warning-some-options {:de-CH "{count, plural, 
+                                                         =1 {Hinweis: Eine Option kann nur durch die Verleihstelle hinzugefügt werden.}
+                                                         other {Hinweis: # Optionen können nur durch die Verleihstelle hinzugefügt werden.}}"
+                                                                 :en-GB "{count, plural, 
+                                                         =1 {Please note: One option can only be added by the lending desk.}
+                                                         other {Please note: # options can only be added by the lending desk.}}"}
+                                          :time-span {:de-CH "Zeitraum" :en-GB "Time span"}
+                                          :undefined {:de-CH "unbestimmt" :en-GB "undefined"}
+                                          :from {:de-CH "Von" :en-GB "From"}
+                                          :until {:de-CH "Bis" :en-GB "Until"}
+                                          :order-for {:de-CH "Bestellung für" :en-GB "Order for"}
+                                          :cancel {:de-CH "Abbrechen" :en-GB "Cancel"}
+                                          :submit {:de-CH "Hinzufügen" :en-GB "Add"}
+                                          :validation {:start-after-end {:de-CH "Enddatum muss nach Beginndatum sein"
+                                                                         :en-GB "End date must be after start date"}
+                                                       :start-date-in-past {:de-CH "Datum liegt in der Vergangenheit"
+                                                                            :en-GB "Date is in the past"}
+                                                       :end-date-too-late {:de-CH "Datum darf nicht nach {maxDate, date, small} sein"
+                                                                           :en-GB "Date must not be after {maxDate, date, small}"}}}
+                                 :success-notification {:title {:de-CH "Gegenstände hinzugefügt" :en-GB "Items added"}
+                                                        :message {:de-CH "{count, plural, 
+                                                                          =1 {# Gegenstand wurde zum Warenkorb hinzugefügt und kann nun dort überprüft werden.}
+                                                                          other {# Gegenstände wurden zum Warenkorb hinzugefügt und können nun dort überprüft werden.}}"
+                                                                  :en-GB "{count, plural, 
+                                                                          =1 {# item was added to the cart and can be reviewed/edited there.}
+                                                                          other {# items were added to the cart and can be reviewed/edited there.}}"}
+                                                        :confirm {:de-CH "Zum Warenkorb" :en-GB "Go to cart"}}}}
                   ;
 
 
