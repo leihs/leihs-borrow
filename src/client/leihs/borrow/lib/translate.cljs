@@ -68,8 +68,8 @@
   (-> db (get-in locale-to-use-path) keyword))
 
 (reg-event-db ::set-locale-to-use
-              (fn-traced [db [_ lang]]
-                (assoc-in db locale-to-use-path (:locale lang))))
+              (fn-traced [db [_ user]]
+                (assoc-in db locale-to-use-path (:language_locale user))))
 
 (reg-sub ::locale-to-use
          (fn [db _] (locale-to-use db)))

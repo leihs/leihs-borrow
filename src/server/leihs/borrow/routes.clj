@@ -9,7 +9,6 @@
    [leihs.borrow.paths :refer [paths path]]
    [leihs.borrow.resources.attachments :as attachments]
    [leihs.borrow.resources.images :as images]
-   [leihs.borrow.resources.users :as users]
    [leihs.core.anti-csrf.back :as anti-csrf]
    [leihs.core.auth.session :as session]
    [leihs.core.db :as datasource]
@@ -20,6 +19,7 @@
    [leihs.core.routing.back :as core-routing]
    [leihs.core.settings :as settings]
    [leihs.core.status :as status]
+   [leihs.core.user.core :as user]
    [logbug.debug :as debug :refer [I>]]
    [logbug.ring :refer [wrap-handler-with-logging]]
    [ring-graphql-ui.core :refer [wrap-graphiql]]
@@ -37,7 +37,7 @@
           :home html/html-handler,
           ::client-routes/home html/html-handler,
           :image images/handler-one,
-          :my-user users/routes,
+          :my-user user/routes,
           :attachment attachments/handler-one,
           :attachment-with-filename attachments/handler-one,
           :not-found html/not-found-handler
