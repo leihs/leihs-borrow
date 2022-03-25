@@ -19,7 +19,7 @@
   "devDependencies": {
     "@eins78/graphql-cli": "4.0.1",
     "@eins78/graphql-schema-diff": "0.7.0",
-    "@prettier/plugin-ruby": "^0.15.1",
+    "@prettier/plugin-ruby": "^2.0.0",
     "prettier": "^1.18.2",
     "shadow-cljs": "^2.10.21"
   },
