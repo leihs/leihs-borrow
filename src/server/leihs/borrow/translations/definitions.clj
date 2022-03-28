@@ -47,6 +47,7 @@
              :plus {:en-GB "Plus" :de-CH "Plus"}
              :pool {:en-GB "Inventory pool" :de-CH "Inventarpark"}
              :pool-max-amount {:en-GB "{pool} (max. {amount, number})" :de-CH "{pool} (max. {amount, number})"}
+             :pool-max-amount-info {:en-GB  "Maximum available amount: {amount, number}" :de-CH "Maximal verfügbarer Bestand: {amount, number}"}
              :user-delegation {:en-GB "Order for" :de-CH "Bestellung für"}
              :timespan {:en-GB "Time span" :de-CH "Zeitraum"}
              :from {:en-GB "From" :de-CH "Von"}
@@ -138,7 +139,7 @@
                       :items {:en-GB "Items"
                               :de-CH "Gegenstände"}}
     :filter {:show-all-filters {:en-GB "Filter"
-                                  :de-CH "Filter"}
+                                :de-CH "Filter"}
              :search {:title {:en-GB "Search term"
                               :de-CH "Stichwort"}
                       :placeholder {:en-GB "Enter search term"
@@ -173,7 +174,7 @@
              :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
              :apply {:en-GB "Apply" :de-CH "Anwenden"}
              :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
-    
+
     :home-page {:title {:en-GB "Home"
                         :de-CH "Home"}
                 :catalog {:en-GB "Catalog"
@@ -262,7 +263,7 @@
                                              :de-CH "Abgeschlossen"}
               :orderless-fallback-title {:de-CH "Direktausleihe"}
               :filter  {:show-filters {:en-GB "Show search/filter"
-                                         :de-CH "Zeige Suche/Filter"}
+                                       :de-CH "Zeige Suche/Filter"}
                         :search {:title {:en-GB "Search term"
                                          :de-CH "Stichwort"}
                                  :placeholder {:en-GB "Enter search term"
