@@ -499,6 +499,7 @@ describe "rental details" do
                                                contract: open_contract,
                                                inventory_pool: inventory_pool_1,
                                                status: "signed",
+                                               leihs_model: nil,
                                                option: FactoryBot.create(:option,
                                                                          inventory_pool: inventory_pool_1))
 
