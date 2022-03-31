@@ -171,6 +171,15 @@
                      :de-CH "Bis"}
              :quantity {:en-GB "Quantity"
                         :de-CH "Anzahl"}
+
+             :search-input-label {:de-CH "Suche",
+                                  :en-GB "Search"},
+             :search-input-placeholder {:de-CH "Suchen…",
+                                        :en-GB "Search…"},
+             :search-filter-label {:de-CH "Filter",
+                                   :en-GB "Filter"},
+             :availability-label {:de-CH "{quantity} Stück verfügbar {startDate, date, narrow} – {endDate, date, narrow}",
+                                  :en-GB "{quantity} {quantity, plural, =1 {item} other {items}} available {startDate, date, narrow} – {endDate, date, narrow}"}
              :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
              :apply {:en-GB "Apply" :de-CH "Anwenden"}
              :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}

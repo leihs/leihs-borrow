@@ -12,7 +12,7 @@
                                       subscribe
                                       dispatch]]
    [leihs.borrow.lib.translate :as translate
-    :refer [t set-default-translate-path with-translate-path]]
+    :refer [t dict set-default-translate-path with-translate-path]]
    [leihs.borrow.lib.helpers :as h :refer [log spy]]
    [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton UiDatepicker]]
    [leihs.borrow.features.current-user.core :as current-user]
@@ -34,8 +34,8 @@
          (fn [db _]
            ; NOTE: maybe this list should be somewhere in constants?
            (let [known-filter-keys [:term :pool-id :only-available :start-date :end-date :quantity]]
-             (->> db 
-                  :routing/routing :bidi-match :query-params 
+             (->> db
+                  :routing/routing :bidi-match :query-params
                   ((fn [h] (select-keys h known-filter-keys)))
                   (update-vals #(or % ""))))))
 
@@ -48,6 +48,9 @@
          :<- [::current-user/current-profile]
          (fn [current-profile _]
            (:suspensions current-profile)))
+
+(defn model-search-filter-texts []
+  (clj->js (get-in dict [:borrow :filter])))
 
 (defn filter-modal [hide! dispatch-fn saved-opts locale]
   (let [format-date #(some-> %
@@ -213,7 +216,7 @@
                                (case (.-type filter-to-clear)
                                  "pool" (dissoc saved-filters :pool-id)
                                  "onlyAvailable" (dissoc saved-filters :only-available))))]
-        
+
         [:<>
 
          (when @modal-shown?
@@ -232,4 +235,5 @@
            :onClearFilter on-clear-filter
            :onSubmit on-input-submit
            :filterLabel (t :borrow.filter.show-all-filters)
-           :locale locale}]]))))
+           :locale (.-code locale)
+           :txt (model-search-filter-texts)}]]))))
