@@ -329,7 +329,7 @@
       {:valid-until va
        :reservations rs
        :invalidReservationIds (->> (rs/get-drafts tx user-id) (map :id))
-       :user-id (when va user-id)})))
+       :user-id user-id})))
 
 (defn get-draft
   [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
