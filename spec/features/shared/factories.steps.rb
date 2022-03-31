@@ -192,6 +192,10 @@ step "there is a model :name" do |name|
   FactoryBot.create(:leihs_model, product: name)
 end
 
+step "there is an option :name" do |name|
+  FactoryBot.create(:option, product: name)
+end
+
 step "there are meta mail templates" do
   Language.all.each do |lang|
     [[:approved, :order],
@@ -243,7 +247,7 @@ step "parent of category :child_name is category :parent_name" do |child_name, p
 end
 
 def user_login_from_full_name(full_name)
-  full_name.to_s.parameterize.underscore
+  full_name.downcase.gsub(' ','')
 end
 
 def find_user_by_full_name!(name)

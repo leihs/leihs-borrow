@@ -23,6 +23,7 @@ step "a customer order with title :title and the following reservations exists f
         end
       p = InventoryPool.find(name: h["pool"])
       m = LeihsModel.find(product: h["model"])
+      opt = Option.find(product: h["option"])
       o = Order.find(title: title)
       o ||= FactoryBot.create(:order, title: title, user_id: u.id)
       po = PoolOrder.find(inventory_pool_id: p.id, customer_order_id: o.id)
@@ -56,7 +57,8 @@ step "a customer order with title :title and the following reservations exists f
                           status: h["state"],
                           start_date: sanitize_date(h["start-date"]),
                           end_date: sanitize_date(h["end-date"]),
-                          model_id: m.id,
+                          model_id: m.try(:id),
+                          option_id: opt.try(:id),
                           order_id: po.id,
                           contract_id: c.try(:id))
       end

@@ -102,10 +102,10 @@ Feature: Rentals - Show - Repeat order
       | user                | User A        | UA                 | Delegation D  | DD                 |
       | Delegation D        | Delegation D  | DD                 | User A        | UA                 |
 
-  @pending
   Scenario: Order with options only
-    # TODO: implement reservations with options in the factory
-    Given a customer order with title "Order 1" and the following reservations exists for the user:
+    Given there is an option "Ethernet 1.5m"
+    And there is an option "USB Adapter"
+    And a customer order with title "Order 1" and the following reservations exists for the user:
       | user | quantity | option        | pool   | start-date | end-date   | state  |
       | user | 1        | Ethernet 1.5m | Pool A | 2020-02-01 | 2020-02-10 | closed |
       | user | 1        | USB Adapter   | Pool A | 2020-02-05 | 2020-02-05 | closed |
@@ -117,13 +117,15 @@ Feature: Rentals - Show - Repeat order
     And I click on "Repeat order"
 
     Then I see the "Add items" dialog
-    And I see the Warning "Options can only be added by the lending desk."
-    And the "Add items" button is disabled
+    And I see a warning in the dialog:
+      """
+      Options can only be added by the lending desk.
+      """
+    And the "Add" button is disabled
 
-  @pending
   Scenario: Order with models and an option
-    # TODO: implement reservations with options in the factory
-    Given a customer order with title "Order 1" and the following reservations exists for the user:
+    Given there is an option "USB Adapter"
+    And a customer order with title "Order 1" and the following reservations exists for the user:
       | user | quantity | model       | option      | pool   | start-date | end-date   | state  |
       | user | 1        | DSLR Camera |             | Pool A | 2020-02-01 | 2020-02-10 | closed |
       | user | 1        | Tripod      |             | Pool A | 2020-02-01 | 2020-02-10 | closed |
@@ -137,7 +139,10 @@ Feature: Rentals - Show - Repeat order
 
     Then I see the "Add items" dialog
     And I see "2 items will be added to the cart."
-    And I see the Warning "Please note: One option can only be added by the lending desk."
+    And I see a warning in the dialog:
+      """
+      Please note: One option can only be added by the lending desk.
+      """
 
     When I accept the "Add items" dialog
     And the "Add items" dialog has closed
