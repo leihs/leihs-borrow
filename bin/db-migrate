@@ -3,5 +3,6 @@
 cd database
 bundle
 bundle exec rake db:migrate
+git checkout -f HEAD -- db/structure.sql
 
 echo '✔ OK'
