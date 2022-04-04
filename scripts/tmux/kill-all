@@ -6,3 +6,5 @@ tmux send-keys -t leihs-borrow:4.1 "^C" C-m
 tmux send-keys -t leihs-borrow:5.1 "^C" C-m
 tmux send-keys -t leihs-borrow:6.1 "^C" C-m
 tmux send-keys -t leihs-borrow:7.1 "^C" C-m
+
+sleep 1

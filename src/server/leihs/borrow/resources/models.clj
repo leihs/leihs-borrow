@@ -3,6 +3,7 @@
             [camel-snake-kebab.core :as csk]
             [clojure.java.jdbc :as jdbc]
             [clojure.set :as set]
+            [clojure.string :as string]
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.executor :as executor]
             [java-time :as jt :refer [before? local-date]]
@@ -16,6 +17,7 @@
             [leihs.borrow.resources.inventory-pools.visits-restrictions
              :as
              restrict]
+            [leihs.core.core :refer [presence]]
             [leihs.core.sql :as sql]
             [wharf.core :refer [transform-keys]])
   (:import java.time.format.DateTimeFormatter))
@@ -100,13 +102,18 @@
       not))
 
 (defn merge-search-conditions [sqlmap search-term]
-  (sql/merge-where sqlmap ["~~*"
-                           (sql/call :concat_ws
-                                     " "
-                                     :models.product
-                                     :models.version
-                                     :models.manufacturer)
-                           (str "%" search-term "%")]))
+  (let [terms (-> search-term
+                  (string/split #"\s+")
+                  (->> (map presence)
+                       (filter identity)
+                       (map #(str "%" % "%"))))
+        field (sql/call :concat_ws
+                        " "
+                        :models.product
+                        :models.version
+                        :models.manufacturer)
+        where-clauses (map #(vector "~~*" field %) terms)]
+    (sql/merge-where sqlmap (cons :and where-clauses))))
 
 (defn merge-category-ids-conditions [sqlmap category-ids]
   (-> sqlmap

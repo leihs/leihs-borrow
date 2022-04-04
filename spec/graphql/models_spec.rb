@@ -799,4 +799,42 @@ describe 'models connection' do
     expect(@result[:errors].first[:message])
       .to eq "User ID not authorized!"
   end
+
+  it 'searches properly' do
+    model = FactoryBot.create(:leihs_model,
+                              product: "Kabelrolle 230V",
+                              version: "50m",
+                              manufacturer: "Steffen")
+    FactoryBot.create(:item,
+                      leihs_model: model,
+                      responsible: @inventory_pool,
+                      is_borrowable: true)
+
+    q = <<-GRAPHQL
+      query($searchTerm: String) {
+        models(searchTerm: $searchTerm) {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    GRAPHQL
+
+    search_terms = ["kabel",
+                    "rolle",
+                    "kabelrolle 50m 230v",
+                    "230v 50m",
+                    "steffen",
+                    "steffen 230v"]
+
+    search_terms.each do |t|
+      vars = { searchTerm: t }
+      result = query(q, @user.id, vars).deep_symbolize_keys
+      model_ids = result.dig(:data, :models, :edges).map { |n| n[:node][:id] }
+      expect(model_ids.count).to eq 1
+      expect(model_ids.first).to eq model.id
+    end
+  end
 end
