@@ -92,10 +92,10 @@ Feature: Search results (and caching)
 
   Scenario: Category pages, navigation keeps the filters
     Given there is a subcategory "Analog Cameras" in "Cameras"
-      And there is a subcategory "Medium Format" in "Analog Cameras"
-      And there is a model "Hasselblad 500C"
-      And the model "Hasselblad 500C" belongs to the "Medium Format" category
-      And the model "Hasselblad 500C" has 1 borrowable item in "Pool A"
+    And there is a subcategory "Medium Format" in "Analog Cameras"
+    And there is a model "Hasselblad 500C"
+    And the model "Hasselblad 500C" belongs to the "Medium Format" category
+    And the model "Hasselblad 500C" has 1 borrowable item in "Pool A"
 
     When I click on category "Cameras"
     And I click on "Filter"
@@ -129,8 +129,8 @@ Feature: Search results (and caching)
 
     When I click on "Filter"
     And I choose to filter by availabilty
-    And I choose next working day as start date
-    And I choose next next working day as end date
+    And I enter the date "${Date.today}" in the "From" field
+    And I enter the date "${Date.tomorrow}" in the "Until" field
     And I set the quantity to 2
     And I click button "Apply"
     Then I see 1 different "Model A" models

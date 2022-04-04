@@ -14,7 +14,7 @@
    [leihs.borrow.lib.translate :as translate
     :refer [t dict set-default-translate-path with-translate-path]]
    [leihs.borrow.lib.helpers :as h :refer [log spy]]
-   [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton UiDatepicker]]
+   [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton UiDateRangePicker]]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [remove-blanks presence update-vals]]
    ["date-fns" :as date-fns]
@@ -53,27 +53,36 @@
   (clj->js (get-in dict [:borrow :filter])))
 
 (defn filter-modal [hide! dispatch-fn saved-opts locale]
-  (let [format-date #(some-> %
-                             (date-fns/parse "yyyy-MM-dd" (js/Date.))
-                             (date-fns/format "P" #js {:locale locale}))
+  (let [parse-date #(some-> % (date-fns/parse "yyyy-MM-dd" (js/Date.)))
         term (r/atom (or (:term saved-opts) ""))
         pool-id (r/atom (or (:pool-id saved-opts) ""))
         only-available (r/atom (let [oa (:only-available saved-opts)]
                                  (if (nil? oa) false true)))
-        start-date (r/atom (or (some-> saved-opts :start-date format-date) ""))
-        end-date (r/atom (or (some-> saved-opts :end-date format-date) ""))
+        selected-range (r/atom {:startDate (or
+                                            (some-> saved-opts :start-date parse-date)
+                                            (date-fns/startOfToday))
+                                :endDate (or
+                                          (some-> saved-opts :end-date parse-date)
+                                          (date-fns/startOfTomorrow))})
         quantity (r/atom (or (:quantity saved-opts) 1))]
     (fn [hide! dispatch-fn saved-opts locale]
-      (let [pools @(subscribe [::pools-with-reservable-items])
+      (let [today (date-fns/startOfToday)
+            max-date (date-fns/addYears today 10)
+            pools @(subscribe [::pools-with-reservable-items])
             is-unselectable-pool (not-any? #{@pool-id} (concat ["" "all"] (map #(:id %) pools)))
             suspensions @(subscribe [::suspensions])
             user-suspended-in-pool? (->> suspensions (some #(= @pool-id (-> % :inventory-pool :id))))
             locale-to-use @(subscribe [::translate/locale-to-use])
             locale (case locale-to-use :de-CH locale/de :en-GB locale/enGB)
-            start-date-and-end-date-set? #(and (presence @start-date) (presence @end-date))
+
+            change-selected-range (fn [r]
+                                    (let [start-date (-> r .-startDate)
+                                          end-date (-> r .-endDate)]
+                                      (reset! selected-range {:startDate start-date :endDate end-date})))
+            start-date-and-end-date-set? #(and (presence (:startDate @selected-range)) (presence (:endDate @selected-range)))
             start-date-equal-or-before-end-date?
-            #(let [s (date-fns/parse @start-date "P" (js/Date.) #js {:locale locale})
-                   e (date-fns/parse @end-date "P" (js/Date.) #js {:locale locale})]
+            #(let [s (:startDate @selected-range)
+                   e (:endDate @selected-range)]
                (or (date-fns/isEqual s e) (date-fns/isBefore s e)))
             valid? #(or (not @only-available)
                         (and (start-date-and-end-date-set?)
@@ -83,6 +92,7 @@
            [:> UI/Components.Design.ModalDialog.Body
             [:form {:id "filter-form"
                     :noValidate true
+                    :autoComplete "off"
                     :onSubmit
                     #(do (-> % .preventDefault)
                          (hide!)
@@ -90,13 +100,12 @@
                           (remove-blanks
                            (letfn [(format-date [x]
                                      (some-> x
-                                             (date-fns/parse "P" (js/Date.) #js {:locale locale})
                                              (date-fns/format "yyyy-MM-dd")))]
                              {:term @term
                               :pool-id (if (= @pool-id "all") nil @pool-id)
                               :only-available (when @only-available @only-available)
-                              :start-date (when @only-available (format-date @start-date))
-                              :end-date (when @only-available (format-date @end-date))
+                              :start-date (when @only-available (format-date (:startDate @selected-range)))
+                              :end-date (when @only-available (format-date (:endDate @selected-range)))
                               :quantity (when @only-available @quantity)}))))}
              [:> UI/Components.Design.Stack {:space 4}
 
@@ -134,22 +143,16 @@
                  [:fieldset
                   [:legend.visually-hidden (t :time-span.title)]
                   [:div.d-flex.flex-column.gap-3
-                   [UiDatepicker
+                   [UiDateRangePicker
                     {:locale locale
-                     :name "start-date"
-                     :id "start-date"
-                     :value @start-date
-                     :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
-                     :placeholder (t :time-span.undefined)
-                     :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
-                   [UiDatepicker
-                    {:locale locale
-                     :name "end-date"
-                     :id "end-date"
-                     :value @end-date
-                     :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
-                     :placeholder (t :time-span.undefined)
-                     :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]
+                     :txt {:from (t :from)
+                           :until (t :until)
+                           :placeholderFrom (t :time-span.undefined)
+                           :placeholderUntil (t :time-span.undefined)}
+                     :selected-range @selected-range
+                     :onChange change-selected-range
+                     :min-date today
+                     :max-date max-date}]
                    (cond
                      (not (start-date-and-end-date-set?))
                      [:> UI/Components.Design.Warning (t :time-span.errors.start-date-and-end-date-set)]
@@ -175,8 +178,8 @@
               :onClick #(do (reset! term "")
                             (reset! pool-id "all")
                             (reset! only-available false)
-                            (reset! start-date "")
-                            (reset! end-date "")
+                            (reset! selected-range {:startDate (date-fns/startOfToday)
+                                                    :endDate (date-fns/startOfTomorrow)})
                             (reset! quantity 1))}
              (t :reset)]]])))))
 
@@ -234,6 +237,5 @@
            :onOpenPanel show!
            :onClearFilter on-clear-filter
            :onSubmit on-input-submit
-           :filterLabel (t :borrow.filter.show-all-filters)
            :locale (.-code locale)
            :txt (model-search-filter-texts)}]]))))

@@ -9,7 +9,7 @@
    [leihs.core.core :refer [dissoc-in]]
    [leihs.borrow.lib.helpers :as h]
    [leihs.borrow.lib.translate :as translate :refer [t set-default-translate-path]]
-   [leihs.borrow.lib.form-helpers :refer [UiDatepicker]]
+   [leihs.borrow.lib.form-helpers :refer [UiDateRangePicker]]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.current-user.core :as current-user]
    ["/leihs-ui-client-side-external-react" :as UI]))
@@ -75,38 +75,27 @@
                         (t :!borrow.phrases.user-or-delegation-personal-postfix))))))
 
 (defn repeat-dialog [rental reservations user-id date-fns-locale]
-  (let [format-date #(date-fns/format % "P" #js {:locale date-fns-locale})
-        parse-date #(date-fns/parse % "P" (js/Date.) #js {:locale date-fns-locale})
-        total-quantity (:total-quantity rental)
-        today (date-fns/startOfToday)
+  (let [today (date-fns/startOfToday)
         max-date (date-fns/addYears today 10)
-        start-date (reagent/atom (format-date today))
-        end-date (reagent/atom (format-date (date-fns/addDays today 1)))
+        selected-range (reagent/atom {:startDate today :endDate  (date-fns/addDays today 1)})
         validation-result (reagent/atom {:valid? true})
-        validate-dates (fn [start-date-input, end-date-input]
-                         (if (or (empty? start-date-input) (empty? end-date-input))
+        validate-dates (fn [start-date, end-date]
+                         (cond
+                           (not (and (date-fns/isValid start-date) (date-fns/isValid end-date)))
                            {:valid? false}
-                           (let [tmp-start-date (parse-date start-date-input)
-                                 tmp-end-date (parse-date end-date-input)]
-                             (cond
-                               (not (and (date-fns/isValid tmp-start-date) (date-fns/isValid tmp-end-date)))
-                               {:valid? false}
-                               (> (h/spy tmp-start-date) (h/spy tmp-end-date))
-                               {:valid? false :date-message (t :dialog.validation.start-after-end)}
-                               (< tmp-start-date today)
-                               {:valid? false :date-message (t :dialog.validation.start-date-in-past)}
-                               (> tmp-end-date max-date)
-                               {:valid? false :date-message (t :dialog.validation.end-date-too-late {:maxDate max-date})}
-                               :else
-                               {:valid? true}))))
-        change-dates (fn [start-date-input, end-date-input]
-                       (reset! start-date start-date-input)
-                       (reset! end-date end-date-input)
-                       (reset! validation-result (validate-dates start-date-input end-date-input)))
-        change-start-date (fn [e]
-                            (change-dates (-> e .-target .-value) @end-date))
-        change-end-date (fn [e]
-                          (change-dates @start-date (-> e .-target .-value)))
+                           (> start-date end-date)
+                           {:valid? false :date-message (t :dialog.validation.start-after-end)}
+                           (< start-date today)
+                           {:valid? false :date-message (t :dialog.validation.start-date-in-past)}
+                           (> end-date max-date)
+                           {:valid? false :date-message (t :dialog.validation.end-date-too-late {:maxDate max-date})}
+                           :else
+                           {:valid? true}))
+        change-selected-range (fn [r]
+                                (let [start-date (-> r .-startDate)
+                                      end-date (-> r .-endDate)]
+                                  (reset! selected-range {:startDate start-date :endDate end-date})
+                                  (reset! validation-result (validate-dates start-date end-date))))
         get-quantity (fn [reservations filter-pred]
                        (->> reservations (filter filter-pred) (map :quantity) (reduce +)))]
     (fn [rental reservations user-id date-fns-locale]
@@ -131,8 +120,8 @@
                                  (when (-> e .-target .checkValidity)
                                    (dispatch [::mutate
                                               {:id rental-id
-                                               :startDate (h/date-format-day (parse-date @start-date))
-                                               :endDate (h/date-format-day (parse-date @end-date))
+                                               :startDate (h/date-format-day (:startDate @selected-range))
+                                               :endDate (h/date-format-day (:endDate @selected-range))
                                                :userId user-id}])))
                     :no-validate true
                     :auto-complete :off
@@ -153,26 +142,16 @@
                  [:fieldset
                   [:legend.visually-hidden (t :dialog.time-span)]
                   [:div.d-flex.flex-column.gap-3
-                   [UiDatepicker
+                   [UiDateRangePicker
                     {:locale date-fns-locale
-                     :name "start-date"
-                     :id "start-date"
-                     :value @start-date
-                     :on-change change-start-date
-                     :placeholder (t :dialog.undefined)
+                     :txt {:from (t :dialog.from)
+                           :until (t :dialog.until)
+                           :placeholderFrom (t :dialog.undefined)
+                           :placeholderUntil (t :dialog.undefined)}
+                     :selected-range @selected-range
+                     :onChange change-selected-range
                      :min-date today
-                     :max-date max-date
-                     :label (reagent/as-element [:label {:html-for "start-date"} (t :dialog.from)])}]
-                   [UiDatepicker
-                    {:locale date-fns-locale
-                     :name "end-date"
-                     :id "end-date"
-                     :value @end-date
-                     :on-change change-end-date
-                     :placeholder (t :dialog.undefined)
-                     :min-date today
-                     :max-date max-date
-                     :label (reagent/as-element [:label {:html-for "end-date"} (t :dialog.until)])}]
+                     :max-date max-date}]
                    (when (:date-message @validation-result)
                      [:> UI/Components.Design.Warning
                       (:date-message @validation-result)])]]]])]]

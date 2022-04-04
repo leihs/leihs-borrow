@@ -47,3 +47,12 @@
            UI/Components.Design.DatePicker
            props
            (map reagent/as-element children))))
+
+(defn UiDateRangePicker [props & children]
+  (let [props (-> props
+                  (assoc :inputComponent input-component)
+                  rtpl/convert-prop-value)]
+    (apply reagent/create-element
+           UI/Components.Design.DateRangePicker
+           props
+           (map reagent/as-element children))))

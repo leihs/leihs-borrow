@@ -34,8 +34,7 @@ step "I enter the date :date_expr in the :name field" do |date_expr, name|
   date = custom_eval(date_expr)
   date_string = Locales.format_date(date, @user)
   fill_in(name, with: "")
-  field = find_field(name)
-  simulate_typing(field, date_string)
+  fill_in(name, with: date_string)
 end
 
 step "I see the date :date_expr in the :name field" do |date_expr, name|

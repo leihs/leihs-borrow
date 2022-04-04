@@ -24,8 +24,8 @@ Feature: Delegations
     And I click on "Filter"
     And I enter "Kamera" in the search field
     And I choose to filter by availabilty
-    And I choose next working day as start date
-    And I choose next next working day as end date
+    And I enter the date "${Date.today}" in the "From" field
+    And I enter the date "${Date.tomorrow}" in the "Until" field
     And I click button "Apply"
     Then I see one model with the title "Kamera"
 

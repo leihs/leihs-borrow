@@ -51,7 +51,8 @@
              :user-delegation {:en-GB "Order for" :de-CH "Bestellung für"}
              :timespan {:en-GB "Time span" :de-CH "Zeitraum"}
              :from {:en-GB "From" :de-CH "Von"}
-             :until {:en-GB "Until" :de-CH "Bis"}}
+             :until {:en-GB "Until" :de-CH "Bis"}
+             :undefined {:en-GB "undefined" :de-CH "Unbestimmt"}}
      :validate {:missing-quantity
                 {:de-CH "Verfügbarkeit kann nicht geprüft werden, da die Anzahl fehlt"
                  :en-GB "Availability can not be checked because the quantity is missing"}
@@ -149,7 +150,7 @@
              :time-span {:title {:en-GB "Timespan"
                                  :de-CH "Zeitraum"}
                          :undefined {:en-GB "undefined"
-                                     :de-CH "unbestimmt"}
+                                     :de-CH "Unbestimmt"}
                          :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set."
                                                                 :de-CH "Start- und Enddatum müssen gesetzt sein."}
                                   :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date."
@@ -453,7 +454,7 @@
                                                          =1 {Please note: One option can only be added by the lending desk.}
                                                          other {Please note: # options can only be added by the lending desk.}}"}
                                           :time-span {:de-CH "Zeitraum" :en-GB "Time span"}
-                                          :undefined {:de-CH "unbestimmt" :en-GB "undefined"}
+                                          :undefined {:de-CH "Unbestimmt" :en-GB "undefined"}
                                           :from {:de-CH "Von" :en-GB "From"}
                                           :until {:de-CH "Bis" :en-GB "Until"}
                                           :order-for {:de-CH "Bestellung für" :en-GB "Order for"}
