@@ -49,6 +49,10 @@
          (fn [current-profile _]
            (:suspensions current-profile)))
 
+(reg-sub ::user-locale
+         :<- [::current-user/locale]
+         (fn [l _] l))
+
 (defn model-search-filter-texts []
   (clj->js (get-in dict [:borrow :filter])))
 
@@ -65,7 +69,7 @@
                                           (some-> saved-opts :end-date parse-date)
                                           (date-fns/startOfTomorrow))})
         quantity (r/atom (or (:quantity saved-opts) 1))]
-    (fn [hide! dispatch-fn saved-opts locale]
+    (fn [hide! dispatch-fn saved-opts]
       (let [today (date-fns/startOfToday)
             max-date (date-fns/addYears today 10)
             pools @(subscribe [::pools-with-reservable-items])
@@ -73,7 +77,7 @@
             suspensions @(subscribe [::suspensions])
             user-suspended-in-pool? (->> suspensions (some #(= @pool-id (-> % :inventory-pool :id))))
             locale-to-use @(subscribe [::translate/locale-to-use])
-            locale (case locale-to-use :de-CH locale/de :en-GB locale/enGB)
+            locale (case locale-to-use :de-CH locale/de :gsw-CH locale/de :en-GB locale/enGB #_fallback-> locale/enGB)
 
             change-selected-range (fn [r]
                                     (let [start-date (-> r .-startDate)
@@ -192,7 +196,10 @@
             show! #(reset! modal-shown? true)
             saved-filters @(subscribe [::options])
             pools-with-reservable-items @(subscribe [::pools-with-reservable-items])
-            locale @(subscribe [::translate/i18n-locale])
+            user-locale @(subscribe [::user-locale])
+            ; NOTE: map unsupported swiss-german to german for consistency
+            locale (case user-locale "gsw-CH" "de-CH" #_default-> user-locale)
+
             ;
             available-filters {:pools (map (fn [p] {:type :pool :id (:id p) :label (:name p)}) pools-with-reservable-items)}
             ; NOTE: sync state between main input and the one inside the panel!
@@ -226,8 +233,7 @@
            [filter-modal
             hide!
             dispatch-fn
-            (assoc saved-filters :term current-search-term)
-            locale])
+            (assoc saved-filters :term current-search-term)])
 
          [:> UI/Components.ModelSearchFilter
           {:key input-key
@@ -237,5 +243,5 @@
            :onOpenPanel show!
            :onClearFilter on-clear-filter
            :onSubmit on-input-submit
-           :locale (.-code locale)
+           :locale locale
            :txt (model-search-filter-texts)}]]))))
