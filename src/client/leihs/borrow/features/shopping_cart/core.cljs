@@ -488,6 +488,10 @@
          [:button.btn.btn-secondary {:type "button" :on-click #(dispatch [::timeout/refresh])} (t :countdown/reset)]]]])
     (finally (js/clearInterval timer-fn))))
 
+(defn no-valid-items []
+  [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible true}
+   [:> UI/Components.Design.ProgressInfo {:title (t :countdown/no-valid-items)}]])
+
 (defn order-dialog []
   (let [purpose (reagent/atom {:value ""})
         title (reagent/atom {:value ""})
@@ -626,7 +630,9 @@
 
           [:> UI/Components.Design.Stack {:space 5}
 
-           [countdown]
+           (if (:valid-until data)
+             [countdown]
+             [no-valid-items])
 
            [delegation-section]
 

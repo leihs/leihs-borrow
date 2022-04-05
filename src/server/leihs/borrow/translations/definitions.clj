@@ -503,6 +503,8 @@
                                                     }"}
                                 :time-left-last-minute {:en-GB "Less than one minute left"
                                                         :de-CH "Weniger als eine Minute übrig"}
+                                :no-valid-items {:en-GB "No valid items"
+                                                 :de-CH "Keine gültigen Gegenstände"}
                                 :expired {:en-GB "Expired"
                                           :de-CH "Abgelaufen"}
                                 :reset {:en-GB "Reset time limit"
