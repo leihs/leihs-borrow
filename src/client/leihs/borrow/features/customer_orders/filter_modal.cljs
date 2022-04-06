@@ -63,88 +63,92 @@
         (with-translate-path :borrow.rentals.filter
           [:> UI/Components.Design.ModalDialog {:title "Filter" :shown true :dismissible true :onDismiss hide!}
            [:> UI/Components.Design.ModalDialog.Body
-            [:> UI/Components.Design.Stack {:space 4}
-
-             [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
-              [:label.visually-hidden {:html-for "term"} (t :search.title)]
-              [UiInputWithClearButton {:name "term"
-                                       :id "term"
-                                       :placeholder (t :search.placeholder)
-                                       :value @term
-                                       :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
-
-             [:> UI/Components.Design.Section {:title (t :states.title) :collapsible true}
-              [:label.visually-hidden {:html-for "state"} (t :states.title)]
-              [:select.form-select {:name "state" :id "state" :value @state
-                                    :on-change (fn [e] (reset! state (-> e .-target .-value)))}
-               [:option {:value "all" :key "all"} (t :states.all)]
-               (doall (for [state-name ["IN_APPROVAL"
-                                        "REJECTED"
-                                        "CANCELED"
-                                        "EXPIRED"
-                                        "TO_PICKUP"
-                                        "TO_RETURN"
-                                        "OVERDUE"
-                                        "RETURNED"]]
-                        [:option {:value state-name :key state-name} (t (str :states.state-filter-label "/" state-name))]))]]
-
+            [:form {:id "filter-form"
+                    :noValidate true
+                    :autoComplete "off"
+                    :onSubmit #(do (-> % .preventDefault)
+                                   (hide!)
+                                   (dispatch-fn
+                                    (remove-nils
+                                     {:term (presence @term)
+                                      :pool-id (if (= @pool-id "all") nil @pool-id)
+                                      :state (if (= @state "all") nil @state)
+                                      :from (some-> @start-date
+                                                    presence
+                                                    (date-fns/parse "P" (js/Date.) #js {:locale locale})
+                                                    (date-fns/format "yyyy-MM-dd"))
+                                      :until (some-> @end-date
+                                                     presence
+                                                     (date-fns/parse "P" (js/Date.) #js {:locale locale})
+                                                     (date-fns/format "yyyy-MM-dd"))})))}
              [:> UI/Components.Design.Stack {:space 4}
-              [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
-               [:fieldset
-                [:legend.visually-hidden (t :time-span.title)]
-                [:div.d-flex.flex-column.gap-3
-                 [:> UI/Components.Design.DatePicker
-                  {:locale locale
-                   :name "start-date"
-                   :id "start-date"
-                   :value @start-date
-                   :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
-                   :placeholder (t :time-span.undefined)
-                   :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
-                 [:> UI/Components.Design.DatePicker
-                  {:locale locale
-                   :name "end-date"
-                   :id "end-date"
-                   :value @end-date
-                   :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
-                   :placeholder (t :time-span.undefined)
-                   :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]
-                 (when-not (start-date-equal-or-before-end-date?)
-                   [:> UI/Components.Design.Warning
-                    (t :time-span.errors.start-date-equal-or-before-end-date)])]]]]
 
-             [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
-              [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
-              [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
-                                    :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
-               [:option {:value "all"} (t :pools.all)]
+              [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
+               [:label.visually-hidden {:html-for "term"} (t :search.title)]
+               [UiInputWithClearButton {:name "term"
+                                        :id "term"
+                                        :placeholder (t :search.placeholder)
+                                        :value @term
+                                        :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
+
+              [:> UI/Components.Design.Section {:title (t :states.title) :collapsible true}
+               [:label.visually-hidden {:html-for "state"} (t :states.title)]
+               [:select.form-select {:name "state" :id "state" :value @state
+                                     :on-change (fn [e] (reset! state (-> e .-target .-value)))}
+                [:option {:value "all" :key "all"} (t :states.all)]
+                (doall (for [state-name ["IN_APPROVAL"
+                                         "REJECTED"
+                                         "CANCELED"
+                                         "EXPIRED"
+                                         "TO_PICKUP"
+                                         "TO_RETURN"
+                                         "OVERDUE"
+                                         "RETURNED"]]
+                         [:option {:value state-name :key state-name} (t (str :states.state-filter-label "/" state-name))]))]]
+
+              [:> UI/Components.Design.Stack {:space 4}
+               [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
+                [:fieldset
+                 [:legend.visually-hidden (t :time-span.title)]
+                 [:div.d-flex.flex-column.gap-3
+                  [:> UI/Components.Design.DatePicker
+                   {:locale locale
+                    :name "start-date"
+                    :id "start-date"
+                    :value @start-date
+                    :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
+                    :placeholder (t :time-span.undefined)
+                    :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
+                  [:> UI/Components.Design.DatePicker
+                   {:locale locale
+                    :name "end-date"
+                    :id "end-date"
+                    :value @end-date
+                    :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
+                    :placeholder (t :time-span.undefined)
+                    :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]
+                  (when-not (start-date-equal-or-before-end-date?)
+                    [:> UI/Components.Design.Warning
+                     (t :time-span.errors.start-date-equal-or-before-end-date)])]]]]
+
+              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
+               [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
+               [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
+                                     :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
+                [:option {:value "all"} (t :pools.all)]
+                (when is-unselectable-pool
+                  [:option {:value @pool-id} (t :pools.invalid-option)])
+                (doall (for [{pool-id :id pool-name :name} pools]
+                         [:option {:value pool-id :key pool-id} pool-name]))]
                (when is-unselectable-pool
-                 [:option {:value @pool-id} (t :pools.invalid-option)])
-               (doall (for [{pool-id :id pool-name :name} pools]
-                        [:option {:value pool-id :key pool-id} pool-name]))]
-              (when is-unselectable-pool
-                [:> UI/Components.Design.Warning {:class "mt-2"}
-                 (t :pools.invalid-option-info)])]]]
+                 [:> UI/Components.Design.Warning {:class "mt-2"}
+                  (t :pools.invalid-option-info)])]]]]
 
            [:> UI/Components.Design.ModalDialog.Footer
             [:button.btn.btn-primary
-             {:type "button"
+             {:type "submit"
               :disabled (not (valid?))
-              :onClick
-              #(do (hide!)
-                   (dispatch-fn
-                    (remove-nils
-                     {:term (presence @term)
-                      :pool-id (if (= @pool-id "all") nil @pool-id)
-                      :state (if (= @state "all") nil @state)
-                      :from (some-> @start-date
-                                    presence
-                                    (date-fns/parse "P" (js/Date.) #js {:locale locale})
-                                    (date-fns/format "yyyy-MM-dd"))
-                      :until (some-> @end-date
-                                     presence
-                                     (date-fns/parse "P" (js/Date.) #js {:locale locale})
-                                     (date-fns/format "yyyy-MM-dd"))})))}
+              :form "filter-form"}
              (t :apply)]
             [:button.btn.btn-secondary
              {:type "button"
