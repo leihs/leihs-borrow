@@ -23,6 +23,7 @@
    [leihs.borrow.lib.helpers :as h]
    ["/leihs-ui-client-side-external-react" :as UI]
    [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.models.filter-modal :refer [filter-comp] :as filter-modal]
    [leihs.borrow.features.models.core :as models]
    [leihs.borrow.features.categories.core :as categories]
@@ -93,6 +94,11 @@
                       [:routing/navigate [::routes/categories-show nav-args]]
                       [::models/get-models extra-vars])}))
 
+(reg-sub ::has-any-reservable-item
+         :<- [::current-user/current-profile]
+         (fn [profile _]
+           (->> profile :inventory-pools (filter #(:has-reservable-items %)) first boolean)))
+
 (reg-sub
  ::ancestors
  (fn [db [_ ids]]
@@ -120,6 +126,7 @@
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])
+        has-any-reservable-item @(subscribe [::has-any-reservable-item])
         categories-path (get-in routing [:bidi-match :route-params :categories-path])
         cat-ids (split categories-path #"/")
         category-id (last cat-ids)
@@ -155,20 +162,26 @@
                                                          ::routes/categories-show 
                                                          :categories-path path
                                                          :query-params model-filters))}]))}
-         [filter-comp
-          #(dispatch [:routing/navigate
-                      [::routes/categories-show
-                       {:categories-path categories-path :query-params %}]])
-          #_extra-search-args]]
-        [:<>
-         [:> UI/Components.Design.Stack {:space 4}
-          (when-not (empty? child-cats)
-            [:> UI/Components.Design.Section.Controlled
-             {:title (t :sub-categories)
-              :collapsible true
-              :collapsed child-cats-collapsed?
-              :on-toggle-collapse #(dispatch [::set-child-cats-collapsed category-id %])}
-             (categories/categories-list child-cats model-filters)])
-          [:> UI/Components.Design.Section
-           {:title (t :items) :collapsible true}
-           [models/search-results extra-search-args]]]]])]))
+         (when has-any-reservable-item
+           [filter-comp
+            #(dispatch [:routing/navigate
+                        [::routes/categories-show
+                         {:categories-path categories-path :query-params %}]])
+            #_extra-search-args])]
+        (if has-any-reservable-item
+          [:> UI/Components.Design.Stack {:space 4}
+           (when-not (empty? child-cats)
+             [:> UI/Components.Design.Section.Controlled
+              {:title (t :sub-categories)
+               :collapsible true
+               :collapsed child-cats-collapsed?
+               :on-toggle-collapse #(dispatch [::set-child-cats-collapsed category-id %])}
+              (categories/categories-list child-cats model-filters)])
+           [:> UI/Components.Design.Section
+            {:title (t :items) :collapsible true}
+            [models/search-results extra-search-args]]]
+          ; else
+          [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
+           [:> UI/Components.Design.Warning {:class "fs-2"} (t :!borrow.catalog.no-reservable-items)]
+           [:a.text-decoration-underline {:href (routing/path-for ::routes/inventory-pools-index)}
+            (t :!borrow.catalog.check-available-pools)]])])]))

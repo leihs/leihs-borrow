@@ -26,7 +26,7 @@
    ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
-(set-default-translate-path :borrow.home-page)
+(set-default-translate-path :borrow.catalog) ; ("catalog" because it is currently the only feature on the home page)
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
@@ -34,13 +34,26 @@
  (fn-traced [_ _]
    {:dispatch [::categories/fetch-index 4]}))
 
+(reg-sub ::has-any-reservable-item
+         :<- [::current-user/current-profile]
+         (fn [profile _]
+           (->> profile :inventory-pools (filter #(:has-reservable-items %)) first boolean)))
+
 (defn view []
-  (let [modal-shown? (r/atom false)]
-    (fn []
-      (let [cats @(subscribe [::categories/categories-index])]
+  (fn []
+    (let [cats @(subscribe [::categories/categories-index])
+          has-any-reservable-item @(subscribe [::has-any-reservable-item])]
+      (if has-any-reservable-item
         [:<>
-         [:> UI/Components.Design.PageLayout.Header {:title (t :catalog)}
+         [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
           [filter-comp default-dispatch-fn]]
          [:> UI/Components.Design.Stack
-          [:> UI/Components.Design.Section {:title (t :!borrow.categories.title)}
-           (categories/categories-list cats {})]]]))))
+          [:> UI/Components.Design.Section {:title (t :categories)}
+           (categories/categories-list cats {})]]]
+        ; else
+        [:<>
+         [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
+         [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
+          [:> UI/Components.Design.Warning {:class "fs-2"} (t :no-reservable-items)]
+          [:a.text-decoration-underline {:href (routing/path-for ::routes/inventory-pools-index)}
+           (t :check-available-pools)]]]))))

@@ -71,8 +71,10 @@
        [:<>
 
         [:> UI/Components.Design.Section {:title (t :available-pools) :collapsible true}
-         [:> UI/Components.Design.ListCard.Stack
-          (doall
-           (for [pool pools]
-             [:<> {:key (:id pool)}
-              [pool-line pool suspensions]]))]]])]))
+         (if (seq pools)
+           [:> UI/Components.Design.ListCard.Stack
+            (doall
+             (for [pool pools]
+               [:<> {:key (:id pool)}
+                [pool-line pool suspensions]]))]
+           [:div.fw-light (t :no-available-pools)])]])]))

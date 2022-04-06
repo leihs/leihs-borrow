@@ -117,9 +117,15 @@
 
   ; --- PER FEATURE TRANSLATIONS ---
 
-    :categories {:title {:en-GB "Categories"
-                         :de-CH "Kategorien"}
-                 :sub-categories {:en-GB "Sub-categories"
+    :catalog {:title {:en-GB "Catalog"
+                      :de-CH "Katalog"}
+              :categories {:en-GB "Categories"
+                           :de-CH "Kategorien"}
+              :no-reservable-items {:en-GB "No reservable items found"
+                                    :de-CH "Keine reservierbaren Gegenstände gefunden"}
+              :check-available-pools {:en-GB "Check available inventory pools"
+                                      :de-CH "Verfügbare Inventarparks prüfen"}}
+    :categories {:sub-categories {:en-GB "Sub-categories"
                                   :de-CH "Unterkategorien"}
                  :items {:en-GB "Items"
                          :de-CH "Gegenstände"}}
@@ -185,10 +191,7 @@
              :apply {:en-GB "Apply" :de-CH "Anwenden"}
              :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
 
-    :home-page {:title {:en-GB "Home"
-                        :de-CH "Home"}
-                :catalog {:en-GB "Catalog"
-                          :de-CH "Katalog"}}
+    :home-page {} ; see catalog
     :logout {:en-GB "Logout"
              :de-CH "Abmelden"}
     :menu {:borrow {:section-title {:en-GB "Borrow"
@@ -251,6 +254,8 @@
                     :de-CH "Inventarparks"}
             :available-pools {:en-GB "Available inventory pools"
                               :de-CH "Verfügbare Inventarparks"}
+            :no-available-pools {:en-GB "No inventory pool available"
+                                 :de-CH "Kein Inventarpark verfügbar"}
             :access-suspended {:en-GB "Access suspended"
                                :de-CH "Zugang gesperrt"}
             :no-reservable-models {:en-GB "No reservable items"

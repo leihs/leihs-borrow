@@ -50,7 +50,7 @@ def get_ui_list_cards(scope = page)
     {
       link: links.count > 0 ? links[0][:href] : "",
       title: divs[0].text,
-      body: divs[1].text,
+      body: divs.count > 1 ? divs[1].text : "",
       foot: divs.count > 2 ? divs[2].text : "",
     }
   end
