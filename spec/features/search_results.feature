@@ -104,7 +104,7 @@ Feature: Search results (and caching)
     Then I see 1 "Hasselblad 500C" model
 
     When I expand the "Sub-categories" section
-    And I click on "Analog Cameras"
+    And I click on the card with title "Analog Cameras"
     Then the title of the page is "Analog Cameras"
     And I see the following breadcrumbs:
       | category |

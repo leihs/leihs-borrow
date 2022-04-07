@@ -28,7 +28,11 @@ step 'the :name section is collapsed' do |name|
 end
 
 step 'I click on sub-category :category_name' do |category_name|
-  within('section', text: 'Sub-categories') { click_on(category_name) }
+  within('section', text: 'Sub-categories') do
+    card = get_ui_list_card_by_title(category_name)
+    expect(card).to be
+    card.click
+  end
 end
 
 step 'I click on :name within breadcrumbs' do |name|

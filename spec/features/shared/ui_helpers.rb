@@ -56,6 +56,14 @@ def get_ui_list_cards(scope = page)
   end
 end
 
+def get_ui_list_card_by_title(title)
+  find_ui_list_cards().find do |c|
+    divs = c.all(":scope > div")
+    card_title = divs[0].text
+    card_title == title
+  end
+end
+
 def find_ui_page_layout
   find(".ui-page-layout")
 end

@@ -175,8 +175,9 @@
               {:title (t :sub-categories)
                :collapsible true
                :collapsed child-cats-collapsed?
+               :class (when (not child-cats-collapsed?) "mb-5")
                :on-toggle-collapse #(dispatch [::set-child-cats-collapsed category-id %])}
-              (categories/categories-list child-cats model-filters)])
+              (categories/sub-categories-list child-cats model-filters)])
            [:> UI/Components.Design.Section
             {:title (t :items) :collapsible true}
             [models/search-results extra-search-args]]]

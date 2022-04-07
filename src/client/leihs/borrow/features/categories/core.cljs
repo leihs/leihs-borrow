@@ -58,3 +58,14 @@
 
     [:> UI/Components.Design.SquareImageGrid {:className "ui-category-list" :list list}]))
 
+(defn sub-categories-list [categories model-filters]
+  [:> UI/Components.Design.ListCard.Stack
+   (doall
+    (for [cat categories]
+      (let [href (or (:url cat)
+                     (routing/path-for ::routes/categories-show
+                                       :categories-path (:id cat)
+                                       :query-params model-filters))]
+        [:<> {:key (:id cat)}
+         [:> UI/Components.Design.ListCard {:href href :one-line true}
+          [:> UI/Components.Design.ListCard.Title (:name cat)]]])))])

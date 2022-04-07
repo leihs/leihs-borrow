@@ -46,11 +46,7 @@ step "I see the following lines in the :name section:" do |section_name, table|
 end
 
 step "I click on the card with title :title" do |title|
-  card = find_ui_list_cards().find do |c|
-    divs = c.all(":scope > div")
-    card_title = divs[0].text
-    card_title == title
-  end
+  card = get_ui_list_card_by_title(title)
   expect(card).to be
   card.click
 end
