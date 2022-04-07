@@ -51,19 +51,19 @@
           ; We include the actual category itself because the
           ; backend validates if all categories in the path
           ; are still among the reservable ones.
-        [::re-graph/query categories-query
-          {:ids category-ids
-          :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
-                      [pool-id])}
-          [::on-fetched-categories-data]]
+                   [::re-graph/query categories-query
+                    {:ids category-ids
+                     :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
+                                [pool-id])}
+                    [::on-fetched-categories-data]]
           ; We fetch the actual category again to get the correct
           ; label in the context of the parent category.
-        [::re-graph/query
-          query
-          {:categoryId category-id :parentId parent-id}
-          [::on-fetched-category-data category-id]]
+                   [::re-graph/query
+                    query
+                    {:categoryId category-id :parentId parent-id}
+                    [::on-fetched-category-data category-id]]
 
-        [::models/get-models query-params {:categoryId category-id}])})))
+                   [::models/get-models query-params {:categoryId category-id}])})))
 
 (reg-event-db
  ::on-fetched-categories-data
@@ -158,8 +158,8 @@
                         {:className "text-center"
                          :ancestorCats (h/camel-case-keys cat-ancestors)
                        ;; FIXME: either add url to all ancestor cats OR extend router to take list of ids (instead of prejoined path)
-                         :getPathForCategory (fn [path] (routing/path-for 
-                                                         ::routes/categories-show 
+                         :getPathForCategory (fn [path] (routing/path-for
+                                                         ::routes/categories-show
                                                          :categories-path path
                                                          :query-params model-filters))}]))}
          (when has-any-reservable-item
