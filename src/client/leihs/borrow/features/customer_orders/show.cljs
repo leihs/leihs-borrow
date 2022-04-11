@@ -238,14 +238,15 @@
               [:button.btn.btn-secondary {:onClick #(dispatch [::open-cancellation-dialog rental-id])} (t :cancel-action-label)])
             [:button.btn.btn-secondary {:onClick #(dispatch [::repeat-order/open-repeat-dialog])} (t :repeat-action-label)]]]]
 
-         [:> UI/Components.Design.Section
-          {:title (t :user-or-delegation-section-title) :collapsible true}
-          (if (or (nil? rental-user-id) (= rental-user-id (:id user-data)))
-            [:<> (:name user-data) (when can-change-profile? (t :!borrow.phrases.user-or-delegation-personal-postfix))]
-            [:<> (->> (:delegations user-data)
-                      (filter #(= rental-user-id (:id %)))
-                      first
-                      :name)])]
+         (when (not-empty (:delegations user-data))
+           [:> UI/Components.Design.Section
+            {:title (t :user-or-delegation-section-title) :collapsible true}
+            (if (or (nil? rental-user-id) (= rental-user-id (:id user-data)))
+              [:<> (:name user-data) (when can-change-profile? (t :!borrow.phrases.user-or-delegation-personal-postfix))]
+              [:<> (->> (:delegations user-data)
+                        (filter #(= rental-user-id (:id %)))
+                        first
+                        :name)])])
 
          [:> UI/Components.Design.Section
           {:title (t :purpose) :collapsible true}

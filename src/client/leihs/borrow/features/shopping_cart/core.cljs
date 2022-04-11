@@ -595,6 +595,7 @@
 (defn view []
   (fn []
     (let [data @(subscribe [::data])
+          user-data @(subscribe [::current-user/user-data])
           invalid-res-ids (set (:invalid-reservation-ids data))
           errors @(subscribe [::errors])
           reservations @(subscribe [::reservations])
@@ -634,7 +635,8 @@
              [countdown]
              [no-valid-items])
 
-           [delegation-section]
+           (when (not-empty (:delegations user-data))
+             [delegation-section])
 
            [:> UI/Components.Design.Section {:title (t :line/section-title) :collapsible true}
             [:> UI/Components.Design.ListCard.Stack
