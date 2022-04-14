@@ -153,7 +153,7 @@
        :class (str "form-control " (get input-props :class))
        :style (merge (get input-props :style))})]]])
 
-(defn models-list [models]
+(defn models-list [models model-filters]
   (let
    [debug? @(subscribe [:is-debug?])
     models-list (doall
@@ -168,7 +168,8 @@
                       :caption (:name model)
                       :subCaption (:manufacturer model)
                       :href  (routing/path-for ::routes/models-show
-                                               :model-id (:id model))
+                                               :model-id (:id model)
+                                               :query-params model-filters)
                       :isFavorited (:is-favorited model)})))]
     [:<>
      [:> UI/Components.ModelList {:list models-list}]
@@ -203,7 +204,7 @@
        (empty? models) [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
        :else
        [:<>
-        [models-list models]
+        [models-list models filter-opts]
         [load-more cache-key extra-vars]])]))
 
 (defn view []

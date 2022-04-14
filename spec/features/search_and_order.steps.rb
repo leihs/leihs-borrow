@@ -2,6 +2,34 @@ step "I enter :term in the search field" do |term|
   fill_in("Search", with: term)
 end
 
+step "I select :name from the pools select box" do |name|
+  select(name, from: "Inventory pools")
+end
+
+step "the start date has :ruby_code" do |ruby_code|
+  d = custom_eval(ruby_code)
+  date_string = Locales.format_date(d, @user)
+  expect(find("#startDate").value).to eq date_string
+end
+
+step "the end date has :ruby_code" do |ruby_code|
+  d = custom_eval(ruby_code)
+  date_string = Locales.format_date(d, @user)
+  expect(find("#endDate").value).to eq date_string
+end
+
+step "I enter quantity :q" do |q|
+  find("#quantity").set q
+end
+
+step "the quantity has :q" do |q|
+  expect(find("#quantity").value).to eq q
+end
+
+step "the pools select box shows :name" do |name|
+  expect(find("#pool-id").value).to eq InventoryPool.find(name: name).id
+end
+
 step "I see one model with the title :name" do |name|
   expect(all(".ui-models-list-item").count).to eq 1
   find(".ui-models-list-item", text: name)
@@ -63,7 +91,7 @@ step "the cart is empty" do
 end
 
 step "I visit the orders page of the pool :name" do |name|
-  pool = InventoryPool.find(name: "Pool A")
+  pool = InventoryPool.find(name: name)
   visit("http://localhost:#{LEIHS_LEGACY_HTTP_PORT}/manage/#{pool.id}/orders")
 end
 

@@ -349,7 +349,7 @@
              (t :order-dialog/add)]
             [:button.btn.btn-secondary {:on-click on-cancel} (t :order-dialog/cancel)]]])))))
 
-(defn enrich-recommends-with-href [m]
+(defn enrich-recommends-with-href [m filters]
   (update-in m
              [:recommends :edges]
              (flip map)
@@ -357,7 +357,8 @@
                         [:node :href]
                         (routing/path-for ::routes/models-show
                                           :model-id
-                                          (-> % :node :id)))))
+                                          (-> % :node :id)
+                                          :query-params filters))))
 
 (defn order-success-notification [order-panel-data]
   [:> UI/Components.Design.ConfirmDialog
@@ -391,7 +392,7 @@
        [:<>
         [:> UI/Components.ModelShow {:model (-> model
                                                 h/camel-case-keys
-                                                enrich-recommends-with-href)
+                                                (enrich-recommends-with-href filters))
                                      :t {:description (t :description)
                                          :properties (t :properties)
                                          :documents (t :documents)

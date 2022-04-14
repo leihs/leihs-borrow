@@ -1,4 +1,4 @@
-Feature: Delegations
+Feature: Search and order
 
   Background:
     Given there is an initial admin
@@ -7,11 +7,15 @@ Feature: Delegations
     And the user is member of delegation "Delegation D"
     And there is an inventory pool "Pool A"
     And the user is inventory manager of pool "Pool A"
+    And there is an inventory pool "Pool B"
+    And the user is inventory manager of pool "Pool B"
     And the delegation "Delegation D" is customer of pool "Pool A"
+    And the delegation "Delegation D" is customer of pool "Pool B"
 
   Scenario Outline: Order for delegation <name>
     Given there is a model "Kamera"
     And there is 1 borrowable item for model "Kamera" in pool "Pool A"
+    And there are 2 borrowable items for model "Kamera" in pool "Pool B"
     And I log in as the user
 
     # switch to delegation profile
@@ -23,9 +27,11 @@ Feature: Delegations
     And I visit "/app/borrow/"
     And I click on "Filter"
     And I enter "Kamera" in the search field
+    And I select "Pool B" from the pools select box
     And I choose to filter by availabilty
-    And I enter the date "${Date.today}" in the "From" field
-    And I enter the date "${Date.tomorrow}" in the "Until" field
+    And I enter the date "${Date.tomorrow}" in the "From" field
+    And I enter the date "${Date.tomorrow + 1.day}" in the "Until" field
+    And I enter quantity "2"
     And I click button "Apply"
     Then I see one model with the title "Kamera"
 
@@ -34,6 +40,11 @@ Feature: Delegations
     Then the show page of the model "Kamera" was loaded
     And I click on "Add item"
     Then the order panel is shown
+    And the pools select box shows "Pool B"
+    And the start date has "${Date.tomorrow}"
+    And the end date has "${Date.tomorrow + 1.day}"
+    And the quantity has "2"
+    And I enter quantity "1"
     And I click on "Add"
     And the "Add item" dialog has closed
     And I accept the "Item added" dialog with the text:
@@ -47,7 +58,7 @@ Feature: Delegations
     And I click on "Cart"
     Then I see the following lines in the "Items" section:
       | title     | body   |
-      | 1× Kamera | Pool A |
+      | 1× Kamera | Pool B |
 
     # submit the order
     When I click on the menu
@@ -60,7 +71,7 @@ Feature: Delegations
     And the "Order submitted" dialog has closed
 
     # approve the order in legacy
-    When I visit the orders page of the pool "Pool A"
+    When I visit the orders page of the pool "Pool B"
     Then I approve the order of the delegation
 
     # check the new status of the order
@@ -77,5 +88,5 @@ Feature: Delegations
 
     Examples:
       | name         | shortname |
-      | Delegation D | DD        |
+      # | Delegation D | DD        |
       | User A       | UA        |
