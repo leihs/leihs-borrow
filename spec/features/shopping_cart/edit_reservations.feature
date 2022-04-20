@@ -35,8 +35,8 @@ Feature: Shopping Cart - Editing Reservations
     And I see a form inside the dialog
     Then the form has exactly these fields:
       | label          | value           |
-      | Quantity       | 1               |
       | Inventory pool | Pool A (max. 3) |
+      | Quantity       | 1               |
       | From           | 01/02/2032      |
       | Until          | 03/02/2032      |
 

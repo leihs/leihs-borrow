@@ -121,22 +121,6 @@
                                         :value @term
                                         :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
 
-              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
-               [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
-               [:select.form-select {:name "pool-id" :id "pool-id" :value (or @pool-id "all")
-                                     :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
-                [:option {:value "all"} (t :pools.all)]
-                (when is-unselectable-pool
-                  [:option {:value @pool-id} (t :pools.invalid-option)])
-                (doall (for [{pool-id :id pool-name :name} pools]
-                         [:option {:value pool-id :key pool-id} pool-name]))]
-               (when is-unselectable-pool
-                 [:> UI/Components.Design.Warning {:class "mt-2"}
-                  (t :pools.invalid-option-info)])
-               (when user-suspended-in-pool?
-                 [:> UI/Components.Design.Warning {:class "mt-2"}
-                  (t :pools.pool-suspension)])]
-
               [:> UI/Components.Design.Section {:title (t :availability) :collapsible true}
                [:div.form-check.mb-3
                 [:input.form-check-input {:type :checkbox :name "only-available" :id "only-available"
@@ -170,7 +154,23 @@
                    :id "quantity"
                    :value @quantity
                    :min 1
-                   :onChange (fn [n] (reset! quantity n))}]])]]]
+                   :onChange (fn [n] (reset! quantity n))}]])
+
+              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
+               [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
+               [:select.form-select {:name "pool-id" :id "pool-id" :value (or @pool-id "all")
+                                     :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}
+                [:option {:value "all"} (t :pools.all)]
+                (when is-unselectable-pool
+                  [:option {:value @pool-id} (t :pools.invalid-option)])
+                (doall (for [{pool-id :id pool-name :name} pools]
+                         [:option {:value pool-id :key pool-id} pool-name]))]
+               (when is-unselectable-pool
+                 [:> UI/Components.Design.Warning {:class "mt-2"}
+                  (t :pools.invalid-option-info)])
+               (when user-suspended-in-pool?
+                 [:> UI/Components.Design.Warning {:class "mt-2"}
+                  (t :pools.pool-suspension)])]]]]
 
            [:> UI/Components.Design.ModalDialog.Footer
             [:button.btn.btn-primary {:type "submit"
