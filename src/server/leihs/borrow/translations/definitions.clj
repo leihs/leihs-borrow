@@ -220,8 +220,8 @@
                             :de-CH "Unterstützung"}}
            :language {:section-title {:en-GB "Language"
                                       :de-CH "Sprache"}}
-           :desktop-version {:en-GB "Desktop Version"
-                             :de-CH "Desktop-Version"}}
+           :desktop-version {:en-GB "Leihs Classic"
+                             :de-CH "Klassisches Leihs"}}
     :model-show {:loading {:en-GB "Loading item"
                            :de-CH "Gegenstand wird geladen"}
                  :description {:en-GB "Description"
