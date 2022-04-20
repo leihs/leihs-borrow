@@ -48,14 +48,14 @@ jobs:
         type: job
         job_key: backend-specs
         states: [passed]
-#      lint was successful:
-#        type: job
-#        job_key: lint
-#        states: [passed]
-#      feature-specs was successful:
-#        type: job
-#        job_key: feature-specs
-#        states: [passed]
+      lint was successful:
+        type: job
+        job_key: lint
+        states: [passed]
+      feature-specs was successful:
+        type: job
+        job_key: feature-specs
+        states: [passed]
       build-borrow-uberjar was successful:
         type: job
         job_key: build-borrow-uberjar
