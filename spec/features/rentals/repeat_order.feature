@@ -87,10 +87,10 @@ Feature: Rentals - Show - Repeat order
     And I click on "Remove reservation"
     And the "Edit reservation" dialog has closed
     And I sleep "0.5"
-    And I click on "Confirm order"
+    And I click on "Send order"
     And I enter "Order 1 (again)" in the "Title" field
-    And I accept the "Confirm order" dialog
-    And the "Confirm order" dialog has closed
+    And I accept the "Send order" dialog
+    And the "Send order" dialog has closed
     And I accept the "Order submitted" dialog
     And the "Order submitted" dialog has closed
     And I see the page title "My Orders"

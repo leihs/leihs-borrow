@@ -63,10 +63,10 @@ Feature: Search and order
     # submit the order
     When I click on the menu
     And I click on "Cart"
-    And I click on "Confirm order"
+    And I click on "Send order"
     And I name the order as "Order 1"
-    And I click on "Confirm"
-    And the "Confirm order" dialog has closed
+    And I click on "Send"
+    And the "Send order" dialog has closed
     And I accept the "Order submitted" dialog
     And the "Order submitted" dialog has closed
 

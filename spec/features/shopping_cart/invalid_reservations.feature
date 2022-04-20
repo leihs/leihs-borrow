@@ -205,5 +205,5 @@ Feature: Invalid reservations
       | 1× Holiday on End Date      |
       | 1× Max Visits Count Return  |
 
-    When I click on "Confirm order"
-    Then I see the "Confirm order" dialog
+    When I click on "Send order"
+    Then I see the "Send order" dialog

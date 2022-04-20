@@ -549,8 +549,8 @@
                                   :delete-reservation {:en-GB "Remove reservation" :de-CH "Reservation entfernen"}
                                   :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
                                   :confirm {:en-GB "Confirm" :de-CH "Bestätigen"}}
-                    :confirm-order {:en-GB "Confirm order"
-                                    :de-CH "Bestellung bestätigen"}
+                    :confirm-order {:en-GB "Send order"
+                                    :de-CH "Bestellung abschicken"}
                     :delete-order {:en-GB "Delete cart"
                                    :de-CH "Warenkorb löschen"}
                     :order-overview {:en-GB "Cart"
@@ -559,11 +559,11 @@
                                   :de-CH "Noch keine Gegenstände hinzugefügt"}
                     :borrow-items {:en-GB "Go to catalog"
                                    :de-CH "Hier geht's zum Katalog"}
-                    :confirm-dialog {:dialog-title {:en-GB "Confirm order" :de-CH "Bestellung bestätigen"}
+                    :confirm-dialog {:dialog-title {:en-GB "Send order" :de-CH "Bestellung abschicken"}
                                      :title {:en-GB "Title" :de-CH "Titel"}
                                      :purpose {:en-GB "Purpose" :de-CH "Zweck"}
                                      :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
-                                     :confirm {:en-GB "Confirm" :de-CH "Bestätigen"}}
+                                     :confirm {:en-GB "Send" :de-CH "Abschicken"}}
                     :order-success-notification {:title {:en-GB "Order submitted" :de-CH "Bestellung übermittelt"}
                                                  :order-submitted {:en-GB "Order was submitted but still needs to be approved!"
                                                                    :de-CH "Die Bestellung wurde übermittelt, muss aber noch genehmigt werden!"}}

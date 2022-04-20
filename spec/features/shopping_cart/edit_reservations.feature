@@ -60,10 +60,10 @@ Feature: Shopping Cart - Editing Reservations
       | 3× DSLR Camera | Pool A | 3 days from 01/02/32 |
       | 1× Tripod      | Pool A | 2 days from 01/02/32 |
 
-    When I click on "Confirm order"
+    When I click on "Send order"
     And I enter "My Movie" in the "Title" field
-    And I click on "Confirm"
-    And the "Confirm order" dialog has closed
+    And I click on "Send"
+    And the "Send order" dialog has closed
     And I accept the "Order submitted" dialog with the text:
       """
       Order was submitted but still needs to be approved!

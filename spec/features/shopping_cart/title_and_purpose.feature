@@ -14,7 +14,7 @@ Feature: Shopping Cart - Filling out title and purpose
     And I log in as the user
     And I navigate to the cart
 
-    When I click on "Confirm order"
+    When I click on "Send order"
 
     When I enter "Order 1" as title
     Then the purpose contains "Order 1"
@@ -24,7 +24,7 @@ Feature: Shopping Cart - Filling out title and purpose
     Then the purpose contains "for my diploma film"
 
     When I submit the form
-    And the "Confirm order" dialog has closed
+    And the "Send order" dialog has closed
     And I accept the "Order submitted" dialog with the text:
       """
       Order was submitted but still needs to be approved!
