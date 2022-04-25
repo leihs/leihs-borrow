@@ -49,6 +49,7 @@
  (fn-traced [{:keys [db]} [_ {:keys [query-params]}]]
    {:dispatch-n
     (list [::filter-modal/save-filter-options query-params]
+          [::set-loading]
           [::re-graph/query
            (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
            (merge {:userId (current-user/get-current-profile-id db)}
@@ -64,8 +65,8 @@
        (assoc-in [::data :loading?] false))))
 
 (reg-event-db
- ::toggle-loading
- (fn-traced [db _] (update-in db [::data :loading?] not)))
+ ::set-loading
+ (fn-traced [db _] (assoc-in db [::data :loading?] true)))
 
 (reg-sub ::data (fn [db _] (::data db)))
 (reg-sub ::errors (fn [db _] (::errors db)))
@@ -209,9 +210,8 @@
       {:title (t :title)}
       (when-not loading?
         [filter-comp
-         #(do (dispatch [::toggle-loading])
-              (dispatch [:routing/navigate
-                         [::routes/rentals-index {:query-params %}]]))])]
+         #(dispatch [:routing/navigate
+                     [::routes/rentals-index {:query-params %}]])])]
      (cond
        loading? [ui/loading]
 
