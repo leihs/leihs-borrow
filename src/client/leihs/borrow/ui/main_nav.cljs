@@ -4,7 +4,8 @@
    [leihs.borrow.lib.re-frame :refer [subscribe
                                       dispatch
                                       reg-event-db
-                                      reg-sub]]
+                                      reg-sub
+                                      reg-event-fx]]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]
@@ -47,6 +48,11 @@
 (reg-event-db ::set-profile-menu-open
               (fn-traced [db [_ flag]]
                 (update-in db [:ls ::data] merge {:is-menu-open? false :is-profile-menu-open? flag})))
+
+(reg-event-fx ::switch-language
+              (fn-traced [_ [_ lang]]
+                {:dispatch-n (list [::languages/switch lang]
+                                   [::set-profile-menu-open false])}))
 
 (defn get-initials [name]
   (let [words (split name #"[ \-]+")]
@@ -141,23 +147,26 @@
       ; (documentation and support are in the "Leihs" group, keeping number of groups low)
       (comment [:> UI/Components.Design.Menu.Group {:title (t :help/section-title)}])
 
+      [:> UI/Components.Design.Menu.Group {:title "Leihs"}
+       [menu-link legacy-url (t :desktop-version)]
+       (when documentation-url [menu-link documentation-url (t :help/documentation)])
+       (when support-url [menu-link support-url (t :help/support)])]
+
+      ; languages come last, so we don't need to care about how much space they take
       (when (> (count languages) 1)
         [:> UI/Components.Design.Menu.Group {:title (t :language/section-title)}
          (doall
           (for [language languages]
-            (let [locale (:locale language)]
+            (let [locale (:locale language)
+                  selected? (= (keyword locale) locale-to-use)]
               [:<> {:key locale}
                [:> UI/Components.Design.Menu.Button
-                {:isSelected (= (keyword locale) locale-to-use)
+                {:isSelected selected?
                  :type "button"
                  :value locale
-                 :on-click #(dispatch [::languages/switch (-> % .-target .-value)])}
-                (:name language)]])))])
+                 :on-click (when-not selected? #(dispatch [::switch-language (-> % .-target .-value)]))}
+                (:name language)]])))])]
 
-      [:> UI/Components.Design.Menu.Group {:title "Leihs"}
-       [menu-link legacy-url (t :desktop-version)]
-       (when documentation-url [menu-link documentation-url (t :help/documentation)])
-       (when support-url [menu-link support-url (t :help/support)])]]
      (when is-profile-menu-open?
        [:<>
         (when profile-errors
