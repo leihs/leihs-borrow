@@ -133,8 +133,6 @@
                            :de-CH "Benutzerkonto"}
                    :user-data {:en-GB "User data"
                                :de-CH "Nutzerdaten"}
-                   :metadata-summary {:en-GB "ID {userId}"
-                                      :de-CH "ID {userId}"}
                    :no-contracts {:en-GB "None"
                                   :de-CH "Noch keine"}}
 
@@ -413,7 +411,6 @@
                   :items-section-title {:de-CH "Gegenstände" :en-GB "Items"}
                   :documents-section-title {:de-CH "Dokumente" :en-GB "Documents"}
                   :user-or-delegation-section-title {:de-CH "Bestellung für" :en-GB "Order for"}
-                  :metadata-summary {:de-CH "ID {rentalId}" :en-GB "ID {rentalId}"}
                   :reservation-line
                   {:title
                    {:de-CH "{itemCount}× {itemName}"

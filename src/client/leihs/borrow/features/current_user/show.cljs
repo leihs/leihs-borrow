@@ -82,8 +82,4 @@
                   :sectionContracts (t :!borrow.terms.contracts)
                   :sectionDelegations (t :!borrow.terms.delegations)
                   :logout (t :!borrow.logout)
-                  :noContracts (t :no-contracts)}})]
-
-         [:> UI/Components.Design.PageLayout.MetadataWithDetails
-          {:summary (t :metadata-summary {:userId (:id (:user current-user))})
-           :details (clj->js (h/camel-case-keys current-user))}]]))))
+                  :noContracts (t :no-contracts)}})]]))))

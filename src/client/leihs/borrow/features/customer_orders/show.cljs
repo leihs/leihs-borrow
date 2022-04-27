@@ -268,11 +268,4 @@
                  [:> UI/Components.Design.DownloadLink
                   {:href (:print-url contract)}
                   (t :!borrow.terms/contract) " " (:compact-id contract) " "
-                  [:span.fw-light (str "(" (ui/format-date :short (:created-at contract)) ")")]]]))]])]
-
-        [:> UI/Components.Design.PageLayout.MetadataWithDetails
-         {:summary (t :metadata-summary {:rentalId (:id rental)})
-          :details (clj->js (h/camel-case-keys rental))}]
-
-        ;
-        ])]))
+                  [:span.fw-light (str "(" (ui/format-date :short (:created-at contract)) ")")]]]))]])]])]))
