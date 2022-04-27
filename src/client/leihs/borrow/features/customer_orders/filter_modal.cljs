@@ -83,7 +83,7 @@
                                                      (date-fns/format "yyyy-MM-dd"))})))}
              [:> UI/Components.Design.Stack {:space 4}
 
-              [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
+              [:> UI/Components.Design.Section {:title (t :search.title)}
                [:label.visually-hidden {:html-for "term"} (t :search.title)]
                [UiInputWithClearButton {:name "term"
                                         :id "term"
@@ -91,7 +91,7 @@
                                         :value @term
                                         :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
 
-              [:> UI/Components.Design.Section {:title (t :states.title) :collapsible true}
+              [:> UI/Components.Design.Section {:title (t :states.title)}
                [:label.visually-hidden {:html-for "state"} (t :states.title)]
                [:select.form-select {:name "state" :id "state" :value @state
                                      :on-change (fn [e] (reset! state (-> e .-target .-value)))}
@@ -107,7 +107,7 @@
                          [:option {:value state-name :key state-name} (t (str :states.state-filter-label "/" state-name))]))]]
 
               [:> UI/Components.Design.Stack {:space 4}
-               [:> UI/Components.Design.Section {:title (t :time-span.title) :collapsible true}
+               [:> UI/Components.Design.Section {:title (t :time-span.title)}
                 [:fieldset
                  [:legend.visually-hidden (t :time-span.title)]
                  [:div.d-flex.flex-column.gap-3
@@ -131,7 +131,7 @@
                     [:> UI/Components.Design.Warning
                      (t :time-span.errors.start-date-equal-or-before-end-date)])]]]]
 
-              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
+              [:> UI/Components.Design.Section {:title (t :pools.title)}
                [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
                [:select.form-select {:name "pool-id" :id "pool-id" :value @pool-id
                                      :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}

@@ -136,9 +136,9 @@
                  (when (> options-quantity 0)
                    [:> UI/Components.Design.Warning {:class "fs-2"}
                     (t :dialog.warning-some-options {:count options-quantity})])]
-                [:> UI/Components.Design.Section {:title (t :dialog.order-for) :collapsible true}
+                [:> UI/Components.Design.Section {:title (t :dialog.order-for)}
                  current-profile-name]
-                [:> UI/Components.Design.Section {:title (t :dialog.time-span) :collapsible true}
+                [:> UI/Components.Design.Section {:title (t :dialog.time-span)}
                  [:fieldset
                   [:legend.visually-hidden (t :dialog.time-span)]
                   [:div.d-flex.flex-column.gap-3

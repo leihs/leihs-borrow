@@ -68,7 +68,6 @@ Feature: Shopping Cart - Editing Reservations
       """
       Order was submitted but still needs to be approved!
       My Movie
-      My Movie
       Between 01/02/32 and 03/02/32, 4 items
       """
     Then I have been redirected to the orders list

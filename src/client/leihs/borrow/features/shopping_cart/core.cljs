@@ -523,7 +523,6 @@
 
             [:> UI/Components.Design.Section
              {:title (t :confirm-dialog/title)
-              :collapsible true
               :class (when (:was-validated @title) "was-validated")}
              [:label {:htmlFor :title, :class "visually-hidden"} (t :confirm-dialog/title)]
              [:input.form-control
@@ -540,7 +539,6 @@
 
             [:> UI/Components.Design.Section
              {:title (t :confirm-dialog/purpose)
-              :collapsible true
               :class (when (:was-validated @purpose) "was-validated")}
              [:label {:htmlFor :purpose, :class "visually-hidden"} (t :confirm-dialog/purpose)]
              [UiTextarea
@@ -573,8 +571,8 @@
         :onConfirm on-confirm}
        [:<>
         [:p (t :order-success-notification/order-submitted)]
-        [:> UI/Components.Design.Section {:title title :collapsible true}
-         [:p purpose]
+        [:> UI/Components.Design.Section {:title title}
+         (when (not= title purpose) [:p purpose])
          [:p.small (rentals/rental-summary-text rental)]]]])))
 
 (defn delete-dialog []

@@ -113,7 +113,7 @@
                               :quantity (when @only-available @quantity)}))))}
              [:> UI/Components.Design.Stack {:space 4}
 
-              [:> UI/Components.Design.Section {:title (t :search.title) :collapsible true}
+              [:> UI/Components.Design.Section {:title (t :search.title)}
                [:label.visually-hidden {:html-for "term"} (t :search.title)]
                [UiInputWithClearButton {:name "term"
                                         :id "term"
@@ -121,7 +121,7 @@
                                         :value @term
                                         :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
 
-              [:> UI/Components.Design.Section {:title (t :availability) :collapsible true}
+              [:> UI/Components.Design.Section {:title (t :availability)}
                [:div.form-check.mb-3
                 [:input.form-check-input {:type :checkbox :name "only-available" :id "only-available"
                                           :checked @only-available
@@ -148,7 +148,7 @@
                      [:> UI/Components.Design.Warning  (t :time-span.errors.start-date-equal-or-before-end-date)])]])]
 
               (when @only-available
-                [:> UI/Components.Design.Section {:title (t :quantity) :collapsible true}
+                [:> UI/Components.Design.Section {:title (t :quantity)}
                  [:> UI/Components.Design.MinusPlusControl
                   {:name "quantity"
                    :id "quantity"
@@ -156,7 +156,7 @@
                    :min 1
                    :onChange (fn [n] (reset! quantity n))}]])
 
-              [:> UI/Components.Design.Section {:title (t :pools.title) :collapsible true}
+              [:> UI/Components.Design.Section {:title (t :pools.title)}
                [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]
                [:select.form-select {:name "pool-id" :id "pool-id" :value (or @pool-id "all")
                                      :on-change (fn [e] (reset! pool-id (-> e .-target .-value)))}

@@ -178,8 +178,8 @@
         :onCancel #(dispatch [::close-cancellation-dialog])
         :cancelLabel (t :cancellation-dialog/cancel)}
        [:<>
-        [:> UI/Components.Design.Section {:title title :collapsible true}
-         [:p purpose]
+        [:> UI/Components.Design.Section {:title title}
+         (when (not= title purpose) [:p purpose])
          [:p.small (rentals/rental-summary-text rental)]]]])))
 
 (defn view []
