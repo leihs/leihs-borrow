@@ -149,6 +149,7 @@
 
               (when @only-available
                 [:> UI/Components.Design.Section {:title (t :quantity)}
+                 [:label.visually-hidden {:html-for "quantity"} (t :quantity)]
                  [:> UI/Components.Design.MinusPlusControl
                   {:name "quantity"
                    :id "quantity"
