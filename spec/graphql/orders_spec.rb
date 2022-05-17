@@ -14,6 +14,13 @@ describe 'orders' do
     )
   end
 
+  let(:user_2) do
+    FactoryBot.create(
+      :user,
+      id: '0f80bd58-6f44-4d64-8179-082f5ffb1d91'
+    )
+  end
+
   let(:inventory_pool_1) do
     FactoryBot.create(
       :inventory_pool,
@@ -52,6 +59,10 @@ describe 'orders' do
     FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool_2,
                       user: user)
+
+    FactoryBot.create(:direct_access_right,
+                      inventory_pool: inventory_pool_1,
+                      user: user_2)
   end
 
   context 'create' do
@@ -173,7 +184,8 @@ describe 'orders' do
     end
 
     it 'fails due to availability validation' do
-      Settings.first.update(timeout_minutes: 1)
+      timeout_minutes_setting = 1
+      Settings.first.update(timeout_minutes: timeout_minutes_setting)
 
       2.times do
         model_3.add_item(
@@ -191,6 +203,15 @@ describe 'orders' do
                           end_date: Date.tomorrow + 1.day,
                           user: user)
       end
+
+      sleep(timeout_minutes_setting + 1)
+
+      FactoryBot.create(:reservation,
+                        leihs_model: model_3,
+                        inventory_pool: inventory_pool_1,
+                        start_date: Date.tomorrow,
+                        end_date: Date.tomorrow + 1.day,
+                        user: user_2)
 
       q = <<-GRAPHQL
         mutation(

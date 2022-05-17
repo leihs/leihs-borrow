@@ -1,8 +1,8 @@
 (ns leihs.borrow.resources.models
-  (:require [clojure.tools.logging :as log]
+  (:require [taoensso.timbre :as timbre :refer [debug info spy]]
             [camel-snake-kebab.core :as csk]
             [clojure.java.jdbc :as jdbc]
-            [clojure.set :as set]
+            [clojure.set :as s]
             [clojure.string :as string]
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.executor :as executor]
@@ -10,6 +10,7 @@
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.availability :as availability]
+            [leihs.borrow.resources.legacy-availability.core :as av]
             [leihs.borrow.resources.categories.descendents :as descendents]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
@@ -17,19 +18,11 @@
             [leihs.borrow.resources.inventory-pools.visits-restrictions
              :as
              restrict]
+            [leihs.borrow.resources.models.core :refer [base-sqlmap]]
             [leihs.core.core :refer [presence]]
             [leihs.core.sql :as sql]
             [wharf.core :refer [transform-keys]])
   (:import java.time.format.DateTimeFormatter))
-
-(def base-sqlmap
-  (-> (sql/select
-       :models.*
-       [(sql/raw "trim(both ' ' from concat_ws(' ', models.product, models.version))")
-        :name])
-      (sql/modifiers :distinct)
-      (sql/from :models)
-      (sql/order-by [:name :asc])))
 
 (defn borrowable-quantity [tx model-id pool-id]
   (-> (sql/select :%count.*)
@@ -152,55 +145,42 @@
                  (local-date))
                 (empty? pool-ids))
           0
-          (let [legacy-response (availability/get-available-quantities
-                                 context
-                                 {:model-ids [(:id value)]
-                                  :inventory-pool-ids pool-ids
-                                  :start-date start-date
-                                  :end-date end-date
-                                  :user-id user-id
-                                  :exclude-reservation-ids exclude-reservation-ids}
-                                 nil)]
-            (->> legacy-response
-                 (map :quantity)
-                 (apply +)
-                 (#(if (< % 0) 0 %))))))))
+          (av/maximum-available-in-period-summed-for-groups tx
+                                                            (:id value)
+                                                            user-id
+                                                            start-date
+                                                            end-date
+                                                            pool-ids
+                                                            exclude-reservation-ids)))))
+
+(defn relevant-pool-ids
+  [tx user-id start-date end-date selected-pool-ids]
+  (-> (pools/to-reserve-from tx user-id start-date end-date)
+      (->> (map :id))
+      (cond-> (not (empty? selected-pool-ids))
+        (-> set
+            (s/intersection (set selected-pool-ids))
+            vec))))
 
 (defn merge-available-quantities
   [models
    {{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [start-date end-date inventory-pool-ids] :as args}
    value]
-  (let [pool-ids (-> (pools/to-reserve-from tx user-id start-date end-date)
-                     (->> (map :id))
-                     (cond-> (not (empty? inventory-pool-ids))
-                       (-> set
-                           (set/intersection (set inventory-pool-ids))
-                           vec)))]
-    (map (if (or (before?
-                  (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
-                  (local-date))
-                 (empty? pool-ids))
-           #(assoc % :available-quantity-in-date-range 0)
-           (let [legacy-response (availability/get-available-quantities
-                                  context
-                                  {:model-ids (map :id models)
-                                   :inventory-pool-ids pool-ids
-                                   :start-date start-date
-                                   :end-date end-date
-                                   :user-id user-id}
-                                  nil)
-                 model-quantitites (->> legacy-response
-                                        (group-by :model_id)
-                                        (map (fn [[model-id pool-quantities]]
-                                               [model-id (->> pool-quantities
-                                                              (map :quantity)
-                                                              (apply +)
-                                                              (#(if (< % 0) 0 %)))]))
-                                        (into {}))]
-             #(assoc %
-                     :available-quantity-in-date-range
-                     (-> % :id str model-quantitites))))
+  (let [pool-ids (relevant-pool-ids tx user-id start-date end-date inventory-pool-ids)]
+    (map #(assoc %
+                 :available-quantity-in-date-range 
+                 (if (or (before?
+                          (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
+                          (local-date))
+                         (empty? pool-ids))
+                   0
+                   (av/maximum-available-in-period-summed-for-groups tx
+                                                                     (:id %)
+                                                                     user-id
+                                                                     start-date
+                                                                     end-date
+                                                                     pool-ids)))
          models)))
 
 (defn get-availability
@@ -332,25 +312,24 @@
   (merge-availability-if-selects-fields models context args value))
 
 (defn get-connection
-  [context
-   {:keys [only-available quantity] limit :first :as args}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+   {:keys [only-available quantity] limit :first :or {quantity 1} :as args}
    value]
   (let [conn-fn (fn [ext-args]
                   (connections/wrap get-multiple-sqlmap
                                     context
                                     (merge args ext-args)
                                     value
-                                    #(post-process % context args value)))]
+                                    #(post-process % context args value)))
+        intervene-fn (fn [edges]
+                       (filter (fn [edge]
+                                 (-> edge
+                                     :node
+                                     :available-quantity-in-date-range
+                                     (>= quantity)))
+                               edges))]
     (if only-available
-      (connections/intervene conn-fn
-                             (fn [edges]
-                               (remove #(-> %
-                                            :node
-                                            :available-quantity-in-date-range
-                                            (<= (or (some-> quantity (- 1)) 0)))
-                                       edges))
-                             150
-                             limit)
+      (connections/intervene conn-fn intervene-fn 150 limit)
       (conn-fn {}))))
 
 (defn get-favorites-connection [context args value]
@@ -359,13 +338,6 @@
                     args
                     value
                     #(post-process % context args value)))
-
-(defn get-one-by-id [tx id]
-  (-> base-sqlmap
-      (sql/where [:= :id id])
-      sql/format
-      (->> (jdbc/query tx))
-      first))
 
 (defn get-one [{{:keys [tx]} :request} {:keys [id]} value]
   (-> base-sqlmap

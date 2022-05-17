@@ -7,6 +7,10 @@ describe 'models connection' do
       :user,
       id: '4e91eb1a-6bda-4bc6-b4be-190a4f7460b3'
     )
+    @user2 = FactoryBot.create(
+      :user,
+      id: '4f6af66e-b172-4c6e-b338-9db9af7911bb'
+    )
     @inventory_pool = FactoryBot.create(
       :inventory_pool,
       id: 'ab61cf01-08ce-4d9b-97d3-8dcd8360605a'
@@ -14,37 +18,40 @@ describe 'models connection' do
     FactoryBot.create(:direct_access_right,
                       inventory_pool: @inventory_pool,
                       user: @user)
-
+    FactoryBot.create(:direct_access_right,
+                      inventory_pool: @inventory_pool,
+                      user: @user2)
   end
 
   it 'available quantites gathered from different pools' do
-    FactoryBot.create(
+    m1 = FactoryBot.create(
       :leihs_model,
       id: '7efd48dc-676f-4438-9d1b-d0774b6704b7'
     )
-    FactoryBot.create(
+    m2 = FactoryBot.create(
       :leihs_model,
       id: '5577cbcf-fdc4-4cfc-bdb9-435d75522c1d'
     )
-    FactoryBot.create(
-      :leihs_model,
-      id: '87420e5a-c916-42f6-94ac-dd31ea32afb2'
-    )
 
-    LeihsModel.all.map do |model|
+    FactoryBot.create(:item,
+                      leihs_model: m1,
+                      responsible: @inventory_pool,
+                      is_borrowable: true)
+
+    FactoryBot.create(:reservation,
+                      leihs_model: m1,
+                      user: @user2,
+                      inventory_pool: @inventory_pool,
+                      start_date: Date.today,
+                      end_date: Date.tomorrow,
+                      status: "approved")
+
+    2.times do 
       FactoryBot.create(:item,
-                        leihs_model: model,
+                        leihs_model: m2,
                         responsible: @inventory_pool,
                         is_borrowable: true)
     end
-
-    inventory_pool = FactoryBot.create(
-      :inventory_pool,
-      id: '6ce92dd1-cf47-4942-97a1-6bc5b495b425'
-    )
-    FactoryBot.create(:direct_access_right,
-                      inventory_pool: inventory_pool,
-                      user: @user)
 
     q = <<-GRAPHQL
       {
@@ -71,8 +78,6 @@ describe 'models connection' do
           { node: { id: '5577cbcf-fdc4-4cfc-bdb9-435d75522c1d',
                     availableQuantityInDateRange: 2 } },
           { node: { id: '7efd48dc-676f-4438-9d1b-d0774b6704b7',
-                    availableQuantityInDateRange: 0 } },
-          { node: { id: '87420e5a-c916-42f6-94ac-dd31ea32afb2',
                     availableQuantityInDateRange: 0 } }
         ]
       }

@@ -6,12 +6,6 @@
             [camel-snake-kebab.core :as csk]
             [wharf.core :refer [transform-keys]]))
 
-(defn get-available-quantities [context args _value]
-  (legacy/fetch
-   "/borrow/models/availability"
-   context
-   (transform-keys csk/->snake_case args)))
-
 (spec/def ::date string?)
 (spec/def ::quantity (comp #(>= % 0) integer?))
 (spec/def ::visits_count (comp #(>= % 0) integer?))

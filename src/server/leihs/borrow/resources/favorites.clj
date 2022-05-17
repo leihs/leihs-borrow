@@ -7,7 +7,7 @@
             [leihs.core.sql :as sql]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
-            [leihs.borrow.resources.models :as models]))
+            [leihs.borrow.resources.models.core :as models]))
 
 (defn create
   [{{:keys [tx]} :request user-id ::target-user/id}
