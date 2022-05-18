@@ -1,20 +1,20 @@
 (ns leihs.borrow.features.sign-in.core
-  (:require 
-    [ajax.core :as ajax]
-    [clojure.string :as string]
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [leihs.borrow.lib.helpers :refer [log spy body-encode]]
-    [leihs.borrow.csrf :as csrf]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch
-                                       dispatch-sync]]
-    [leihs.core.constants :as constants]
-    [leihs.core.url.shared :refer [encode]]
-    [reagent.core :as reagent]))
+  (:require
+   [ajax.core :as ajax]
+   [clojure.string :as string]
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [leihs.borrow.lib.helpers :refer [log spy body-encode]]
+   [leihs.borrow.csrf :as csrf]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch
+                                      dispatch-sync]]
+   [leihs.core.constants :as constants]
+   [leihs.core.url.shared :refer [encode]]
+   [reagent.core :as reagent]))
 
 (reg-event-db ::on-success
               (fn-traced [db _]
@@ -26,14 +26,14 @@
               (fn-traced [db _] (log "failure") db))
 
 (reg-event-fx
-  ::submit
-  (fn-traced [_ [_ data]]
-    {:http-xhrio {:method :post
-                  :uri "/sign-in"
-                  :body (body-encode data)
-                  :response-format (ajax/json-response-format {:keywords? true})
-                  :on-success [::on-success]
-                  :on-failure [::on-failure]}}))
+ ::submit
+ (fn-traced [_ [_ data]]
+   {:http-xhrio {:method :post
+                 :uri "/sign-in"
+                 :body (body-encode data)
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success [::on-success]
+                 :on-failure [::on-failure]}}))
 
 (defn login-error-screen []
   (let [user (reagent/atom nil)
