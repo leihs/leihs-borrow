@@ -194,6 +194,7 @@
         rental-title  (or (:title rental) (:purpose rental))
 
         is-cancelable? (= ["IN_APPROVAL"] (:fulfillment-states rental))
+        is-repeatable? (seq grouped-reservations)
         contracts (map :node (get-in rental [:contracts :edges]))
         user-data @(subscribe [::current-user/user-data])
         current-profile-id @(subscribe [::current-profile-id])
@@ -233,10 +234,12 @@
 
            [status-summary rental false]
 
-           [:> UI/Components.Design.ActionButtonGroup
-            (when is-cancelable?
-              [:button.btn.btn-secondary {:onClick #(dispatch [::open-cancellation-dialog rental-id])} (t :cancel-action-label)])
-            [:button.btn.btn-secondary {:onClick #(dispatch [::repeat-order/open-repeat-dialog])} (t :repeat-action-label)]]]]
+           (when (or is-cancelable? is-repeatable?)
+             [:> UI/Components.Design.ActionButtonGroup
+              (when is-cancelable?
+                [:button.btn.btn-secondary {:onClick #(dispatch [::open-cancellation-dialog rental-id])} (t :cancel-action-label)])
+              (when is-repeatable?
+                [:button.btn.btn-secondary {:onClick #(dispatch [::repeat-order/open-repeat-dialog])} (t :repeat-action-label)])])]]
 
          (when (not-empty (:delegations user-data))
            [:> UI/Components.Design.Section
