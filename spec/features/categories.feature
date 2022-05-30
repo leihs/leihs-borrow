@@ -123,3 +123,79 @@ Feature: Search results (and caching)
     And I click on "Video" within breadcrumbs
     And the title of the page is "Video"
     Then the "Sub-categories" section is collapsed
+
+  Scenario: Show subcategories with models deep within
+
+    Let's assume that:
+
+    1. Any shown category is at level "root".
+    2. The category only has 1st level subcategories where each 1st level subcategory
+    don't have a direct model assigned, but any number of models may be assigned to
+    any of the subcategory's descendant categories.
+
+    The shown category displays an aggregate of all models either assigned to itself
+    or to any descendant category.
+
+    The shown category displays all its sub-categories where 2. applies.
+
+    Testdata:
+
+    Audio -> "Mikrofon Meteor Mic"
+    Audio -> Speakers -> Active Speakers -> "Active Speaker Anchor AN-100"
+    Audio -> Speakers -> Passive Speakers -> Subwoofers -> "Subwoofer Genelec 7050"
+
+    Given there is a category "Audio"
+    And there is a model "Mikrofon Meteor Mic"
+    And the "Mikrofon Meteor Mic" model belongs to category "Audio"
+    And there is a category "Speakers"
+    And parent of category "Speakers" is category "Audio"
+    And there is a category "Active Speakers"
+    And parent of category "Active Speakers" is category "Speakers"
+    And there is a model "Active Speaker Anchor AN-100"
+    And the "Active Speaker Anchor AN-100" model belongs to category "Active Speakers"
+    And there is a category "Passive Speakers"
+    And parent of category "Passive Speakers" is category "Speakers"
+    And there is a category "Subwoofers"
+    And parent of category "Subwoofers" is category "Passive Speakers"
+    And there is a model "Subwoofer Genelec 7050"
+    And the "Subwoofer Genelec 7050" model belongs to category "Subwoofers"
+
+    And there is 1 borrowable item for model "Mikrofon Meteor Mic" in pool "Pool A"
+    And there is 1 borrowable item for model "Subwoofer Genelec 7050" in pool "Pool A"
+    And there is 1 borrowable item for model "Active Speaker Anchor AN-100" in pool "Pool A"
+
+    # root
+    When I visit "/app/borrow/"
+    And I click on category "Audio"
+    Then I see 3 models
+    And I see model "Mikrofon Meteor Mic"
+    And I see model "Subwoofer Genelec 7050"
+    And I see model "Active Speaker Anchor AN-100"
+
+    # 1st level
+    When I expand the "Sub-categories" section
+    And I see 1 sub-category
+    And I click on sub-category "Speakers"
+    Then I see 2 models
+    And I see model "Subwoofer Genelec 7050"
+    And I see model "Active Speaker Anchor AN-100"
+
+    # 2nd level
+    When I expand the "Sub-categories" section
+    And I see 2 sub-categories
+    And I click on sub-category "Active Speakers"
+    Then I see 1 model
+    And I see model "Active Speaker Anchor AN-100"
+    And I don't see "Sub-categories"
+    And I click on "Speakers"
+    And I click on sub-category "Passive Speakers"
+    Then I see 1 model
+    And I see model "Subwoofer Genelec 7050"
+
+    # 3rd level
+    When I expand the "Sub-categories" section
+    And I see 1 sub-category
+    And I click on sub-category "Subwoofers"
+    Then I see 1 model
+    And I see model "Subwoofer Genelec 7050"
+    And I don't see "Sub-categories"

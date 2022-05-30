@@ -15,6 +15,10 @@ step 'I visit the sub-category :name' do |name|
   visit(link)
 end
 
+step 'I see :n sub-categor(y/ies)' do |n|
+  expect(all(".ui-list-card").count).to eq n.to_i
+end
+
 def make_category_link(c_chain)
   "/app/borrow/categories/#{c_chain.map(&:id).join('/')}"
 end

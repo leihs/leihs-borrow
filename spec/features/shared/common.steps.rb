@@ -68,6 +68,10 @@ step "I see :txt" do |txt|
   expect(page).to have_content txt
 end
 
+step "I don't see :txt" do |txt|
+  expect(page).not_to have_content(txt.to_s.strip())
+end
+
 step "I log in with the email :email" do |email|
   @current_user = log_in_as_user_with_email(email)
 end
