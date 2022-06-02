@@ -90,7 +90,7 @@
          (fn [[_ id]] (subscribe [::data id]))
          (fn [co _] #_(h/log co) (:reservations co)))
 
-(reg-sub ::reservations-grouped
+(reg-sub ::reservations-sorted
          (fn [[_ id]] (subscribe [::reservations id]))
          (fn [lines _]
            (->> lines
@@ -98,12 +98,7 @@
                  (fn [line]
                    [(get-in line [:start-date])
                     (get-in line [:inventory-pool :name])
-                    (get-in line [:model :name])]))
-                (group-by
-                 (fn [line]
-                   [(get-in line [:model :id])
-                    (get-in line [:inventory-pool :id])
-                    (get-in line [:start-date])
+                    (get-in line [:model :name])
                     (get-in line [:end-date])])))))
 
 (reg-sub ::cancellation-dialog-data
@@ -152,14 +147,12 @@
        [:> UI/Components.Design.Badge {:colorClassName (when overdue? " bg-danger")}
         (t (str :reservation-status-label "/" refined-status) {:endDate end-date})]]]]))
 
-(defn ui-items-list [grouped-reservation]
+(defn ui-items-list [reservations]
   [:> UI/Components.Design.ListCard.Stack
    (doall
-    (for [[_ items] grouped-reservation]
-      (for [item items]
-        (when item
-          [:<> {:key (:id item)}
-           [ui-item-line item]]))))])
+    (for [item reservations]
+      [:<> {:key (:id item)}
+       [ui-item-line item]]))])
 
 (defn cancellation-dialog []
   (fn [rental]
@@ -187,14 +180,14 @@
         rental-id (get-in routing [:bidi-match :route-params :rental-id])
         rental @(subscribe [::data rental-id])
         reservations @(subscribe [::reservations rental-id])
-        grouped-reservations @(subscribe [::reservations-grouped rental-id])
+        reservations-sorted @(subscribe [::reservations-sorted rental-id])
         errors @(subscribe [::errors rental-id])
         is-loading? (not (or rental errors))
 
         rental-title  (or (:title rental) (:purpose rental))
 
         is-cancelable? (= ["IN_APPROVAL"] (:fulfillment-states rental))
-        is-repeatable? (seq grouped-reservations)
+        is-repeatable? (seq reservations)
         contracts (map :node (get-in rental [:contracts :edges]))
         user-data @(subscribe [::current-user/user-data])
         current-profile-id @(subscribe [::current-profile-id])
@@ -257,7 +250,7 @@
 
          [:> UI/Components.Design.Section
           {:title (t :items-section-title) :collapsible true}
-          (ui-items-list grouped-reservations)]
+          (ui-items-list reservations-sorted)]
 
          (when (seq contracts)
            [:> UI/Components.Design.Section

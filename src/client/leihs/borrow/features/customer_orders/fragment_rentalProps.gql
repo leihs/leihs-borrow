@@ -60,7 +60,7 @@ fragment rentalProps on Rental {
   contracts {
     ...contractsConnectionProps
   }
-  reservations {
+  reservations(orderBy: [{ attribute: CREATED_AT, direction: ASC }, { attribute: ID, direction: ASC }]) {
     ...reservationProps
   }
   createdAt

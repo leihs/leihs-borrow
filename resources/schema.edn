@@ -7,7 +7,7 @@
  :enums {:ModelsOrderByAttributeEnum {:values [:ID :NAME]}
          :UsersOrderByAttributeEnum {:values [:ID]}
          :InventoryPoolsOrderByAttributeEnum {:values [:ID :NAME :SHORTNAME]}
-         :ReservationsOrderByAttributeEnum {:values [:ID]}
+         :ReservationsOrderByAttributeEnum {:values [:ID :CREATED_AT]}
          :PoolOrdersOrderByAttributeEnum {:values [:INVENTORY_POOL_ID :ID]}
          :ContractsOrderByAttributeEnum {:values [:ID :CREATED_AT]}
          :RentalsOrderByAttributeEnum {:values [:ID :CREATED_AT, :FROM_DATE, :UNTIL_DATE]}
