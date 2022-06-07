@@ -8,6 +8,7 @@
    [re-graph.core :as re-graph]
    [leihs.core.core :refer [dissoc-in]]
    [leihs.borrow.lib.helpers :as h]
+   [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.translate :as translate :refer [t set-default-translate-path]]
    [leihs.borrow.lib.form-helpers :refer [UiDateRangePicker]]
    [leihs.borrow.client.routes :as routes]
@@ -19,7 +20,7 @@
 (reg-event-db
  ::open-repeat-dialog
  (fn-traced [db]
-   (assoc-in db [::data :repeat-dialog] {})))
+   (assoc-in db [::data :repeat-dialog] {:show true})))
 
 (reg-event-db
  ::close-repeat-dialog
@@ -42,7 +43,9 @@
              [_ {{reservations :repeat-order} :data
                  errors :errors}]]
    (if errors
-     {:alert (str "FAIL! " (pr-str errors))}
+     {:db (-> db
+              (dissoc-in [::data :repeat-dialog :is-saving?]))
+      :dispatch [::errors/add-many errors]}
      {:db (-> db
               (assoc-in [::data :repeat-success] {:reservations reservations})
               (dissoc-in [::data :repeat-dialog]))})))

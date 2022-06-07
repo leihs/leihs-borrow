@@ -14,47 +14,13 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.components :as ui]
+   [leihs.borrow.lib.errors :as errors]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx
  ::routes/debug-page
  (fn-traced [_ [_ _]] {}))
-
-(def sample-error {:some "details"})
-(def sample-errors [sample-error sample-error])
-
-(reg-event-fx
- ::add-fatal-error
- (fn-traced [{:keys [db]}]
-   {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) sample-error)}))
-
-(reg-event-fx
- ::throw
- (fn-traced []
-   (throw (js/Error. "catch me if you can"))))
-
-(reg-event-fx
- ::error-query
- (fn-traced [_ [_ _]]
-   {:dispatch [::re-graph/query
-               "query { testing(sleepSecs: \"bad-value\")}"
-               {}
-               [::on-error-request]]}))
-
-(reg-event-fx
- ::error-mutation
- (fn-traced [_ [_ _]]
-   {:dispatch [::re-graph/mutate
-               "mutation { testing(sleepSecs: \"bad-value\")}"
-               {}
-               [::on-error-request]]}))
-
-(reg-event-db
- ::on-error-request
- (fn-traced [db [_ payload]]
-   (js/console.log "payload" payload)))
-
 
 (defn matches-media-query? [media-query]
   (-> (js/window.matchMedia media-query) .-matches))
@@ -72,11 +38,14 @@
                             (matches-media-query? "(pointer: fine)") "fine (e.g mouse)"
                             :else "unknown")]])
 
+(def sample-error {:some "details..."})
+(def sample-error-401 {:extensions {:code 401}})
+(def sample-errors [sample-error sample-error])
+
 (defn crash-component [] (throw (js/Error. "I crashed!")))
 (def crash-atom (reagent/atom nil))
-(def show-error-screen (reagent/atom false))
 (def show-error-view (reagent/atom false))
-(def show-error-alert (reagent/atom false))
+(def show-error-view-401 (reagent/atom false))
 
 (defn view []
   [:<>
@@ -115,64 +84,33 @@
     [:> UI/Components.Design.Section {:title "Local storage" :collapsible true}
      [:button.btn.btn-secondary {:type :button :on-click #(dispatch [::ls/clear])} "Clear :ls"]]
 
-    [:> UI/Components.Design.Section {:title "Error catching" :collapsible true}
-     [:> UI/Components.Design.Stack {:space 4}
-      [:div
-       [:button.btn.btn-secondary {:type :button :on-click #(reset! crash-atom true) :class "mb-1"}
-        "Exception in render"]
-       [:br]
-       "handled by ErrorBoundary in layout"
-       (when @crash-atom [crash-component])]
-
-      [:div
-       [:button.btn.btn-secondary {:type :button :on-click #(dispatch [::throw]) :class "mb-1"}
-        "Exception in re-frame event handler"]
-       [:br]
-       "not handled, bubbles to console"]
-
-      [:div
-       [:button.btn.btn-secondary {:type :button :on-click #(dispatch [::error-query]) :class "mb-1"}
-        "GraphQL query with error"]
-       [:br]
-       "silently ignored, must be detected from return data"]
-
-      [:div
-       [:button.btn.btn-secondary {:type :button :on-click #(dispatch [::error-mutation]) :class "mb-1"}
-        "GraphQL mutation with error"]
-       [:br]
-       "retry banner, shown on top of layout"]]]
-
     [:> UI/Components.Design.Section {:title "Error views" :collapsible true}
      [:> UI/Components.Design.Stack {:space 4}
+      [:p.text-muted "Same as \"Errors\" story in Storybook, but with the live implementation."]
+
       [:div
-       [:button.btn.btn-secondary {:type :button :on-click #(reset! show-error-view true) :class "mb-1"}
-        "Error view"]
-       [:br]
-       "just a placeable component"
+       [:button.btn.btn-primary {:type :button :on-click #(swap! show-error-view not) :class "mb-1"}
+        "Load something"]
        (when @show-error-view [ui/error-view sample-errors])]
 
       [:div
-       [:button.btn.btn-secondary {:type :button :on-click #(reset! show-error-screen true) :class "mb-1"}
-        "Error screen"]
-       [:br]
-       "same as error view, but different title"
-       (when @show-error-screen [ui/error-screen sample-errors])]
+       [:button.btn.btn-primary {:type :button :on-click #(swap! show-error-view-401 not) :class "mb-1"}
+        "Load something (unauthorized)"]
+       (when @show-error-view-401 [ui/error-view [sample-error-401]])]
 
       [:div
-       [:button.btn.btn-secondary {:type :button :on-click #(dispatch [::add-fatal-error]) :class "mb-1"}
-        "Fatal error"]
-       [:br]
-       "error screen, shown on top of layout, triggered via app db"]
+       [:button.btn.btn-primary {:type :button :on-click #(dispatch [::errors/add sample-error]) :class "mb-1"}
+        "Do something"]]
 
       [:div
-       [:button.btn.btn-secondary {:type :button :on-click #(reset! show-error-alert true) :class "mb-1"}
-        "Error dialog"]
-       [:br]
-       "not used yet"
-       (when @show-error-alert
-         [:> UI/Components.Design.ConfirmDialog
-          {:shown true :isError true :onConfirm #(reset! show-error-alert false) :title "Error"}
-          "Lorem ipsum dolor"])]]]
+       [:button.btn.btn-primary {:type :button :on-click #(dispatch [::errors/add sample-error-401]) :class "mb-1"}
+        "Do something (unauthorized)"]]
+
+      [:div
+       [:button.btn.btn-primary {:type :button :on-click #(reset! crash-atom true) :class "mb-1"}
+        "Crash this component"]
+
+       (when @crash-atom [crash-component])]]]
 
     [:> UI/Components.Design.Section {:title "Debug info" :collapsible true}
      [:> UI/Components.Design.PropertyTable

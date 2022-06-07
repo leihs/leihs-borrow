@@ -15,6 +15,7 @@
    [leihs.borrow.lib.localstorage :as ls]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.pagination :as pagination]
+   [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.components :as ui]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.current-user.core :as current-user]
@@ -22,32 +23,38 @@
    ["/leihs-ui-client-side-external-react" :as UI]
    #_[leihs.borrow.components :as ui]))
 
-(def dispatch-fetch-index-handler
-  (fn-traced [{:keys [db]} _]
-    {:dispatch [::re-graph/query
-                (rc/inline "leihs/borrow/features/categories/getRootCategories.gql")
-                {:userId (current-user/get-current-profile-id db)
-                 :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
-                            [pool-id])}
-                [::on-fetched-categories-index]]}))
-
-(reg-event-fx ::fetch-index dispatch-fetch-index-handler)
+(reg-event-fx
+ ::fetch-index
+ (fn-traced [{:keys [db]} _]
+   {:db (dissoc db ::errors)
+    :dispatch [::re-graph/query
+               (rc/inline "leihs/borrow/features/categories/getRootCategories.gql")
+               {:userId (current-user/get-current-profile-id db)
+                :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
+                           [pool-id])}
+               [::on-fetched-categories-index]]}))
 
 (reg-event-fx
  ::on-fetched-categories-index
  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
    (if errors
-     {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
+     {:db (assoc-in db [::errors] errors)}
      {:db (assoc-in db [:ls ::data] (get-in data [:categories]))})))
 
 (reg-sub
  ::categories-index
  (fn [db] (get-in db [:ls ::data])))
 
-(defn categories-list [categories model-filters]
-  (let [list
+(reg-sub
+ ::categories-index-errors
+ (fn [db] (get-in db [::errors])))
+
+(defn categories-list [model-filters]
+  (let [categories @(subscribe [::categories-index])
+        errors @(subscribe [::categories-index-errors])
+        list
         (doall
-         (for [category categories]
+         (for [category (or categories [])]
            {:id (:id category)
             :href (or (:url category)
                       (routing/path-for ::routes/categories-show
@@ -56,7 +63,10 @@
             :caption (:name category)
             :imgSrc (get-in category [:images 0 :image-url])}))]
 
-    [:> UI/Components.Design.SquareImageGrid {:className "ui-category-list" :list list}]))
+    [:<>
+     (when errors
+       [ui/error-view errors])
+     [:> UI/Components.Design.SquareImageGrid {:className "ui-category-list" :list list}]]))
 
 (defn sub-categories-list [categories model-filters]
   [:> UI/Components.Design.ListCard.Stack

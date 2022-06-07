@@ -6,6 +6,7 @@
    [shadow.resource :as rc]
    [leihs.borrow.components :as ui]
    [leihs.borrow.lib.helpers :refer [spy]]
+   [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                       reg-event-db
                                       reg-sub
@@ -53,7 +54,7 @@
  ::on-mutation-result
  (fn-traced [_ [_ {:keys [data errors]}]]
    (if errors
-     {:alert (str "FAIL! " (pr-str errors))}
+     {:dispatch [::errors/add-many errors]}
      {:alert (str "OK! " (pr-str data))})))
 
 (reg-sub ::data

@@ -54,7 +54,8 @@
            (rc/inline "leihs/borrow/features/customer_orders/customerOrdersIndex.gql")
            (merge {:userId (current-user/get-current-profile-id db)}
                   (prepare-query-vars query-params))
-           [::on-fetched-data]])}))
+           [::on-fetched-data]])
+    :db (-> db (assoc ::errors nil))}))
 
 (reg-event-db
  ::on-fetched-data
@@ -215,10 +216,10 @@
      (cond
        loading? [ui/loading]
 
+       errors [ui/error-view errors]
+
        (and (empty? open-rentals) (empty? closed-rentals))
        [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
-
-       errors [ui/error-view errors]
 
        :else
        [:<>

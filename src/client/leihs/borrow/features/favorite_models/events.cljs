@@ -8,6 +8,8 @@
                                       reg-fx
                                       subscribe
                                       dispatch]]
+   [leihs.borrow.lib.helpers :as h]
+   [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.favorite-models.core :refer [fav-filter]]
    [leihs.borrow.features.models.core :as models]
@@ -23,24 +25,28 @@
 
 (reg-event-fx
  ::favorite-model
- (fn-traced [{:keys [db]} [_ model-id]]
-   {:dispatch
+ (fn-traced [{:keys [db]} [_ model-id db-path]]
+   {:db (assoc-in db db-path true)
+    :dispatch
     [::re-graph/mutate
      (rc/inline "leihs/borrow/features/favorite_models/setModelFavorite.gql")
      {:modelId model-id :isFav true :userId (current-user/get-current-profile-id db)}
-     [::on-mutation-result]]}))
+     [::on-mutation-result db-path true]]}))
 
 (reg-event-fx
  ::unfavorite-model
- (fn-traced [{:keys [db]} [_ model-id]]
-   {:dispatch
+ (fn-traced [{:keys [db]} [_ model-id db-path]]
+   {:db (assoc-in db db-path false)
+    :dispatch
     [::re-graph/mutate
      (rc/inline "leihs/borrow/features/favorite_models/setModelFavorite.gql")
      {:modelId model-id :isFav false :userId (current-user/get-current-profile-id db)}
-     [::on-mutation-result]]}))
+     [::on-mutation-result db-path false]]}))
 
 (reg-event-fx
  ::on-mutation-result
- (fn-traced [{:keys [_db]} [_ {:keys [_data errors]}]]
-   (when errors
-     {:alert (str "FAIL! " (pr-str errors))})))
+ (fn-traced [{:keys [db]} [_ db-path flag {:keys [_data errors]}]]
+   (if errors
+     {:dispatch [::errors/add-many errors]
+      :db (assoc-in db db-path (not flag))}
+     {:dispatch [::invalidate-cache]})))

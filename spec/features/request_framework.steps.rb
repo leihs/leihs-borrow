@@ -12,48 +12,6 @@ step "I clear the browser cookies" do
   browser.manage.delete_cookie("leihs-user-session")
 end
 
-step "I click on Add and I approve the alert" do
-  accept_alert { click_on("Add") }
-end
-
-step "I click on retry and I approve the alert" do
-  accept_alert { click_on("BY CLICKING HERE") }
-end
-
-step "I click on retry" do
-  click_on("BY CLICKING HERE")
-end
-
-step "I see one retry banner" do
-  within("section.bg-info") { expect(current_scope).to have_content "RETRY" }
-end
-
-step "I see one login banner" do
-  banner = all("section form").first
-  within(banner) do
-    expect(current_scope).to have_selector("input#inputEmail")
-    expect(current_scope).to have_selector("input#inputPassword")
-  end
-end
-
-step "I login in via the login banner" do
-  banner = all("section form").first
-  within(banner) do
-    find("input#inputEmail").set(@user.email)
-    find("input#inputPassword").set("password")
-    click_on("Submit")
-  end
-end
-
-step "I don't see any retry banner" do
-  expect(page).not_to have_selector("section.bg-info", text: /RETRY/)
-end
-
-step "I don't see any login banner" do
-  expect(page).not_to have_selector("section form input#inputEmail")
-  expect(page).not_to have_selector("section form input#inputPassword")
-end
-
 step "the cart is not empty" do
   visit("/app/borrow/order")
   step "I see the 'Items' section"
@@ -66,5 +24,17 @@ end
 step "I accept the :title dialog" do |title|
   within(find_ui_modal_dialog(title: title)) do
     click_on "OK"
+  end
+end
+
+step "I log in again" do
+  expect(@user).to be_a User
+  within(".ui-form-signin") do
+    fill_in("user", with: @user.email)
+    find('button[type="submit"]').click
+  end
+  within(".ui-form-signin") do
+    fill_in("password", with: "password")
+    find('button[type="submit"]').click
   end
 end

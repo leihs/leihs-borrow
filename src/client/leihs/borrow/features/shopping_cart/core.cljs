@@ -15,6 +15,7 @@
                                       subscribe
                                       dispatch]]
    [leihs.borrow.lib.helpers :as h]
+   [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.form-helpers :refer [UiTextarea]]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.translate :refer [t dict set-default-translate-path]]
@@ -35,7 +36,9 @@
 (reg-event-fx
  ::routes/shopping-cart
  (fn-traced [{:keys [db]} [_ _]]
-   {:db (assoc db ::edit-mode nil)
+   {:db (-> db
+            (assoc ::edit-mode nil)
+            (assoc ::errors  nil))
     :dispatch [::re-graph/query
                (rc/inline "leihs/borrow/features/shopping_cart/getShoppingCart.gql")
                {:userId (current-user/get-current-profile-id db)}
@@ -44,10 +47,11 @@
 (reg-event-db
  ::on-fetched-data
  (fn-traced [db [_ {:keys [data errors]}]]
-   (-> db
-       (assoc-in [:ls ::data]
-                 (get-in data [:current-user :user :unsubmitted-order]))
-       (cond-> errors (assoc ::errors errors)))))
+   (if errors
+     (-> db (assoc ::errors errors))
+     (-> db
+         (assoc-in [:ls ::data]
+                   (get-in data [:current-user :user :unsubmitted-order]))))))
 
 (defn pool-ids-with-borrowable-quantity [db]
   (let [quants (get-in db [::edit-mode
@@ -74,7 +78,7 @@
        {:db (assoc-in db [::edit-mode :availability] [])}
        start-date-exceeds-max?
        {:db (update-in db [::edit-mode]
-                       #(availability/set-loading-as-ended % end-date))}
+                       #(availability/set-loading-as-ended % end-date false))}
        :else
        {:db (assoc-in db [::edit-mode :fetching-until-date] end-date)
         :dispatch [::re-graph/query
@@ -87,18 +91,21 @@
                     :excludeReservationIds exclude-reservation-ids}
                    [::on-fetched-availability end-date]]}))))
 
-(reg-event-db
+(reg-event-fx
  ::on-fetched-availability
- (fn-traced [db
+ (fn-traced [{:keys [db]}
              [_ end-date {{{new-availability :availability} :model} :data
                           errors :errors}]]
-   (-> db
-       (cond-> errors (assoc-in [::errors] errors))
-       (update-in [::edit-mode]
-                  #(when %
-                     (-> %
-                         (availability/update-availability new-availability)
-                         (availability/set-loading-as-ended end-date)))))))
+   (if errors
+     {:db (update-in db [::edit-mode]
+                     #(availability/set-loading-as-ended % end-date false))
+      :dispatch [::errors/add-many errors]}
+     {:db (-> db
+              (update-in [::edit-mode]
+                         #(when %
+                            (-> %
+                                (availability/update-availability new-availability)
+                                (availability/set-loading-as-ended end-date true)))))})))
 
 (reg-event-fx
  ::ensure-availability-fetched-until
@@ -125,8 +132,7 @@
  ::delete-reservations
  (fn-traced [{:keys [db]} [_ ids]]
    {:db (-> db
-            (assoc-in [:ls ::data :pending-count] (- 0 (count ids)))
-            (assoc-in [::edit-mode] nil))
+            (assoc-in [:ls ::data :pending-count] (- 0 (count ids))))
     :dispatch [::re-graph/mutate
                (rc/inline "leihs/borrow/features/shopping_cart/deleteReservationLines.gql")
                {:ids ids}
@@ -147,13 +153,16 @@
  ::on-delete-reservations
  (fn-traced [{:keys [db]} [_ {{ids :delete-reservation-lines} :data errors :errors}]]
    (if errors
-     {:db (dissoc-in db [:ls ::data :pending-count])
-      :alert (str "FAIL! " (pr-str errors))}
+     {:db (-> db
+              (dissoc-in [:ls ::data :pending-count])
+              (dissoc-in [::data :delete-dialog :is-saving?]))
+      :dispatch [::errors/add-many errors]}
      {:db (-> db
               (update-in [:ls ::data :reservations]
                          (partial filter #(->> % :id ((set ids)) not)))
               (dissoc-in [:ls ::data :pending-count])
-              (dissoc-in [::data :delete-dialog]))
+              (dissoc-in [::data :delete-dialog])
+              (dissoc-in [::edit-mode]))
       :dispatch [::timeout/refresh]})))
 
 (reg-event-fx
@@ -186,7 +195,7 @@
 (reg-event-db
  ::open-order-dialog
  (fn-traced [db]
-   (assoc-in db [::data :order-dialog] {})))
+   (assoc-in db [::data :order-dialog] {:show true})))
 
 (reg-event-db
  ::close-order-dialog
@@ -209,7 +218,9 @@
              [_ {{rental :submit-order} :data
                  errors :errors}]]
    (if errors
-     {:alert (str "FAIL! " (pr-str errors))}
+     {:db (-> db
+              (dissoc-in [::data :order-dialog :is-saving?]))
+      :dispatch [::errors/add-many errors]}
      {:db (-> db
               (assoc-in [::data :order-success] {:rental rental})
               (dissoc-in [::data :order-dialog]))})))
@@ -244,7 +255,8 @@
              [_ {:keys [errors] {del-ids :delete-reservation-lines
                                  new-res-lines :create-reservation} :data}]]
    (if errors
-     {:alert (str "FAIL! " (pr-str errors))}
+     {:db (-> db (dissoc-in [::edit-mode :is-saving?]))
+      :dispatch [::errors/add-many errors]}
      {:db (-> db
               (dissoc-in [:ls ::data :pending-count])
               (assoc ::edit-mode nil)

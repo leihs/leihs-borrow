@@ -8,6 +8,7 @@
    [shadow.resource :as rc]
    [leihs.borrow.components :as ui]
    [leihs.borrow.lib.helpers :as h]
+   [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                       reg-event-db
                                       reg-sub
@@ -36,7 +37,8 @@
                   (rc/inline "leihs/borrow/features/customer_orders/customerOrderShow.gql") "\n"
                   (rc/inline "leihs/borrow/features/customer_orders/fragment_rentalProps.gql"))
                  {:id order-id}
-                 [::on-fetched-data order-id]]})))
+                 [::on-fetched-data order-id]]
+      :db (-> db (assoc-in [::errors order-id] nil))})))
 
 (reg-event-db
  ::on-fetched-data
@@ -49,7 +51,7 @@
 (reg-event-db
  ::open-cancellation-dialog
  (fn-traced [db]
-   (assoc-in db [::data :cancellation-dialog] {})))
+   (assoc-in db [::data :cancellation-dialog] {:show true})))
 
 (reg-event-db
  ::close-cancellation-dialog
@@ -72,9 +74,9 @@
  ::on-cancel-order
  (fn-traced [{:keys [db]} [_ {{rental :cancel-order} :data errors :errors}]]
    (if errors
-     {:alert (str "FAIL! " (pr-str errors))
+     {:dispatch [::errors/add-many errors]
       :db (-> db
-              (dissoc-in [::data :cancellation-dialog]))}
+              (dissoc-in [::data :cancellation-dialog :is-saving?]))}
 
      {:db (-> db
               (assoc-in [::data (:id rental)] (into (sorted-map) rental))

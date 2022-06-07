@@ -47,44 +47,30 @@
          category-id (last category-ids)
          parent-id (last ancestor-ids)]
 
-     {:dispatch-n (list
-          ; We include the actual category itself because the
-          ; backend validates if all categories in the path
-          ; are still among the reservable ones.
+     {:db (dissoc-in db [::errors category-id])
+      :dispatch-n (list
+
+                   ; We include the actual category itself because the
+                   ; backend validates if all categories in the path
+                   ; are still among the reservable ones.
                    [::re-graph/query categories-query
                     {:ids category-ids
                      :poolIds (when-let [pool-id (-> db ::filter-modal/options :pool-id)]
                                 [pool-id])}
-                    [::on-fetched-categories-data]]
-          ; We fetch the actual category again to get the correct
-          ; label in the context of the parent category.
-                   [::re-graph/query
-                    query
-                    {:categoryId category-id :parentId parent-id}
-                    [::on-fetched-category-data category-id]]
+                    [::on-fetched-categories-data category-id]]
 
                    [::models/get-models query-params {:categoryId category-id}])})))
 
 (reg-event-db
  ::on-fetched-categories-data
- (fn-traced [db [_ {:keys [data errors]}]]
-   (-> db
-       (cond-> errors (assoc-in [::errors] errors))
-       (update-in [:ls ::data]
-                  #(apply merge %1 %2)
-                  (->> data
-                       :categories
-                       (map #(hash-map (:id %) %)))))))
-
-(reg-event-db
- ::on-fetched-category-data
  (fn-traced [db [_ category-id {:keys [data errors]}]]
-   (-> db
-       (cond-> errors
-         (assoc-in [::errors category-id] errors))
-       (update-in [:ls ::data category-id]
-                  merge
-                  (:category data)))))
+   (if errors
+     (assoc-in db [::errors category-id] errors)
+     (update-in db [:ls ::data]
+                #(apply merge %1 %2)
+                (->> data
+                     :categories
+                     (map #(hash-map (:id %) %)))))))
 
 (reg-event-fx
  ::clear
@@ -134,8 +120,7 @@
         cat-ancestors @(subscribe [::ancestors prev-ids])
         {:keys [children] :as category} @(subscribe [::category-data category-id])
         errors @(subscribe [::errors category-id])
-        is-loading? (not (and category
-                              (every? some? cat-ancestors)))
+        categories-loaded (and category (every? some? cat-ancestors))
         model-filters @(subscribe [::filter-modal/options])
         extra-search-args {:categoryId category-id}
 
@@ -143,11 +128,10 @@
         child-cats  (for [cat children] (merge cat {:url (-> js/window .-location .-pathname
                                                              (str "/" (:id cat) "?" (cemerick.url/map->query model-filters)))}))
         child-cats-collapsed? @(subscribe [::child-cats-collapsed? category-id])]
-
     [:<>
      (cond
-       is-loading? [ui/loading]
-       errors [ui/error-view errors]
+       (and (not errors) (not categories-loaded)) [ui/loading]
+       (and errors (not categories-loaded)) [ui/error-view errors]
        :else
        [:<>
         [:> UI/Components.Design.PageLayout.Header
@@ -168,6 +152,7 @@
                         [::routes/categories-show
                          {:categories-path categories-path :query-params %}]])
             #_extra-search-args])]
+        (when errors [ui/error-view errors])
         (if has-any-reservable-item
           [:> UI/Components.Design.Stack {:space 4}
            (when-not (empty? child-cats)

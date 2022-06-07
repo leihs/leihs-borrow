@@ -25,7 +25,8 @@
 
 (defn view []
   (let [cache-key @(subscribe [::models/cache-key {} fav-filter])
-        models @(subscribe [::models/edges cache-key])]
+        models @(subscribe [::models/edges cache-key])
+        errors @(subscribe [::models/errors cache-key])]
     [:<>
 
      [:> UI/Components.Design.PageLayout.Header
@@ -33,7 +34,8 @@
 
      [:<>
       (cond
-        (nil? models) [ui/loading]
+        (not (or models errors)) [ui/loading]
+        errors [ui/error-view errors]
         (empty? models) [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
         :else [:> UI/Components.Design.Section {:title (t :items)}
                [models/models-list models]

@@ -2,7 +2,13 @@
   (:refer-clojure :exclude [time])
   (:require
    [reagent.core :as reagent]
-   [leihs.borrow.features.sign-in.core :as sign-in]))
+   [leihs.borrow.lib.translate :refer [t]]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.helpers :as h]
+   [leihs.borrow.lib.re-frame :refer [dispatch]]
+   [leihs.borrow.lib.errors :as errors]
+   [leihs.borrow.lib.routing :as routing]
+   ["/leihs-ui-client-side-external-react" :as UI]))
 
 (defn merge-props [defaults givens]
   (merge
@@ -34,30 +40,35 @@
      (if href [:a {:href href} inner] inner)]))
 
 (defn error-view [errors]
-  [:section.p-4
-   {:style {:white-space "pre-wrap" :background "salmon" :padding "1rem"}}
-   [:h1 "ERROR :("]
-   [:p [:button.border-black.border-2.rounded-full.py-1.px-3 {:type :button, :on-click #(-> js/window (.-location) (.reload))} "RELOAD"]]
-   (doall
-    (for
-     [[idx error] (map-indexed vector errors)]
-      [:small.code {:key idx} (js/JSON.stringify (clj->js error) 0 2)]))])
+  (let [has-401 (some #(= 401 (-> % :extensions :code)) errors)]
+    [:> UI/Components.Design.ErrorView
+     {:title (t :borrow.errors.loading-error)
+      :message (when has-401 (t :borrow.errors.unauthorized))
+      :actions (if has-401
+                 [{:title (t :borrow.errors.go-to-login) :onClick #(js/document.location.reload)}] ; (server will send the correct redirect)
+                 [{:title (t :borrow.errors.reload) :onClick #(js/document.location.reload)}
+                  {:title (t :borrow.errors.go-to-start) :href (routing/path-for ::routes/home) :variant "link-button"}])
+      :details (reagent/as-element
+                (doall
+                 (for
+                  [[idx error] (map-indexed vector errors)]
+                   [:div.preserve-linebreaks.mt-3 {:key idx} (js/JSON.stringify (clj->js error) 0 2)])))}]))
 
-(defn fatal-error-screen [errors]
-  [:section.p-4
-   {:style {:white-space "pre-wrap" :background "salmon" :padding "1rem"}}
-   [:h1 "FATAL ERROR :("]
-   [:p [:button.border-black.border-2.rounded-full.py-1.px-3 {:type :button, :on-click #(-> js/window (.-location) (.reload))} "RELOAD"]]
-   (doall
-    (for
-     [[idx error] (map-indexed vector errors)]
-      [:small.code {:key idx} (js/JSON.stringify (clj->js error) 0 2)]))])
-
-(defn error-screen [errors]
-  (when-let [[e] (not-empty errors)]
-    (if (-> e :extensions :code (= 401))
-      [sign-in/login-error-screen]
-      [fatal-error-screen errors])))
+(defn error-notification [errors]
+  (when (seq errors)
+    (let [has-401 (some #(= 401 (-> % :extensions :code)) errors)]
+      [:> UI/Components.Design.ErrorNotification
+       {:shown true :onDismiss #(dispatch [::errors/clear]) :title (t :borrow.errors.error)}
+       (if has-401
+         [:<>
+          [:div.mb-3 (t :borrow.errors.unauthorized)]
+          [:div [:button.btn.btn-dark {:onClick #(js/document.location.reload)} (t :borrow.errors.go-to-login)]]]
+         [:div (t :borrow.errors.processing-error)])
+       [:details.mt-4.mb-4
+        (doall
+         (for
+          [[idx error] (map-indexed vector errors)]
+           [:div.preserve-linebreaks.mt-3.small {:key idx} (js/JSON.stringify (clj->js error) 0 2)]))]])))
 
 ; copied from <https://github.com/sindresorhus/cli-spinners/blob/af93e2f345a73a16c7686066c08dd970d66d8870/spinners.json#L720>
 (def spinner-data-clock

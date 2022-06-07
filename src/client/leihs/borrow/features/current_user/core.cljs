@@ -16,6 +16,7 @@
                                       subscribe
                                       dispatch
                                       dispatch-sync]]
+   [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.localstorage :as ls]
    [leihs.borrow.lib.helpers :as h]
    leihs.borrow.lib.re-graph
@@ -57,7 +58,7 @@
  ::on-fetched-data
  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
    (if errors
-     {:db (update-in db [:meta :app :fatal-errors] (fnil into []) errors)}
+     {:dispatch [::errors/add-many errors]}
      {:dispatch-n (let [current-user-data (:current-user data)
                         current-delegation (:delegation data)
                         session-id (:session-id current-user-data)

@@ -15,25 +15,23 @@ Feature: Request framework
     When I clear the browser cookies
     And I click on "Add item"
     And the order panel is shown
-    And I click on Add and I approve the alert
-
-    Then I see one retry banner
-    And I see one login banner
+    And I click on "Add"
+    Then I see "Error"
+    And I see "User not logged in"
 
     # 1st Retry (still logged out)
-    When I click on retry and I approve the alert
-    Then I see one retry banner
-    And I see one login banner
+    When I click on "OK"
+    And I click on "Add"
+    Then I see "Error"
 
     # Login
-    When I login in via the login banner
-    Then I don't see any login banner
-    But I see one retry banner
+    When I click on "Go to login"
+    And I log in again
+    Then I see "Add item"
 
     # 2nd Retry (now logged in)
-    When I click on retry
+    When I click on "Add item"
+    And I click on "Add"
     And I accept the "Item added" dialog
-    And the "Item added" dialog has closed
-    Then I don't see any login banner
-    And I don't see any retry banner
+    Then the "Item added" dialog has closed
     And the cart is not empty

@@ -18,6 +18,7 @@
    [leihs.borrow.components :as ui]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.ui.icons :as icons]
    ["/leihs-ui-client-side-external-react" :as UI]
    ["date-fns" :as datefn]
@@ -56,7 +57,8 @@
     [::re-graph/query
      (rc/inline "leihs/borrow/features/model_show/getModelShow.gql")
      {:modelId @model-id, :userId (current-user/get-current-profile-id db)}
-     [::on-fetched-data]]}))
+     [::on-fetched-data]]
+    :db (assoc-in db [::errors @model-id] nil)}))
 
 (defn pool-ids-with-borrowable-quantity [db model-id]
   (let [quants (get-in db
@@ -84,14 +86,13 @@
          start-of-current-month (datefn/startOfMonth now)
          fetch-until-date (-> initial-end-date
                               availability/with-future-buffer)]
-     {:db (-> db
-              (update-in [:ls ::data @model-id] (fnil identity {}))
-              (cond-> errors (assoc-in [::errors @model-id] errors))
-              (assoc-in [:ls ::data @model-id] (:model data)))
-      :dispatch [::fetch-availability
-                 user-id
-                 (h/date-format-day start-of-current-month)
-                 (h/date-format-day fetch-until-date)]})))
+     (if errors
+       {:db (assoc-in db [::errors @model-id] errors)}
+       {:db (assoc-in db [:ls ::data @model-id] (:model data))
+        :dispatch [::fetch-availability
+                   user-id
+                   (h/date-format-day start-of-current-month)
+                   (h/date-format-day fetch-until-date)]}))))
 
 (reg-event-fx
  ::fetch-availability
@@ -110,7 +111,7 @@
                                 :availability-ready? true}))}
        start-date-exceeds-max?
        {:db (update-in db [:ls ::data model-id]
-                       #(availability/set-loading-as-ended % end-date))}
+                       #(availability/set-loading-as-ended % end-date false))}
        :else
        {:db (assoc-in db
                       [:ls ::data model-id :fetching-until-date]
@@ -124,18 +125,21 @@
                     :endDate end-or-max-date}
                    [::on-fetched-availability end-date]]}))))
 
-(reg-event-db
+(reg-event-fx
  ::on-fetched-availability
- (fn-traced [db
+ (fn-traced [{:keys [db]}
              [_  end-date {{{new-availability :availability} :model} :data
                            errors :errors}]]
-   (-> db
-       (cond-> errors (assoc-in [::errors @model-id] errors))
-       (update-in [:ls ::data @model-id]
-                  #(-> %
-                       (availability/update-availability new-availability)
-                       (availability/set-loading-as-ended end-date)
-                       (assoc :availability-ready? true))))))
+   (if errors
+     {:db (update-in db [:ls ::data @model-id]
+                     #(availability/set-loading-as-ended % end-date false))
+      :dispatch [::errors/add-many errors]}
+     {:db (-> db
+              (update-in [:ls ::data @model-id]
+                         #(-> %
+                              (availability/update-availability new-availability)
+                              (availability/set-loading-as-ended end-date true)
+                              (assoc :availability-ready? true))))})))
 
 (reg-event-fx
  ::ensure-availability-fetched-until
@@ -160,18 +164,14 @@
 (reg-event-fx
  ::favorite-model
  (fn-traced
-   [{:keys [db]} [_ model-id]]
-   {:db (assoc-in db [:ls ::data model-id :is-favorited] true),
-    :dispatch-n (list [::favs/favorite-model model-id]
-                      [::favs/invalidate-cache])}))
+   [_ [_ model-id]]
+   {:dispatch [::favs/favorite-model model-id [:ls ::data model-id :is-favorited]]}))
 
 (reg-event-fx
  ::unfavorite-model
  (fn-traced
-   [{:keys [db]} [_ model-id]]
-   {:db (assoc-in db [:ls ::data model-id :is-favorited] false),
-    :dispatch-n (list [::favs/unfavorite-model model-id]
-                      [::favs/invalidate-cache])}))
+   [_ [_ model-id]]
+   {:dispatch [::favs/unfavorite-model model-id [:ls ::data model-id :is-favorited]]}))
 
 (reg-event-db
  ::open-order-panel
@@ -263,10 +263,9 @@
  (fn-traced [{:keys [db]} [_ {user-id :userId :as args} {:keys [data errors]}]]
    (if errors
      {:db (-> db
-              (assoc-in [:meta :app :fatal-errors] errors)
               (dissoc-in [:ls ::cart/data :pending-count])
-              (assoc-in [::data :order-panel] nil))
-      :alert (str "FAIL! " (pr-str errors))}
+              (assoc-in [::data :order-panel :is-saving?] false))
+      :dispatch [::errors/add-many errors]}
      {:dispatch-n (list [::clear-availability]
                         [::fetch-availability
                          user-id

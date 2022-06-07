@@ -41,15 +41,14 @@
 
 (defn view []
   (fn []
-    (let [cats @(subscribe [::categories/categories-index])
-          has-any-reservable-item @(subscribe [::has-any-reservable-item])]
+    (let [has-any-reservable-item @(subscribe [::has-any-reservable-item])]
       (if has-any-reservable-item
         [:<>
          [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
           [filter-comp default-dispatch-fn]]
          [:> UI/Components.Design.Stack
           [:> UI/Components.Design.Section {:title (t :categories)}
-           (categories/categories-list cats {})]]]
+           (categories/categories-list {})]]]
         ; else
         [:<>
          [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]

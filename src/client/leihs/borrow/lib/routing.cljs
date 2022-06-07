@@ -22,6 +22,7 @@
                                                subscribe
                                                dispatch]]
             [leihs.borrow.lib.localstorage :as ls]
+            [leihs.borrow.lib.errors :as errors]
             [leihs.borrow.lib.requests :as requests]
             [leihs.borrow.features.current-user.core :as current-user]
             [leihs.borrow.features.languages.core :as languages]
@@ -66,7 +67,7 @@
          bidi-match (bidi-match-route-with-query-params routes token)]
      {:db (-> db
               (assoc-in [:routing/routing :bidi-match] bidi-match)
-              (assoc-in [:meta :app :fatal-errors] nil)
+              (errors/clear)
               (assoc-in [:ls :leihs.borrow.ui.main-nav/data] nil)
               (dissoc ::requests/retry-mutation))
       :dispatch-n (list #_[::requests/abort-running-queries] ; disabled for now, see #1294

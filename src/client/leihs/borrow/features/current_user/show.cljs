@@ -24,8 +24,9 @@
 
 (reg-event-fx
  ::routes/current-user-show
- (fn-traced [_ _]
-   {:dispatch [::re-graph/query
+ (fn-traced [{:keys [db]} _]
+   {:db (dissoc db ::errors)
+    :dispatch [::re-graph/query
                (rc/inline "leihs/borrow/features/current_user/show.gql")
                {}
                [::on-fetched-data]]}))
@@ -35,7 +36,7 @@
  (fn-traced [db [_ {:keys [data errors]}]]
    (-> db
        (cond-> errors (assoc ::errors errors))
-       (assoc ::data (or data {})))))
+       (assoc ::data data))))
 
 (reg-sub ::data
          (fn [db _] (::data db)))
@@ -46,11 +47,11 @@
 (defn view []
   (let [data @(subscribe [::data])
         errors @(subscribe [::errors])]
-
     (cond
-      (not data) [ui/loading]
-      errors [ui/error-view errors]
-      :else
+      (not (or errors data)) [ui/loading]
+      errors
+      [ui/error-view errors]
+      data
       (let [current-user (:current-user data)
             user (:user current-user)
             delegations

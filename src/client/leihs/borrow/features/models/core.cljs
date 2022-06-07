@@ -14,8 +14,9 @@
                                       subscribe
                                       dispatch]]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.localstorage :as ls]
-   [leihs.borrow.lib.helpers :refer [spy spy-with log obj->map]]
+   [leihs.borrow.lib.helpers :as h]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.pagination :as pagination]
    [leihs.borrow.client.routes :as routes]
@@ -89,7 +90,8 @@
    (let [query-vars (get-query-vars query-params extra-vars (current-user/get-current-profile-id db))
          cache-key (get-cache-key query-vars)
          n (number-of-cached db cache-key)]
-     {:dispatch [::re-graph/query
+     {:db (assoc-in db [:ls ::data cache-key] nil)
+      :dispatch [::re-graph/query
                  query-gql
                  (cond-> query-vars (>= n 20) (assoc :first n))
                  [::on-fetched-models cache-key]]})))
@@ -98,7 +100,7 @@
  ::on-fetched-models
  (fn-traced [{:keys [db]} [_ cache-key {:keys [data errors]}]]
    (if errors
-     {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
+     {:db (assoc-in db [:ls ::data cache-key] {:errors errors})}
      {:db (assoc-in db [:ls ::data cache-key] (get-in data [:models]))})))
 
 (reg-event-fx
@@ -138,6 +140,11 @@
          (fn [[_ cache-key] _]
            (subscribe [::data-under-cache-key cache-key]))
          (fn [data _] (-> data :page-info :has-next-page)))
+
+(reg-sub ::errors
+         (fn [[_ cache-key] _]
+           (subscribe [::data-under-cache-key cache-key]))
+         (fn [data _] (:errors data)))
 
 ;-; VIEWS
 (defn form-line [name label input-props]
@@ -197,10 +204,12 @@
 (defn search-results [extra-vars]
   (let [filter-opts @(subscribe [::filter-modal/options])
         cache-key @(subscribe [::cache-key filter-opts extra-vars])
-        models @(subscribe [::edges cache-key])]
+        models @(subscribe [::edges cache-key])
+        errors @(subscribe [::errors cache-key])]
     [:<>
      (cond
-       (nil? models) [ui/loading]
+       (not (or errors models)) [ui/loading]
+       errors [ui/error-view errors]
        (empty? models) [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
        :else
        [:<>

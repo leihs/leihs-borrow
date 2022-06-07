@@ -1,6 +1,7 @@
 (ns leihs.borrow.lib.pagination
   (:require [re-frame.core :as rf]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
+            [leihs.borrow.lib.errors :as errors]
             [leihs.borrow.lib.helpers :refer [spy log]]
             [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                                reg-event-db
@@ -31,7 +32,8 @@
  ::on-fetched-more
  (fn-traced [{:keys [db]} [_ db-path data-path {:keys [data errors]}]]
    (if errors
-     {:db (update-in db [:meta :app :fatal-errors] (fnil conj []) errors)}
+     {:fx [[:dispatch [::fetching db-path false]]
+           [:dispatch [::errors/add-many errors]]]}
      {:dispatch [::fetching db-path false]
       :db (-> db
               (assoc-in (conj db-path :page-info)

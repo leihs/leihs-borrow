@@ -139,6 +139,23 @@
     :debug-page {:title {:en-GB "Debugging"
                          :de-CH "Debugging"}}
 
+    :errors {:error {:en-GB "Error"
+                     :de-CH "Fehler"}
+             :processing-error {:en-GB "Error when processing this action"
+                                :de-CH "Fehler beim Ausführen dieser Aktion"}
+             :render-error {:en-GB "Error displaying this content"
+                            :de-CH "Fehler bei der Anzeige"}
+             :loading-error {:en-GB "Error loading this content"
+                             :de-CH "Fehler beim Laden"}
+             :unauthorized {:en-GB "User not logged in"
+                            :de-CH "Benutzer ist nicht eingeloggt"}
+             :reload {:en-GB "Reload current page"
+                      :de-CH "Seite neu laden"}
+             :go-to-start {:en-GB "Go to start page"
+                           :de-CH "Zur Startseite"}
+             :go-to-login {:en-GB "Go to login"
+                           :de-CH "Zum Login"}}
+
     :favorite-models {:title {:en-GB "Favorites"
                               :de-CH "Favoriten"}
                       :items {:en-GB "Items"

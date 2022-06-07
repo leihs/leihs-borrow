@@ -24,12 +24,13 @@
 ; is kicked off from router when this view is loaded
 (reg-event-fx
  ::routes/inventory-pools-show
- (fn-traced [_ [_ args]]
+ (fn-traced [{:keys [db]} [_ args]]
    (let [pool-id (get-in args [:route-params :inventory-pool-id])]
      {:dispatch [::re-graph/query
                  (rc/inline "leihs/borrow/features/pools/show.gql")
                  {:id pool-id}
-                 [::on-fetched-data pool-id]]})))
+                 [::on-fetched-data pool-id]]
+      :db (-> db (assoc-in [::errors pool-id] nil))})))
 
 (reg-event-db
  ::on-fetched-data

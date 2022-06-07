@@ -5,8 +5,7 @@
    [reagent.dom :as rdom]
    [re-frame.core :as rf]
    [leihs.borrow.lib.re-graph :as re-graph]
-   #_[shadow.resource :as rc]
-   [leihs.borrow.components :as uic]
+   [leihs.borrow.components :as ui]
    [leihs.borrow.ui.main-nav :as main-nav]
 
    [leihs.borrow.lib.re-frame :refer [reg-event-fx
@@ -16,14 +15,14 @@
                                       subscribe
                                       dispatch
                                       dispatch-sync]]
-   [leihs.borrow.lib.helpers :refer [spy]]
+   [leihs.borrow.lib.helpers :as h]
    [leihs.borrow.lib.requests :as requests]
+   [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.translate :as translate]
+   [leihs.borrow.lib.translate :as translate :refer [t]]
    [leihs.borrow.client.routes :as routes]
 
    [leihs.borrow.features.debug-page.core :as debug-page]
-   [leihs.borrow.features.categories.index :as category-index]
    [leihs.borrow.features.categories.show :as category-show]
    [leihs.borrow.features.current-user.show :as current-user-show]
    [leihs.borrow.features.customer-orders.index :as customer-orders-index]
@@ -36,10 +35,8 @@
    [leihs.borrow.features.pools.index :as pools-index]
    [leihs.borrow.features.pools.show :as pools-show]
    [leihs.borrow.features.shopping-cart.core :as shopping-cart]
-   [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.templates.index :as templates-index]
    [leihs.borrow.features.templates.show :as templates-show]
-;; [leihs.borrow.shared-ui :as UI]
    ["/leihs-ui-client-side-external-react" :as UI]
    [leihs.borrow.testing.step-1 :as testing-step-1]
    [leihs.borrow.testing.step-2 :as testing-step-2]))
@@ -62,29 +59,30 @@
                 (assoc-in db [:meta :app :debug] mode)))
 
 ;-; SUBSCRIPTIONS
-(reg-sub :app/fatal-errors (fn [db] (get-in db [:meta :app :fatal-errors])))
-
 (reg-sub :is-debug? (fn [db] (get-in db [:meta :app :debug] false)))
 
 ;-; VIEWS
 
 (defn main-view [views]
-  (let [errors @(subscribe [:app/fatal-errors])
+  (let [errors @(subscribe [::errors/errors])
         menu-data @(subscribe [::main-nav/menu-data])
         is-menu-open? (when menu-data (:is-menu-open? menu-data))
         open-menu-page-style {}]
     [:> UI/Components.Design.PageLayout
      {:navbar (r/as-element [main-nav/navbar-menu])
-      :style (when is-menu-open? open-menu-page-style)}
-     [uic/error-screen errors]
-     [requests/retry-banner]
-     [routing/routed-view views]]))
+      :style (when is-menu-open? open-menu-page-style)
+      :errorBoundaryTxt {:title (t :borrow.errors.render-error)
+                         :reload (t :borrow.errors.reload)
+                         :goToStart (t :borrow.errors.go-to-start)}}
+     #_[requests/retry-banner]
+     [routing/routed-view views]
+     [ui/error-notification errors]]))
 
 (defn- route-is-loading-view
   []
   [:div.app-loading-view
    [:h1.text-monospace.text-center.p-5.show-after-3sec
-    [:p.text-5xl [uic/spinner-clock]]
+    [:p.text-5xl [ui/spinner-clock]]
     [:p.font-black.text-xl "loading…"]
     [:p.text-base "if this takes a long time something went wrong."]
     [:p.mt-4
@@ -98,10 +96,6 @@
 ;-; CORE APP
 (def views {::routes/home home-page/view
             ::routes/debug-page debug-page/view
-
-            ;; NOTE: categories index not currently used in design spec
-            ;; ::routes/categories-index category-index/view
-
             ::routes/categories-show category-show/view
             ::routes/current-user-show current-user-show/view
             ::routes/models models/view

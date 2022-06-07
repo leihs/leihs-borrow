@@ -74,8 +74,7 @@
 
 (defn retry-banner []
   (let [retry-mutation @(subscribe [::retry-mutation])
-        running-mutations-ids @(subscribe [::running-mutations-ids])
-        fatal-errors @(subscribe [:app/fatal-errors])]
+        running-mutations-ids @(subscribe [::running-mutations-ids])]
     (when (and retry-mutation (empty? running-mutations-ids))
       [:section.p-4.bg-info {:style {:white-space "pre-wrap" :background "blue" :padding "1rem"}}
        [:h1 "RETRY"]

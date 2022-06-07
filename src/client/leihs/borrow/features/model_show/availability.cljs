@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.model-show.availability
   (:require
-   ["date-fns" :as datefn]))
+   ["date-fns" :as datefn]
+   [leihs.borrow.lib.helpers :as h]))
 
 (def MONTHS-BUFFER 6)
 (defn with-future-buffer [date]
@@ -32,12 +33,13 @@
             merge-availability
             new-availability)))
 
-(defn set-loading-as-ended [container end-date]
+(defn set-loading-as-ended [container end-date success]
   (let [end-date-js (js/Date. end-date)
         fetching-until-date (-> container :fetching-until-date js/Date.)
         fetched-until-date (-> container :fetched-until-date js/Date.)]
     (merge container
            (when-not (datefn/isAfter fetching-until-date end-date-js)
-             {:fetching-until-date end-date})
-           (when-not (datefn/isAfter fetched-until-date end-date-js)
-             {:fetched-until-date end-date}))))
+             {:fetching-until-date nil})
+           (when success
+             (when-not (datefn/isAfter fetched-until-date end-date-js)
+               {:fetched-until-date end-date})))))
