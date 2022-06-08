@@ -3,14 +3,14 @@
 require 'bundler/inline'
 gemfile do
   source 'https://rubygems.org'
-  gem 'git', '= 1.9.1'
+  # gem 'git', '= 1.9.1'
   gem 'pry', '= 0.14.1'
   gem 'activesupport', '= 5.2.4.5'
 end
 
 require 'active_support/all'
 require 'date'
-require 'git'
+# require 'git'
 require 'pathname'
 require 'pry'
 require 'socket'
@@ -21,10 +21,10 @@ script = Pathname(__file__)
 
 PROJECT_DIR = Pathname(File.expand_path(File.dirname(__FILE__))).join('..')
 
-project = Git.open(PROJECT_DIR)
-current_commit_id = project.log[0].sha
-head = project.object('HEAD')
-current_tree_id = head.gtree.objectish
+# project = Git.open(PROJECT_DIR)
+current_commit_id = 'bbbbbb' #project.log[0].sha
+# head = project.object('HEAD')
+current_tree_id = 'aaaaa' #head.gtree.objectish
 
 # binding.pry
 
