@@ -1,4 +1,5 @@
 environment_variables:
+  CI: 'true'
   LEIHS_DATABASE_NAME: leihs_{{CIDER_CI_TRIAL_ID}}
   LEIHS_BORROW_HTTP_BASE_URL: http://localhost:{{LEIHS_BORROW_HTTP_PORT}}
   LEIHS_LEGACY_HTTP_BASE_URL: http://localhost:{{LEIHS_LEGACY_HTTP_PORT}}

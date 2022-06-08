@@ -33,6 +33,7 @@ task_defaults:
       content_type: text/plain
   scripts:
     test:
+      exclusive_executor_resource: geckodriver
       start_when:
         borrow service is running:
           script_key: borrow-service-is-running

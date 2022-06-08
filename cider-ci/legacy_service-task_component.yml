@@ -19,6 +19,7 @@ scripts:
       cp database/config/database.yml spec/support/legacy-api/config/
 
   legacy-service-run:
+    timeout: 30 Minutes
     body: |
       set -eux
       cd $LEIHS_LEGACY_DIR

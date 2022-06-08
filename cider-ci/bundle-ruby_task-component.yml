@@ -1,6 +1,6 @@
 include:
-- path: cider-ci/install-ruby_task-component.yml
-  submodule: [leihs-ui]
+  - path: cider-ci/install-ruby_task-component.yml
+    submodule: [leihs-ui]
 
 traits:
   Bash: true
@@ -8,7 +8,7 @@ traits:
 scripts:
 
   bundle-ruby:
-    exclusive_executor_resource: bundle-ruby_{{$RUBY}}
+    exclusive_executor_resource: bundle-ruby_{{RUBY}}
     timeout: 20 Minutes
     body: |
       #!/usr/bin/env bash

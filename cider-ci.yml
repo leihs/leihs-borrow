@@ -25,7 +25,7 @@ jobs:
 
   lint:
     name: Lint
-    # depends_on: *SPEC_DEPS
+    depends_on: *SPEC_DEPS
     run_when: *ON_BRANCH_UPDATE
     context: { include: cider-ci/lint_job-context.yml }
 

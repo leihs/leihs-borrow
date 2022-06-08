@@ -1,36 +1,20 @@
-name: Build borrow uberjar
+name: Build borrow uberjar (Docker)
 
 include:
   - path: cider-ci/install-ruby_task-component.yml
     submodule: [leihs-ui]
-  - path: cider-ci/install-nodejs_task-component.yml
-    submodule: [leihs-ui]
 
 traits:
-  OpenJDK: true
+  Docker Engine: true
 
-environment_variables:
-  NVM_NODEJS_VERSION: '16'
+max_trials: 5
 
 scripts:
-  build-leihs-ui-for-borrow:
+  build-borrow-uberjar:
+    timeout: 60 minutes
+    exclusive_executor_resource: 'build-leihs-borrow-jar-docker_{{CIDER_CI_TREE_ID}}'
     start_when:
       install-ruby-passed: { script_key: install-ruby }
-      install-nodejs-passed: { script_key: install-nodejs }
-    timeout: 15 minutes
-    exclusive_executor_resource: build-leihs-ui
     body: |
-      . ~/.nvm/nvm.sh && nvm use "$NVM_NODEJS_VERSION"
-      ${LEIHS_BORROW_DIR}/leihs-ui/bin/build
-
-  build-borrow-uberjar:
-    timeout: 15 minutes
-    exclusive_executor_resource: build-leihs-borrow-jar
-    start_when:
-      shared ui was built:
-        script_key: build-leihs-ui-for-borrow
-    body: |
-      cd ${LEIHS_BORROW_DIR}/spec/support/legacy-api && git reset --hard HEAD
       cd ${LEIHS_BORROW_DIR}
-      . ~/.nvm/nvm.sh && nvm use "$NVM_NODEJS_VERSION"
-      ${LEIHS_BORROW_DIR}/bin/build
+      USE_DOCKER=YES bin/build

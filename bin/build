@@ -15,6 +15,7 @@ LOCAL_CACHE_DIR="${LOCAL_CACHE_DIR:-"${TMPDIR:-/tmp/}/leihs-build-cache"}"
 LOCAL_CACHED_ARTEFACT_PATH="${LOCAL_CACHE_DIR}/${PROJECT_NAME}_${DIGEST}.jar"
 S3_CACHED_ARTEFACT_NAME="${PROJECT_NAME}_${DIGEST}.jar"
 BUILD_CACHE_DISABLED="${BUILD_CACHE_DISABLED:-NO}"
+USE_DOCKER="${USE_DOCKER:-NO}"
 
 # add our clojure version to the path
 source $PROJECT_DIR/shared-clj/clojure/bin/activate
@@ -32,15 +33,26 @@ else
   exit 1
 fi
 
+if [ $USE_DOCKER == "YES" ] ||  [ $USE_DOCKER == "NO" ]; then
+  echo "USE_DOCKER=$USE_DOCKER"
+else
+  echo 'USE_DOCKER must be initially unset, or "YES", or "NO"'
+  exit 1
+fi
+
 
 ### functions #################################################################
 
 function build {
-  ${UI_DIR}/bin/build
-  ./bin/cljs-release
-  ./bin/dump-translations
-  ./bin/set-built-info
-  ./bin/clj-uberjar
+  if [ $USE_DOCKER == "YES" ]; then
+    bin/docker-build
+  else
+    ${UI_DIR}/bin/build
+    ./bin/cljs-release
+    ./bin/dump-translations
+    ./bin/set-built-info
+    ./bin/clj-uberjar
+  fi
 }
 
 function pack {

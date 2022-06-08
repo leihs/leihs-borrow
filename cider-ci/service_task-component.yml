@@ -1,6 +1,7 @@
 scripts:
 
   borrow-service-run:
+    timeout: 30 Minutes
     start_when:
       uberjar has been built:
         script_key: build-borrow-uberjar

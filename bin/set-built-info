@@ -1,16 +1,19 @@
 #!/usr/bin/env ruby
 
+# NOTE: if git info already given via env vars, dont use git at all!
+commit_id = ENV['BUILD_COMMIT_ID']
+tree_id = ENV['BUILD_TREE_ID']
+
 require 'bundler/inline'
 gemfile do
   source 'https://rubygems.org'
-  gem 'git', '= 1.9.1'
+  gem 'git', '= 1.9.1', require: false
   gem 'pry', '= 0.14.1'
   gem 'activesupport', '= 5.2.4.5'
 end
 
 require 'active_support/all'
 require 'date'
-require 'git'
 require 'pathname'
 require 'pry'
 require 'socket'
@@ -21,19 +24,20 @@ script = Pathname(__file__)
 
 PROJECT_DIR = Pathname(File.expand_path(File.dirname(__FILE__))).join('..')
 
-project = Git.open(PROJECT_DIR)
-current_commit_id = project.log[0].sha
-head = project.object('HEAD')
-current_tree_id = head.gtree.objectish
-
-# binding.pry
+unless commit_id.present? && tree_id.present?
+  require 'git'
+  project = Git.open(PROJECT_DIR)
+  commit_id = project.log[0].sha
+  head = project.object('HEAD')
+  tree_id = head.gtree.objectish
+end
 
 IO.write(PROJECT_DIR.join("resources").join("built-info.yml"),
-         {commit_id: current_commit_id,
+         {commit_id: commit_id,
           hostname: Socket.gethostname,
           os: Gem::Platform.local.to_s,
           timestamp: DateTime.now.iso8601,
-          tree_id: current_tree_id, }.with_indifferent_access.to_h.to_yaml)
+          tree_id: tree_id, }.with_indifferent_access.to_h.to_yaml)
 
 
 
