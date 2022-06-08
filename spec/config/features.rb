@@ -33,13 +33,13 @@ RSpec.configure do |config|
     require_shared_files feature_file_absolute
     require_feature_steps feature_file_absolute
 
-    Capybara.current_driver = :firefox
-    begin
-      page.driver.browser.manage.window.resize_to(*BROWSER_WINDOW_SIZE)
-    rescue => e
-      fail e
-      page.driver.browser.manage.window.maximize
-    end
+    # Capybara.current_driver = :firefox
+    # begin
+    #   page.driver.browser.manage.window.resize_to(*BROWSER_WINDOW_SIZE)
+    # rescue => e
+    #   fail e
+    #   page.driver.browser.manage.window.maximize
+    # end
   end
 
   config.before(pending: true) do |example|

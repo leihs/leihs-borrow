@@ -1,0 +1,30 @@
+#!/bin/bash
+set -exu
+
+# NOTE: this works exactly like `bin/run`, but inside a docker container.
+
+BORROW_DIR="$(dirname ${BASH_SOURCE})/.."
+cd "${BORROW_DIR}"
+echo "PWD: $PWD"
+
+bin/docker-build
+
+docker run --rm \
+  --name leihs-borrow \
+  -e PIDFILE \
+  -e HTTP_HOST \
+  -e HTTP_PORT \
+  -e HTTP_THREADS \
+  -e LEGACY_HTTP_PROTOCOL \
+  -e LEGACY_HTTP_HOST \
+  -e LEGACY_HTTP_PORT \
+  -e DB_NAME \
+  -e DB_PORT \
+  -e DB_HOST \
+  -e DB_USER \
+  -e DB_PASSWORD \
+  -e DB_MIN_POOL_SIZE \
+  -e DB_MAX_POOL_SIZE \
+  -e LOAD_TRANSLATIONS \
+  leihs-borrow \
+  "$@"

@@ -1,0 +1,16 @@
+#!/bin/bash
+set -exu
+
+# NOTE: this works exactly like `bin/build`, but runs inside a docker container.
+
+BORROW_DIR="$(dirname ${BASH_SOURCE})/.."
+cd "${BORROW_DIR}"
+echo "PWD: $PWD"
+
+# build shared ui
+cd leihs-ui
+bin/docker-build
+cd -
+
+docker compose build borrow
+

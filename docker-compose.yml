@@ -1,0 +1,141 @@
+# NOTE: WIP, should move 1 level up (superproject) and encompass all leihs services
+# currently has the bare minimum to run borrow: database, legacy, and borrow itself.
+# legacy would then be used from top-level, and 1 more container for `database` (to run seeds, migrations, etc).
+
+# usage:
+#
+# $ alias dc="docker compose"
+#
+# first time, build services and setup DB:
+# $ dc build
+# $ dc up -d db
+# $ dc run --rm legacy bin/db-create
+#
+# always:
+# $ dc up -d --build
+# $ dc logs -f
+# $ dc down # to shutdown
+
+version: '3'
+
+services:
+  db:
+    hostname: leihs-db
+    image: postgres:10-alpine # https://hub.docker.com/_/postgres
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+      - ./:/leihs/borrow/
+    working_dir: /leihs/borrow/
+    environment:
+      - POSTGRES_PASSWORD=${PGPASSWORD} # this is to set the PW in the server, not configure the client!
+
+  shared-ui:
+    image: leihs-ui
+    build: ./leihs-ui/
+
+  borrow:
+    hostname: leihs-borrow
+    build:
+      context: '.'
+      dockerfile: './Dockerfile'
+    restart: 'unless-stopped'
+    depends_on:
+      - db
+      - shared-ui
+      - legacy
+    ports:
+      - '3250:3250'
+    volumes:
+      - ~/.m2:/root/.m2
+    environment:
+      # needed config for using `psql`, `createdb`, etc in the container:
+      - PGHOST=db # host/container of service defined above
+      - PGDATABASE
+      - PGPORT
+      - PGUSER
+      - PGPASSWORD
+      - HTTP_HOST=0.0.0.0
+      - LEIHS_SECRET=${LEIHS_SECRET:-secret}
+      - LEIHS_HTTP_BASE_URL
+      - LEIHS_BORROW_HTTP_PORT
+      - LEIHS_BORROW_HTTP_BASE_URL
+      - LEIHS_LEGACY_HTTP_PORT
+      - LEIHS_LEGACY_HTTP_BASE_URL
+
+  legacy:
+    hostname: leihs-legacy
+    build:
+      context: ../legacy
+      # dockerfile: ./spec/support/legacy-api/
+    restart: 'unless-stopped'
+    ports:
+      - '${LEIHS_LEGACY_HTTP_PORT}:${LEIHS_LEGACY_HTTP_PORT}'
+    depends_on:
+      - db
+    volumes:
+      - ../:/leihs/ # needed so `git` works when checked out as submodule in superproject
+      - ../legacy/:/leihs/legacy/ # redundant with the above, but more explicit
+    environment:
+      # needed config for using `psql`, `createdb`, etc in the container:
+      - PGHOST=db # host/container of service defined above
+      - PGDATABASE
+      - PGPORT
+      - PGUSER
+      - PGPASSWORD
+      # needed for rails and our scripts:
+      - DATABASE_URL=${DATABASE_URL:?}
+      - RAILS_SERVE_STATIC_FILES=yes
+      - RAILS_ENV=production
+      - LEIHS_SECRET=secret
+      - LEIHS_DEPLOY_NEW_BORROW_APP=yes
+      # hosts/ports
+      - LEIHS_HTTP_BASE_URL
+      - LEIHS_BORROW_HTTP_PORT
+      - LEIHS_BORROW_HTTP_BASE_URL
+      - LEIHS_LEGACY_HTTP_PORT
+      - LEIHS_LEGACY_HTTP_BASE_URL
+
+    command: |
+      bash -c "
+        rm -f tmp/pids/server.pid &&
+        echo "DATABASE_URL=${DATABASE_URL}" &&
+        bundle exec rails server -b '0.0.0.0' -p $${LEIHS_LEGACY_HTTP_PORT}
+        # NOTE: this runs in prod (multithreaded etc)
+        # bundle exec puma -e production -t 1:2 -w 2 -b tcp://0.0.0.0:$${LEIHS_LEGACY_HTTP_PORT}
+      "
+
+  rspec:
+    hostname: rspec
+    command: '/bin/bash'
+    depends_on:
+      - borrow
+      - firefox
+    build:
+      context: .
+      dockerfile: 'spec/rspec.Dockerfile'
+    volumes:
+      - ./:/leihs/borrow/
+    working_dir: /leihs/borrow/
+    environment:
+      - APP_URL=${LEIHS_BORROW_HTTP_BASE_URL:?}
+      - SELENIUM_URL=http://selenium-firefox:4444
+      # leihs
+      - LEIHS_LEGACY_HTTP_BASE_URL
+      - LEIHS_BORROW_HTTP_BASE_URL
+      # db
+      - PGHOST=db
+      - POSTGRES_PASSWORD=${PGPASSWORD} # * this configures the server!
+      - PGPASSWORD #                      * this sets the env – for the client!
+      - PGDATABASE
+      - PGPORT
+      - PGUSER
+
+  firefox:
+    hostname: selenium-firefox
+    image: selenium/standalone-firefox:97.0-geckodriver-0.30-20220217
+    restart: 'unless-stopped'
+    ports:
+      - 5901:5900 # VNC
+      - 7901:7900 # Web-VNC
+    environment:
+      VNC_NO_PASSWORD: 1

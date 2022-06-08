@@ -67,6 +67,10 @@ RSpec.configure do |config|
     else
       system("bin/get-translations | psql --quiet -d #{db_name}")
     end
+    # binding.pry
+    if base_url = ENV["LEIHS_BORROW_HTTP_BASE_URL"]
+      database.run "UPDATE system_and_security_settings SET external_base_url='#{base_url}' WHERE id=0;"
+    end
   end
   # config.after(:suite) do
   #   clean_db

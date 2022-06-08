@@ -1,0 +1,14 @@
+# NOTE: overrides/extands main config for local development
+# is merged into main docker-composo.yaml via CLI args: `dc -f docker-compose.yml -f docker-compose.dev.yml`
+
+version: '3'
+
+services:
+  borrow:
+    volumes:
+      - ./:/leihs/borrow/
+
+  legacy:
+    volumes:
+      - ../:/leihs/ # needed so `git` works when checked out as submodule in superproject
+      - ../legacy/:/leihs/legacy/ # redundant with the above, but more explicit
