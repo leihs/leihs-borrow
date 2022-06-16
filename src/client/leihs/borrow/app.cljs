@@ -82,16 +82,13 @@
   []
   [:div.app-loading-view
    [:h1.text-monospace.text-center.p-5.show-after-3sec
-    [:p.text-5xl [ui/spinner-clock]]
-    [:p.font-black.text-xl "loading…"]
-    [:p.text-base "if this takes a long time something went wrong."]
+    [:p {:style {:font-size "3rem"}} [ui/spinner-clock]]
+    [:p "loading…"]
+    [:p.fw-light "if this takes a long time something went wrong."]
     [:p.mt-4
      [:button.btn.btn-lg.btn-dark.rounded-pill.px-4
       {:type :button, :on-click #(-> js/window (.-location) (.reload))}
       "RELOAD"]]]])
-
-; (defn- not-found-view [] [:h1.font-black.text-monospace.text-5xl.text-center.p-8 "404 NOT FOUND!"])
-; (defn- wip-models-index-view [] [:h1.font-black.text-monospace.text-5xl.text-center.p-8 "WIP MODELS INDEX!"])
 
 ;-; CORE APP
 (def views {::routes/home home-page/view

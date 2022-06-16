@@ -28,16 +28,6 @@
 (def em-space \u2003)
 (def nbsp non-breaking-space)
 
-(defn image-square-thumb [image href]
-  (let
-   [img-src (:image-url image)
-    inner
-    (if img-src
-      [:img.position-absolute.object-contain.object-center.h-full.w-full.p-1.bg-content {:src img-src}]
-      [:span.d-block.position-absolute.h-full.w-full.bg-gray-400 " "])]
-
-    [:div.square-container.position-relative.rounded.overflow-hidden.border.border-gray-200
-     (if href [:a {:href href} inner] inner)]))
 
 (defn error-view [errors]
   (let [has-401 (some #(= 401 (-> % :extensions :code)) errors)]
@@ -90,7 +80,7 @@
 (defn loading [loading-text]
   [:div.text-center.fw-light {:style {:color "#cccccc"}}
    (cond loading-text [:div.mb-3 loading-text])
-   [:div.text-5xl.show-after-1sec [spinner-clock]]])
+   [:div.show-after-1sec {:style {:font-size "3rem"}} [spinner-clock]]])
 
 ; ; Intl stuff
 (defn format-date [style date]

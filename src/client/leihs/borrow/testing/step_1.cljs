@@ -49,22 +49,22 @@
     [:section.mx-3.my-4
      [:<>
       [:header.mb-3
-       [:h1.text-3xl.font-extrabold.leading-tight "Step 1"]
-       [:p.mt-2.text-color-muted.text-sm
+       [:h1 "Step 1"]
+       [:p.mt-2.small
         [:a {:href (routing/path-for ::routes/testing-step-2)} "-> Step 2"]]]
       [:div "running-mutations-ids:"]
-      [:pre#mutation-ids.text-xs {:style {:white-space :pre-wrap}}
+      [:pre#mutation-ids.very-small {:style {:white-space :pre-wrap}}
        (pp (or running-mutations-ids []))]
       [:div "running-requests:"]
-      [:pre#requests.text-xs {:style {:white-space :pre-wrap}}
+      [:pre#requests.very-small {:style {:white-space :pre-wrap}}
        (pp (or running-requests {}))]
       [:br]
-      [:div.flex-auto.w-1_2
-       [:button.px-4.py-2.w-100.rounded-lg.bg-success.text-color-content-inverse.font-semibold.text-lg
+      [:div
+       [:button.btn.btn-success.px-4.py-2.w-100
         {:on-click #(dispatch [::query sleep-secs])}
         "query"]]
       [:br]
-      [:div.flex-auto.w-1_2
-       [:button.px-4.py-2.w-100.rounded-lg.bg-danger.text-color-content-inverse.font-semibold.text-lg
+      [:div
+       [:button.btn.btn-danger.px-4.py-2.w-100
         {:on-click #(dispatch [::mutation sleep-secs])}
         "mutate"]]]]))

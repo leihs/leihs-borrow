@@ -51,5 +51,5 @@
        errors [ui/error-view errors]
        :else
        [:<>
-        [:pre.text-xs {:style {:white-space :pre-wrap}}
+        [:pre {:style {:white-space :pre-wrap}}
          (js/JSON.stringify (clj->js data) 0 2)]])]))

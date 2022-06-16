@@ -13,7 +13,6 @@
    [:meta {:name "viewport"
            :content "width=device-width, initial-scale=1, shrink-to-fit=no"}]
 
-   (hiccup.page/include-css (cache-buster/cache-busted-path "/app/borrow/css/styles/tmp-styles.css"))
    (hiccup.page/include-css (cache-buster/cache-busted-path "/app/borrow/css/theme-mobile/bootstrap-leihs-mobile.css"))])
 
 (defn not-found-handler [_request]
@@ -32,11 +31,11 @@
           [:body
            [:div#app
             [:noscript
-             [:div.p-4.text-monospace
+             [:div.p-4
               {:style "height: 100vh; text-align: center;"}
               [:h1.pt-4.pb-4 "Leihs New Borrow"]
-              [:p.italic.font-black.text-red-800 "This application requires JavaScript."]]]
-            [:pre.text-monospace.text-center {:style "line-height: 100vh"}
+              [:p.fw-bold "This application requires JavaScript."]]]
+            [:pre.text-center {:style "line-height: 100vh"}
              "loading…"]]]
           #_(hiccup.page/include-js (cache-buster/cache-busted-path
                                      "/borrow/leihs-shared-bundle.js"))

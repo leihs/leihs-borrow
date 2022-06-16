@@ -148,14 +148,15 @@
 
 ;-; VIEWS
 (defn form-line [name label input-props]
-  [:label.row
-   [:span.text-xs.col-3.col-form-label
-    (str label " ")]
-   [:div.col-9
+  [:> UI/Components.Design.Section {:title label}
+   [:label.visually-hidden {:html-for name} label]
+
+   [:div
     [:input
      (merge
       input-props
-      {:name name
+      {:id name
+       :name name
        :placeholder label
        :class (str "form-control " (get input-props :class))
        :style (merge (get input-props :style))})]]])

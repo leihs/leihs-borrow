@@ -84,7 +84,7 @@
        is-loading? [ui/loading]
        errors [ui/error-view errors]
        :else
-       [:<>
+       [:> UI/Components.Design.Stack {:space 4}
         (when some-not-reservable?
           [:<>
            [:div {:class "text-danger"}
@@ -101,11 +101,11 @@
            :required true
            :min start-date
            :value end-date}]]
-        [:div.flex-auto.w-1_2
-         [:button.px-4.py-2.w-100.rounded-lg.bg-content-inverse.text-color-content-inverse.font-semibold.text-lg
+        [:> UI/Components.Design.ActionButtonGroup
+         [:button.btn.btn-primary
           {:on-click #(dispatch [::apply template-id start-date end-date])}
           "Apply"]]
         [:br]
-        [:h2.font-bold.text-xl [:mark "Template Data"]]
-        [:pre.text-xs {:style {:white-space :pre-wrap}}
+        [:h2 "Template Data"]
+        [:pre {:style {:white-space :pre-wrap}}
          (js/JSON.stringify (clj->js template) 0 2)]])]))
