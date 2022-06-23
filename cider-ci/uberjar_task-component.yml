@@ -17,4 +17,10 @@ scripts:
       install-ruby-passed: { script_key: install-ruby }
     body: |
       cd ${LEIHS_BORROW_DIR}
+
+      # build with docker, prime docker cache
+      IMAGE_NAME="$DIST_IMAGE_NAME" \
+      VERSION_NAME="$DIST_VERSION_NAME" \
+        bin/docker-build
+
       USE_DOCKER=YES bin/build
