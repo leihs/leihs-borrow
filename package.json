@@ -1,16 +1,4 @@
 {
-  "dependencies": {
-    "autolinker": "^3.14.1",
-    "create-react-class": "^15.6.3",
-    "date-fns": "^2.9.0",
-    "highlight.js": "^9.18.1",
-    "intl-messageformat": "^9.9.0",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "react-flip-move": "3.0.3",
-    "react-highlight.js": "1.0.7",
-    "tslib": "^2.3.1"
-  },
   "scripts": {
     "graphql": "graphql",
     "graphql-schema-diff": "graphql-schema-diff",
@@ -19,9 +7,14 @@
   "devDependencies": {
     "@eins78/graphql-cli": "4.0.1",
     "@eins78/graphql-schema-diff": "0.7.0",
-    "@prettier/plugin-ruby": "^2.0.0",
-    "prettier": "^1.18.2",
-    "shadow-cljs": "^2.10.21"
+    "autolinker": "^3.15.0",
+    "date-fns": "^2.28.0",
+    "highlight.js": "^11.5.1",
+    "intl-messageformat": "^10.1.0",
+    "prettier": "^2.7.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "shadow-cljs": "^2.19.5"
   },
   "engines": {
     "node": ">=14.17.0"

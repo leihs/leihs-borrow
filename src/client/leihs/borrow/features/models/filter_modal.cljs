@@ -16,7 +16,7 @@
    [leihs.borrow.lib.helpers :as h :refer [log spy]]
    [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton UiDateRangePicker]]
    [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.core.core :refer [remove-blanks presence update-vals]]
+   [leihs.core.core :refer [remove-blanks presence]]
    ["date-fns" :as date-fns]
    ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]))
@@ -36,8 +36,7 @@
            (let [known-filter-keys [:term :pool-id :only-available :start-date :end-date :quantity]]
              (->> db
                   :routing/routing :bidi-match :query-params
-                  ((fn [h] (select-keys h known-filter-keys)))
-                  (update-vals #(or % ""))))))
+                  ((fn [h] (update-vals (select-keys h known-filter-keys) #(or % ""))))))))
 
 (reg-sub ::pools-with-reservable-items
          :<- [::current-user/current-profile]

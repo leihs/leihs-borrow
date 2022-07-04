@@ -23,8 +23,8 @@
     },
 
     {
-      "label": "Frontend Development Services",
-      "detail": "start all services (assumes preparations steps already ran)",
+      "label": "Frontend Development Services (including Leihs UI)",
+      "detail": "(assumes preparations steps already ran)",
       "dependsOn": [
         "env: switch to dev",
         "backend-dev",
@@ -33,6 +33,17 @@
         "leihs-ui: watch lib",
         "leihs-ui: watch theme",
         "storybook"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend Development Services (without Leihs UI)",
+      "detail": "(assumes preparations steps already ran)",
+      "dependsOn": [
+        "env: switch to dev",
+        "backend-dev",
+        "frontend-dev",
+        "legacy-dev"
       ],
       "problemMatcher": []
     },

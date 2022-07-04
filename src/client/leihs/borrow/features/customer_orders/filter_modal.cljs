@@ -16,7 +16,7 @@
    [leihs.borrow.lib.helpers :refer [log spy]]
    [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton]]
    [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.core.core :refer [remove-nils presence update-vals]]
+   [leihs.core.core :refer [remove-nils presence]]
    ["date-fns" :as date-fns]
    ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]))
@@ -26,7 +26,7 @@
                 (assoc-in db [:ls ::options] query-params)))
 
 (reg-sub ::options
-         (fn [db _] (->> db :ls ::options (update-vals #(or % "")))))
+         (fn [db _] (update-vals (->> db :ls ::options) #(or % ""))))
 
 (reg-sub ::inventory-pools
          :<- [::current-user/current-profile]
