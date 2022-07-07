@@ -41,8 +41,12 @@ step "I see the following lines in the :name section:" do |section_name, table|
   items_section = find_ui_section(title: section_name)
   item_lines = get_ui_list_cards(items_section)
   # ignore keys that are not present in the expectations table by removing them:
-  expected_item_lines = item_lines.map { |l| l.slice(*table.headers.map(&:to_sym)) }
-  expect(expected_item_lines).to eq symbolize_hash_keys(table.hashes)
+  actual_lines = item_lines.map { |l| l.slice(*table.headers.map(&:to_sym)) }
+
+  # interpolate dates in expected foot
+  expected_lines = table.hashes.map { |h| h["foot"].nil? ? h : h.merge({ "foot" => interpolate_dates_short(h["foot"]) }) }
+
+  expect(actual_lines).to eq symbolize_hash_keys(expected_lines)
 end
 
 step "I click on the card with title :title" do |title|

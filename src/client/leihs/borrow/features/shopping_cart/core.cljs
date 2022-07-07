@@ -460,7 +460,7 @@
 
       [:> UI/Components.Design.ListCard.Foot
        [:> UI/Components.Design.Badge
-        (merge action-props {:as "button" :class "stretched-link" :colorClassName (when invalid? " bg-danger")})
+        (merge action-props {:colorClassName (when invalid? " bg-danger")})
         duration]]]]))
 
 (defn delegation-section []

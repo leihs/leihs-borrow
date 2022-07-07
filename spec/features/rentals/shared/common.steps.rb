@@ -1,18 +1,3 @@
-def sanitize_date(d)
-  case d
-  when "yesterday"
-    Date.yesterday.to_s
-  when "today"
-    Date.today.to_s
-  when "tomorrow"
-    Date.tomorrow.to_s
-  when "in a week"
-    (Date.today + 1.week).to_s
-  else
-    d
-  end
-end
-
 step "a customer order with title :title and the following reservations exists for the user:" do |title, table|
   table.hashes.each do |h|
     database.transaction do
@@ -55,8 +40,8 @@ step "a customer order with title :title and the following reservations exists f
                           inventory_pool_id: p.id,
                           user_id: u.id,
                           status: h["state"],
-                          start_date: sanitize_date(h["start-date"]),
-                          end_date: sanitize_date(h["end-date"]),
+                          start_date: h["start-date"] ? Date.parse(h["start-date"]) : custom_eval(h["relative-start-date"]).to_date,
+                          end_date: h["end-date"] ? Date.parse(h["end-date"]) : custom_eval(h["relative-end-date"]).to_date,
                           model_id: m.try(:id),
                           option_id: opt.try(:id),
                           order_id: po.id,
@@ -80,11 +65,6 @@ step "the following items exist:" do |table|
   end
 end
 
-# "date is ${Time.now}" -> "date is 31/12/21"
-def interpolate_dates_short(s)
-  custom_interpolation(s, ->(o) { Locales.format_date_short(o, @user) })
-end
-
 # Override for the equally named step, but with date interpolation
 step "the page subtitle is :subtitle" do |subtitle|
   subtitle = interpolate_dates_short(subtitle)
@@ -98,19 +78,6 @@ step "I see the following status rows in the :name section:" do |section_name, t
   # ignore keys that are not present in the expectations table by removing them:
   actual_status_rows = status_rows.map { |l| l.slice(*table.headers.map(&:to_sym)) }
   expect(actual_status_rows).to eq symbolize_hash_keys(table.hashes)
-end
-
-# Override for the equally named step, but with date interpolation for the foot
-step "I see the following lines in the :name section:" do |section_name, table|
-  items_section = find_ui_section(title: section_name)
-  item_lines = get_ui_list_cards(items_section)
-  # ignore keys that are not present in the expectations table by removing them:
-  actual_lines = item_lines.map { |l| l.slice(*table.headers.map(&:to_sym)) }
-
-  # interpolate dates in expected foot
-  expected_lines = table.hashes.map { |h| h.merge({ "foot" => interpolate_dates_short(h["foot"]) }) }
-
-  expect(actual_lines).to eq symbolize_hash_keys(expected_lines)
 end
 
 step "I accept the :title dialog" do |title|

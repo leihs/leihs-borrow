@@ -23,9 +23,9 @@ Feature: Rentals - Show
 
   Scenario: General example (2 approved items)
     Given a customer order with title "Order 1" and the following reservations exists for the user:
-      | user | quantity | model       | pool   | start-date | end-date | state    |
-      | user | 1        | Tripod      | Pool B | today      | tomorrow | approved |
-      | user | 1        | DSLR Camera | Pool A | today      | tomorrow | approved |
+      | user | quantity | model       | pool   | relative-start-date | relative-end-date | state    |
+      | user | 1        | Tripod      | Pool B | ${Date.today}       | ${Date.tomorrow}  | approved |
+      | user | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | approved |
 
     When I log in as the user
     And I visit "/app/borrow/rentals/"
@@ -50,34 +50,34 @@ Feature: Rentals - Show
     Unlike in the shopping cart each single item is listed (no grouping by same period, pool and model)
 
     Given a customer order with title "Order 1" and the following reservations exists for the user:
-      | user | quantity | model       | pool   | start-date | end-date   | state    |
-      | user | 1        | DSLR Camera | Pool A | 2101-02-01 | 2101-02-02 | approved |
-      | user | 1        | DSLR Camera | Pool A | 2101-04-01 | 2101-04-02 | approved |
-      | user | 1        | DSLR Camera | Pool B | 2101-02-01 | 2101-02-02 | approved |
-      | user | 1        | DSLR Camera | Pool B | 2101-03-01 | 2101-03-02 | approved |
-      | user | 1        | Xylophone   | Pool B | 2101-03-01 | 2101-03-02 | approved |
-      | user | 2        | Tripod      | Pool B | 2101-02-01 | 2101-02-02 | approved |
+      | user | quantity | model       | pool   | relative-start-date | relative-end-date   | state    |
+      | user | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}    | approved |
+      | user | 1        | DSLR Camera | Pool A | ${60.days.from_now} | ${61.days.from_now} | approved |
+      | user | 1        | DSLR Camera | Pool B | ${Date.today}       | ${Date.tomorrow}    | approved |
+      | user | 1        | DSLR Camera | Pool B | ${30.days.from_now} | ${31.days.from_now} | approved |
+      | user | 1        | Xylophone   | Pool B | ${30.days.from_now} | ${31.days.from_now} | approved |
+      | user | 2        | Tripod      | Pool B | ${Date.today}       | ${Date.tomorrow}    | approved |
 
     When I log in as the user
     And I visit "/app/borrow/rentals/"
     And I click on "Order 1"
 
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                            |
-      | 1× DSLR Camera | Pool A | 2 days from 01/02/01 To pick up |
-      | 1× DSLR Camera | Pool B | 2 days from 01/02/01 To pick up |
-      | 1× Tripod      | Pool B | 2 days from 01/02/01 To pick up |
-      | 1× Tripod      | Pool B | 2 days from 01/02/01 To pick up |
-      | 1× DSLR Camera | Pool B | 2 days from 01/03/01 To pick up |
-      | 1× Xylophone   | Pool B | 2 days from 01/03/01 To pick up |
-      | 1× DSLR Camera | Pool A | 2 days from 01/04/01 To pick up |
+      | title          | body   | foot                                       |
+      | 1× DSLR Camera | Pool A | 2 days from ${Date.today} To pick up       |
+      | 1× DSLR Camera | Pool B | 2 days from ${Date.today} To pick up       |
+      | 1× Tripod      | Pool B | 2 days from ${Date.today} To pick up       |
+      | 1× Tripod      | Pool B | 2 days from ${Date.today} To pick up       |
+      | 1× DSLR Camera | Pool B | 2 days from ${30.days.from_now} To pick up |
+      | 1× Xylophone   | Pool B | 2 days from ${30.days.from_now} To pick up |
+      | 1× DSLR Camera | Pool A | 2 days from ${60.days.from_now} To pick up |
 
 
   Scenario: Status: 2 picked up items
     Given a customer order with title "Order 1" and the following reservations exists for the user:
-      | user | quantity | model       | pool   | start-date | end-date | state  |
-      | user | 1        | Tripod      | Pool B | today      | tomorrow | signed |
-      | user | 1        | DSLR Camera | Pool A | today      | tomorrow | signed |
+      | user | quantity | model       | pool   | relative-start-date | relative-end-date | state  |
+      | user | 1        | Tripod      | Pool B | ${Date.today}       | ${Date.tomorrow}  | signed |
+      | user | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | signed |
 
     When I log in as the user
     And I visit "/app/borrow/rentals/"

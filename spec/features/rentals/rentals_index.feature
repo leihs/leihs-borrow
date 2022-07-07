@@ -19,11 +19,11 @@ Feature: Rentals
 
   Scenario: Switching profile
     Given a customer order with title "Order 1" and the following reservations exists for the user:
-      | user | quantity | model       | pool   | start-date | end-date   | state    |
-      | user | 1        | DSLR Camera | Pool A | 2101-02-01 | 2101-02-02 | approved |
+      | user | quantity | model       | pool   | relative-start-date | relative-end-date | state    |
+      | user | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | approved |
     And a customer order with title "Order 2" and the following reservations exists for the user:
-      | user         | quantity | model       | pool   | start-date | end-date   | state    |
-      | Delegation D | 1        | DSLR Camera | Pool A | 2101-03-01 | 2101-03-02 | approved |
+      | user         | quantity | model       | pool   | relative-start-date | relative-end-date   | state    |
+      | Delegation D | 1        | DSLR Camera | Pool A | ${30.days.from_now} | ${31.days.from_now} | approved |
     When I log in as the user
     And I visit "/app/borrow/rentals/"
     Then I see the following orders:
@@ -38,12 +38,12 @@ Feature: Rentals
 
   Scenario: Filtering according state
     Given a customer order with title "Order 1" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date   | state    |
-      | 1        | DSLR Camera | Pool A | 2101-02-01 | 2101-02-02 | approved |
+      | quantity | model       | pool   | relative-start-date | relative-end-date | state    |
+      | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | approved |
     And a customer order with title "Order 2" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date   | state     |
-      | 1        | DSLR Camera | Pool A | 2101-03-01 | 2101-03-02 | approved  |
-      | 1        | Tripod      | Pool B | 2101-03-01 | 2101-03-02 | submitted |
+      | quantity | model       | pool   | relative-start-date | relative-end-date   | state     |
+      | 1        | DSLR Camera | Pool A | ${30.days.from_now} | ${31.days.from_now} | approved  |
+      | 1        | Tripod      | Pool B | ${30.days.from_now} | ${31.days.from_now} | submitted |
     When I log in as the user
     And I visit "/app/borrow/rentals/"
     Then I see the following orders:
@@ -76,11 +76,11 @@ Feature: Rentals
       | quantity | model       | pool   | start-date | end-date   | state  | pickup-date |
       | 1        | DSLR Camera | Pool A | 1900-01-01 | 1900-01-02 | closed | 1900-01-01  |
     And a customer order with title "Order 2" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date | state  | pickup-date |
-      | 1        | DSLR Camera | Pool A | 1900-01-01 | tomorrow | signed | 1900-01-01  |
+      | quantity | model       | pool   | start-date | relative-end-date | state  | pickup-date |
+      | 1        | DSLR Camera | Pool A | 1900-01-01 | ${Date.tomorrow}  | signed | 1900-01-01  |
     And a customer order with title "Order 3" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date  | state  | pickup-date |
-      | 1        | DSLR Camera | Pool A | 1900-01-01 | in a week | signed | today       |
+      | quantity | model       | pool   | start-date | relative-end-date  | state  | pickup-date |
+      | 1        | DSLR Camera | Pool A | 1900-01-01 | ${7.days.from_now} | signed | today       |
     And a customer order with title "Order 4" and the following reservations exists for the user:
       | quantity | model       | pool   | start-date | end-date   | state    | pickup-date |
       | 1        | DSLR Camera | Pool A | 9999-12-30 | 9999-12-31 | approved |             |
@@ -113,12 +113,12 @@ Feature: Rentals
 
   Scenario: Filtering according to inventory pool
     Given a customer order with title "Order 1" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date   | state    |
-      | 1        | DSLR Camera | Pool A | 2101-02-01 | 2101-02-02 | approved |
+      | quantity | model       | pool   | relative-start-date | relative-end-date | state    |
+      | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | approved |
     And a customer order with title "Order 2" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date   | state     |
-      | 1        | DSLR Camera | Pool A | 2101-03-01 | 2101-03-02 | approved  |
-      | 1        | Tripod      | Pool B | 2101-03-01 | 2101-03-02 | submitted |
+      | quantity | model       | pool   | relative-start-date | relative-end-date  | state     |
+      | 1        | DSLR Camera | Pool A | ${30.day.from_now}  | ${31.day.from_now} | approved  |
+      | 1        | Tripod      | Pool B | ${30.day.from_now}  | ${31.day.from_now} | submitted |
     When I log in as the user
     And I visit "/app/borrow/rentals/"
     Then I see the following orders:
@@ -143,12 +143,12 @@ Feature: Rentals
 
   Scenario: Filtering according to search term
     Given a customer order with title "Order 1" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date   | state    |
-      | 1        | DSLR Camera | Pool A | 2101-02-01 | 2101-02-02 | approved |
+      | quantity | model       | pool   | relative-start-date | relative-end-date | state    |
+      | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | approved |
     And a customer order with title "Order 2" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date   | state     |
-      | 1        | DSLR Camera | Pool A | 2101-03-01 | 2101-03-02 | approved  |
-      | 1        | Tripod      | Pool B | 2101-03-01 | 2101-03-02 | submitted |
+      | quantity | model       | pool   | relative-start-date | relative-end-date  | state     |
+      | 1        | DSLR Camera | Pool A | ${30.day.from_now}  | ${31.day.from_now} | approved  |
+      | 1        | Tripod      | Pool B | ${30.day.from_now}  | ${31.day.from_now} | submitted |
     When I log in as the user
     And I visit "/app/borrow/rentals/"
     Then I see the following orders:

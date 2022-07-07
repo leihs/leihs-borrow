@@ -20,25 +20,25 @@ Feature: Shopping Cart - Editing Reservations
   Scenario: Editing a the quantity of a reservation
 
     Given the following reservations exist for the user:
-      | quantity | model       | pool   | start-date | end-date   |
-      | 1        | DSLR Camera | Pool A | 2032-02-01 | 2032-02-03 |
-      | 1        | Tripod      | Pool A | 2032-02-01 | 2032-02-02 |
+      | quantity | model       | pool   | relative-start-date | relative-end-date  |
+      | 1        | DSLR Camera | Pool A | ${Date.today}       | ${2.days.from_now} |
+      | 1        | Tripod      | Pool A | ${Date.today}       | ${1.day.from_now}  |
     And I log in as the user
     When I navigate to the cart
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                 |
-      | 1× DSLR Camera | Pool A | 3 days from 01/02/32 |
-      | 1× Tripod      | Pool A | 2 days from 01/02/32 |
+      | title          | body   | foot                      |
+      | 1× DSLR Camera | Pool A | 3 days from ${Date.today} |
+      | 1× Tripod      | Pool A | 2 days from ${Date.today} |
 
-    When I click on "3 days from 01/02/32"
+    When I click on the card with title "1× DSLR Camera"
     And I see the "Edit reservation" dialog
     And I see a form inside the dialog
     Then the form has exactly these fields:
-      | label          | value           |
-      | Inventory pool | Pool A (max. 3) |
-      | Quantity       | 1               |
-      | From           | 01/02/2032      |
-      | Until          | 03/02/2032      |
+      | label          | value              |
+      | Inventory pool | Pool A (max. 3)    |
+      | Quantity       | 1                  |
+      | From           | ${Date.today}      |
+      | Until          | ${2.days.from_now} |
 
     When I enter "3" in the "Quantity" field
     Then the "Quantity" field has "3"
@@ -56,9 +56,9 @@ Feature: Shopping Cart - Editing Reservations
     When I click on "Confirm"
     And the "Edit reservation" dialog has closed
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                 |
-      | 3× DSLR Camera | Pool A | 3 days from 01/02/32 |
-      | 1× Tripod      | Pool A | 2 days from 01/02/32 |
+      | title          | body   | foot                      |
+      | 3× DSLR Camera | Pool A | 3 days from ${Date.today} |
+      | 1× Tripod      | Pool A | 2 days from ${Date.today} |
 
     When I click on "Send order"
     And I enter "My Movie" in the "Title" field
@@ -68,7 +68,7 @@ Feature: Shopping Cart - Editing Reservations
       """
       Order was submitted but still needs to be approved!
       My Movie
-      Between 01/02/32 and 03/02/32, 4 items
+      Between ${Date.today} and ${2.days.from_now}, 4 items
       """
     Then I have been redirected to the orders list
     Then the newly created order in the DB has:
@@ -78,20 +78,20 @@ Feature: Shopping Cart - Editing Reservations
   Scenario: Deleting a reservation
 
     Given the following reservations exist for the user:
-      | quantity | model       | pool   | start-date | end-date   |
-      | 1        | DSLR Camera | Pool A | 2032-02-01 | 2032-02-03 |
-      | 1        | Tripod      | Pool A | 2032-02-01 | 2032-02-02 |
+      | quantity | model       | pool   | relative-start-date | relative-end-date  |
+      | 1        | DSLR Camera | Pool A | ${Date.today}       | ${2.days.from_now} |
+      | 1        | Tripod      | Pool A | ${Date.today}       | ${Date.tomorrow}   |
     And I log in as the user
     When I navigate to the cart
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                 |
-      | 1× DSLR Camera | Pool A | 3 days from 01/02/32 |
-      | 1× Tripod      | Pool A | 2 days from 01/02/32 |
+      | title          | body   | foot                      |
+      | 1× DSLR Camera | Pool A | 3 days from ${Date.today} |
+      | 1× Tripod      | Pool A | 2 days from ${Date.today} |
 
-    When I click on "3 days from 01/02/32"
+    When I click on the card with title "1× DSLR Camera"
     And I see the "Edit reservation" dialog
     And I click on "Remove reservation"
     And the "Edit reservation" dialog has closed
     Then I see the following lines in the "Items" section:
-      | title     | body   | foot                 |
-      | 1× Tripod | Pool A | 2 days from 01/02/32 |
+      | title     | body   | foot                      |
+      | 1× Tripod | Pool A | 2 days from ${Date.today} |

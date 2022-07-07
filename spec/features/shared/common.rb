@@ -42,3 +42,13 @@ def custom_interpolation(spec_string, format_func = ->(x) { x })
     format_func.call(custom_eval(s))
   end
 end
+
+# "date is ${Time.now}" -> "date is 31/12/21"
+def interpolate_dates_short(s)
+  custom_interpolation(s, ->(o) { Locales.format_date_short(o, @user) })
+end
+
+# "date is ${Time.now}" -> "date is 31/12/2021"
+def interpolate_dates_long(s)
+  custom_interpolation(s, ->(o) { Locales.format_date(o, @user) })
+end

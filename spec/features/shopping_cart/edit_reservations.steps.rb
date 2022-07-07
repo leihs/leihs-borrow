@@ -46,12 +46,15 @@ step "the form has exactly these fields:" do |table|
     end
   end.flatten
 
-  expect(form_fields).to eq(symbolize_hash_keys(table.hashes))
+  # interpolate dates form values
+  expected_fields = table.hashes.map { |h| h.merge({ "value" => interpolate_dates_long(h["value"]) }) }
+
+  expect(form_fields).to eq(symbolize_hash_keys(expected_fields))
 end
 
 step "I accept the :title dialog with the text:" do |title, text|
   within(find_ui_modal_dialog(title: title)) do
-    expect(find(".modal-body").text).to eq text
+    expect(find(".modal-body").text).to eq interpolate_dates_short(text)
     click_on "OK"
   end
 end
