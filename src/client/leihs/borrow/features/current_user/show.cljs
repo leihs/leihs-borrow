@@ -11,7 +11,6 @@
                                       reg-fx
                                       subscribe
                                       dispatch]]
-   [leihs.borrow.lib.localstorage :as ls]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.components :as ui]
    [leihs.borrow.lib.helpers :as h]

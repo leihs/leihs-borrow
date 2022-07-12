@@ -2,7 +2,6 @@
   (:require
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [reagent.core :as r]
-   [akiroz.re-frame.storage :refer [persist-db]]
    [re-frame.core :as rf]
    [re-frame.db :as db]
    [re-graph.core :as re-graph]
@@ -15,7 +14,6 @@
                                       dispatch]]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.lib.errors :as errors]
-   [leihs.borrow.lib.localstorage :as ls]
    [leihs.borrow.lib.helpers :as h]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.pagination :as pagination]

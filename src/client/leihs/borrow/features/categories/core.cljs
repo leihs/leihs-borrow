@@ -12,7 +12,6 @@
                                       reg-fx
                                       subscribe
                                       dispatch]]
-   [leihs.borrow.lib.localstorage :as ls]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.pagination :as pagination]
    [leihs.borrow.lib.errors :as errors]

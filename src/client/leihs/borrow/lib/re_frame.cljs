@@ -1,28 +1,28 @@
 (ns leihs.borrow.lib.re-frame
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [camel-snake-kebab.core :as csk]
-    [leihs.borrow.lib.localstorage :refer [localstorage-interceptor]]
-    [leihs.borrow.lib.helpers :as help]
-    [re-frame.core :as rf]
-    [re-graph.core :as re-graph]
-    [re-frame.std-interceptors :refer [path]]
-    [shadow.resource :as rc]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [camel-snake-kebab.core :as csk]
+   [leihs.borrow.lib.localstorage :refer [localstorage-interceptor]]
+   [leihs.borrow.lib.helpers :as help]
+   [re-frame.core :as rf]
+   [re-graph.core :as re-graph]
+   [re-frame.std-interceptors :refer [path]]
+   [shadow.resource :as rc]))
 
 (def kebab-case-data-and-errors-interceptor
   (rf/->interceptor
-    :id :kebab-case-data-and-errors
-    :before
-    (fn [ctx]
-      (let [event (rf/get-coeffect ctx :event)]
-        (rf/assoc-coeffect ctx
-                           :event
-                           (map #(-> %
-                                     (cond-> (-> % :errors map?)
-                                       (update :errors help/kebab-case-keys))
-                                     (cond-> (-> % :data map?)
-                                       (update :data help/kebab-case-keys)))
-                                event))))))
+   :id :kebab-case-data-and-errors
+   :before
+   (fn [ctx]
+     (let [event (rf/get-coeffect ctx :event)]
+       (rf/assoc-coeffect ctx
+                          :event
+                          (map #(-> %
+                                    (cond-> (-> % :errors map?)
+                                      (update :errors help/kebab-case-keys))
+                                    (cond-> (-> % :data map?)
+                                      (update :data help/kebab-case-keys)))
+                               event))))))
 
 (def base-interceptors [localstorage-interceptor
                         kebab-case-data-and-errors-interceptor])
