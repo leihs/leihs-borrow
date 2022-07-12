@@ -17,7 +17,7 @@
                                       dispatch
                                       dispatch-sync]]
    [leihs.borrow.lib.errors :as errors]
-   [leihs.borrow.lib.localstorage :as ls]
+   [leihs.borrow.lib.browser-storage :as browser-storage]
    [leihs.borrow.lib.helpers :as h]
    leihs.borrow.lib.re-graph
    [leihs.borrow.client.routes :as routes]
@@ -27,27 +27,28 @@
 
 (def last-fetched (atom nil))
 
-(defn fetch-and-save [callback]
+(defn fetch-and-save [callback last-delegation-id]
   (let [db @db/app-db
-        user-id (get-in db [:ls ::data :user :id])
-        delegation-id (get-in db [:ls ::data :current-delegation :id])]
+        user-id (get-in db [:ls ::data :user :id])]
     (if (and user-id
              (datefn/isBefore (js/Date.)
                               (datefn/addHours @last-fetched 1)))
       (callback)
-      (POST (str js/window.location.origin
-                 (-> leihs.borrow.lib.re-graph/config :http :url))
-        {:params {:query query
-                  :variables {:includeDelegation (boolean delegation-id)
-                              :delegationId delegation-id}}
-         :headers leihs.borrow.lib.re-graph/headers
-         :format :json
-         :handler #(do
-                     (dispatch-sync [::on-fetched-data (h/keywordize-keys %)])
-                     (if @last-fetched
-                       (swap! last-fetched datefn/addHours 1)
-                       (reset! last-fetched (js/Date.)))
-                     (callback))}))))
+      (let [current-delegation-id (get-in db [:ls ::data :current-delegation :id])
+            delegation-id (if user-id current-delegation-id last-delegation-id)]
+        (POST (str js/window.location.origin
+                   (-> leihs.borrow.lib.re-graph/config :http :url))
+          {:params {:query query
+                    :variables {:includeDelegation (boolean delegation-id)
+                                :delegationId delegation-id}}
+           :headers leihs.borrow.lib.re-graph/headers
+           :format :json
+           :handler #(do
+                       (dispatch-sync [::on-fetched-data (h/keywordize-keys %)])
+                       (if @last-fetched
+                         (swap! last-fetched datefn/addHours 1)
+                         (reset! last-fetched (js/Date.)))
+                       (callback))})))))
 
 (reg-event-fx
  ::fetch
@@ -64,7 +65,7 @@
                         session-id (:session-id current-user-data)
                         ls-session-id (-> db :ls ::data :session-id)]
                     (list (when (not= session-id ls-session-id)
-                            [::ls/clear])
+                            [::browser-storage/clear-session-storage])
                           [::set (merge current-user-data
                                         (when (and current-delegation
                                                    (some #(= (:id %) (:id current-delegation))

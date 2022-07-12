@@ -25,6 +25,7 @@
    [leihs.borrow.features.debug-page.core :as debug-page]
    [leihs.borrow.features.categories.show :as category-show]
    [leihs.borrow.features.current-user.show :as current-user-show]
+   [leihs.borrow.features.current-user.profile-tracker :refer [track-last-delegation-id]]
    [leihs.borrow.features.customer-orders.index :as customer-orders-index]
    [leihs.borrow.features.customer-orders.show :as customer-orders-show]
    [leihs.borrow.features.favorite-models.core :as favorite-models]
@@ -134,6 +135,7 @@
      (re-graph/init) ; dispatch-sync
      (dispatch-sync [::init-app-db languages])
      (dispatch-sync [:routing/init-routing routes/routes-map])
+     (track-last-delegation-id)
      ; start the ui
      (mount-root))))
 

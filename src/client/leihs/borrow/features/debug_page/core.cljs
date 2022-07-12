@@ -10,7 +10,7 @@
                                       dispatch
                                       subscribe]]
    [leihs.borrow.lib.translate :refer [t]]
-   [leihs.borrow.lib.localstorage :as ls]
+   [leihs.borrow.lib.browser-storage :as browser-storage]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.components :as ui]
@@ -81,8 +81,11 @@
                                          :one-line true}
        "Graph" [:i "i"] "QL API console"]]]
 
+    [:> UI/Components.Design.Section {:title "Session storage" :collapsible true}
+     [:button.btn.btn-secondary.me-2 {:type :button :on-click #(dispatch [::browser-storage/clear-session-storage])} "Clear :ls"]]
+
     [:> UI/Components.Design.Section {:title "Local storage" :collapsible true}
-     [:button.btn.btn-secondary {:type :button :on-click #(dispatch [::ls/clear])} "Clear :ls"]]
+     [:button.btn.btn-secondary.me-2 {:type :button :on-click #(dispatch [::browser-storage/clear-local-storage])} "Clear :ls2"]]
 
     [:> UI/Components.Design.Section {:title "Error views" :collapsible true}
      [:> UI/Components.Design.Stack {:space 4}

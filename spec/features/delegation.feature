@@ -78,3 +78,38 @@ Feature: Delegations
       """
       Item not available for current profile
       """
+
+  Scenario: Open a new window as delegation user
+    Given I log in as the user
+
+    When I click on the profile button
+    And I click on "DD"
+    Then the profile button shows "DD"
+
+    When I switch to a new window
+    And I visit "/app/borrow/"
+    Then the profile button shows "DD"
+
+    # Check that changing the profile in window 2 does not change window 1
+    When I click on the profile button
+    And I click on "UA"
+    And the profile button shows "UA"
+    And I go back to the first window
+    And I visit "/app/borrow/order"
+    Then the profile button shows "DD"
+
+  Scenario: Open a new window as personal user
+    Given I log in as the user
+    Then the profile button shows "UA"
+
+    When I switch to a new window
+    And I visit "/app/borrow/"
+    Then the profile button shows "UA"
+
+    # Check that changing the profile in window 2 does not change window 1
+    When I click on the profile button
+    And I click on "DD"
+    And the profile button shows "DD"
+    And I go back to the first window
+    And I visit "/app/borrow/order"
+    Then the profile button shows "UA"

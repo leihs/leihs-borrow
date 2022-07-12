@@ -1,4 +1,5 @@
 ; Copied from https://github.com/akiroz/re-frame-storage/blob/master/src/akiroz/re_frame/storage.cljs
+; Added support for session-storage.
 
 (ns leihs.borrow.lib.re-frame-storage
   (:require [re-frame.core :refer [reg-fx reg-cofx ->interceptor]]
@@ -25,13 +26,14 @@
 (def storage-atoms (atom {}))
 
 
-(defn register-store [store-key]
+(defn register-store [store-key session?]
   (when-not (@storage-atoms store-key)
     (swap! storage-atoms assoc store-key
-           (local-storage (atom nil) store-key))))
+           ((if session? session-storage local-storage) (atom nil) store-key))))
 
 (s/fdef register-store
-  :args (s/cat :store-key keyword?))
+  :args (s/cat :store-key keyword?
+               :session? boolean?))
 
 
 (defn ->store [store-key data]
@@ -52,8 +54,8 @@
 
 
 
-(defn reg-co-fx! [store-key {:keys [fx cofx]}]
-  (register-store store-key)
+(defn reg-co-fx! [store-key {:keys [fx cofx]} session?]
+  (register-store store-key session?)
   (when fx
     (reg-fx
      fx
@@ -69,11 +71,12 @@
 (s/def ::cofx keyword?)
 (s/fdef reg-co-fx!
   :args (s/cat :store-key keyword?
-               :handlers (s/keys :req-un [(or ::fx ::cofx)])))
+               :handlers (s/keys :req-un [(or ::fx ::cofx)])
+               :session? boolean?))
 
 
-(defn persist-db [store-key db-key]
-  (register-store store-key)
+(defn persist-db [store-key db-key session?]
+  (register-store store-key session?)
   (->interceptor
    :id (keyword (str db-key "->" store-key))
    :before (fn [context]
@@ -86,11 +89,12 @@
 
 (s/fdef persist-db
   :args (s/cat :store-key keyword?
-               :db-key keyword?))
+               :db-key keyword?
+               :session boolean?))
 
 
-(defn persist-db-keys [store-key db-keys]
-  (register-store store-key)
+(defn persist-db-keys [store-key db-keys session?]
+  (register-store store-key session?)
   (->interceptor
    :id (keyword (str (apply str (sort db-keys)) "->" store-key))
    :before (fn [context]
@@ -103,4 +107,5 @@
 
 (s/fdef persist-db-keys
   :args (s/cat :store-key keyword?
-               :db-keys (s/coll-of keyword?)))
+               :db-keys (s/coll-of keyword?)
+               :session? boolean?))

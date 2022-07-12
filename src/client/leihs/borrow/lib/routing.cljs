@@ -24,6 +24,7 @@
             [leihs.borrow.lib.errors :as errors]
             [leihs.borrow.lib.requests :as requests]
             [leihs.borrow.features.current-user.core :as current-user]
+            [leihs.borrow.features.current-user.profile-tracker :refer [get-last-delegation-id]]
             [leihs.borrow.features.languages.core :as languages]
             [leihs.borrow.client.routes :as routes]))
 
@@ -43,7 +44,8 @@
      (if-not pushy-instance
        (let [dispatch-fn (fn [arg]
                            (current-user/fetch-and-save
-                            #(dispatch [:routing/change-view arg])))
+                            #(dispatch [:routing/change-view arg])
+                            (get-last-delegation-id)))
              match-fn (fn [path]
                         (let [is-routed? (:handler (bidi/match-route routes path))]
                           (if is-routed? path false)))]

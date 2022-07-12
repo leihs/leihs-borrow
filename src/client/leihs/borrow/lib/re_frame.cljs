@@ -2,7 +2,7 @@
   (:require
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [camel-snake-kebab.core :as csk]
-   [leihs.borrow.lib.localstorage :refer [localstorage-interceptor]]
+   [leihs.borrow.lib.browser-storage :refer [local-storage-interceptor session-storage-interceptor]]
    [leihs.borrow.lib.helpers :as help]
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
@@ -24,7 +24,8 @@
                                       (update :data help/kebab-case-keys)))
                                event))))))
 
-(def base-interceptors [localstorage-interceptor
+(def base-interceptors [local-storage-interceptor
+                        session-storage-interceptor
                         kebab-case-data-and-errors-interceptor])
 
 (defn reg-event-db
