@@ -45,6 +45,12 @@
    :documentation-url
    (:documentation_link (settings/get tx))})
 
+(defn get-settings [{{:keys [tx]} :request} _ {user-id :id}]
+  (let [settings (settings/get tx)]
+    {:lending-terms-acceptance-required-for-order (:lending_terms_acceptance_required_for_order settings)
+     :lending-terms-url (:lending_terms_url settings)
+     :show-contact-details-on-customer-order (:show_contact_details_on_customer_order settings)}))
+
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
 ; (debug/debug-ns *ns*)

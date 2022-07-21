@@ -40,3 +40,39 @@ Feature: Shopping Cart - Filling out title and purpose
     When I click on the card with title "Movie Shoot"
     Then I see the page title "Movie Shoot"
     And I see "for my diploma film"
+
+  Scenario: Lending terms
+    Given lending term acceptance is turned on in settings
+    And I have one item in the cart ready to be submitted
+
+    And I log in as the user
+    And I navigate to the cart
+    And I click on "Send order"
+    And I enter "Movie Shoot" in the "Title" field
+
+    When I click on "Send"
+    Then the "Send order" dialog did not close
+
+    When I check "I accept the lending terms"
+    And I click on "Send"
+    Then I see the "Order submitted" dialog
+
+  Scenario: Contact details
+    Given contact details is turned on in settings
+    And I have one item in the cart ready to be submitted
+
+    And I log in as the user
+    And I navigate to the cart
+    And I click on "Send order"
+    And I enter "Movie Shoot" in the "Title" field
+
+    When I enter "Me at home" in the "Contact details" field
+    And I click on "Send"
+    And I accept the "Order submitted" dialog
+    Then I have been redirected to the orders list
+
+    When I click on the card with title "Movie Shoot"
+    Then I see the following text in the "Contact details" section:
+      """
+      Me at home
+      """

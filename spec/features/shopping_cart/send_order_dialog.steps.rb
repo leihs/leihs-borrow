@@ -29,9 +29,16 @@ step "the purpose contains :txt" do |txt|
   expect(find_field("Purpose").value).to eq txt
 end
 
-step "I accept the :title dialog with the text:" do |title, text|
-  within(find_ui_modal_dialog(title: title)) do
-    expect(find(".modal-body").text).to eq interpolate_dates_short(text)
-    click_on "OK"
-  end
+step "lending term acceptance is turned on in settings" do
+  Settings.first.update(lending_terms_acceptance_required_for_order: true)
+end
+
+step "the :title dialog did not close" do |title|
+  # Same as shared step "I see the :title dialog". Just so I can say "I click on the button, but the dialog did not close"
+  dialog = find_ui_modal_dialog(title: title)
+  expect(dialog).to be
+end
+
+step "contact details is turned on in settings" do
+  Settings.first.update(show_contact_details_on_customer_order: true)
 end

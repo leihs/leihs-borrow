@@ -51,7 +51,9 @@
      (-> db (assoc ::errors errors))
      (-> db
          (assoc-in [:ls ::data]
-                   (get-in data [:current-user :user :unsubmitted-order]))))))
+                   (get-in data [:current-user :user :unsubmitted-order]))
+         (assoc-in [:ls ::settings]
+                   (get-in data [:current-user :settings]))))))
 
 (defn pool-ids-with-borrowable-quantity [db]
   (let [quants (get-in db [::edit-mode
@@ -195,7 +197,11 @@
 (reg-event-db
  ::open-order-dialog
  (fn-traced [db]
-   (assoc-in db [::data :order-dialog] {:show true})))
+   (let [settings-data (get-in db [:ls ::settings])
+         settings {:show-contact-details? (:show-contact-details-on-customer-order settings-data)
+                   :show-lending-terms-acceptance? (:lending-terms-acceptance-required-for-order settings-data)
+                   :lending-terms-url (:lending-terms-url settings-data)}]
+     (assoc-in db [::data :order-dialog] (merge {:show true} settings)))))
 
 (reg-event-db
  ::close-order-dialog
@@ -507,7 +513,9 @@
 (defn order-dialog []
   (let [purpose (reagent/atom {:value ""})
         title (reagent/atom {:value ""})
-        linked? (reagent/atom true)
+        title-purpose-linked? (reagent/atom true)
+        contact-details (reagent/atom {:value ""})
+        lending-terms-accepted (reagent/atom {:value false})
         form-validated? (reagent/atom false)]
     (fn []
       (let [dialog-data @(subscribe [::order-dialog-data])
@@ -526,7 +534,9 @@
                          (when (-> e .-target .checkValidity)
                            (dispatch [::submit-order
                                       {:purpose (:value @purpose)
-                                       :title (:value @title)}])))
+                                       :title (:value @title)
+                                       :contactDetails (when (:show-contact-details? dialog-data) (:value @contact-details))
+                                       :lendingTermsAccepted (when (:show-lending-terms-acceptance? dialog-data) (:value @lending-terms-accepted))}])))
             :no-validate true
             :auto-complete :off
             :id :the-form
@@ -546,7 +556,7 @@
                :on-change (fn [e]
                             (let [v (-> e .-target .-value)]
                               (swap! title assoc :value v)
-                              (when @linked? (swap! purpose assoc :value v))))
+                              (when @title-purpose-linked? (swap! purpose assoc :value v))))
                :on-blur #(swap! title assoc :was-validated true)}]]
 
             [:> UI/Components.Design.Section
@@ -563,8 +573,39 @@
                :value (:value @purpose)
                :on-change (fn [e]
                             (swap! purpose assoc :value (-> e .-target .-value))
-                            (reset! linked? false))
-               :on-blur #(swap! purpose assoc :was-validated true)}]]]]]
+                            (reset! title-purpose-linked? false))
+               :on-blur #(swap! purpose assoc :was-validated true)}]]
+            (when (:show-contact-details? dialog-data)
+              [:> UI/Components.Design.Section
+               {:title (t :confirm-dialog/contact-details)
+                :class (when (:was-validated @contact-details) "was-validated")}
+               [:label {:htmlFor :contact-details, :class "visually-hidden"} (t :confirm-dialog/contact-details)]
+               [:input.form-control
+                {:type :text
+                 :name :contact-details
+                 :id :contact-details
+                 :value (:value @contact-details)
+                 :max-length 1000
+                 :on-change (fn [e]
+                              (let [v (-> e .-target .-value)]
+                                (swap! contact-details assoc :value v)))
+                 :on-blur #(swap! contact-details assoc :was-validated true)}]
+               [:> UI/Components.Design.InfoMessage {:class "mt-2"} (t :confirm-dialog/contact-details-hint)]])
+            (when (:show-lending-terms-acceptance? dialog-data)
+              [:> UI/Components.Design.Section
+               {:title (t :confirm-dialog/lending-terms)}
+               [:div.form-check
+                [:input.form-check-input
+                 {:type :checkbox
+                  :name "lending-terms-accepted"
+                  :id "lending-terms-accepted"
+                  :checked (:value @lending-terms-accepted)
+                  :required true
+                  :on-change (fn [_] (swap! lending-terms-accepted (fn [x] {:value (-> x :value not) :was-validated true})))}]
+                [:label.form-check-label {:html-for "lending-terms-accepted"} (t :confirm-dialog/i-accept)
+                 (when (:lending-terms-url dialog-data) ":")]
+                (when-let [url (:lending-terms-url dialog-data)]
+                  [:div.mt-2 [:a.text-decoration-underline.fw-light {:href url :target "_blank"} url]])]])]]]
          [:> UI/Components.Design.ModalDialog.Footer
           [:button.btn.btn-primary {:form :the-form :type :submit}
            (when is-saving? [:> UI/Components.Design.Spinner]) " "

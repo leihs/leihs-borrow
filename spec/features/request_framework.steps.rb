@@ -21,12 +21,6 @@ step "the order panel is shown" do
   find(".ui-booking-calendar")
 end
 
-step "I accept the :title dialog" do |title|
-  within(find_ui_modal_dialog(title: title)) do
-    click_on "OK"
-  end
-end
-
 step "I log in again" do
   expect(@user).to be_a User
   within(".ui-form-signin") do

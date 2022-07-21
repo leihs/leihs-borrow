@@ -80,12 +80,6 @@ step "I see the following status rows in the :name section:" do |section_name, t
   expect(actual_status_rows).to eq symbolize_hash_keys(table.hashes)
 end
 
-step "I accept the :title dialog" do |title|
-  within(find_ui_modal_dialog(title: title)) do
-    find("button.btn-primary").click
-  end
-end
-
 step "the :name button is not visible" do |name|
   page.has_no_selector?("button", text: name)
 end

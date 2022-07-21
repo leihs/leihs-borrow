@@ -424,6 +424,7 @@
                   :cancel-action-label {:de-CH "Bestellung stornieren" :en-GB "Cancel order"}
                   :repeat-action-label {:de-CH "Bestellung wiederholen" :en-GB "Repeat order"}
                   :purpose {:de-CH "Zweck" :en-GB "Purpose"}
+                  :contact-details {:de-CH "Kontaktdaten" :en-GB "Contact details"}
                   :pools-section-title {:de-CH "Inventarparks" :en-GB "Inventory pools"}
                   :items-section-title {:de-CH "Gegenstände" :en-GB "Items"}
                   :documents-section-title {:de-CH "Dokumente" :en-GB "Documents"}
@@ -576,6 +577,12 @@
                     :confirm-dialog {:dialog-title {:en-GB "Send order" :de-CH "Bestellung abschicken"}
                                      :title {:en-GB "Title" :de-CH "Titel"}
                                      :purpose {:en-GB "Purpose" :de-CH "Zweck"}
+                                     :contact-details {:en-GB "Contact details" :de-CH "Kontaktdaten"}
+                                     :contact-details-hint {:en-GB "The indication of a telephone number is recommended"
+                                                            :de-CH "Die Angabe einer Telefonnummer ist empfohlen"}
+                                     :lending-terms {:en-GB "Lending terms" :de-CH "Ausleihbedingungen"}
+                                     :i-accept {:en-GB "I accept the lending terms"
+                                                :de-CH "Ich akzeptiere die Ausleihbedingungen"}
                                      :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
                                      :confirm {:en-GB "Send" :de-CH "Abschicken"}}
                     :order-success-notification {:title {:en-GB "Order submitted" :de-CH "Bestellung übermittelt"}

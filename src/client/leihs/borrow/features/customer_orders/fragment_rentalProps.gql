@@ -2,6 +2,7 @@ fragment rentalProps on Rental {
   id
   purpose
   title
+  contactDetails
   isCustomerOrder
   state: rentalState
   fulfillmentStates: refinedRentalState

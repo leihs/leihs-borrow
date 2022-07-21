@@ -246,6 +246,11 @@
                         first
                         :name)])])
 
+         (when-let [contact-details (-> rental :contact-details not-empty)]
+           [:> UI/Components.Design.Section
+            {:title (t :contact-details) :collapsible true}
+            contact-details])
+
          [:> UI/Components.Design.Section
           {:title (t :purpose) :collapsible true}
           (:purpose rental)]

@@ -51,10 +51,3 @@ step "the form has exactly these fields:" do |table|
 
   expect(form_fields).to eq(symbolize_hash_keys(expected_fields))
 end
-
-step "I accept the :title dialog with the text:" do |title, text|
-  within(find_ui_modal_dialog(title: title)) do
-    expect(find(".modal-body").text).to eq interpolate_dates_short(text)
-    click_on "OK"
-  end
-end

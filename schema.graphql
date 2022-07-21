@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Jun 02 2022 09:55:36 GMT+0200 (Central European Summer Time)
+# timestamp: Thu Jul 21 2022 17:36:53 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -91,6 +91,7 @@ type CurrentUser {
   languageToUse: Language!
   nav: UserNavigation!
   sessionId: UUID!
+  settings: UserSettings!
   user: User
 }
 
@@ -243,7 +244,7 @@ type MutationRoot {
   favoriteModel(id: UUID!, userId: UUID): Model!
   refreshTimeout(userId: UUID): RefreshTimeoutResult
   repeatOrder(endDate: Date!, id: UUID!, startDate: Date!, userId: UUID): [Reservation]
-  submitOrder(purpose: NonEmptyText!, title: NonEmptyText!, userId: UUID): Rental!
+  submitOrder(contactDetails: String, lendingTermsAccepted: Boolean, purpose: NonEmptyText!, title: NonEmptyText!, userId: UUID): Rental!
   testing(sleepSecs: Int): String
   unfavoriteModel(id: UUID!, userId: UUID): Model!
 }
@@ -386,6 +387,7 @@ type RefreshTimeoutResult {
 type Rental {
   approveFulfillment: ApproveFulfillment
   approvedPoolOrdersCount: Int
+  contactDetails: String
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   createdAt: DateTime!
   expiredQuantity: Int!
@@ -565,6 +567,12 @@ type User {
 type UserNavigation {
   documentationUrl: String
   legacyUrl: String!
+}
+
+type UserSettings {
+  lendingTermsAcceptanceRequiredForOrder: Boolean
+  lendingTermsUrl: String
+  showContactDetailsOnCustomerOrder: Boolean
 }
 
 enum UsersOrderByAttributeEnum {

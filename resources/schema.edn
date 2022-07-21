@@ -81,6 +81,9 @@
                                :active {:type Boolean}}}
            :UserNavigation {:fields {:legacyUrl {:type (non-null String)}
                                      :documentationUrl {:type String}}}
+           :UserSettings {:fields {:lendingTermsAcceptanceRequiredForOrder {:type Boolean}
+                                   :lendingTermsUrl {:type String}
+                                   :showContactDetailsOnCustomerOrder {:type Boolean}}}
            :User {:description "A `User` represents a human agent that can log into and use the system."
                   :fields {:id {:type (non-null :UUID)}
                            :firstname {:type String}
@@ -139,7 +142,9 @@
                                                   :resolve :language-to-use}
                                   :sessionId {:type (non-null :UUID)}
                                   :nav {:type (non-null :UserNavigation)
-                                        :resolve :user-navigation}}}
+                                        :resolve :user-navigation}
+                                  :settings {:type (non-null :UserSettings)
+                                             :resolve :user-settings}}}
            :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null :Date)}
                               :quantity {:type (non-null Int)}
@@ -296,6 +301,7 @@
            :Rental {:fields {:id {:type (non-null :UUID)}
                              :purpose {:type :NonEmptyText}
                              :title {:type :NonEmptyText}
+                             :contactDetails {:type :String}
                              :state {:type (list (non-null :PoolOrderStateEnum))
                                      :description "List of distinct states of all the sub-orders."}
                              :rentalState {:type (non-null :RentalStateEnum)
@@ -461,6 +467,8 @@
                                       :type (list (non-null :UUID))}
              :submitOrder {:args {:purpose {:type (non-null :NonEmptyText)}
                                   :title {:type (non-null :NonEmptyText)}
+                                  :contactDetails {:type String}
+                                  :lendingTermsAccepted {:type Boolean}
                                   :userId {:type :UUID}}
                            :resolve :submit-order
                            :type (non-null :Rental)}

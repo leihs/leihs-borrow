@@ -37,6 +37,19 @@ step "the :title dialog has closed" do |title|
   expect(find_ui_modal_dialog(title: title, present: false)).to be
 end
 
+step "I accept the :title dialog" do |title|
+  within(find_ui_modal_dialog(title: title)) do
+    find("button.btn-primary").click
+  end
+end
+
+step "I accept the :title dialog with the text:" do |title, text|
+  within(find_ui_modal_dialog(title: title)) do
+    expect(find(".modal-body").text).to eq interpolate_dates_short(text)
+    find("button.btn-primary").click
+  end
+end
+
 step "I see the following lines in the :name section:" do |section_name, table|
   items_section = find_ui_section(title: section_name)
   item_lines = get_ui_list_cards(items_section)
