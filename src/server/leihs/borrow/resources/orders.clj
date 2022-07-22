@@ -379,9 +379,10 @@
               (sql/returning :*)
               sql/format
               (rs/query tx))
-          (swap! after-tx-hooks* conj (fn [_req _resp]
-                                        (mails/send-received context order)
-                                        (mails/send-submitted context order)))))
+          (swap! after-tx-hooks*
+                 conj
+                 (fn [_req _resp] (mails/send-received context order))
+                 (fn [_req _resp] (mails/send-submitted context order)))))
       (get-one-by-id tx user-id uuid))))
 
 (defn cancel
