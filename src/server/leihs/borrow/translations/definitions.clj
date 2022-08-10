@@ -148,7 +148,7 @@
              :loading-error {:en-GB "Error loading this content"
                              :de-CH "Fehler beim Laden"}
              :unauthorized {:en-GB "User not logged in"
-                            :de-CH "Benutzer ist nicht eingeloggt"}
+                            :de-CH "Benutzer ist nicht angemeldet"}
              :reload {:en-GB "Reload current page"
                       :de-CH "Seite neu laden"}
              :go-to-start {:en-GB "Go to start page"
