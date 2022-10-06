@@ -29,9 +29,9 @@ Feature: Rentals
     Then I see the following orders:
       | title   |
       | Order 1 |
-    And I click on the profile button
+    And I click on the user profile button
     And I click on "Delegation D"
-    Then the profile button shows "DD"
+    Then the user profile button shows "DD"
     And I see the following orders:
       | title   |
       | Order 2 |

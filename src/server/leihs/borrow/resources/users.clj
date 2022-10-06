@@ -9,7 +9,8 @@
             [leihs.borrow.resources.users.shared :refer [get-by-id base-sqlmap]]
             [leihs.core.paths :refer [path]]
             [leihs.core.sql :as sql]
-            [leihs.core.user.queries :refer [merge-search-term-where-clause]]))
+            [leihs.core.user.queries :refer [merge-search-term-where-clause]]
+            [leihs.core.remote-navbar.shared :refer [sub-apps]]))
 
 (defn get-multiple [context {:keys [offset limit order-by search-term]} _]
   (jdbc/query
@@ -38,12 +39,14 @@
    :user (get-by-id tx user-id)
    :session-id session-id})
 
-(defn get-navigation [{{:keys [tx]} :request} _ {user-id :id}]
-  {:legacy-url
-   (str (:external_base_url (settings/get-system-and-security tx))
-        "/borrow/")
-   :documentation-url
-   (:documentation_link (settings/get tx))})
+(defn get-navigation [{{:keys [tx authenticated-entity]} :request} _ {user-id :id}]
+  (let [base-url (:external_base_url (settings/get-system-and-security tx))
+        sub-apps (sub-apps tx authenticated-entity)]
+    {:legacy-url (str base-url "/borrow/")
+     :admin-url (when (:admin sub-apps) (str base-url "/admin/"))
+     :procure-url (when (:procure sub-apps) (str base-url "/procure/"))
+     :manage-nav-items (map #(assoc % :url (:href %)) (:manage sub-apps))
+     :documentation-url (:documentation_link (settings/get tx))}))
 
 (defn get-settings [{{:keys [tx]} :request} _ {user-id :id}]
   (let [settings (settings/get tx)]

@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Thu Jul 21 2022 17:36:53 GMT+0200 (Central European Summer Time)
+# timestamp: Wed Sep 28 2022 16:34:39 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -565,8 +565,16 @@ type User {
 }
 
 type UserNavigation {
+  adminUrl: String
   documentationUrl: String
   legacyUrl: String!
+  manageNavItems: [UserNavigationItem]
+  procureUrl: String
+}
+
+type UserNavigationItem {
+  name: String
+  url: String
 }
 
 type UserSettings {

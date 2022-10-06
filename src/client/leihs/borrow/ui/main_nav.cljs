@@ -41,18 +41,14 @@
 (reg-sub ::menu-data
          (fn [db] (get-in db [:ls ::data])))
 
-(reg-event-db ::set-menu-open
-              (fn-traced [db [_ flag]]
-                (update-in db [:ls ::data] merge {:is-menu-open? flag :is-profile-menu-open? false})))
-
-(reg-event-db ::set-profile-menu-open
-              (fn-traced [db [_ flag]]
-                (update-in db [:ls ::data] merge {:is-menu-open? false :is-profile-menu-open? flag})))
+(reg-event-db ::set-current-menu
+              (fn-traced [db [_ menu-id]]
+                (update-in db [:ls ::data] merge {:current-menu menu-id})))
 
 (reg-event-fx ::switch-language
               (fn-traced [_ [_ lang]]
                 {:dispatch-n (list [::languages/switch lang]
-                                   [::set-profile-menu-open false])}))
+                                   [::set-current-menu nil])}))
 
 (defn get-initials [name]
   (let [words (split name #"[ \-]+")]
@@ -63,120 +59,157 @@
          (take 3)
          (join ""))))
 
-(defn add-initials [profile]
-  (assoc profile :short-name (get-initials (:name profile))))
-
 (reg-sub ::user
          :<- [::current-user/user-data]
          (fn [{:keys [id name delegations]} _]
            {:id id
-            :name (str name (when (seq delegations) (t :!borrow.phrases.user-or-delegation-personal-postfix)))
+            :name name
+            :profile-name (str name (when (seq delegations) (t :!borrow.phrases.user-or-delegation-personal-postfix)))
             :short-name (get-initials name)}))
 
 (reg-sub ::delegations
          :<- [::current-user/delegations]
          (fn [delegations _]
-           (map add-initials delegations)))
+           (map (fn [{:keys [id name]}]
+                  {:id id
+                   :name name
+                   :profile-name name
+                   :short-name (get-initials name)})
+                delegations)))
 
 (reg-sub ::current-profile
          :<- [::current-user/current-profile]
          (fn [current-profile _] current-profile))
 
 
-(defn menu-link [href label]
-  [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::set-menu-open false]) :href href} label])
+(defn menu-link [href label is-selected]
+  [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::set-current-menu nil]) :href href :isSelected is-selected} label])
 
-(defn navbar-menu []
+(defn top []
   (let [cart-item-count @(subscribe [::cart-item-count])
         invalid-cart-item-count @(subscribe [::invalid-cart-item-count])
         menu-data @(subscribe [::menu-data])
-        is-menu-open? (:is-menu-open? menu-data)
-        is-profile-menu-open? (:is-profile-menu-open? menu-data)
+        current-menu (:current-menu menu-data)
+        current-profile @(subscribe [::current-profile])]
+
+    [:> UI/Components.Design.Navbar
+     {:brandName "Leihs"
+      :brandLinkProps {:href (routing/path-for ::routes/home)}
+      :mainMenuIsOpen (= current-menu "main")
+      :mainMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "main") "main")])
+                          :aria-controls "menu"}
+      :cartItemCount cart-item-count
+      :invalidCartItemCount invalid-cart-item-count
+      :cartItemLinkProps {:href (routing/path-for ::routes/shopping-cart)}
+      :userMenuIsOpen (= current-menu "user")
+      :userProfileShort (get-initials (:name current-profile))
+      :userMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "user") "user")])
+                          :aria-controls "user-menu"}
+      :appMenuIsOpen (= current-menu "app")
+      :appMenuLinkLabel (t :app-switch/button-label)
+      :appMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "app") "app")])
+                         :aria-controls "app-menu"}}]))
+
+(defn- borrow-menu-items []
+  (let [handler @(subscribe [:routing/current-handler])]
+    [:<>
+     [menu-link (routing/path-for ::routes/home) (t :borrow/catalog)
+      (some #{handler} [::routes/home ::routes/categories-show ::routes/models ::routes/models-show])]
+     [menu-link (routing/path-for ::routes/shopping-cart) (t :borrow/shopping-cart)
+      (some #{handler} [::routes/shopping-cart])]
+     [menu-link (routing/path-for ::routes/rentals-index) (t :user/rentals)
+      (some #{handler} [::routes/rentals-index ::routes/rentals-show])]
+     [menu-link (routing/path-for ::routes/models-favorites) (t :borrow/favorite-models)
+      (some #{handler} [::routes/models-favorites])]
+     [menu-link (routing/path-for ::routes/inventory-pools-index) (t :borrow/pools)
+      (some #{handler} [::routes/inventory-pools-index ::routes/inventory-pools-show])]]))
+
+(defn- app-switch-menu-items []
+  (let [user-nav @(subscribe [::user-nav])
+        legacy-url (:legacy-url user-nav)]
+    [:> UI/Components.Design.Menu {:id "app-menu"}
+     [:> UI/Components.Design.Menu.Group
+      [menu-link (routing/path-for ::routes/home) (t :borrow/section-title) true]
+      [menu-link legacy-url (t :desktop-version)]
+      (when-let [admin-url (:admin-url user-nav)] [menu-link admin-url (t :app-switch/admin)])
+      (when-let [procure-url (:procure-url user-nav)] [menu-link procure-url (t :app-switch/procure)])
+      (when (seq (:manage-nav-items user-nav))
+        [:div.pt-2 (t :app-switch/manage)])
+      (doall
+       (for [{:keys [name url]} (:manage-nav-items user-nav)]
+         [:<> {:key name}
+          [menu-link url name]]))]]))
+
+(defn side []
+  (let [user-nav @(subscribe [::user-nav])
+        documentation-url (:documentation-url user-nav)]
+    [:> UI/Components.Design.Menu
+     {:id "menu"}
+
+     [:> UI/Components.Design.Menu.Group
+      {:title (t :borrow/section-title)}
+      (borrow-menu-items)]
+
+     [:> UI/Components.Design.Menu.Group
+      {:title (t :app-switch/section-title) :class "d-md-none"}
+      (app-switch-menu-items)]
+
+     (when documentation-url
+       [:> UI/Components.Design.Menu.Group
+        [menu-link documentation-url (t :documentation)]])]))
+
+(defn user-profile-nav []
+  (let [handler @(subscribe [:routing/current-handler])
+        profile-errors @(subscribe [::profile-switch/errors])
         user @(subscribe [::user])
         delegations @(subscribe [::delegations])
         current-profile @(subscribe [::current-profile])
         changing-to-profile-id @(subscribe [::profile-switch/changing-to-id])
-        profile-errors @(subscribe [::profile-switch/errors])
-        user-nav @(subscribe [::user-nav])
-        legacy-url (:legacy-url user-nav)
-        documentation-url (:documentation-url user-nav)
-        support-url nil
         languages @(subscribe [::languages/data])
         locale-to-use @(subscribe [::translate/locale-to-use])]
+    [:> UI/Components.Design.Menu {:id "user-menu"}
 
-    ; TODO: provide support-url in user-nav
+     [:> UI/Components.Design.Menu.Group {:title (:name user)}
+      [menu-link (routing/path-for ::routes/current-user-show) (t :user/current-user)
+       (some #{handler} [::routes/current-user-show])]
+      [:> UI/Components.Design.Menu.Button {:type "submit" :form "sign-out-form"} (t :user/logout)]
+      [:form.visually-hidden {:id "sign-out-form" :action "/sign-out" :method "POST"} [csrf/token-field]]]
 
-    [:> UI/Components.Design.Navbar.MenuWrapper
-     {:menuIsOpen (or is-menu-open? is-profile-menu-open?)}
-
-
-     [:> UI/Components.Design.Navbar
-      {:brandName "Leihs"
-       :brandItem {:href (routing/path-for ::routes/home)}
-       :menuIsOpen is-menu-open?
-       :menuItem {:on-click #(dispatch [::set-menu-open (not is-menu-open?)])
-                  :aria-controls "menu"
-                  :aria-expanded is-menu-open?
-                  :role :button}
-       :cartItemCount cart-item-count
-       :invalidCartItemCount invalid-cart-item-count
-       :cartItem {:href (routing/path-for ::routes/shopping-cart)}
-       :profileButtonProps (when (seq delegations)
-                             {:profile-short (get-initials (:name current-profile))
-                              :on-click #(dispatch [::set-profile-menu-open (not is-profile-menu-open?)])
-                              :is-open is-profile-menu-open?
-                              :aria-controls "profile-menu"
-                              :aria-expanded is-profile-menu-open?})}]
-
-
-     [:> UI/Components.Design.Menu
-      {:show is-menu-open? :id "menu"}
-
-      [:> UI/Components.Design.Menu.Group {:title (t :borrow/section-title)}
-       [menu-link (routing/path-for ::routes/home) (t :borrow/catalog)]
-       [menu-link (routing/path-for ::routes/shopping-cart) (t :borrow/shopping-cart)]
-       [menu-link (routing/path-for ::routes/rentals-index) (t :user/rentals)]
-       [menu-link (routing/path-for ::routes/models-favorites) (t :borrow/favorite-models)]
-       [menu-link (routing/path-for ::routes/inventory-pools-index) (t :borrow/pools)]]
-
-      [:> UI/Components.Design.Menu.Group {:title (t :user/section-title)}
-       [menu-link (routing/path-for ::routes/current-user-show) (t :user/current-user)]
-       [:> UI/Components.Design.Menu.Button {:type "submit" :form "sign-out-form"} (t :user/logout)]
-       [:form.visually-hidden {:id "sign-out-form" :action "/sign-out" :method "POST"} [csrf/token-field]]]
-
-      ; (documentation and support are in the "Leihs" group, keeping number of groups low)
-      (comment [:> UI/Components.Design.Menu.Group {:title (t :help/section-title)}])
-
-      [:> UI/Components.Design.Menu.Group {:title "Leihs"}
-       [menu-link legacy-url (t :desktop-version)]
-       (when documentation-url [menu-link documentation-url (t :help/documentation)])
-       (when support-url [menu-link support-url (t :help/support)])]
-
-      ; languages come last, so we don't need to care about how much space they take
-      (when (> (count languages) 1)
-        [:> UI/Components.Design.Menu.Group {:title (t :language/section-title)}
-         (doall
-          (for [language languages]
-            (let [locale (:locale language)
-                  selected? (= (keyword locale) locale-to-use)]
-              [:<> {:key locale}
-               [:> UI/Components.Design.Menu.Button
-                {:isSelected selected?
-                 :type "button"
-                 :value locale
-                 :on-click (when-not selected? #(dispatch [::switch-language (-> % .-target .-value)]))}
-                (:name language)]])))])]
-
-     (when is-profile-menu-open?
-       [:<>
+     (when (seq delegations)
+       [:> UI/Components.Design.Menu.Group {:title (t :!borrow.profile-menu/title)}
         (when profile-errors
           [ui/error-view profile-errors])
-        [:> UI/Components.Design.ProfileMenu
-         {:id "profile-menu"
-          :user user
-          :delegations (h/camel-case-keys delegations)
-          :currentProfile current-profile
-          :onSelectProfile #(dispatch [::profile-switch/change-profile (-> % .-id)])
-          :changingToProfileId changing-to-profile-id
-          :onDismiss #(dispatch [::set-profile-menu-open false])
-          :txt {:title (t :!borrow.profile-menu/title)}}]])]))
+
+        [:> UI/Components.Design.ProfileMenuButton
+         {:profile user
+          :isSelected (= (:id user) (:id current-profile))
+          :isLoading (= (:id user) changing-to-profile-id)
+          :onClick #(dispatch [::profile-switch/change-profile (:id user)])}]
+
+        (doall
+         (for [delegation delegations]
+           [:> UI/Components.Design.ProfileMenuButton
+            {:profile delegation
+             :isSelected (= (:id delegation) (:id current-profile))
+             :isLoading (= (:id delegation) changing-to-profile-id)
+             :onClick #(dispatch [::profile-switch/change-profile (:id delegation)])
+             :key (:id delegation)}]))])
+
+     (when (> (count languages) 1)
+       [:> UI/Components.Design.Menu.Group {:title (t :language/section-title)}
+        (doall
+         (for [language languages]
+           (let [locale (:locale language)
+                 selected? (= (keyword locale) locale-to-use)]
+             [:<> {:key locale}
+              [:> UI/Components.Design.Menu.Button
+               {:isSelected selected?
+                :type "button"
+                :value locale
+                :on-click (when-not selected? #(dispatch [::switch-language (-> % .-target .-value)]))}
+               (:name language)]])))])]))
+
+(defn app-nav []
+  [:> UI/Components.Design.Menu {:id "app-menu"}
+   [:> UI/Components.Design.Menu.Group {:title (t :app-switch/section-title)}
+    (app-switch-menu-items)]])

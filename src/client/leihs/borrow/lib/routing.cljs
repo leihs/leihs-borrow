@@ -132,6 +132,11 @@
  (fn [db _]
    (:routing/routing db)))
 
+(reg-sub
+ :routing/current-handler
+ (fn [db _]
+   (get-in db [:routing/routing :bidi-match :handler])))
+
 (defn routed-view
   [views]
   (let [r @(subscribe [:routing/routing])
@@ -140,8 +145,6 @@
     [component]))
 
 (defn bidi-path-for-with-query-params [routes-map name & args]
-  (if-not (= (namespace name) (namespace ::routes/ns))
-    (throw (js/Error. (str "route name is from wrong namespace! " (pr-str name)))))
   (let [route-args args ; FIXME: remove :query params from seq!
         query-params (get (apply hash-map args) :query-params)
         bidi-path (apply bidi/path-for routes-map name route-args)

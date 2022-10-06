@@ -79,7 +79,12 @@
                                :locale {:type String}
                                :default {:type Boolean}
                                :active {:type Boolean}}}
+           :UserNavigationItem {:fields {:name {:type String}
+                                         :url {:type String}}}
            :UserNavigation {:fields {:legacyUrl {:type (non-null String)}
+                                     :adminUrl {:type String}
+                                     :procureUrl {:type String}
+                                     :manageNavItems {:type (list :UserNavigationItem)}
                                      :documentationUrl {:type String}}}
            :UserSettings {:fields {:lendingTermsAcceptanceRequiredForOrder {:type Boolean}
                                    :lendingTermsUrl {:type String}

@@ -32,9 +32,9 @@ Feature: Rentals - Show - Repeat order
     When I log in as the user
 
     # switch to source profile
-    When I click on the profile button
+    When I click on the user profile button
     And I click on "<sourceProfile>"
-    Then the profile button shows "<sourceProfileShort>"
+    Then the user profile button shows "<sourceProfileShort>"
 
     And I visit "/app/borrow/rentals/"
     And I click on "Order 1"
@@ -45,9 +45,9 @@ Feature: Rentals - Show - Repeat order
       | All items returned |             |      |
 
     # switch to source profile
-    When I click on the profile button
+    When I click on the user profile button
     And I click on "<targetProfile>"
-    Then the profile button shows "<targetProfileShort>"
+    Then the user profile button shows "<targetProfileShort>"
 
     When I click on "Repeat order"
     Then I see the "Add items" dialog
@@ -96,11 +96,11 @@ Feature: Rentals - Show - Repeat order
     And I see the page title "My Orders"
 
     Examples:
-      | sourceProfileLookup | sourceProfile | sourceProfileShort | targetProfile | targetProfileShort |
-      | user                | User A        | UA                 | User A        | UA                 |
-      | Delegation D        | Delegation D  | DD                 | Delegation D  | DD                 |
-      | user                | User A        | UA                 | Delegation D  | DD                 |
-      | Delegation D        | Delegation D  | DD                 | User A        | UA                 |
+      | sourceProfileLookup | sourceProfile     | sourceProfileShort | targetProfile    | targetProfileShort |
+      | user                | User A (personal) | UA                 | User A (personal | UA                 |
+      | Delegation D        | Delegation D      | DD                 | Delegation D     | DD                 |
+      | user                | User A (personal  | UA                 | Delegation D     | DD                 |
+      | Delegation D        | Delegation D      | DD                 | User A (personal | UA                 |
 
   Scenario: Order with options only
     Given there is an option "Ethernet 1.5m"

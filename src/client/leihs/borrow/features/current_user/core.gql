@@ -27,6 +27,12 @@ query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID) {
     sessionId
     nav {
       legacyUrl
+      adminUrl
+      procureUrl
+      manageNavItems {
+        name
+        url
+      }
       documentationUrl
     }
   }

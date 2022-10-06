@@ -1,6 +1,6 @@
 step "I see the page title :title" do |title|
   wait_until {
-    @page = get_ui_page_layout
+    @page = get_ui_page_headings
     @page[:title] === title
   }
 end

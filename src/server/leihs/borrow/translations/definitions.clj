@@ -227,12 +227,18 @@
                                  :de-CH "Benutzerkonto"}
                   :logout {:en-GB "Logout"
                            :de-CH "Abmelden"}}
-           :help {:section-title {:en-GB "Help"
-                                  :de-CH "Hilfe"}
-                  :documentation {:en-GB "Documentation"
-                                  :de-CH "Dokumentation"}
-                  :support {:en-GB "Support"
-                            :de-CH "Unterstützung"}}
+           :app-switch {:button-label {:en-GB "Section"
+                                       :de-CH "Bereich"}
+                        :section-title {:en-GB "Switch section"
+                                        :de-CH "Bereich wechseln"}
+                        :admin {:en-GB "Admin"
+                                :de-CH "Admin"}
+                        :procure {:en-GB "Procurement"
+                                  :de-CH "Bedarfsermittlung"}
+                        :manage {:en-GB "Lending / Inventory"
+                                 :de-CH "Verleih / Inventar"}}
+           :documentation {:en-GB "Documentation"
+                           :de-CH "Dokumentation"}
            :language {:section-title {:en-GB "Language"
                                       :de-CH "Sprache"}}
            :desktop-version {:en-GB "Leihs Classic"

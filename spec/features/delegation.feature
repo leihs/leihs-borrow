@@ -13,13 +13,13 @@ Feature: Delegations
   Scenario: Switching between personal and delegation profile
     Given I log in as the user
 
-    When I click on the profile button
+    When I click on the user profile button
     And I click on "DD"
-    Then the profile button shows "DD"
+    Then the user profile button shows "DD"
 
-    When I click on the profile button
+    When I click on the user profile button
     And I click on "UA"
-    Then the profile button shows "UA"
+    Then the user profile button shows "UA"
 
 
   Scenario: Delegations in user account
@@ -38,7 +38,7 @@ Feature: Delegations
     And there is a model "Beamer"
     And there is 1 borrowable item for model "Beamer" in pool "Pool B"
     And I log in as the user
-    And the profile button shows "UA"
+    And the user profile button shows "UA"
 
     When I click on "Filter"
     And I click button "Apply"
@@ -50,9 +50,9 @@ Feature: Delegations
     Then the order panel is shown
 
     When I click on "Cancel"
-    And I click on the profile button
+    And I click on the user profile button
     And I click on "DD"
-    And the profile button shows "DD"
+    And the user profile button shows "DD"
     Then the "Add item" button is disabled
     And I see the text:
       """
@@ -70,9 +70,9 @@ Feature: Delegations
     Then the order panel is shown
 
     When I click on "Cancel"
-    And I click on the profile button
+    And I click on the user profile button
     And I click on "UA"
-    And the profile button shows "UA"
+    And the user profile button shows "UA"
     Then the "Add item" button is disabled
     And I see the text:
       """
@@ -82,34 +82,34 @@ Feature: Delegations
   Scenario: Open a new window as delegation user
     Given I log in as the user
 
-    When I click on the profile button
+    When I click on the user profile button
     And I click on "DD"
-    Then the profile button shows "DD"
+    Then the user profile button shows "DD"
 
     When I switch to a new window
     And I visit "/app/borrow/"
-    Then the profile button shows "DD"
+    Then the user profile button shows "DD"
 
     # Check that changing the profile in window 2 does not change window 1
-    When I click on the profile button
+    When I click on the user profile button
     And I click on "UA"
-    And the profile button shows "UA"
+    And the user profile button shows "UA"
     And I go back to the first window
     And I visit "/app/borrow/order"
-    Then the profile button shows "DD"
+    Then the user profile button shows "DD"
 
   Scenario: Open a new window as personal user
     Given I log in as the user
-    Then the profile button shows "UA"
+    Then the user profile button shows "UA"
 
     When I switch to a new window
     And I visit "/app/borrow/"
-    Then the profile button shows "UA"
+    Then the user profile button shows "UA"
 
     # Check that changing the profile in window 2 does not change window 1
-    When I click on the profile button
+    When I click on the user profile button
     And I click on "DD"
-    And the profile button shows "DD"
+    And the user profile button shows "DD"
     And I go back to the first window
     And I visit "/app/borrow/order"
-    Then the profile button shows "UA"
+    Then the user profile button shows "UA"

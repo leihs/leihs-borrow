@@ -64,12 +64,12 @@ def get_ui_list_card_by_title(title)
   end
 end
 
-def find_ui_page_layout
-  find(".ui-page-layout")
+def find_ui_page_content
+  find(".ui-page-content")
 end
 
-def get_ui_page_layout
-  within(find_ui_page_layout) do
+def get_ui_page_headings
+  within(find_ui_page_content) do
     h2s = all("h2", wait: false)
     {
       title: first("h1").text,

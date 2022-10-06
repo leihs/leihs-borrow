@@ -30,6 +30,7 @@ Feature: Rentals - Show
     When I log in as the user
     And I visit "/app/borrow/rentals/"
     And I click on "Order 1"
+    And I sleep 1
 
     Then I see the page title "Order 1"
     And the page subtitle is "Between ${Date.today} and ${Date.tomorrow}, 2 items"

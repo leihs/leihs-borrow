@@ -19,9 +19,9 @@ Feature: Search and order
     And I log in as the user
 
     # switch to delegation profile
-    When I click on the profile button
+    When I click on the user profile button
     And I click on "<name>"
-    Then the profile button shows "<shortname>"
+    Then the user profile button shows "<shortname>"
 
     # search for a model
     And I visit "/app/borrow/"
@@ -54,16 +54,13 @@ Feature: Search and order
     And the "Item added" dialog has closed
 
     # check the cart
-    When I click on the menu
-    And I click on "Cart"
+    When I click on "Cart"
     Then I see the following lines in the "Items" section:
       | title     | body   |
       | 1× Kamera | Pool B |
 
     # submit the order
-    When I click on the menu
-    And I click on "Cart"
-    And I click on "Send order"
+    When I click on "Send order"
     And I name the order as "Order 1"
     And I click on "Send"
     And the "Send order" dialog has closed
@@ -78,7 +75,6 @@ Feature: Search and order
     When I visit "/app/borrow/"
     # FIXME: wait for menu open
     And I sleep 1
-    And I click on the menu
     And I click on "My Orders"
     Then I see the order "Order 1" under open orders
 
@@ -87,6 +83,6 @@ Feature: Search and order
     Then I see "1× Kamera"
 
     Examples:
-      | name         | shortname |
-      # | Delegation D | DD        |
-      | User A       | UA        |
+      | name              | shortname |
+      | Delegation D      | DD        |
+      | User A (personal) | UA        |

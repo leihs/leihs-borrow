@@ -67,14 +67,20 @@
 (defn main-view [views]
   (let [errors @(subscribe [::errors/errors])
         menu-data @(subscribe [::main-nav/menu-data])
-        is-menu-open? (when menu-data (:is-menu-open? menu-data))
-        open-menu-page-style {}]
+        current-menu (:current-menu menu-data)]
     [:> UI/Components.Design.PageLayout
-     {:navbar (r/as-element [main-nav/navbar-menu])
-      :style (when is-menu-open? open-menu-page-style)
+     {:topBar (r/as-element [main-nav/top])
+      :nav (r/as-element [main-nav/side])
+      :navShown (= current-menu "main")
       :errorBoundaryTxt {:title (t :borrow.errors.render-error)
                          :reload (t :borrow.errors.reload)
-                         :goToStart (t :borrow.errors.go-to-start)}}
+                         :goToStart (t :borrow.errors.go-to-start)}
+      :flyout (r/as-element (case current-menu
+                              "user" [main-nav/user-profile-nav]
+                              "app" [main-nav/app-nav]
+                              nil))
+      :flyoutShown (or (= current-menu "user") (= current-menu "app"))
+      :onContentClick #(dispatch [::main-nav/set-current-menu nil])}
      #_[requests/retry-banner]
      [routing/routed-view views]
      [ui/error-notification errors]]))
