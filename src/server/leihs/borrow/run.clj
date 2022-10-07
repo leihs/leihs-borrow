@@ -32,7 +32,7 @@
     (legacy/init options)
     (ssr-engine/init options)
     (leihs.core.ssr/init leihs.borrow.ssr/render-page-base)
-    (graphql/init)
+    (graphql/init options)
     (let [status (status/init)]
       (db/init options (:health-check-registry status)))
     (when (:load-translations options)

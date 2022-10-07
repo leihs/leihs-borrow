@@ -5,6 +5,8 @@
             [leihs.borrow.resources.templates :as templates]
             [leihs.borrow.testing :as testing]))
 
+(def audit-exceptions #{"refreshTimeout"})
+
 (def resolvers
   {:add-to-cart reservations/add-to-cart
    :apply-template templates/apply

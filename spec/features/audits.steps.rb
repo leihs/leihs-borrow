@@ -204,3 +204,4 @@ end
 step "there is/are :n audited request(s)" do |n|
   expect(AuditedRequest.count).to eq n.to_i
 end
+

@@ -1,5 +1,5 @@
 (ns leihs.borrow.routes
-  (:refer-clojure :exclude [str keyword replace])
+  (:refer-clojure :exclude [keyword replace])
   (:require
    [leihs.borrow.after-tx :as after-tx]
    [leihs.borrow.authenticate :as authenticate]
@@ -12,8 +12,10 @@
    [leihs.core.anti-csrf.back :as anti-csrf]
    [leihs.core.auth.session :as session]
    [leihs.core.db :as datasource]
+   [leihs.core.graphql :as core-graphql]
    [leihs.core.http-cache-buster2 :as cache-buster :refer [wrap-resource]]
    [leihs.core.locale :as locale]
+   [leihs.core.ring-audits :as ring-audits]
    [leihs.core.ring-exception :as ring-exception]
    [leihs.core.routes :as core-routes]
    [leihs.core.routing.back :as core-routing]
@@ -77,6 +79,7 @@
   (->
   ; (I> wrap-handler-with-logging
       dispatch-to-handler
+      ring-audits/wrap
       anti-csrf/wrap
       locale/wrap
       authenticate/wrap
@@ -88,6 +91,7 @@
       wrap-empty
       datasource/wrap-tx
       after-tx/wrap
+      core-graphql/wrap-with-schema
       (wrap-graphiql {:path "/app/borrow/graphiql",
                       :endpoint "/app/borrow/graphql"})
       core-routing/wrap-canonicalize-params-maps
