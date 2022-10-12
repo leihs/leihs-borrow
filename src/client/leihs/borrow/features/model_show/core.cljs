@@ -397,7 +397,9 @@
                                          :compatibles (t :compatibles)
                                          :addItemToCart (t :add-item-to-cart)
                                          :addToFavorites (t :add-to-favorites)
-                                         :removeFromFavorites (t :remove-from-favorites)}
+                                         :removeFromFavorites (t :remove-from-favorites)
+                                         :previousImage (t :previous-image)
+                                         :nextImage (t :next-image)}
                                      :currentFilters (h/camel-case-keys filters)
                                      :onClickFavorite #(dispatch
                                                         [(if (:is-favorited model)

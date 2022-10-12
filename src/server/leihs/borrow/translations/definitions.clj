@@ -259,6 +259,10 @@
                                     :de-CH "Zu Favoriten hinzufügen"}
                  :remove-from-favorites {:en-GB "Remove from favorites"
                                          :de-CH "Von Favoriten entfernen"}
+                 :previous-image {:en-GB "Previous image"
+                                  :de-CH "Vorheriges Bild"}
+                 :next-image {:en-GB "Next image"
+                              :de-CH "Nächstes Bild"}
                  :not-available-for-current-profile {:en-GB "Item not available for current profile"
                                                      :de-CH "Gegenstand für das aktuelle Profil nicht verfügbar"}
                  :order-dialog {:title {:en-GB "Add item" :de-CH "Gegenstand hinzufügen"}
