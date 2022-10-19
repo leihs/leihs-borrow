@@ -9,10 +9,10 @@
             [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as rs]
-            [leihs.borrow.resources.settings :as settings]
             [leihs.borrow.time :as time :refer [past?]]
             [leihs.core.database.helpers :as database]
             [leihs.core.db :as ds]
+            [leihs.core.settings :refer [settings!]]
             [leihs.core.sql :as sql])
   (:import java.time.format.DateTimeFormatter))
 
@@ -353,7 +353,8 @@
     (if-not (empty? (rs/with-invalid-availability context reservations))
       (throw (ex-info "Some reserved quantities are not available anymore." {})))
     (when-not lending-terms-accepted
-      (when (-> tx settings/get :lending_terms_acceptance_required_for_order)
+      (when (-> (settings! tx [:lending_terms_acceptance_required_for_order])
+                :lending_terms_acceptance_required_for_order)
         (throw (ex-info "Lending terms need to be accepted" {}))))
     (let [uuid (-> (sql/insert-into :customer_orders)
                    (sql/values [{:purpose purpose

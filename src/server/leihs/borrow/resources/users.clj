@@ -5,9 +5,9 @@
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.languages :as languages]
-            [leihs.borrow.resources.settings :as settings]
             [leihs.borrow.resources.users.shared :refer [get-by-id base-sqlmap]]
             [leihs.core.paths :refer [path]]
+            [leihs.core.settings :refer [settings!]]
             [leihs.core.sql :as sql]
             [leihs.core.user.queries :refer [merge-search-term-where-clause]]
             [leihs.core.remote-navbar.shared :refer [sub-apps]]))
@@ -40,16 +40,19 @@
    :session-id session-id})
 
 (defn get-navigation [{{:keys [tx authenticated-entity]} :request} _ {user-id :id}]
-  (let [base-url (:external_base_url (settings/get-system-and-security tx))
+  (let [settings (settings! tx [:external_base_url :documentation_link])
+        base-url (:external_base_url settings)
         sub-apps (sub-apps tx authenticated-entity)]
     {:legacy-url (str base-url "/borrow/")
      :admin-url (when (:admin sub-apps) (str base-url "/admin/"))
      :procure-url (when (:procure sub-apps) (str base-url "/procure/"))
      :manage-nav-items (map #(assoc % :url (:href %)) (:manage sub-apps))
-     :documentation-url (:documentation_link (settings/get tx))}))
+     :documentation-url (:documentation_link settings)}))
 
 (defn get-settings [{{:keys [tx]} :request} _ {user-id :id}]
-  (let [settings (settings/get tx)]
+  (let [settings (settings! tx [:lending_terms_acceptance_required_for_order
+                                :lending_terms_url
+                                :show_contact_details_on_customer_order])]
     {:lending-terms-acceptance-required-for-order (:lending_terms_acceptance_required_for_order settings)
      :lending-terms-url (:lending_terms_url settings)
      :show-contact-details-on-customer-order (:show_contact_details_on_customer_order settings)}))

@@ -5,8 +5,8 @@
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
-            [leihs.borrow.resources.settings :as settings]
             [leihs.core.database.helpers :as database]
+            [leihs.core.settings :refer [settings!]]
             [leihs.core.sql :as sql]))
 
 (defn columns [tx]
@@ -60,7 +60,7 @@
         (sql/order-by (helpers/treat-order-arg order-by :contracts)))))
 
 (defn print-url [{{:keys [tx]} :request} _ {:keys [id]}]
-  (str (:external_base_url (settings/get-system-and-security tx))
+  (str (:external_base_url (settings! tx))
        "/borrow/user/contracts/"
        id))
 

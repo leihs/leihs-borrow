@@ -2,17 +2,13 @@
   (:require [taoensso.timbre :as timbre :refer [debug info spy]]
             [clojure.java.jdbc :as jdbc]
             [leihs.core.db :as db]
-            [leihs.core.settings :refer [settings-base-query]]
+            [leihs.core.settings :refer [settings!]]
             [leihs.core.sql :as sql]))
 
 (defn running-reservations
   "Used by the availability calculation."
   [tx model-id pool-id exclude-res-ids]
-  (let [timeout-minutes (-> settings-base-query
-                            (sql/select :timeout_minutes)
-                            sql/format
-                            (->> (jdbc/query tx))
-                            first
+  (let [timeout-minutes (-> (settings! tx [:timeout_minutes])
                             :timeout_minutes)]
     (-> (sql/select :*,
                     :id,

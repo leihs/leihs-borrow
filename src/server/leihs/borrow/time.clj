@@ -1,11 +1,10 @@
 (ns leihs.borrow.time
-  (:require [leihs.borrow.resources.settings :as settings]
+  (:require [leihs.core.settings :refer [settings!]]
             java-time)
   (:import [java.time.format DateTimeFormatter]))
 
 (defn now [tx]
-  (let [time-zone (-> tx
-                      settings/get
+  (let [time-zone (-> (settings! tx [:time_zone])
                       :time_zone
                       java.util.TimeZone/getTimeZone)]
     (java-time/local-date-time (java-time/instant) time-zone)))

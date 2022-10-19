@@ -9,10 +9,10 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.inventory-pools :as pools]
             [leihs.borrow.resources.models :as models]
-            [leihs.borrow.resources.settings :as settings]
             [leihs.borrow.time :as time]
             [leihs.core.core :refer [raise]]
             [leihs.core.database.helpers :as database]
+            [leihs.core.settings :refer [settings!]]
             [leihs.core.sql :as sql]))
 
 (doseq [s [::inventory_pool_id ::start_date ::end_date]]
@@ -181,7 +181,7 @@
   [(sql/call :to_char
              (sql/raw
                (str "updated_at + interval '"
-                    (:timeout_minutes (settings/get tx))
+                    (:timeout_minutes (settings! tx [:timeout_minutes]))
                     " minutes'"))
              helpers/date-time-format)
    :updated_at])
