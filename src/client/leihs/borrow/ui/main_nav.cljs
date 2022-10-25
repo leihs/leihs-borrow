@@ -147,7 +147,10 @@
      {:id "menu"}
 
      [:> UI/Components.Design.Menu.Group
-      {:title (t :borrow/section-title)}
+      {:class "d-lg-none" :title (t :borrow/section-title)}
+      (borrow-menu-items)]
+     [:> UI/Components.Design.Menu.Group
+      {:class "d-none d-lg-block"}
       (borrow-menu-items)]
 
      [:> UI/Components.Design.Menu.Group
