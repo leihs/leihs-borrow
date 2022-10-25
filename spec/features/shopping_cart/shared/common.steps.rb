@@ -2,20 +2,6 @@ step "I navigate to the cart" do
   visit "/app/borrow/order"
 end
 
-step "the following items exist:" do |table|
-  table.hashes.each do |item|
-    model = LeihsModel.find(product: item["model"]).presence || fail("Model not found: #{item["model"].inspect}")
-    pool = InventoryPool.find(name: item["pool"]).presence || fail("Pool not found: #{item["pool"].inspect}")
-    FactoryBot.create(
-      :item,
-      inventory_code: item["code"],
-      leihs_model: model,
-      owner: pool,
-      responsible: pool,
-    )
-  end
-end
-
 def create_reservations_from_table_for_user(user, table)
   expect(user).to be_a User
   table.hashes.each do |r|

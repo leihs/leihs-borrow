@@ -292,7 +292,8 @@
                (conj result pool-avail))
         (conj result (assoc pool-avail :quantity desired-quantity))))))
 
-(defn create-draft
+(defn create-optimistic
+  "Creates a reservation without checking availability (as `create` does). However the model must exist and be reservable for the user."
   [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [model-id start-date end-date quantity inventory-pool-id] :as args}
    _]
@@ -304,7 +305,7 @@
              :end_date (sql/call :cast end-date :date)
              :quantity 1
              :user_id user-id
-             :status "draft"
+             :status "unsubmitted"
              :created_at (time/now tx)
              :updated_at (time/now tx)}]
     (-> (sql/insert-into :reservations)

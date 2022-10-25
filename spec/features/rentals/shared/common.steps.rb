@@ -51,20 +51,6 @@ step "a customer order with title :title and the following reservations exists f
   end
 end
 
-step "the following items exist:" do |table|
-  table.hashes.each do |item|
-    model = LeihsModel.find(product: item["model"]).presence || fail("Model not found: #{item["model"].inspect}")
-    pool = InventoryPool.find(name: item["pool"]).presence || fail("Pool not found: #{item["pool"].inspect}")
-    FactoryBot.create(
-      :item,
-      inventory_code: item["code"],
-      leihs_model: model,
-      owner: pool,
-      responsible: pool,
-    )
-  end
-end
-
 # Override for the equally named step, but with date interpolation
 step "the page subtitle is :subtitle" do |subtitle|
   subtitle = interpolate_dates_short(subtitle)

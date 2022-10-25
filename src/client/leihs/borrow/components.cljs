@@ -30,10 +30,12 @@
 
 
 (defn error-view [errors]
-  (let [has-401 (some #(= 401 (-> % :extensions :code)) errors)]
+  (let [has-401 (some #(= 401 (-> % :extensions :code)) errors)
+        has-403 (some #(= 403 (-> % :extensions :code)) errors)]
     [:> UI/Components.Design.ErrorView
      {:title (t :borrow.errors.loading-error)
-      :message (when has-401 (t :borrow.errors.unauthorized))
+      :message (cond has-401 (t :borrow.errors.unauthorized)
+                     has-403 (t :borrow.errors.forbidden))
       :actions (if has-401
                  [{:title (t :borrow.errors.go-to-login) :onClick #(js/document.location.reload)}] ; (server will send the correct redirect)
                  [{:title (t :borrow.errors.reload) :onClick #(js/document.location.reload)}

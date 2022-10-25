@@ -145,19 +145,6 @@
          (fn [data _] (:errors data)))
 
 ;-; VIEWS
-(defn form-line [name label input-props]
-  [:> UI/Components.Design.Section {:title label}
-   [:label.visually-hidden {:html-for name} label]
-
-   [:div
-    [:input
-     (merge
-      input-props
-      {:id name
-       :name name
-       :placeholder label
-       :class (str "form-control " (get input-props :class))
-       :style (merge (get input-props :style))})]]])
 
 (defn models-list [models model-filters]
   (let

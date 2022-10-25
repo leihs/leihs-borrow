@@ -7,6 +7,7 @@
             [leihs.core.sql :as sql]
             [leihs.core.core :refer [spy-with]]
             [leihs.borrow.db :refer [query]]
+            [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.inventory-pools :as pools]
             [leihs.borrow.resources.models :as models]
@@ -25,15 +26,28 @@
       (sql/where [:= :model_groups.type "Template"])
       (sql/order-by [:model_groups.name :asc])))
 
-(defn get-one-by-id [tx id]
-  (-> base-sqlmap
-      (sql/merge-where [:= :model_groups.id id])
-      sql/format
-      (query tx)
-      first))
+(defn get-one-by-id [tx id user-id]
+  (if-let
+   [template
+    (-> base-sqlmap
+        (sql/merge-join :inventory_pools_model_groups
+                        [:=
+                         :inventory_pools_model_groups.model_group_id
+                         :model_groups.id])
+        (sql/merge-join :inventory_pools
+                        [:=
+                         :inventory_pools.id
+                         :inventory_pools_model_groups.inventory_pool_id])
+        (sql/merge-where [:= :model_groups.id id])
+        (pools/accessible-to-user-condition user-id)
+        sql/format
+        (query tx)
+        first)]
+    template
+    (throw (ex-info "Resource not found or not accessible for profile user id" {:status 403}))))
 
-(defn get-one [{{:keys [tx]} :request} {:keys [id]} _]
-  (get-one-by-id tx id))
+(defn get-one [{{:keys [tx]} :request user-id ::target-user/id} {:keys [id]} _]
+  (get-one-by-id tx id user-id))
 
 (defn get-multiple [{{tx :tx} :request user-id ::target-user/id} _ _]
   (-> base-sqlmap
@@ -63,11 +77,11 @@
   (lines tx template-id))
 
 (defn apply
-  [{{:keys [tx]} :request :as context}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {template-id :id start-date :start-date end-date :end-date
     :as args}
    _]
-  (let [tmpl (get-one-by-id tx template-id)
+  (let [tmpl (get-one-by-id tx template-id user-id)
         tmpl-lines (lines tx template-id)]
     (->> tmpl-lines
          (map (fn [line]
@@ -78,7 +92,7 @@
                     (merge <> {:start-date start-date
                                :end-date end-date
                                :inventory-pool-id (:inventory-pool-id tmpl)})
-                    (reservations/create-draft context <> nil)))))
+                    (reservations/create-optimistic context <> nil)))))
          (remove nil?)
          flatten)))
 

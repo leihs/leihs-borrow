@@ -23,7 +23,9 @@
  (fn-traced [{:keys [db]} [_ _]]
    (let [user-id (current-user/get-current-profile-id db)]
      {:dispatch [::re-graph/mutate
-                 (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql")
+                 (str
+                  (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql") "\n"
+                  (rc/inline "leihs/borrow/features/shopping_cart/fragment_unsubmittedOrderProps.gql"))
                  {:userId user-id}
                  [::on-refresh]]})))
 

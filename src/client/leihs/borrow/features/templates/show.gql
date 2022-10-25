@@ -1,5 +1,5 @@
-query templateShow($id: UUID!) {
-  template(id: $id) {
+query templateShow($id: UUID!, $userId: UUID) {
+  template(id: $id, userId: $userId) {
     id
     name
     inventoryPool {
@@ -10,7 +10,17 @@ query templateShow($id: UUID!) {
       model {
         id
         name
+        manufacturer
         isReservable
+        images {
+          id
+          imageUrl
+        }
+        coverImage {
+          id
+          imageUrl
+        }
+        isFavorited
       }
       quantity
     }

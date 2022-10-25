@@ -124,7 +124,9 @@
               :no-reservable-items {:en-GB "No reservable items found"
                                     :de-CH "Keine reservierbaren Gegenstände gefunden"}
               :check-available-pools {:en-GB "Check available inventory pools"
-                                      :de-CH "Verfügbare Inventarparks prüfen"}}
+                                      :de-CH "Verfügbare Inventarparks prüfen"}
+              :templates {:en-GB "Templates"
+                          :de-CH "Vorlagen"}}
     :categories {:sub-categories {:en-GB "Sub-categories"
                                   :de-CH "Unterkategorien"}
                  :items {:en-GB "Items"
@@ -147,8 +149,12 @@
                             :de-CH "Fehler bei der Anzeige"}
              :loading-error {:en-GB "Error loading this content"
                              :de-CH "Fehler beim Laden"}
+             ; 401
              :unauthorized {:en-GB "User not logged in"
                             :de-CH "Benutzer ist nicht angemeldet"}
+             ; 403
+             :forbidden {:en-GB "This Resource is not available for the current profile"
+                         :de-CH "Diese Ressource ist für das aktuelle Profil nicht verfügbar"}
              :reload {:en-GB "Reload current page"
                       :de-CH "Seite neu laden"}
              :go-to-start {:en-GB "Go to start page"
@@ -606,7 +612,47 @@
                                              :de-CH "Abbrechen"}
                                     :confirm {:en-GB "Delete"
                                               :de-CH "Löschen"}}}
-    :templates {:title {:en-GB "Templates"
-                        :de-CH "Vorlagen"}
-                :some-not-reservable {:en-GB "Some models are not reservable!"
-                                      :de-CH "Some models are not reservable!"}}}})
+    :templates {:index {:title {:de-CH "Vorlagen" :en-GB "Templates"}
+                        :no-templates-for-current-profile {:de-CH "Für das aktuelle Profil sind keine Vorlagen verfügbar"
+                                                           :en-GB "No templates available for the current profile"}}
+                :show {:title {:de-CH "Vorlage" :en-GB "Template"}
+                       :items {:de-CH "Gegenstände" :en-GB "Items"}
+                       :item-title {:de-CH "{itemCount}× {itemName}" :en-GB "{itemCount}× {itemName}"}
+                       :template-not-available {:de-CH "Diese Vorlage ist für das aktuelle Profil nicht verfügbar"
+                                                :en-GB "This template is not available for the current profile"}
+                       :some-items-not-available {:de-CH "Die Gegenstände in grauer Schrift sind für das aktuelle Profil nicht reservierbar"
+                                                  :en-GB "The items shown in grey font are not reservable for the current profile"}
+                       :no-items-available {:de-CH "Diese Vorlage enthält keine Gegenstände, welche für das aktuelle Profil reservierbar sind"
+                                            :en-GB "This template does not contain any items that can be reserved for the current profile"}
+                       :apply-button-label {:de-CH "Gegenstände bestellen"
+                                            :en-GB "Order items"}}
+                :apply {:dialog {:title {:de-CH "Gegenstände hinzufügen" :en-GB "Add items"}
+                                 :info {:de-CH "{count, plural, 
+                                                         =1 {Ein Gegenstand wird zum Warenkorb hinzugefügt.}
+                                                         other {# Gegenstände werden zum Warenkorb hinzugefügt.}}"
+                                        :en-GB "{count, plural, 
+                                                         =1 {One item will be added to the cart.}
+                                                         other {# items will be added to the cart.}}"}
+                                 :error-no-items {:de-CH "Keine Gegenstände gefunden"
+                                                  :en-GB "No items found"}
+                                 :time-span {:de-CH "Zeitraum" :en-GB "Time span"}
+                                 :undefined {:de-CH "Unbestimmt" :en-GB "undefined"}
+                                 :from {:de-CH "Von" :en-GB "From"}
+                                 :until {:de-CH "Bis" :en-GB "Until"}
+                                 :order-for {:de-CH "Bestellung für" :en-GB "Order for"}
+                                 :cancel {:de-CH "Abbrechen" :en-GB "Cancel"}
+                                 :submit {:de-CH "Hinzufügen" :en-GB "Add"}
+                                 :validation {:start-after-end {:de-CH "Enddatum muss nach Beginndatum sein"
+                                                                :en-GB "End date must be after start date"}
+                                              :start-date-in-past {:de-CH "Datum liegt in der Vergangenheit"
+                                                                   :en-GB "Date is in the past"}
+                                              :end-date-too-late {:de-CH "Datum darf nicht nach {maxDate, date, small} sein"
+                                                                  :en-GB "Date must not be after {maxDate, date, small}"}}}
+                        :success-notification {:title {:de-CH "Gegenstände hinzugefügt" :en-GB "Items added"}
+                                               :message {:de-CH "{count, plural, 
+                                                                          =1 {Ein Gegenstand wurde zum Warenkorb hinzugefügt und kann nun dort überprüft werden.}
+                                                                          other {# Gegenstände wurden zum Warenkorb hinzugefügt und können nun dort überprüft werden.}}"
+                                                         :en-GB "{count, plural, 
+                                                                          =1 {One item was added to the cart and can be reviewed/edited there.}
+                                                                          other {# items were added to the cart and can be reviewed/edited there.}}"}
+                                               :confirm {:de-CH "Zum Warenkorb" :en-GB "Go to cart"}}}}}})

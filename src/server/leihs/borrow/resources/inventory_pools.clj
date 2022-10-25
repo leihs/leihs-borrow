@@ -23,7 +23,7 @@
                       [:=
                        :access_rights.inventory_pool_id
                        :inventory_pools.id])
-      (sql/merge-where [:= :access_rights.user_id user-id])))
+      (sql/merge-where [(if (coll? user-id) :in :=) :access_rights.user_id user-id])))
 
 (defn accessible-to-user [tx user-id]
   (-> base-sqlmap
@@ -90,6 +90,20 @@
       (->> (jdbc/query tx))
       first
       :exists))
+
+(defn has-templates? [{{:keys [tx]} :request} _ {:keys [id]}]
+  (-> (sql/select :*)
+      (sql/from :model_groups)
+      (sql/join [:inventory_pools_model_groups :ipmg]
+                [:= :ipmg.model_group_id :model_groups.id])
+      (sql/where [:and
+                  [:= :inventory_pool_id id]
+                  [:= :type "Template"]])
+      (sql/limit 1)
+      sql/format
+      (->> (jdbc/query tx))
+      count
+      (> 0)))
 
 (defn maximum-reservation-time [{{:keys [tx]} :request} _ _]
   (-> (settings! tx [:maximum_reservation_time])

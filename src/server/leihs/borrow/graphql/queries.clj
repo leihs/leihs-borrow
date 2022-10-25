@@ -40,6 +40,7 @@
    :has-reservable-items inventory-pools/has-reservable-items?
    :images images/get-multiple
    :inventory-pool inventory-pools/get-one
+   :inventory-pool-has-templates inventory-pools/has-templates?
    :inventory-pools inventory-pools/get-multiple
    :is-favorited-model models/favorited?
    :is-reservable-model models/reservable?

@@ -54,16 +54,6 @@
     {:title (t :borrow.debug-page/title)}]
 
    [:> UI/Components.Design.Stack {:space 4}
-    [:> UI/Components.Design.Section {:title "Links which are not in the menu" :collapsible true}
-     [:> UI/Components.Design.ListCard.Stack
-      [:> UI/Components.Design.ListCard {:href (routing/path-for ::routes/debug-page)
-                                         :one-line true}
-       (t :borrow.debug-page/title) " (this page)"]
-      [:> UI/Components.Design.ListCard {:href (routing/path-for ::routes/templates-index)
-                                         :one-line true}
-       (t :borrow.templates/title)]]]
-
-
     [:> UI/Components.Design.Section {:title "Dev nav" :collapsible true}
      [:> UI/Components.Design.ListCard.Stack
       [:> UI/Components.Design.ListCard {:href (routing/path-for ::routes/categories-show

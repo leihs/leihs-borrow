@@ -114,7 +114,7 @@
   (let [handler @(subscribe [:routing/current-handler])]
     [:<>
      [menu-link (routing/path-for ::routes/home) (t :borrow/catalog)
-      (some #{handler} [::routes/home ::routes/categories-show ::routes/models ::routes/models-show])]
+      (some #{handler} [::routes/home ::routes/categories-show ::routes/models ::routes/models-show ::routes/templates-index ::routes/templates-show])]
      [menu-link (routing/path-for ::routes/shopping-cart) (t :borrow/shopping-cart)
       (some #{handler} [::routes/shopping-cart])]
      [menu-link (routing/path-for ::routes/rentals-index) (t :user/rentals)

@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Wed Sep 28 2022 16:34:39 GMT+0200 (Central European Summer Time)
+# timestamp: Mon Oct 24 2022 17:05:13 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -143,6 +143,7 @@ type InventoryPool {
   description: String
   email: String!
   hasReservableItems: Boolean!
+  hasTemplates: Boolean
   id: UUID!
   isActive: Boolean!
   maximumReservationTime: Int
@@ -223,7 +224,7 @@ input ModelsOrderByInput {
 """Root of all mutations."""
 type MutationRoot {
   addToCart(ids: [UUID!], userId: UUID): [Reservation]
-  applyTemplate(endDate: Date!, id: UUID!, startDate: Date!): [Reservation]
+  applyTemplate(endDate: Date!, id: UUID!, startDate: Date!, userId: UUID): [Reservation]
   cancelOrder(id: UUID!): Rental!
   createReservation(
     endDate: Date!
@@ -333,7 +334,7 @@ type QueryRoot {
   currentUser(userId: UUID): CurrentUser!
   delegation(id: UUID!): Delegation!
   inventoryPool(id: UUID!): InventoryPool
-  inventoryPools(orderBy: [InventoryPoolsOrderByInput]): [InventoryPool]
+  inventoryPools(orderBy: [InventoryPoolsOrderByInput], userId: UUID): [InventoryPool]
   languages: [Language]
   model(id: UUID!, userId: UUID): Model!
   models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], poolIds: [UUID!], quantity: Int, searchTerm: String, userId: UUID): ModelsConnection
@@ -362,8 +363,8 @@ type QueryRoot {
     withReturns: Boolean
   ): RentalsConnection
   rootCategories(limit: Int, poolIds: [UUID!], userId: UUID): [Category!]
-  template(id: UUID!): Template!
-  templates: [Template!]
+  template(id: UUID!, userId: UUID): Template!
+  templates(userId: UUID): [Template!]
   testing(sleepSecs: Int): String
   users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
 }

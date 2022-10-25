@@ -50,16 +50,26 @@ step "I accept the :title dialog with the text:" do |title, text|
   end
 end
 
-step "I see the following lines in the :name section:" do |section_name, table|
-  items_section = find_ui_section(title: section_name)
-  item_lines = get_ui_list_cards(items_section)
+def expect_equal_card_data(card_data, table) 
   # ignore keys that are not present in the expectations table by removing them:
-  actual_lines = item_lines.map { |l| l.slice(*table.headers.map(&:to_sym)) }
+  actual_data = card_data.map { |l| l.slice(*table.headers.map(&:to_sym)) }
 
   # interpolate dates in expected foot
   expected_lines = table.hashes.map { |h| h["foot"].nil? ? h : h.merge({ "foot" => interpolate_dates_short(h["foot"]) }) }
 
-  expect(actual_lines).to eq symbolize_hash_keys(expected_lines)
+  expect(actual_data).to eq symbolize_hash_keys(expected_lines)
+end
+
+step "I see the following lines in the :name section:" do |section_name, table|
+  items_section = find_ui_section(title: section_name)
+  card_data = get_ui_list_cards(items_section)
+  expect_equal_card_data(card_data, table)
+end
+
+step "I see the following lines in the page content:" do |table|
+  content = find_ui_page_content
+  card_data = get_ui_list_cards(content)
+  expect_equal_card_data(card_data, table)
 end
 
 step "I click on the card with title :title" do |title|

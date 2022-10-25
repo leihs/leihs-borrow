@@ -1,37 +1,7 @@
 mutation refreshTimeout($userId: UUID) {
   refreshTimeout(userId: $userId) {
     unsubmittedOrder {
-      validUntil
-      reservations {
-        endDate
-        id
-        inventoryPool {
-          id
-          name
-        }
-        model {
-          id
-          name
-          images {
-            id
-            imageUrl
-          }
-          totalBorrowableQuantities {
-            inventoryPool {
-              id
-              name
-            }
-            quantity
-          }
-        }
-        startDate
-        status
-        user {
-          id
-        }
-      }
-      invalidReservationIds
-      userId
+      ...unsubmittedOrderProps
     }
   }
 }

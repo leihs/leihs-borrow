@@ -2,12 +2,21 @@ mutation applyTemplate(
   $id: UUID
   $endDate: Date!
   $startDate: Date!
+  $userId: UUID
 ) {
    applyTemplate(
+     userId: $userId
      id: $id
      startDate: $startDate
      endDate: $endDate
    ) {
     id
   }
+
+  refreshTimeout(userId: $userId) {
+    unsubmittedOrder {
+      ...unsubmittedOrderProps
+    }
+  }
+
 }

@@ -17,10 +17,13 @@
    [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.components :as ui]
    [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.models.filter-modal :as filter-modal]
    ["/leihs-ui-client-side-external-react" :as UI]
-   #_[leihs.borrow.components :as ui]))
+   [reagent.core :as r]))
+
+(set-default-translate-path :borrow.catalog)
 
 (reg-event-fx
  ::fetch-index
@@ -38,20 +41,26 @@
  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
    (if errors
      {:db (assoc-in db [::errors] errors)}
-     {:db (assoc-in db [:ls ::data] (get-in data [:categories]))})))
+     {:db (assoc-in db [:ls ::data] data)})))
 
 (reg-sub
- ::categories-index
- (fn [db] (get-in db [:ls ::data])))
+ ::categories
+ (fn [db] (get-in db [:ls ::data :categories])))
 
 (reg-sub
- ::categories-index-errors
+ ::has-templates?
+ (fn [db] (->> (get-in db [:ls ::data :inventory-pools])
+               (some #(% :has-templates)))))
+
+(reg-sub
+ ::errors
  (fn [db] (get-in db [::errors])))
 
 (defn categories-list [model-filters]
-  (let [categories @(subscribe [::categories-index])
-        errors @(subscribe [::categories-index-errors])
-        list
+  (let [categories @(subscribe [::categories])
+        errors @(subscribe [::errors])
+        has-templates? @(subscribe [::has-templates?])
+        category-items
         (doall
          (for [category (or categories [])]
            {:id (:id category)
@@ -60,12 +69,19 @@
                                         :categories-path (:id category)
                                         :query-params model-filters))
             :caption (:name category)
-            :imgSrc (get-in category [:images 0 :image-url])}))]
+            :imgSrc (get-in category [:images 0 :image-url])}))
+        all-items (if has-templates?
+                    (conj (into [] category-items)
+                          {:id "templates"
+                           :href (routing/path-for ::routes/templates-index)
+                           :placeholder (r/as-element [:div {:style {:width "5rem"}} [:> UI/Components.Design.TemplateIcon]])
+                           :caption (t :templates)})
+                    category-items)]
 
     [:<>
      (when errors
        [ui/error-view errors])
-     [:> UI/Components.Design.SquareImageGrid {:className "ui-category-list" :list list}]]))
+     [:> UI/Components.Design.SquareImageGrid {:className "ui-category-list" :list all-items}]]))
 
 (defn sub-categories-list [categories model-filters]
   [:> UI/Components.Design.ListCard.Stack

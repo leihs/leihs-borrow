@@ -58,7 +58,9 @@
                                     :maximumReservationTime {:type Int
                                                              :resolve :maximum-reservation-time}
                                     :reservationAdvanceDays {:type Int
-                                                             :resolve :reservation-advance-days}}}
+                                                             :resolve :reservation-advance-days}
+                                    :hasTemplates {:type Boolean
+                                                   :resolve :inventory-pool-has-templates}}}
            :Suspension {:fields {:id {:type (non-null :UUID)}
                                  :inventoryPool {:type (non-null :InventoryPool)
                                                  :resolve :inventory-pool}
@@ -408,10 +410,12 @@
                           :userId {:type :UUID}}
                    :resolve :model
                    :type (non-null :Model)}
-           :template {:args {:id {:type (non-null :UUID)}}
+           :template {:args {:id {:type (non-null :UUID)}
+                             :userId {:type :UUID}}
                       :resolve :template
                       :type (non-null :Template)}
-           :templates {:resolve :templates
+           :templates {:args {:userId {:type :UUID}}
+                       :resolve :templates
                        :type (list (non-null :Template))}
            :models {:args {:categoryId {:type :UUID}
                            :ids {:type (list (non-null :UUID))}
@@ -430,7 +434,8 @@
                            :args {:id {:type (non-null :UUID)}}
                            :type :InventoryPool}
            :inventoryPools {:resolve :inventory-pools
-                            :args {:orderBy {:type (list :InventoryPoolsOrderByInput)}}
+                            :args {:userId {:type :UUID}
+                                   :orderBy {:type (list :InventoryPoolsOrderByInput)}}
                             :type (list :InventoryPool)}
            :languages {:resolve :languages :type (list :Language)}
            :category {:args {:id {:type (non-null :UUID)}
@@ -499,7 +504,8 @@
                               :type :RefreshTimeoutResult}
              :applyTemplate {:args {:id {:type (non-null :UUID)}
                                     :startDate {:type (non-null :Date)}
-                                    :endDate {:type (non-null :Date)}}
+                                    :endDate {:type (non-null :Date)}
+                                    :userId {:type :UUID}}
                              :resolve :apply-template
                              :type (list :Reservation)}
              :testing {:resolve :testing-mutate

@@ -10,4 +10,8 @@ query getRootCategories(
       imageUrl
     }
   }
+  inventoryPools: inventoryPools(userId: $userId) {
+    id
+    hasTemplates
+  }
 }

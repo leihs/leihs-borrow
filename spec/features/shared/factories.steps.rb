@@ -232,6 +232,20 @@ step "there is/are :n borrowable item(s) for model :model in pool :pool" do |n, 
   end
 end
 
+step "the following items exist:" do |table|
+  table.hashes.each do |item|
+    model = LeihsModel.find(product: item["model"]).presence || fail("Model not found: #{item["model"].inspect}")
+    pool = InventoryPool.find(name: item["pool"]).presence || fail("Pool not found: #{item["pool"].inspect}")
+    FactoryBot.create(
+      :item,
+      inventory_code: item["code"],
+      leihs_model: model,
+      owner: pool,
+      responsible: pool,
+    )
+  end
+end
+
 step "there is a category :name" do |name|
   @category = FactoryBot.create(:category, name: name)
 end
@@ -254,4 +268,14 @@ end
 
 def find_user_by_full_name!(name)
   User.find(login: user_login_from_full_name(name)) || fail("Could not find User '#{name}'!")
+end
+
+step "the inventory pool :pool_name has a template called :template_name with the following models:" do |pool_name, template_name, models|
+  pool = InventoryPool.find(name: pool_name)
+  template = FactoryBot.create(:template, name: template_name)
+  template.add_inventory_pool(pool)
+  for h in models.hashes
+    model = LeihsModel.find(product: h['product'])
+    template.add_direct_model(model)
+  end
 end

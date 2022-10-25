@@ -1,5 +1,5 @@
-query templatesIndex {
-  templates {
+query templatesIndex($userId: UUID) {
+  templates(userId: $userId) {
     id
     name
     inventoryPool {
