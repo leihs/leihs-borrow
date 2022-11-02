@@ -7,7 +7,7 @@ include:
 traits:
   Docker Engine: true
 
-max_trials: 5
+max_trials: 3
 
 scripts:
   build-borrow-uberjar:

@@ -39,6 +39,5 @@ task_defaults:
       body: |
         #!/usr/bin/env bash
         set -euxo
-        export PATH=~/.rubies/$RUBY/bin:$PATH
         mkdir -p log
         bundle exec rspec --backtrace $CIDER_CI_TASK_FILE

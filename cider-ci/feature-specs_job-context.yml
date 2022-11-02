@@ -10,7 +10,7 @@ task_defaults:
     - cider-ci/translations_task-component.yml
     - cider-ci/service_task-component.yml
     - cider-ci/legacy_service-task_component.yml
-  max_trials: 3
+  max_trials: 2
   traits:
     OpenJDK: true
     Firefox ESR: true
@@ -44,6 +44,5 @@ task_defaults:
       body: |
         #!/usr/bin/env bash
         set -eux
-        export PATH=~/.rubies/$RUBY/bin:$PATH
         mkdir -p log
         xvfb-run -a -e log/xvfb.log bundle exec rspec $CIDER_CI_TASK_FILE

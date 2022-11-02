@@ -12,7 +12,6 @@ scripts:
     body: |
       #!/usr/bin/env bash
       set -eux
-      export PATH=~/.rubies/$RUBY/bin:$PATH
       bundle exec ruby spec/mock/legacy-mock-server.rb -p ${LEIHS_LEGACY_HTTP_PORT}
 
   legacy-mock-server_is-serving:

@@ -10,5 +10,4 @@ scripts:
       #!/usr/bin/env bash
       set -eux
       cd ${LEIHS_BORROW_DIR}
-      git fetch --all --quiet
-      git submodule update --quiet --init --recursive
+      ./bin/dump-translations

@@ -144,7 +144,6 @@ module TurnipExtensions
     def run_step(*args)
       log_turnip_step(*args)
       super(*args)
-      begin; spec_screenshot(RSpec.current_example, args.second);       rescue => e; end
     end
   end
 end

@@ -1,20 +1,15 @@
-include:
-  - path: cider-ci/install-ruby_task-component.yml
-    submodule: [leihs-ui]
-
 traits:
+  asdf-ruby: true
   Bash: true
 
 scripts:
-
   bundle-ruby:
-    exclusive_executor_resource: bundle-ruby_{{RUBY}}
+    exclusive_executor_resource: asdf-ruby
     timeout: 20 Minutes
     body: |
       #!/usr/bin/env bash
       set -eux
-      export PATH=~/.rubies/$RUBY/bin:$PATH
+      cd $LEIHS_BORROW_DIR
+      asdf install ruby
       bundle install
-    start_when:
-      install-ruby:
-        script_key: install-ruby
+

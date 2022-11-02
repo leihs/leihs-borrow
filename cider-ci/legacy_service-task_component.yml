@@ -3,8 +3,6 @@ git_options:
     include_match: ^.*$
 
 include:
-  - path: cider-ci/shared/legacy-ruby_env.yml
-    submodule: [spec/support/legacy-api]
   - path: cider-ci/task-components/bundle-rspec-ruby.yml
     submodule: [spec/support/legacy-api]
 
@@ -23,7 +21,6 @@ scripts:
     body: |
       set -eux
       cd $LEIHS_LEGACY_DIR
-      export PATH=~/.rubies/$LEGACY_RUBY/bin:$PATH
       export RAILS_SERVE_STATIC_FILES=yes
       ruby -S \
       bundle exec puma \

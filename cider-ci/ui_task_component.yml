@@ -5,10 +5,6 @@ traits:
 scripts:
   prepare-shared-ui:
     exclusive_executor_resource: build-leihs-ui
-    environment_variables:
-      RUBY: '{{RUBY_ENGINE}}-{{RUBY_VERSION}}'
-      RUBY_ENGINE: ruby
-      RUBY_VERSION: 2.6.0
     body: |
       #!/usr/bin/env bash
       set -euxo
@@ -23,8 +19,6 @@ scripts:
       ARTEFACT_PATHS="./leihs-ui/dist ./leihs-ui/bootstrap-theme-leihs/build"
       LOCAL_CACHED_ARTEFACT="/tmp/${ARTEFACT_NAME}_${DIGEST}.tgz" # path of locally cached artefact
       S3_CACHED_ARTEFACT="${ARTEFACT_NAME}_${DIGEST}.tgz"         # name of the artefact in the S3 Bucket
-
-      export PATH=~/.rubies/$RUBY/bin:$PATH # the s3-cache-helper needs this
 
       # check if already locally cached
       if [ -e $LOCAL_CACHED_ARTEFACT ]; then

@@ -7,8 +7,5 @@ environment_variables:
   LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
   LEIHS_LEGACY_DIR: "{{CIDER_CI_WORKING_DIR}}/spec/support/legacy-api"
   LEIHS_DATABASE_DIR: "{{LEIHS_BORROW_DIR}}/database"
-  RUBY: '{{RUBY_ENGINE}}-{{RUBY_VERSION}}'
-  RUBY_ENGINE: ruby
-  RUBY_VERSION: 2.7.5
-  RUBY_BUNDLER_VERSION: 2.3.3
   RAILS_ENV: production
+
