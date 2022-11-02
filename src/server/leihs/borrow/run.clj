@@ -9,7 +9,6 @@
    [leihs.borrow.legacy :as legacy]
    [leihs.borrow.routes :as routes]
    [leihs.borrow.ssr]
-   [leihs.borrow.translations.core :as translations]
    [leihs.core.db :as db]
    [leihs.core.http-server :as http-server]
    [leihs.core.shutdown :as shutdown]
@@ -35,8 +34,6 @@
     (graphql/init options)
     (let [status (status/init)]
       (db/init options (:health-check-registry status)))
-    (when (:load-translations options)
-      (translations/reload))
     (let [http-handler (routes/init)]
       (http-server/start options http-handler))))
 
@@ -49,8 +46,7 @@
      shutdown/pid-file-option]
     (http-server/cli-options :default-http-port 3250)
     legacy/cli-opts
-    db/cli-options
-    translations/cli-options))
+    db/cli-options))
 
 (defn main-usage [options-summary & more]
   (->> ["leihs-borrow"

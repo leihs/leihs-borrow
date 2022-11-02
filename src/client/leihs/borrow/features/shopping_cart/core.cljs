@@ -18,7 +18,7 @@
    [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.form-helpers :refer [UiTextarea]]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.translate :refer [t dict set-default-translate-path]]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.models.filter-modal :as filter-modal]
@@ -26,6 +26,7 @@
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.customer-orders.core :as rentals]
    [leihs.borrow.features.model-show.availability :as availability]
+   [leihs.borrow.translations :as translations]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
@@ -337,8 +338,8 @@
 
 (defn order-panel-texts []
   ;; NOTE: maybe add a helper function for this in lib.translate?
-  {:label (clj->js (get-in dict [:borrow :order-panel :label]))
-   :validate (clj->js (get-in dict [:borrow :order-panel :validate]))})
+  {:label (clj->js (get-in translations/dict [:borrow :order-panel :label]))
+   :validate (clj->js (get-in translations/dict [:borrow :order-panel :validate]))})
 
 (defn edit-dialog []
   (let [form-valid? (reagent/atom false)]

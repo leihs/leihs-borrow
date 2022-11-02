@@ -12,9 +12,10 @@
                                       subscribe
                                       dispatch]]
    [leihs.borrow.lib.translate :as translate
-    :refer [t dict set-default-translate-path with-translate-path]]
+    :refer [t set-default-translate-path with-translate-path]]
    [leihs.borrow.lib.helpers :as h :refer [log spy]]
    [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton UiDateRangePicker]]
+   [leihs.borrow.translations :as translations]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [remove-blanks presence]]
    ["date-fns" :as date-fns]
@@ -53,7 +54,7 @@
          (fn [l _] l))
 
 (defn model-search-filter-texts []
-  (clj->js (get-in dict [:borrow :filter])))
+  (clj->js (get-in translations/dict [:borrow :filter])))
 
 (defn filter-modal [hide! dispatch-fn saved-opts locale]
   (let [parse-date #(some-> % (date-fns/parse "yyyy-MM-dd" (js/Date.)))

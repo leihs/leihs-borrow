@@ -6,7 +6,7 @@
 
 ### translations
 
-- translations strings are stored in the DB and managed [in this repo in an EDN map](src/server/leihs/borrow/resources/translations/definitions.clj)
+- translations strings are stored [in this repo in an EDN map](src/common/leihs/borrow/translations.cljc)
 - for the translation function we currently use `tongue`
 - long-term we maybe want to use a more generic translation function (for example [Format.JS](https://formatjs.io/docs/core-concepts/icu-syntax) or [i18next](https://www.i18next.com/translation-function/essentials))
 - we definitly want to use the ICU syntax (could just reuse the underlying lib [`intl-messageformat`](https://formatjs.io/docs/intl-messageformat/))

@@ -49,7 +49,6 @@ function build {
   else
     ${UI_DIR}/bin/build
     ./bin/cljs-release
-    ./bin/dump-translations
     ./bin/set-built-info
     ./bin/clj-uberjar
   fi

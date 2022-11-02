@@ -69,7 +69,6 @@ COPY . .
 # BUILD: see bin/build (`function build`) for the steps, leaving out those that are prepared (leihs ui, dependencies, …)
 # NOTE: could be further (docker-cache-)optimized by only copying the needed sources before build, but that seems brittle (e.g. copy src/client first, then build client…)
 RUN INSTALL_DEPS=NO ./bin/cljs-release
-RUN ./bin/dump-translations
 RUN ./bin/clj-uberjar
 # NOTE: git info comes last, because the commit-id acts a cache-buster. therefore all expensive tasks need to be done before!
 #       also, we dont run git inside the container (needs full repo inside), but instead supply needed info etc via build arg/env vars:

@@ -1,6 +1,6 @@
-(ns leihs.borrow.translations.definitions)
+(ns leihs.borrow.translations)
 
-(def definitions
+(def dict
   {:borrow
 
   ; --- GENERAL TERMS ---
@@ -469,18 +469,18 @@
                                         :confirm {:de-CH "Stornieren" :en-GB "Cancel order"}
                                         :cancel {:de-CH "Abbrechen" :en-GB "Abort"}}
                   :repeat-order {:dialog {:title {:de-CH "Gegenstände hinzufügen" :en-GB "Add items"}
-                                          :info {:de-CH "{count, plural, 
+                                          :info {:de-CH "{count, plural,
                                                          =1 {Ein Gegenstand wird zum Warenkorb hinzugefügt.}
                                                          other {# Gegenstände werden zum Warenkorb hinzugefügt.}}"
-                                                 :en-GB "{count, plural, 
+                                                 :en-GB "{count, plural,
                                                          =1 {One item will be added to the cart.}
                                                          other {# items will be added to the cart.}}"}
                                           :error-only-options {:de-CH "Optionen können nur durch die Verleihstelle hinzugefügt werden."
                                                                :en-GB "Options can only be added by the lending desk."}
-                                          :warning-some-options {:de-CH "{count, plural, 
+                                          :warning-some-options {:de-CH "{count, plural,
                                                          =1 {Hinweis: Eine Option kann nur durch die Verleihstelle hinzugefügt werden.}
                                                          other {Hinweis: # Optionen können nur durch die Verleihstelle hinzugefügt werden.}}"
-                                                                 :en-GB "{count, plural, 
+                                                                 :en-GB "{count, plural,
                                                          =1 {Please note: One option can only be added by the lending desk.}
                                                          other {Please note: # options can only be added by the lending desk.}}"}
                                           :time-span {:de-CH "Zeitraum" :en-GB "Time span"}
@@ -497,10 +497,10 @@
                                                        :end-date-too-late {:de-CH "Datum darf nicht nach {maxDate, date, small} sein"
                                                                            :en-GB "Date must not be after {maxDate, date, small}"}}}
                                  :success-notification {:title {:de-CH "Gegenstände hinzugefügt" :en-GB "Items added"}
-                                                        :message {:de-CH "{count, plural, 
+                                                        :message {:de-CH "{count, plural,
                                                                           =1 {# Gegenstand wurde zum Warenkorb hinzugefügt und kann nun dort überprüft werden.}
                                                                           other {# Gegenstände wurden zum Warenkorb hinzugefügt und können nun dort überprüft werden.}}"
-                                                                  :en-GB "{count, plural, 
+                                                                  :en-GB "{count, plural,
                                                                           =1 {# item was added to the cart and can be reviewed/edited there.}
                                                                           other {# items were added to the cart and can be reviewed/edited there.}}"}
                                                         :confirm {:de-CH "Zum Warenkorb" :en-GB "Go to cart"}}}}

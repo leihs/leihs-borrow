@@ -2,37 +2,27 @@
   (:require-macros [leihs.borrow.lib.translate])
   (:require ["/leihs-ui-client-side-external-react" :as UI]
             #_["intl-messageformat" :as intl]
+            ; [leihs.borrow.features.languages.core :as languages]
+            ["date-fns/locale" :as locale]
             [ajax.core :refer [GET]]
-            [clojure.string :as string]
             [cljs.test :refer-macros [deftest is testing run-tests]]
+            [clojure.string :as string]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
             [leihs.borrow.features.current-user.core :as current-user]
-            ; [leihs.borrow.features.languages.core :as languages]
             [leihs.borrow.lib.helpers :as h :refer [spy log format]]
             [leihs.borrow.lib.re-frame :refer [dispatch-sync reg-sub reg-event-db reg-event-fx]]
+            [leihs.borrow.translations :as translations]
             [re-frame.db :as db]
             [shadow.resource :as rc]
-            ["date-fns/locale" :as locale]))
+            ))
 
 (def ^:dynamic *default-path* "Default path to use for locating a key." nil)
 (def path-escape-char \!)
-(declare dict)
+
 (def fallbacks {:gsw-CH :de-CH
                 :de-CH :en-US
                 :es :en-GB
                 :en-US :en-GB})
-
-(defn fetch-and-init
-  "Fetch translations from server, store them under window property,
-  build the translate function using the translations and call the callback."
-  [callback]
-  (GET (str js/window.location.origin "/my/user/me/translations")
-       {:format :json
-        :params {:prefix "borrow"}
-        :handler #(let [response (h/keywordize-keys %)]
-                    (do (set! js/window.leihsBorrowTranslations dict)
-                        (def dict (:translations response))
-                        (callback (:languages response))))}))
 
 (def remove-first-char #(-> % str rest string/join))
 
@@ -85,7 +75,7 @@
   (let [path-keys (dict-path-keys dict-path)]
     (loop [locale (locale-to-use @db/app-db)]
       (if locale
-        (if-let [message (get-in dict (concat path-keys [locale]))]
+        (if-let [message (get-in translations/dict (concat path-keys [locale]))]
           (translate message locale values)
           (recur (locale fallbacks)))
         (missing-translation path-keys)))))
@@ -104,27 +94,27 @@
 
 (deftest test-t-base
   (testing "locales and fallbacks"
-    (with-redefs [dict {:test {:gsw-CH "gsw-CH"
+    (with-redefs [translations/dict {:test {:gsw-CH "gsw-CH"
                                :en-GB "en-GB"}}
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use {:locale "gsw-CH"}}}})]
       (is (= (t-base :test nil) "gsw-CH")
           "Translation exists for language to use."))
-    (with-redefs [dict {:test {:de-CH "de-CH"
+    (with-redefs [translations/dict {:test {:de-CH "de-CH"
                                :en-GB "en-GB"}}
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use {:locale "gsw-CH"}}}})]
       (is (= (t-base :test nil) "de-CH")
           "Fallback one level."))
-    (with-redefs [dict {:test {:en-GB "en-GB"}}
+    (with-redefs [translations/dict {:test {:en-GB "en-GB"}}
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use {:locale "gsw-CH"}}}})]
       (is (= (t-base :test nil) "en-GB")
           "Fallback all the way through."))
-    (with-redefs [dict {:test {:de-CH "Sie haben {itemCount, number} Gegenstände!"}}
+    (with-redefs [translations/dict {:test {:de-CH "Sie haben {itemCount, number} Gegenstände!"}}
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use {:locale "de-CH"}}}})]
@@ -135,13 +125,13 @@
           "Test correct locale resolution.")
       (is (= (t-base :test {:itemCount 1000}) "Sie haben 1’000 Gegenstände!")
           "Test number formatting with locale."))
-    (with-redefs [dict {:test {:fr "fr"}}
+    (with-redefs [translations/dict {:test {:fr "fr"}}
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use {:locale "gsw-CH"}}}})]
       (is (= (t-base :test nil) (missing-translation [:test]))
           "No translation for language to use."))
-    (with-redefs [dict {:test {:de-CH "de-CH"}}
+    (with-redefs [translations/dict {:test {:de-CH "de-CH"}}
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use nil}}})]

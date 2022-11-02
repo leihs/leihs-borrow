@@ -40,18 +40,20 @@
    [leihs.borrow.features.templates.show :as templates-show]
    ["/leihs-ui-client-side-external-react" :as UI]
    [leihs.borrow.testing.step-1 :as testing-step-1]
-   [leihs.borrow.testing.step-2 :as testing-step-2]))
+   [leihs.borrow.testing.step-2 :as testing-step-2]
+   [leihs.borrow.translations :as translations]
+   ))
 
 ;-; INIT APP & DB
 (reg-event-fx
  ::init-app-db
- (fn-traced [{:keys [db]} [_ languages]]
+ (fn-traced [{:keys [db]} [_]]
    {:db (-> db
              ; NOTE: clear the routing instance on (re-)load,
              ; otherwise the event wont re-run when hot reloading!
             (dissoc , :routing/routing)
             (assoc , :meta {:app {:debug false}})
-            (assoc-in , [::languages/data] languages))}))
+            (assoc-in , [::languages/data] translations/dict))}))
 
 ;-; EVENTS
 (reg-event-db :set-debug
@@ -135,15 +137,13 @@
                (.getElementById js/document "app")))
 
 (defn ^:export ^:dev/after-load main []
-  (translate/fetch-and-init
-   (fn callback [languages]
-     ; start the app framework; NOTE: order is important!
-     (re-graph/init) ; dispatch-sync
-     (dispatch-sync [::init-app-db languages])
-     (dispatch-sync [:routing/init-routing routes/routes-map])
-     (track-last-delegation-id)
-     ; start the ui
-     (mount-root))))
+  ; start the app framework; NOTE: order is important!
+  (re-graph/init) ; dispatch-sync
+  (dispatch-sync [::init-app-db])
+  (dispatch-sync [:routing/init-routing routes/routes-map])
+  (track-last-delegation-id)
+  ; start the ui
+  (mount-root))
 
 ; ??? braucht es imho nicht (mehr) TS
 ;(main)

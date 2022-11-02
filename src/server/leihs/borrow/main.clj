@@ -5,7 +5,6 @@
     [clojure.tools.cli :as cli :refer [parse-opts]]
     [environ.core :refer [env]]
     [leihs.borrow.run :as run]
-    [leihs.borrow.translations.main :as translations.main]
     [leihs.core.logging]
     [leihs.core.repl :as repl]
     [logbug.catcher :as catcher]
@@ -58,8 +57,6 @@
     (repl/init options)
     (cond (:help options) (print-summary)
           :else (case cmd
-                  :dump-translations (translations.main/main
-                                       options (rest arguments))
                   :run (run/main options (rest arguments))
                   (print-summary)))))
 

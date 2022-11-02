@@ -4,7 +4,6 @@ task_defaults:
       submodule: [database]
     - cider-ci/environment_variables.yml
     - cider-ci/uberjar_task-component.yml
-    - cider-ci/translations_task-component.yml
     - cider-ci/service_task-component.yml
   environment_variables:
     LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'

@@ -53,7 +53,7 @@ def clean_db
   SQL
 
   database[sql].map { |r| r[:table_name] }.reject do |tn|
-    %w[schema_migrations translations_default].include?(tn)
+    %w[schema_migrations].include?(tn)
   end.join(', ')
     .tap { |tables| database.run " TRUNCATE TABLE #{tables} CASCADE; " }
 end
@@ -62,11 +62,6 @@ RSpec.configure do |config|
   config.before(:example) do
     clean_db
     system("LEIHS_DATABASE_NAME=#{db_name} ./database/scripts/restore-seeds")
-    if sql_file = ENV["SQL_FILE"].presence
-      system("cat #{sql_file} | psql --quiet -d #{db_name}")
-    else
-      system("bin/get-translations | psql --quiet -d #{db_name}")
-    end
   end
   # config.after(:suite) do
   #   clean_db
