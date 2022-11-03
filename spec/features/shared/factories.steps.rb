@@ -279,3 +279,21 @@ step "the inventory pool :pool_name has a template called :template_name with th
     template.add_direct_model(model)
   end
 end
+
+step 'there is an entitlement group :name in pool :pool_name' do |name, pool_name|
+  pool = InventoryPool.find(name: pool_name)
+
+  FactoryBot.create(:entitlement_group, inventory_pool: pool, name: name)
+end
+
+step 'the group :entitlement_group is entitled for :n item(s) of model :model' do |entitlement_group_name, n, model_name|
+  model = LeihsModel.find(product: model_name)
+  entitlement_group = EntitlementGroup.find(name: entitlement_group_name)
+
+  FactoryBot.create(:entitlement, leihs_model: model, entitlement_group: entitlement_group, quantity: n)
+end
+
+step "the user is member of entitlement group :entitlement_group_name" do |entitlement_group_name|
+  entitlement_group = EntitlementGroup.find(name: entitlement_group_name)
+  entitlement_group.add_user(@user)
+end

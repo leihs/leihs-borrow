@@ -14,7 +14,7 @@ fragment unsubmittedOrderProps on UnsubmittedOrder {
         id
         imageUrl
       }
-      totalBorrowableQuantities {
+      totalReservableQuantities {
         inventoryPool {
           id
           name

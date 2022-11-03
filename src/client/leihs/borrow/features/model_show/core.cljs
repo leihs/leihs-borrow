@@ -59,12 +59,12 @@
      [::on-fetched-data]]
     :db (assoc-in db [::errors @model-id] nil)}))
 
-(defn pool-ids-with-borrowable-quantity [db model-id]
+(defn pool-ids-with-reservable-quantity [db model-id]
   (let [quants (get-in db
                        [:ls
                         ::data
                         model-id
-                        :total-borrowable-quantities])]
+                        :total-reservable-quantities])]
     (->> quants
          (filter #(-> % :quantity (> 0)))
          (map #(-> % :inventory-pool :id)))))
@@ -97,7 +97,7 @@
  ::fetch-availability
  (fn-traced [{:keys [db]} [_ user-id start-date end-date]]
    (let [model-id @model-id
-         pool-ids (pool-ids-with-borrowable-quantity db model-id)
+         pool-ids (pool-ids-with-reservable-quantity db model-id)
          start-date-exceeds-max? (> (js/Date. start-date) max-date)
          end-or-max-date (if (> (js/Date. end-date) max-date)
                            (h/date-format-day max-date)
@@ -226,11 +226,11 @@
    [(rf/subscribe [::model-data id])
     (rf/subscribe [::current-profile])])
  (fn [[model current-profile] _]
-   (letfn [(assoc-borrowable-quantity [pool]
+   (letfn [(assoc-reservable-quantity [pool]
              (assoc pool
-                    :total-borrowable-quantity
+                    :total-reservable-quantity
                     (->> model
-                         :total-borrowable-quantities
+                         :total-reservable-quantities
                          (filter #(-> % :inventory-pool :id (= (:id pool))))
                          first
                          :quantity)))
@@ -241,7 +241,7 @@
      (->> model
           :availability
           (map :inventory-pool)
-          (map assoc-borrowable-quantity)
+          (map assoc-reservable-quantity)
           (map assoc-suspension)))))
 
 (reg-event-fx

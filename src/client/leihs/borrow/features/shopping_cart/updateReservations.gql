@@ -29,7 +29,7 @@ mutation updateReservations(
         id
         imageUrl
       }
-      totalBorrowableQuantities {
+      totalReservableQuantities {
         inventoryPool {
           id
           name

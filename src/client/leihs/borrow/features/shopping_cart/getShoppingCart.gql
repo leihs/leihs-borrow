@@ -17,7 +17,7 @@ query getShoppingCart($userId: UUID) {
               id
               imageUrl
             }
-            totalBorrowableQuantities {
+            totalReservableQuantities {
               inventoryPool {
                 id
                 name

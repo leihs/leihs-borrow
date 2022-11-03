@@ -83,5 +83,5 @@
    :templates templates/get-multiple
    :template-lines templates/get-lines
    :testing-query testing/query
-   :total-borrowable-quantities models/total-borrowable-quantities
+   :total-reservable-quantities models/total-reservable-quantities
    :total-rental-quantity orders/total-rental-quantity})

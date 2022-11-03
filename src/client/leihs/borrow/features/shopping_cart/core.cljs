@@ -56,10 +56,10 @@
          (assoc-in [:ls ::settings]
                    (get-in data [:current-user :settings]))))))
 
-(defn pool-ids-with-borrowable-quantity [db]
+(defn pool-ids-with-reservable-quantity [db]
   (let [quants (get-in db [::edit-mode
                            :model
-                           :total-borrowable-quantities])]
+                           :total-reservable-quantities])]
     (->> quants
          (filter #(-> % :quantity (> 0)))
          (map #(-> % :inventory-pool :id)))))
@@ -71,7 +71,7 @@
          user-id (-> edit-mode :user-id)
          model (:model edit-mode)
          exclude-reservation-ids (map :id (:res-lines edit-mode))
-         pool-ids (pool-ids-with-borrowable-quantity db)
+         pool-ids (pool-ids-with-reservable-quantity db)
          start-date-exceeds-max? (> (js/Date. start-date) max-date)
          end-or-max-date (if (> (js/Date. end-date) max-date)
                            (h/date-format-day max-date)
@@ -365,9 +365,9 @@
             flatten-pool (fn [{{id :id name :name} :inventory-pool quantity :quantity}]
                            {:id id
                             :name name
-                            :total-borrowable-quantity quantity})
+                            :total-reservable-quantity quantity})
             has-items-or-is-selected (fn [selected-pool-id pool]
-                                       (or (> (:total-borrowable-quantity pool) 0)
+                                       (or (> (:total-reservable-quantity pool) 0)
                                            (= (:id pool) selected-pool-id)))
             assoc-suspension (fn [pool suspensions]
                                (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id)) suspensions)]
@@ -380,7 +380,7 @@
                                               [(merge selected-pool {:user-has-no-access true})])))
 
             pool-id-and-name (:inventory-pool edit-mode-data)
-            pools (->> model :total-borrowable-quantities
+            pools (->> model :total-reservable-quantities
                        (map flatten-pool)
                        (filter #(has-items-or-is-selected (:id pool-id-and-name) %))
                        (map #(-> % (assoc-suspension suspensions)))

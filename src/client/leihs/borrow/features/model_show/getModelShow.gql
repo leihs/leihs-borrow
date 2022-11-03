@@ -45,7 +45,7 @@ query getModelShow(
         }
       }
     }
-    totalBorrowableQuantities {
+    totalReservableQuantities {
       inventoryPool {
         id
       }

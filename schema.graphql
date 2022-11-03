@@ -192,7 +192,7 @@ type Model {
   name: String!
   properties: [Property]
   recommends(first: Int): ModelsConnection
-  totalBorrowableQuantities: [TotalBorrowableQuantity]
+  totalReservableQuantities: [TotalReservableQuantity]
 }
 
 type ModelEdge {
@@ -528,7 +528,7 @@ type Thumbnail {
   size: Int!
 }
 
-type TotalBorrowableQuantity {
+type TotalReservableQuantity {
   inventoryPool: InventoryPool!
   quantity: Int!
 }

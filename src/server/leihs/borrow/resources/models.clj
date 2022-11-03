@@ -24,26 +24,35 @@
             [wharf.core :refer [transform-keys]])
   (:import java.time.format.DateTimeFormatter))
 
-(defn borrowable-quantity [tx model-id pool-id]
-  (-> (sql/select :%count.*)
+(defn reservable-quantity [tx model-id pool-id user-id]
+  (-> (sql/select [(as-> :%sum.quantity <>
+                     (sql/call :cast <> :int)
+                     (sql/call :coalesce <> 0))
+                   :total_quantity])
       (sql/from :models)
-      (sql/join :items [:= :items.model_id :models.id])
+      (sql/merge-join (sql/raw (str "(" entitlements/all-sql ") AS ents"))
+                      [:and
+                       [:= :models.id :ents.model_id]
+                       [:or
+                        [:in
+                         :ents.entitlement_group_id
+                         (-> (sql/select :entitlement_group_id)
+                             (sql/from :entitlement_groups_users)
+                             (sql/merge-where [:= :user_id user-id]))]
+                        [:= :ents.entitlement_group_id nil]]])
       (sql/merge-where [:= :models.id model-id])
-      (sql/merge-where [:= :items.inventory_pool_id pool-id])
-      (sql/merge-where [:= :items.retired nil])
-      (sql/merge-where [:= :items.is_borrowable true])
-      (sql/merge-where [:= :items.parent_id nil])
-      sql/format
+      (sql/merge-where [:= :ents.inventory_pool_id pool-id])
+      (sql/format)
       (->> (jdbc/query tx))
       first
-      :count))
+      :total_quantity))
 
-(defn total-borrowable-quantities
+(defn total-reservable-quantities
   [{{:keys [tx]} :request user-id ::target-user/id} _ {model-id :id}]
   (let [pools (pools/accessible-to-user tx user-id)]
     (map (fn [pool]
            {:inventory-pool pool
-            :quantity (borrowable-quantity tx model-id (:id pool))})
+            :quantity (reservable-quantity tx model-id (:id pool) user-id)})
          pools)))
 
 (defn merge-join-entitlements [sqlmap user-id]
@@ -169,7 +178,7 @@
    value]
   (let [pool-ids (relevant-pool-ids tx user-id start-date end-date inventory-pool-ids)]
     (map #(assoc %
-                 :available-quantity-in-date-range 
+                 :available-quantity-in-date-range
                  (if (or (before?
                           (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)
                           (local-date))
