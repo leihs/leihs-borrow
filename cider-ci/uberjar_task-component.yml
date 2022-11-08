@@ -10,7 +10,7 @@ traits:
 max_trials: 3
 
 scripts:
-  build-borrow-uberjar:
+  borrow-build-uberjar:
     timeout: 60 minutes
     exclusive_executor_resource: 'build-leihs-borrow-jar-docker_{{CIDER_CI_TREE_ID}}'
     start_when:

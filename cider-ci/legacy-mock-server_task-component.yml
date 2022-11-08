@@ -7,7 +7,7 @@ scripts:
       # the following is not a hard dependency, this ist just not fall
       # into a timeout when building the uberjar taks very long
       the uberjar is ready:
-        script_key: build-borrow-uberjar
+        script_key: borrow-build-uberjar
     timeout: 5 Minutes
     body: |
       #!/usr/bin/env bash

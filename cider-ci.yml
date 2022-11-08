@@ -1,5 +1,5 @@
 jobs:
-  build-borrow-uberjar:
+  borrow-build-uberjar:
     name: Build prod ready uberjar
     run_when: &ON_BRANCH_UPDATE
       any branch has been updated:
@@ -12,7 +12,7 @@ jobs:
     depends_on: &SPEC_DEPS
       uberjar was built:
         type: job
-        job_key: build-borrow-uberjar
+        job_key: borrow-build-uberjar
         states: [passed]
     run_when: *SPEC_DEPS
     context: { include: cider-ci/feature-specs_job-context.yml }
@@ -56,9 +56,9 @@ jobs:
         type: job
         job_key: feature-specs
         states: [passed]
-      build-borrow-uberjar was successful:
+      borrow-build-uberjar was successful:
         type: job
-        job_key: build-borrow-uberjar
+        job_key: borrow-build-uberjar
         states: [passed]
       good to merge of the database:
         job_key: good-to-merge

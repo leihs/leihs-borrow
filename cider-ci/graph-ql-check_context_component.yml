@@ -8,8 +8,7 @@ task_defaults:
   environment_variables:
     LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
   traits:
-    JDK 8: true
-    Leiningen 2: true
+    JDK: true
   ports:
     LEIHS_BORROW_HTTP_PORT:
       min: 3300

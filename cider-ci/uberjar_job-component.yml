@@ -9,6 +9,6 @@ context:
       submodules:
         include_match: ^.*$
   tasks:
-    build-borrow-uberjar:
+    borrow-build-uberjar:
       include:
         - cider-ci/uberjar_task-component.yml
