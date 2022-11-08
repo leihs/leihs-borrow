@@ -19,7 +19,7 @@ scripts:
       cd ${LEIHS_BORROW_DIR}
 
       # build with docker, prime docker cache
-      IMAGE_NAME="$DIST_IMAGE_NAME" \
+      BORROW_IMAGE_NAME="$DIST_BORROW_IMAGE_NAME" \
       VERSION_NAME="$DIST_VERSION_NAME" \
         bin/docker-build
 

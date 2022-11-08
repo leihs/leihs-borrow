@@ -3,11 +3,11 @@ set -exu
 
 # NOTE: this works exactly like `bin/build`, but runs inside a docker container.
 
-IMAGE_NAME="${IMAGE_NAME:-leihs-borrow}"
+BORROW_IMAGE_NAME="leihs-borrow"
 VERSION_NAME="${VERSION_NAME:-dev}"
 IMAGE_WORKDIR="/leihs/borrow"
 DIST_DIR="target"
-tag="${IMAGE_NAME}:${VERSION_NAME}"
+tag="${BORROW_IMAGE_NAME}:${VERSION_NAME}"
 
 BORROW_DIR="$(dirname ${BASH_SOURCE})/.."
 cd "${BORROW_DIR}"
@@ -43,9 +43,9 @@ docker buildx build \
 
 # add more tags based on git state, if the working tree is clean
 if check-clean-working-tree; then
-  main_tag="${IMAGE_NAME}:tree-${BORROW_SHORT_TREE_ID}"
+  main_tag="${BORROW_IMAGE_NAME}:tree-${BORROW_SHORT_TREE_ID}"
   docker image tag "$tag" "$main_tag"
-  docker image tag "$tag" "${IMAGE_NAME}:commit-${BORROW_COMMIT_ID}"
+  docker image tag "$tag" "${BORROW_IMAGE_NAME}:commit-${BORROW_COMMIT_ID}"
   # print this as the "main" tag
   tag="$main_tag"
 fi
