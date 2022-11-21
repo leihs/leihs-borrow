@@ -40,9 +40,7 @@
    [leihs.borrow.features.templates.show :as templates-show]
    ["/leihs-ui-client-side-external-react" :as UI]
    [leihs.borrow.testing.step-1 :as testing-step-1]
-   [leihs.borrow.testing.step-2 :as testing-step-2]
-   [leihs.borrow.translations :as translations]
-   ))
+   [leihs.borrow.testing.step-2 :as testing-step-2]))
 
 ;-; INIT APP & DB
 (reg-event-fx
@@ -52,8 +50,7 @@
              ; NOTE: clear the routing instance on (re-)load,
              ; otherwise the event wont re-run when hot reloading!
             (dissoc , :routing/routing)
-            (assoc , :meta {:app {:debug false}})
-            (assoc-in , [::languages/data] translations/dict))}))
+            (assoc , :meta {:app {:debug false}}))}))
 
 ;-; EVENTS
 (reg-event-db :set-debug

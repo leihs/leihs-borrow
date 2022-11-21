@@ -83,14 +83,16 @@ Feature: Shopping Cart - Display of Reservation Lines
       | 1        | Tripod      | Pool B | 2101-02-13 | 2101-02-14 |
     And I log in as the user
 
-    When I set my language to "en-GB"
+    When I click on the user profile button
+    And I click on "English (UK)"
     And I navigate to the cart
     Then I see the following lines in the "Items" section:
       | title          | body   | foot                 |
       | 1× DSLR Camera | Pool A | 1 day from 13/02/01  |
       | 1× Tripod      | Pool B | 2 days from 13/02/01 |
 
-    When I set my language to "de-CH"
+    When I click on the user profile button
+    And I click on "Züritüütsch"
     And I navigate to the cart
     Then I see the following lines in the "Gegenstände" section:
       | title          | body   | foot              |

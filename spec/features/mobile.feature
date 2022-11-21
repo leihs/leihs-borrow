@@ -31,7 +31,7 @@ Feature: Mobile screen
     # Open profile menu
     When I click on the user profile button
     Then I see "User Account"
-    #And I see "Language"
+    And I see "Language"
 
     # Close profile menu
     When I click on the user profile button

@@ -1,4 +1,4 @@
-query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID) {
+query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID, $includeLanguages: Boolean) {
   currentUser {
     user {
       id
@@ -50,5 +50,9 @@ query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID) {
         id
       }
     }
+  }
+  languages @include(if: $includeLanguages) {
+    name
+    locale
   }
 }

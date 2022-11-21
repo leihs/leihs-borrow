@@ -15,6 +15,7 @@
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.current-user.profile-switch :as profile-switch]
    [leihs.borrow.features.languages.core :as languages]
+   [leihs.borrow.features.languages.language-switch :as language-switch]
    [leihs.borrow.features.shopping-cart.core :as cart]
    [leihs.borrow.components :as ui]
    ["/leihs-ui-client-side-external-react" :as UI]))
@@ -47,7 +48,7 @@
 
 (reg-event-fx ::switch-language
               (fn-traced [_ [_ lang]]
-                {:dispatch-n (list [::languages/switch lang]
+                {:dispatch-n (list [::language-switch/switch lang]
                                    [::set-current-menu nil])}))
 
 (defn get-initials [name]

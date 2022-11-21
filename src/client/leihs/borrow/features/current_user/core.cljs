@@ -21,7 +21,8 @@
    [leihs.borrow.lib.helpers :as h]
    leihs.borrow.lib.re-graph
    [leihs.borrow.client.routes :as routes]
-   [leihs.core.core :refer [presence]]))
+   [leihs.core.core :refer [presence]]
+   [leihs.borrow.features.languages.core :as languages]))
 
 (def query (rc/inline "leihs/borrow/features/current_user/core.gql"))
 
@@ -40,7 +41,8 @@
                    (-> leihs.borrow.lib.re-graph/config :http :url))
           {:params {:query query
                     :variables {:includeDelegation (boolean delegation-id)
-                                :delegationId delegation-id}}
+                                :delegationId delegation-id
+                                :includeLanguages (nil? @last-fetched)}}
            :headers leihs.borrow.lib.re-graph/headers
            :format :json
            :handler #(do
@@ -63,14 +65,17 @@
      {:dispatch-n (let [current-user-data (:current-user data)
                         current-delegation (:delegation data)
                         session-id (:session-id current-user-data)
-                        ls-session-id (-> db :ls ::data :session-id)]
+                        ls-session-id (-> db :ls ::data :session-id)
+                        languages-data (:languages data)]
                     (list (when (not= session-id ls-session-id)
                             [::browser-storage/clear-session-storage])
                           [::set (merge current-user-data
                                         (when (and current-delegation
                                                    (some #(= (:id %) (:id current-delegation))
                                                          (-> current-user-data :user :delegations)))
-                                          {:current-delegation current-delegation}))]))})))
+                                          {:current-delegation current-delegation}))]
+                          (when (seq languages-data)
+                            [::languages/set-languages languages-data])))})))
 
 (reg-event-db
  ::set
