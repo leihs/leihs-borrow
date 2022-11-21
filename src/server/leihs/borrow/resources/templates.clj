@@ -85,7 +85,9 @@
         tmpl-lines (lines tx template-id)]
     (->> tmpl-lines
          (map (fn [line]
-                (when (models/reservable? context args {:id (:model-id line)})
+                (when (and
+                       (> (:quantity line) 0)
+                       (models/reservable? context args {:id (:model-id line)}))
                   (as-> line <>
                     (transform-keys csk/->kebab-case <>)
                     (select-keys <> [:model-id :quantity])
