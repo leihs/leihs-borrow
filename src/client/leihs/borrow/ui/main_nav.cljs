@@ -60,6 +60,11 @@
          (take 3)
          (join ""))))
 
+(reg-sub ::user-loaded
+         :<- [::current-user/user-data]
+         (fn [user-data _]
+           (boolean user-data)))
+
 (reg-sub ::user
          :<- [::current-user/user-data]
          (fn [{:keys [id name delegations]} _]
@@ -142,25 +147,28 @@
           [menu-link url name]]))]]))
 
 (defn side []
-  (let [user-nav @(subscribe [::user-nav])
+  (let [user-loaded @(subscribe [::user-loaded])
+        user-nav @(subscribe [::user-nav])
         documentation-url (:documentation-url user-nav)]
-    [:> UI/Components.Design.Menu
-     {:id "menu"}
+    (h/log "user" user-loaded)
+    (when user-loaded
+      [:> UI/Components.Design.Menu
+       {:id "menu"}
 
-     [:> UI/Components.Design.Menu.Group
-      {:class "d-lg-none" :title (t :borrow/section-title)}
-      (borrow-menu-items)]
-     [:> UI/Components.Design.Menu.Group
-      {:class "d-none d-lg-block" :title (t :borrow/section-title)}
-      (borrow-menu-items)]
-
-     [:> UI/Components.Design.Menu.Group
-      {:title (t :app-switch/section-title) :class "d-md-none"}
-      (app-switch-menu-items)]
-
-     (when documentation-url
        [:> UI/Components.Design.Menu.Group
-        [menu-link documentation-url (t :documentation)]])]))
+        {:class "d-lg-none" :title (t :borrow/section-title)}
+        (borrow-menu-items)]
+       [:> UI/Components.Design.Menu.Group
+        {:class "d-none d-lg-block" :title (t :borrow/section-title)}
+        (borrow-menu-items)]
+
+       [:> UI/Components.Design.Menu.Group
+        {:title (t :app-switch/section-title) :class "d-md-none"}
+        (app-switch-menu-items)]
+
+       (when documentation-url
+         [:> UI/Components.Design.Menu.Group
+          [menu-link documentation-url (t :documentation)]])])))
 
 (defn user-profile-nav []
   (let [handler @(subscribe [:routing/current-handler])
