@@ -195,7 +195,7 @@
         current-profile-id @(subscribe [::current-profile-id])
         can-change-profile? @(subscribe [::can-change-profile?])
         rental-user-id (-> rental :user :id)
-        date-fns-locale @(subscribe [::translate/i18n-locale])]
+        date-locale @(subscribe [::translate/date-locale])]
 
     [:<>
      (cond
@@ -217,7 +217,7 @@
 
         [cancellation-dialog rental]
 
-        [repeat-order/repeat-dialog rental reservations current-profile-id date-fns-locale]
+        [repeat-order/repeat-dialog rental reservations current-profile-id date-locale]
         [repeat-order/repeat-success-notification]
 
         [:> UI/Components.Design.Stack {:space 5}

@@ -56,7 +56,7 @@
         is-loading? (not (or template errors))
         error403? (and (not is-loading?) (some #(= 403 (-> % :extensions :code)) errors))
         current-profile-id @(subscribe [::current-profile-id])
-        date-fns-locale @(subscribe [::translate/i18n-locale])]
+        date-locale @(subscribe [::translate/date-locale])]
     [:<>
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)
@@ -107,7 +107,7 @@
                                    (map #(-> % :model :is-reservable))
                                    (not-any? identity))]
          [:<>
-          [apply-template/dialog template models current-profile-id date-fns-locale]
+          [apply-template/dialog template models current-profile-id date-locale]
           [apply-template/success-notification]
 
           [:> UI/Components.Design.Stack {:space 4}

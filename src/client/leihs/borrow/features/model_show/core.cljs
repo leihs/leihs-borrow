@@ -13,7 +13,7 @@
                                       reg-fx
                                       subscribe
                                       dispatch]]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path] :as translate]
    [leihs.borrow.components :as ui]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.routing :as routing]
@@ -216,10 +216,6 @@
          :<- [::current-user/can-change-profile?]
          (fn [x _] x))
 
-(reg-sub ::user-locale
-         :<- [::current-user/locale]
-         (fn [l _] l))
-
 (reg-sub
  ::inventory-pools
  (fn [[_ id] _]
@@ -287,7 +283,8 @@
             current-profile @(subscribe [::current-profile])
             can-change-profile? @(subscribe [::can-change-profile?])
             profile-name (when can-change-profile? (:name current-profile))
-            user-locale @(subscribe [::user-locale])
+            text-locale @(subscribe [::translate/text-locale])
+            date-locale @(subscribe [::translate/date-locale])
             filter-start-date (some-> filters :start-date datefn/parseISO)
             filter-end-date (some-> filters :end-date datefn/parseISO)
             initial-start-date (or filter-start-date now)
@@ -339,7 +336,8 @@
               :onSubmit on-submit
               :onValidate on-validate
               :modelData (h/camel-case-keys model)
-              :locale user-locale
+              :locale text-locale
+              :dateLocale date-locale
               :txt (cart/order-panel-texts)}]]
            [:> UI/Components.Design.ModalDialog.Footer
             [:button.btn.btn-primary {:form :order-dialog-form :type :submit :disabled is-saving? :class (when (not @form-valid?) "disabled pe-auto")}

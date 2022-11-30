@@ -22,8 +22,6 @@
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]
    [leihs.core.core :refer [remove-nils presence]]
-   ["date-fns" :as date-fns]
-   ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.catalog) ; ("catalog" because it is currently the only feature on the home page)

@@ -18,7 +18,6 @@
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [remove-nils presence]]
    ["date-fns" :as date-fns]
-   ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (reg-event-db ::save-filter-options
@@ -34,7 +33,7 @@
            (:inventory-pools current-profile)))
 
 (defn filter-modal
-  [filter-opts hide! dispatch-fn locale]
+  [filter-opts hide! dispatch-fn date-locale]
   (let [term (r/atom (or (:term filter-opts) ""))
         pool-id (r/atom (or (:pool-id filter-opts) "all"))
         state (r/atom (or (:state filter-opts) "all"))
@@ -42,20 +41,20 @@
                                        :from
                                        presence
                                        (date-fns/parse "yyyy-MM-dd" (js/Date.))
-                                       (date-fns/format "P" #js {:locale locale}))
+                                       (date-fns/format "P" #js {:locale date-locale}))
                                ""))
         end-date (r/atom (or (some-> filter-opts
                                      :until
                                      presence
                                      (date-fns/parse "yyyy-MM-dd" (js/Date.))
-                                     (date-fns/format "P" #js {:locale locale}))
+                                     (date-fns/format "P" #js {:locale date-locale}))
                              ""))]
-    (fn [filter-opts hide! dispatch-fn locale]
+    (fn [filter-opts hide! dispatch-fn date-locale]
       (let [pools @(subscribe [::inventory-pools])
             is-unselectable-pool (not-any? #{@pool-id} (concat ["" "all"] (map #(:id %) pools)))
             start-date-equal-or-before-end-date?
-            #(let [s (some-> @start-date presence (date-fns/parse "P" (js/Date.) #js {:locale locale}))
-                   e (some-> @end-date presence (date-fns/parse "P" (js/Date.) #js {:locale locale}))]
+            #(let [s (some-> @start-date presence (date-fns/parse "P" (js/Date.) #js {:locale date-locale}))
+                   e (some-> @end-date presence (date-fns/parse "P" (js/Date.) #js {:locale date-locale}))]
                (if (and s e)
                  (or (date-fns/isEqual s e) (date-fns/isBefore s e))
                  true))
@@ -75,11 +74,11 @@
                                       :state (if (= @state "all") nil @state)
                                       :from (some-> @start-date
                                                     presence
-                                                    (date-fns/parse "P" (js/Date.) #js {:locale locale})
+                                                    (date-fns/parse "P" (js/Date.) #js {:locale date-locale})
                                                     (date-fns/format "yyyy-MM-dd"))
                                       :until (some-> @end-date
                                                      presence
-                                                     (date-fns/parse "P" (js/Date.) #js {:locale locale})
+                                                     (date-fns/parse "P" (js/Date.) #js {:locale date-locale})
                                                      (date-fns/format "yyyy-MM-dd"))})))}
              [:> UI/Components.Design.Stack {:space 4}
 
@@ -112,7 +111,7 @@
                  [:legend.visually-hidden (t :time-span.title)]
                  [:div.d-flex.flex-column.gap-3
                   [:> UI/Components.Design.DatePicker
-                   {:locale locale
+                   {:locale date-locale
                     :name "start-date"
                     :id "start-date"
                     :value @start-date
@@ -120,7 +119,7 @@
                     :placeholder (t :time-span.undefined)
                     :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
                   [:> UI/Components.Design.DatePicker
-                   {:locale locale
+                   {:locale date-locale
                     :name "end-date"
                     :id "end-date"
                     :value @end-date
@@ -164,10 +163,10 @@
     (fn [dispatch-fn]
       (let [hide! #(reset! modal-shown? false)
             show! #(reset! modal-shown? true)
-            locale @(subscribe [::translate/i18n-locale])
+            date-locale @(subscribe [::translate/date-locale])
             filter-opts @(subscribe [::options])]
         [:<>
          (when @modal-shown?
-           [filter-modal filter-opts hide! dispatch-fn locale])
+           [filter-modal filter-opts hide! dispatch-fn date-locale])
          [:> UI/Components.Design.FilterButton {:onClick show!}
           (t :!borrow.rentals.filter.show-filters)]]))))

@@ -19,7 +19,6 @@
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [remove-blanks presence]]
    ["date-fns" :as date-fns]
-   ["date-fns/locale" :as locale]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (defn default-dispatch-fn [query-params]
@@ -49,14 +48,10 @@
          (fn [current-profile _]
            (:suspensions current-profile)))
 
-(reg-sub ::user-locale
-         :<- [::current-user/locale]
-         (fn [l _] l))
-
 (defn model-search-filter-texts []
   (clj->js (get-in translations/dict [:borrow :filter])))
 
-(defn filter-modal [hide! dispatch-fn saved-opts locale]
+(defn filter-modal [hide! dispatch-fn saved-opts date-locale]
   (let [parse-date #(some-> % (date-fns/parse "yyyy-MM-dd" (js/Date.)))
         term (r/atom (or (:term saved-opts) ""))
         pool-id (r/atom (or (:pool-id saved-opts) ""))
@@ -69,15 +64,13 @@
                                           (some-> saved-opts :end-date parse-date)
                                           (date-fns/startOfTomorrow))})
         quantity (r/atom (or (:quantity saved-opts) 1))]
-    (fn [hide! dispatch-fn saved-opts]
+    (fn [hide! dispatch-fn saved-opts date-locale]
       (let [today (date-fns/startOfToday)
             max-date (date-fns/addYears today 10)
             pools @(subscribe [::pools-with-reservable-items])
             is-unselectable-pool (not-any? #{@pool-id} (concat ["" "all"] (map #(:id %) pools)))
             suspensions @(subscribe [::suspensions])
             user-suspended-in-pool? (->> suspensions (some #(= @pool-id (-> % :inventory-pool :id))))
-            locale-to-use @(subscribe [::translate/locale-to-use])
-            locale (case locale-to-use :de-CH locale/de :gsw-CH locale/de :en-GB locale/enGB #_fallback-> locale/enGB)
 
             change-selected-range (fn [r]
                                     (let [start-date (-> r .-startDate)
@@ -132,7 +125,7 @@
                   [:legend.visually-hidden (t :time-span.title)]
                   [:div.d-flex.flex-column.gap-3
                    [UiDateRangePicker
-                    {:locale locale
+                    {:locale date-locale
                      :txt {:from (t :from)
                            :until (t :until)
                            :placeholderFrom (t :time-span.undefined)
@@ -197,9 +190,8 @@
             show! #(reset! modal-shown? true)
             saved-filters @(subscribe [::options])
             pools-with-reservable-items @(subscribe [::pools-with-reservable-items])
-            user-locale @(subscribe [::user-locale])
-            ; NOTE: map unsupported swiss-german to german for consistency
-            locale (case user-locale "gsw-CH" "de-CH" #_default-> user-locale)
+            text-locale @(subscribe [::translate/text-locale])
+            date-locale @(subscribe [::translate/date-locale])
 
             ;
             available-filters {:pools (map (fn [p] {:type :pool :id (:id p) :label (:name p)}) pools-with-reservable-items)}
@@ -234,7 +226,8 @@
            [filter-modal
             hide!
             dispatch-fn
-            (assoc saved-filters :term current-search-term)])
+            (assoc saved-filters :term current-search-term)
+            date-locale])
 
          [:> UI/Components.ModelSearchFilter
           {:key input-key
@@ -244,5 +237,5 @@
            :onOpenPanel show!
            :onClearFilter on-clear-filter
            :onSubmit on-input-submit
-           :locale locale
+           :locale text-locale
            :txt (model-search-filter-texts)}]]))))

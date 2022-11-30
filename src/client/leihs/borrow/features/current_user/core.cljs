@@ -125,10 +125,6 @@
          (fn [profile _]
            (:id profile)))
 
-(reg-sub ::locale
-         :<- [::data]
-         (fn [dat _] (-> dat :language-to-use :locale)))
-
 (reg-sub ::delegations
          :<- [::user-data]
          (fn [u _] (:delegations u)))
@@ -142,3 +138,12 @@
          :<- [::data]
          (fn [dat _] (-> dat :nav)))
 
+(defn get-locale-to-use [db]
+  (-> db (get-in [:ls ::data :language-to-use :locale]) keyword))
+
+(reg-sub ::locale-to-use
+         (fn [db _] (get-locale-to-use db)))
+
+(reg-event-db ::set-locale-to-use
+              (fn-traced [db [_ user]]
+                (assoc-in db [:ls ::data :language-to-use :locale] (:language_locale user))))

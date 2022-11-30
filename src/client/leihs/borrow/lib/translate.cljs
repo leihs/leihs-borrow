@@ -1,36 +1,32 @@
 (ns leihs.borrow.lib.translate
   (:require-macros [leihs.borrow.lib.translate])
   (:require ["/leihs-ui-client-side-external-react" :as UI]
-            #_["intl-messageformat" :as intl]
             ; [leihs.borrow.features.languages.core :as languages]
-            ["date-fns/locale" :as locale]
-            [ajax.core :refer [GET]]
+            ["date-fns/locale" :as date-locale]
             [cljs.test :refer-macros [deftest is testing run-tests]]
             [clojure.string :as string]
-            [day8.re-frame.tracing :refer-macros [fn-traced]]
             [leihs.borrow.features.current-user.core :as current-user]
             [leihs.borrow.lib.helpers :as h :refer [spy log format]]
             [leihs.borrow.lib.re-frame :refer [dispatch-sync reg-sub reg-event-db reg-event-fx]]
             [leihs.borrow.translations :as translations]
-            [re-frame.db :as db]
-            [shadow.resource :as rc]
-            ))
+            [re-frame.db :as db]))
 
 (def ^:dynamic *default-path* "Default path to use for locating a key." nil)
 (def path-escape-char \!)
 
 (def fallbacks {:gsw-CH :de-CH
-                :de-CH :en-US
+                :de-CH :en-GB
                 :es :en-GB
-                :en-US :en-GB})
+                :en-US :en-GB
+                :fr-CH :en-GB})
 
 (def remove-first-char #(-> % str rest string/join))
 
 (defn qualify [p]
   (cond (= (first p) path-escape-char)
-          (remove-first-char p)
+        (remove-first-char p)
         *default-path*
-          (str (remove-first-char *default-path*) "." p)
+        (str (remove-first-char *default-path*) "." p)
         :else p))
 
 (defn dict-path-keys [dict-path]
@@ -51,29 +47,24 @@
       (UI/IntlMessageFormat. (name locale))
       (.format (clj->js values))))
 
-(def locale-to-use-path
-  [:ls ::current-user/data :language-to-use :locale])
-
-(defn locale-to-use [db]
-  (-> db (get-in locale-to-use-path) keyword))
-
-(reg-event-db ::set-locale-to-use
-              (fn-traced [db [_ user]]
-                (assoc-in db locale-to-use-path (:language_locale user))))
-
-(reg-sub ::locale-to-use
-         (fn [db _] (locale-to-use db)))
-
-(reg-sub ::i18n-locale
-         :<- [::locale-to-use]
+(reg-sub ::text-locale
+         :<- [::current-user/locale-to-use]
          (fn [l _] (case l
-                     :en-GB locale/enGB
-                     :de-CH locale/de
-                     locale/enUS)))
+                     :de-CH "de-CH"
+                     :gsw-CH "de-CH"
+                     "en-GB")))
+
+(reg-sub ::date-locale
+         :<- [::current-user/locale-to-use]
+         (fn [l _] (case l
+                     :de-CH date-locale/de
+                     :gsw-CH date-locale/de
+                     date-locale/enGB)))
+
 
 (defn t-base [dict-path values]
   (let [path-keys (dict-path-keys dict-path)]
-    (loop [locale (locale-to-use @db/app-db)]
+    (loop [locale (or (current-user/get-locale-to-use @db/app-db) :en-GB)]
       (if locale
         (if-let [message (get-in translations/dict (concat path-keys [locale]))]
           (translate message locale values)
@@ -95,14 +86,14 @@
 (deftest test-t-base
   (testing "locales and fallbacks"
     (with-redefs [translations/dict {:test {:gsw-CH "gsw-CH"
-                               :en-GB "en-GB"}}
+                                            :en-GB "en-GB"}}
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use {:locale "gsw-CH"}}}})]
       (is (= (t-base :test nil) "gsw-CH")
           "Translation exists for language to use."))
     (with-redefs [translations/dict {:test {:de-CH "de-CH"
-                               :en-GB "en-GB"}}
+                                            :en-GB "en-GB"}}
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use {:locale "gsw-CH"}}}})]
@@ -136,7 +127,6 @@
                                    {::current-user/data
                                     {:language-to-use nil}}})]
       (is (= (t-base :test nil) (missing-translation [:test]))
-          "No language to use."))
-    ))
+          "No language to use."))))
 
 (comment (run-tests))

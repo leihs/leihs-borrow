@@ -18,7 +18,7 @@
    [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.form-helpers :refer [UiTextarea]]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path] :as translate]
    [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.models.filter-modal :as filter-modal]
@@ -323,10 +323,6 @@
          :<- [::data]
          (fn [d _] (:user-id d)))
 
-(reg-sub ::user-locale
-         :<- [::current-user/locale]
-         (fn [l _] l))
-
 (reg-sub ::delete-dialog-data
          (fn [db _] (-> db (get-in [::data :delete-dialog]))))
 
@@ -351,7 +347,8 @@
             can-change-profile? @(subscribe [::can-change-profile?])
             profile-name (when can-change-profile? (:name current-profile))
             res-lines (:res-lines edit-mode-data)
-            user-locale @(subscribe [::user-locale])
+            text-locale @(subscribe [::translate/text-locale])
+            date-locale @(subscribe [::translate/date-locale])
             user-id (:user-id edit-mode-data)
             model (:model edit-mode-data)
             loading? (nil? (:availability edit-mode-data))
@@ -426,7 +423,8 @@
              :onValidate (fn [v] (reset! form-valid? v))
              :modelData (h/camel-case-keys (merge model {:availability availability}))
              :profileName profile-name
-             :locale user-locale
+             :locale text-locale
+             :dateLocale date-locale
              :txt (order-panel-texts)}]
            [:> UI/Components.Design.ActionButtonGroup
             [:button.btn.btn-secondary

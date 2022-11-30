@@ -170,7 +170,7 @@
         current-profile @(subscribe [::current-profile])
         changing-to-profile-id @(subscribe [::profile-switch/changing-to-id])
         languages @(subscribe [::languages/data])
-        locale-to-use @(subscribe [::translate/locale-to-use])]
+        locale-to-use @(subscribe [::current-user/locale-to-use])]
     [:> UI/Components.Design.Menu {:id "user-menu"}
 
      [:> UI/Components.Design.Menu.Group {:title (:name user)}

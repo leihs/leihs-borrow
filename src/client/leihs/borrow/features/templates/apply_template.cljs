@@ -81,7 +81,7 @@
                   (cond (-> user-data :delegations seq)
                         (t :!borrow.phrases.user-or-delegation-personal-postfix))))))
 
-(defn dialog [template models user-id date-fns-locale]
+(defn dialog [template models user-id date-locale]
   (let [today (date-fns/startOfToday)
         max-date (date-fns/addYears today 10)
         selected-range (reagent/atom {:startDate today :endDate  (date-fns/addDays today 1)})
@@ -105,7 +105,7 @@
                                   (reset! validation-result (validate-dates start-date end-date))))
         get-quantity (fn [reservations filter-pred]
                        (->> reservations (filter filter-pred) (map :quantity) (reduce +)))]
-    (fn [template models user-id date-fns-locale]
+    (fn [template models user-id date-locale]
       (let [dialog-data @(subscribe [::dialog-data])
             current-profile-name @(subscribe [::current-profile-name])
             is-saving? (:is-saving? dialog-data)
@@ -146,7 +146,7 @@
                   [:legend.visually-hidden (t :dialog.time-span)]
                   [:div.d-flex.flex-column.gap-3
                    [UiDateRangePicker
-                    {:locale date-fns-locale
+                    {:locale date-locale
                      :txt {:from (t :dialog.from)
                            :until (t :dialog.until)
                            :placeholderFrom (t :dialog.undefined)

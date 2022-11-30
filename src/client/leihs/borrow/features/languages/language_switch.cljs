@@ -7,7 +7,7 @@
    [leihs.borrow.lib.helpers :refer [log spy body-encode]]
    [leihs.borrow.lib.re-frame :refer [reg-event-fx
                                       reg-event-db]]
-   [leihs.borrow.lib.translate :as translate]))
+   [leihs.borrow.features.current-user.core :as current-user]))
 
 (reg-event-db ::on-failure
               (fn-traced [db _] (log "failure") db))
@@ -20,5 +20,5 @@
                                 :uri (str js/window.location.origin "/my/user/me")
                                 :body (body-encode data)
                                 :response-format (json-response-format {:keywords? true})
-                                :on-success [::translate/set-locale-to-use]
+                                :on-success [::current-user/set-locale-to-use]
                                 :on-failure [::on-failure]}})))
