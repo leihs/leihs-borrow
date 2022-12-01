@@ -165,7 +165,11 @@
     :favorite-models {:title {:en-GB "Favorites"
                               :de-CH "Favoriten"}
                       :items {:en-GB "Items"
-                              :de-CH "Gegenstände"}}
+                              :de-CH "Gegenstände"}
+                      :no-favorites {:en-GB "No favorites added yet"
+                                     :de-CH "Noch keine Favoriten hinzugefügt"}
+                      :go-to-catalog {:en-GB "Go to catalog"
+                                      :de-CH "Hier geht's zum Katalog"}}
     :filter {:show-all-filters {:en-GB "Filter"
                                 :de-CH "Filter"}
              :search {:title {:en-GB "Search term"
@@ -235,7 +239,7 @@
                            :de-CH "Abmelden"}}
            :app-switch {:button-label {:en-GB "Section"
                                        :de-CH "Bereich"}
-                        :section-title {:en-GB "Switch section"
+                        :section-title {:en-GB "Switch Section"
                                         :de-CH "Bereich wechseln"}
                         :admin {:en-GB "Admin"
                                 :de-CH "Admin"}
@@ -276,11 +280,11 @@
                                 :add {:en-GB "Add" :de-CH "Hinzufügen"}}
                  :order-success-notification {:title {:en-GB "Item added" :de-CH "Gegenstand hinzugefügt"}
                                               :item-was-added {:en-GB "The item was added to the cart" :de-CH "Der Gegenstand wurde zum Warenkorb hinzugefügt"}}}
-    :models {:title {:en-GB "Search results" :de-CH "Suchresultate"}}
+    :models {:title {:en-GB "Search results" :de-CH "Suchresultate"}
+             :no-items-found {:en-GB "No items found"
+                              :de-CH "Keine Gegenstände gefunden"}}
     :pagination {:load-more {:en-GB "Load more"
-                             :de-CH "Mehr laden"}
-                 :nothing-found {:en-GB "Nothing found"
-                                 :de-CH "Nichts gefunden"}}
+                             :de-CH "Mehr laden"}}
     :pools {:title {:en-GB "Inventory Pools"
                     :de-CH "Inventarparks"}
             :available-pools {:en-GB "Available inventory pools"
@@ -307,7 +311,10 @@
                                            :de-CH "Offen"}
               :section-title-closed-rentals {:en-GB "Closed"
                                              :de-CH "Abgeschlossen"}
-              :orderless-fallback-title {:de-CH "Direktausleihe"}
+              :no-orders-found {:en-GB "No orders found"
+                                :de-CH "Keine Bestellungen gefunden"}
+              :no-orders-yet {:en-GB "No orders yet"
+                              :de-CH "Noch keine Bestellungen vorhanden"}
               :filter  {:show-filters {:en-GB "Show search/filter"
                                        :de-CH "Zeige Suche/Filter"}
                         :search {:title {:en-GB "Search term"

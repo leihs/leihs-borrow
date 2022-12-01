@@ -10,6 +10,7 @@
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.components :as ui]
+   [leihs.borrow.lib.routing :as routing]
    ["/leihs-ui-client-side-external-react" :as UI]
    [leihs.borrow.features.models.core :as models]))
 
@@ -36,7 +37,10 @@
       (cond
         (not (or models errors)) [ui/loading]
         errors [ui/error-view errors]
-        (empty? models) [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
+        (empty? models) [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
+                         (t :no-favorites)
+                         [:a.text-decoration-underline {:href (routing/path-for ::routes/home)}
+                          (t :go-to-catalog)]]
         :else [:> UI/Components.Design.Section {:title (t :items)}
                [models/models-list models]
                [models/load-more cache-key fav-filter]])]]))

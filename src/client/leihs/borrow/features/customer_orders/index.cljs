@@ -205,7 +205,8 @@
   (let [errors @(subscribe [::errors])
         loading? @(subscribe [::loading?])
         open-rentals @(subscribe [::open-rentals])
-        closed-rentals @(subscribe [::closed-rentals])]
+        closed-rentals @(subscribe [::closed-rentals])
+        filter-options @(subscribe [::filter-modal/options])]
     [:<>
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}
@@ -219,7 +220,8 @@
        errors [ui/error-view errors]
 
        (and (empty? open-rentals) (empty? closed-rentals))
-       [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
+       [:div.text-center
+        (if (empty? filter-options) (t :no-orders-yet) (t :no-orders-found))]
 
        :else
        [:<>

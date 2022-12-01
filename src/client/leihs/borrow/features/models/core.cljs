@@ -196,7 +196,7 @@
      (cond
        (not (or errors models)) [ui/loading]
        errors [ui/error-view errors]
-       (empty? models) [:p.p-6.w-full.text-center (t :!borrow.pagination/nothing-found)]
+       (empty? models) [:div.text-center (t :no-items-found)]
        :else
        [:<>
         [models-list models filter-opts]

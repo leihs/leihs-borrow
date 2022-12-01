@@ -17,7 +17,7 @@ Feature: Mobile screen
     # Open burger menu
     When I click on the menu
     Then I see "Borrow"
-    And I see "Switch section"
+    And I see "Switch Section"
 
     # Close burger menu
     When I click on the menu

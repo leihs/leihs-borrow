@@ -13,7 +13,7 @@ Feature: Favorites
 
   Scenario: Whole cycle of favor, check, unfavor, check
     When I visit "/app/borrow/models/favorites"
-    Then I see "Nothing found"
+    Then I see "No favorites added yet"
 
     When I visit "/app/borrow/"
     And I click on "Filter"
@@ -49,4 +49,4 @@ Feature: Favorites
     And I click on model "Camera"
     And I click on "Remove from favorites"
     When I visit "/app/borrow/models/favorites"
-    Then I see "Nothing found"
+    Then I see "No favorites added yet"
