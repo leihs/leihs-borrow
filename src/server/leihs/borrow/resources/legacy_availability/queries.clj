@@ -10,16 +10,15 @@
   [tx model-id pool-id exclude-res-ids]
   (let [timeout-minutes (-> (settings! tx [:timeout_minutes])
                             :timeout_minutes)]
-    (-> (sql/select :*,
-                    :id,
-                    :inventory_pool_id,
-                    :model_id,
-                    :item_id,
-                    :quantity,
-                    :start_date,
-                    :end_date,
-                    :returned_date,
-                    :status,
+    (-> (sql/select :reservations.id,
+                    :reservations.inventory_pool_id,
+                    :reservations.model_id,
+                    :reservations.item_id,
+                    :reservations.quantity,
+                    :reservations.start_date,
+                    :reservations.end_date,
+                    :reservations.returned_date,
+                    :reservations.status,
                     [(sql/call :array (-> (sql/select :egu.entitlement_group_id)
                                           (sql/from [:entitlement_groups_users :egu])
                                           (sql/merge-join [:entitlement_groups :eg]
@@ -28,20 +27,22 @@
                                           (sql/order-by [:eg.name :asc])))
                      :user_group_ids])
         (sql/from :reservations)
-        (sql/merge-where [:not-in :status ["draft" "rejected" "canceled" "closed"]])
+        (sql/merge-left-join :items [:= :reservations.item_id :items.id])
+        (sql/merge-where [:or [:is-null :reservations.item_id] [:= :items.is_borrowable true]])
+        (sql/merge-where [:not-in :reservations.status ["draft" "rejected" "canceled" "closed"]])
         (sql/merge-where [:not [:and
-                                [:= :status "unsubmitted"]
-                                [:< :updated_at
+                                [:= :reservations.status "unsubmitted"]
+                                [:< :reservations.updated_at
                                  (sql/raw (format "now() at time zone 'UTC' - interval '%d minutes'"
                                                   timeout-minutes))]]])
         (sql/merge-where [:not [:and
-                                [:< :end_date (sql/raw "(now() at time zone 'UTC')::date")]
-                                [:is-null :item_id]]])
-        (cond-> pool-id (sql/merge-where [:= :inventory_pool_id pool-id]))
-        (sql/merge-where [:= :type "ItemLine"])
-        (sql/merge-where [:= :model_id model-id])
+                                [:< :reservations.end_date (sql/raw "(now() at time zone 'UTC')::date")]
+                                [:is-null :reservations.item_id]]])
+        (cond-> pool-id (sql/merge-where [:= :reservations.inventory_pool_id pool-id]))
+        (sql/merge-where [:= :reservations.type "ItemLine"])
+        (sql/merge-where [:= :reservations.model_id model-id])
         (cond-> (not (empty? exclude-res-ids))
-          (sql/merge-where [:not-in :id exclude-res-ids]))
+          (sql/merge-where [:not-in :reservations.id exclude-res-ids]))
         sql/format
         (->> (jdbc/query tx)))))
 
