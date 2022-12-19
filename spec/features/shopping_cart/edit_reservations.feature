@@ -34,11 +34,12 @@ Feature: Shopping Cart - Editing Reservations
     And I see the "Edit reservation" dialog
     And I see a form inside the dialog
     Then the form has exactly these fields:
-      | label          | value              |
-      | Inventory pool | Pool A (max. 3)    |
-      | Quantity       | 1                  |
-      | From           | ${Date.today}      |
-      | Until          | ${2.days.from_now} |
+      | label                         | value              |
+      | Inventory pool                | Pool A (max. 3)    |
+      | Quantity                      | 1                  |
+      | From                          | ${Date.today}      |
+      | Until                         | ${2.days.from_now} |
+      | Show availability in calendar | on                 |
 
     When I enter "3" in the "Quantity" field
     Then the "Quantity" field has "3"

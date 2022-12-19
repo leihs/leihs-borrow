@@ -150,7 +150,6 @@
   (let [user-loaded @(subscribe [::user-loaded])
         user-nav @(subscribe [::user-nav])
         documentation-url (:documentation-url user-nav)]
-    (h/log "user" user-loaded)
     (when user-loaded
       [:> UI/Components.Design.Menu
        {:id "menu"}

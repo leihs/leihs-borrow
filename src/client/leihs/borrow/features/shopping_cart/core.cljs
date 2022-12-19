@@ -27,6 +27,7 @@
    [leihs.borrow.features.customer-orders.core :as rentals]
    [leihs.borrow.features.model-show.availability :as availability]
    [leihs.borrow.translations :as translations]
+   [leihs.borrow.lib.prefs :as prefs]
    ["/leihs-ui-client-side-external-react" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
@@ -387,7 +388,9 @@
                                    :fetched-until-date
                                    js/Date.
                                    datefn/endOfDay)
-            is-saving? (:is-saving? edit-mode-data)]
+            is-saving? (:is-saving? edit-mode-data)
+            show-day-quants @(subscribe [::prefs/show-day-quants])
+            on-show-day-quants-change #(dispatch [::prefs/set-show-day-quants %])]
 
         [:> UI/Components.Design.ModalDialog {:shown true
                                               :dismissible true
@@ -422,6 +425,8 @@
                                        :userId user-id}])))
              :onValidate (fn [v] (reset! form-valid? v))
              :modelData (h/camel-case-keys (merge model {:availability availability}))
+             :initialShowDayQuants (or show-day-quants false)
+             :onShowDayQuantsChange on-show-day-quants-change
              :profileName profile-name
              :locale text-locale
              :dateLocale date-locale

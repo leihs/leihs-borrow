@@ -28,7 +28,8 @@
    [leihs.borrow.features.shopping-cart.core :as cart]
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.model-show.availability :as availability]
-   [leihs.core.core :refer [dissoc-in flip]]))
+   [leihs.core.core :refer [dissoc-in flip]]
+   [leihs.borrow.lib.prefs :as prefs]))
 
 ; TODO: 
 ; * separate fetching of page & calendar data
@@ -294,6 +295,8 @@
                                    :fetched-until-date
                                    js/Date.
                                    datefn/endOfDay)
+            show-day-quants @(subscribe [::prefs/show-day-quants])
+            on-show-day-quants-change #(dispatch [::prefs/set-show-day-quants %])
             user-id (:id current-profile)
             pools @(subscribe [::inventory-pools (:id model)])
             availability-ready? (:availability-ready? model)
@@ -333,6 +336,8 @@
                                  (dispatch [::ensure-availability-fetched-until user-id end-date])))
               :initialInventoryPoolId (:pool-id filters)
               :inventoryPools (map h/camel-case-keys pools)
+              :initialShowDayQuants (or show-day-quants false)
+              :onShowDayQuantsChange on-show-day-quants-change
               :onSubmit on-submit
               :onValidate on-validate
               :modelData (h/camel-case-keys model)

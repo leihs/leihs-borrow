@@ -52,7 +52,8 @@
              :timespan {:en-GB "Time span" :de-CH "Zeitraum"}
              :from {:en-GB "From" :de-CH "Von"}
              :until {:en-GB "Until" :de-CH "Bis"}
-             :undefined {:en-GB "undefined" :de-CH "Unbestimmt"}}
+             :undefined {:en-GB "undefined" :de-CH "Unbestimmt"}
+             :show-day-quants {:en-GB "Show availability in calendar" :de-CH "Verfügbarkeit im Kalender anzeigen"}}
      :validate {:missing-quantity
                 {:de-CH "Verfügbarkeit kann nicht geprüft werden, da die Anzahl fehlt"
                  :en-GB "Availability can not be checked because the quantity is missing"}
