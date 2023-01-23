@@ -123,6 +123,11 @@
   environment_variables:
     FEATURE_NAME: 'Rentals - Show Status: 2 picked up items 1'
     FEATURE: './spec/features/rentals/rentals_show.feature[1:3:1]'
+'./spec/features/rentals/rentals_show.feature[1:4:1]':
+  name: 'Rentals - Show Switching profile 1'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Show Switching profile 1'
+    FEATURE: './spec/features/rentals/rentals_show.feature[1:4:1]'
 './spec/features/rentals/rentals_show_cancel_rental.feature[1:1:1]':
   name: 'Rentals - Show - Cancel rental Cancelling an unapproved order 1'
   environment_variables:
@@ -164,25 +169,15 @@
     FEATURE_NAME: 'Rentals - Show - Repeat order Repeating an order 2'
     FEATURE: './spec/features/rentals/repeat_order.feature[1:2:1]'
 './spec/features/rentals/repeat_order.feature[1:3:1]':
-  name: 'Rentals - Show - Repeat order Repeating an order 3'
-  environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Repeat order Repeating an order 3'
-    FEATURE: './spec/features/rentals/repeat_order.feature[1:3:1]'
-'./spec/features/rentals/repeat_order.feature[1:4:1]':
-  name: 'Rentals - Show - Repeat order Repeating an order 4'
-  environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Repeat order Repeating an order 4'
-    FEATURE: './spec/features/rentals/repeat_order.feature[1:4:1]'
-'./spec/features/rentals/repeat_order.feature[1:5:1]':
   name: 'Rentals - Show - Repeat order Order with options only 1'
   environment_variables:
     FEATURE_NAME: 'Rentals - Show - Repeat order Order with options only 1'
-    FEATURE: './spec/features/rentals/repeat_order.feature[1:5:1]'
-'./spec/features/rentals/repeat_order.feature[1:6:1]':
+    FEATURE: './spec/features/rentals/repeat_order.feature[1:3:1]'
+'./spec/features/rentals/repeat_order.feature[1:4:1]':
   name: 'Rentals - Show - Repeat order Order with models and an option 1'
   environment_variables:
     FEATURE_NAME: 'Rentals - Show - Repeat order Order with models and an option 1'
-    FEATURE: './spec/features/rentals/repeat_order.feature[1:6:1]'
+    FEATURE: './spec/features/rentals/repeat_order.feature[1:4:1]'
 './spec/features/request_framework.feature[1:1:1]':
   name: 'Request framework Login and retry after having been logged out 1'
   environment_variables:

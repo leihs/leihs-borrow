@@ -34,30 +34,6 @@ fragment rentalProps on Rental {
 
   overdueQuantity
 
-  subOrdersByPool {
-    id
-    inventoryPool {
-      ...poolProps
-    }
-    state
-    rejectedReason
-    reservations {
-      ...reservationProps
-    }
-    order {
-      id
-      title
-      purpose
-    }
-    contracts {
-      ...contractsConnectionProps
-    }
-    createdAt
-    updatedAt
-  }
-  user {
-    id
-  }
   contracts {
     ...contractsConnectionProps
   }
@@ -66,17 +42,6 @@ fragment rentalProps on Rental {
   }
   createdAt
   updatedAt
-}
-
-fragment poolProps on InventoryPool {
-  id
-  # description
-  # isActive
-  # email
-  name
-  # shortname
-  # hasReservableItems
-  # maximumReservationTime
 }
 
 fragment reservationProps on Reservation {

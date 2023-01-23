@@ -157,14 +157,15 @@
       first))
 
 (defn get-one-by-id [tx user-id id]
-  (let [delegation-ids (->> user-id
-                            (delegations/get-multiple-by-user-id tx)
-                            (map :id))]
-    (-> (multiple-base-sqlmap (conj delegation-ids user-id))
+  (if-let
+   [order
+    (-> (multiple-base-sqlmap user-id)
         (sql/merge-where [:= :unified_customer_orders.id id])
         sql/format
         (as-> <> (jdbc/query tx <> {:row-fn (partial row-fn tx)}))
-        first)))
+        first)]
+    order
+    (throw (ex-info "Resource not found or not accessible for profile user id" {:status 403}))))
 
 (defn get-one
   [{{:keys [tx]} :request user-id ::target-user/id}
@@ -430,7 +431,7 @@
   [{{:keys [tx] {auth-user-id :id} :authenticated-entity} :request
     user-id ::target-user/id}
    {:keys [id start-date end-date]} _]
-  (let [customer-order (get-one-by-id tx auth-user-id id)
+  (let [customer-order (get-one-by-id tx user-id id)
         reservations (rs/get-by-ids tx (:reservation_ids customer-order))
         delegated-user-id (when (not= auth-user-id user-id) auth-user-id)
         new-reservations (->> reservations

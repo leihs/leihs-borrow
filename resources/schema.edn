@@ -386,7 +386,8 @@
                              :userId {:type :UUID}}
                       :resolve :contract
                       :type (non-null :Contract)}
-           :rental {:args {:id {:type (non-null :UUID)}}
+           :rental {:args {:id {:type (non-null :UUID)}
+                           :userId {:type :UUID}}
                     :resolve :order
                     :type (non-null :Rental)}
            :rentals {:resolve :orders-connection
@@ -482,7 +483,8 @@
                                   :userId {:type :UUID}}
                            :resolve :submit-order
                            :type (non-null :Rental)}
-             :cancelOrder {:args {:id {:type (non-null :UUID)}}
+             :cancelOrder {:args {:id {:type (non-null :UUID)}
+                                  :userId {:type :UUID}}
                            :resolve :cancel-order
                            :type (non-null :Rental)}
              :repeatOrder {:args {:id {:type (non-null :UUID)}

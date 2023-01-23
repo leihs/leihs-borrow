@@ -99,8 +99,6 @@ Feature: Rentals - Show - Repeat order
       | sourceProfileLookup | sourceProfile     | sourceProfileShort | targetProfile    | targetProfileShort |
       | user                | User A (personal) | UA                 | User A (personal | UA                 |
       | Delegation D        | Delegation D      | DD                 | Delegation D     | DD                 |
-      | user                | User A (personal  | UA                 | Delegation D     | DD                 |
-      | Delegation D        | Delegation D      | DD                 | User A (personal | UA                 |
 
   Scenario: Order with options only
     Given there is an option "Ethernet 1.5m"

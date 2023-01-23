@@ -2,7 +2,7 @@ Feature: Rentals - Show
 
   Background:
     Given there is an initial admin
-    And there is a user
+    And there is a user "User A"
     And there is a delegation "Delegation D"
     And the user is member of delegation "Delegation D"
     And there is an inventory pool "Pool A"
@@ -92,3 +92,32 @@ Feature: Rentals - Show
       | title          | body   | foot                                                       |
       | 1× DSLR Camera | Pool A | 2 days from ${Date.today} To return until ${Date.tomorrow} |
       | 1× Tripod      | Pool B | 2 days from ${Date.today} To return until ${Date.tomorrow} |
+
+  Scenario: Switching profile
+    Given a customer order with title "Order 1" and the following reservations exists for the user:
+      | user | quantity | model       | pool   | relative-start-date | relative-end-date | state    |
+      | user | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | approved |
+    And a customer order with title "Order 2" and the following reservations exists for the user:
+      | user         | quantity | model       | pool   | relative-start-date | relative-end-date   | state    |
+      | Delegation D | 1        | DSLR Camera | Pool A | ${30.days.from_now} | ${31.days.from_now} | approved |
+
+    When I log in as the user
+    And I visit "/app/borrow/rentals/"
+    And I click on the card with title "Order 1"
+    And I see the page title "Order 1"
+    And I click on the user profile button
+    And I click on "DD"
+
+    Then the user profile button shows "DD"
+    And I see the page title "Order"
+    And I see "This order is not visible for the current profile"
+
+    When I visit "/app/borrow/rentals/"
+    And I click on the card with title "Order 2"
+    And I see the page title "Order 2"
+    And I click on the user profile button
+    And I click on "UA"
+
+    Then the user profile button shows "UA"
+    And I see the page title "Order"
+    And I see "This order is not visible for the current profile"

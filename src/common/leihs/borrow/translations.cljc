@@ -444,6 +444,8 @@
                                 :OVERDUE {:de-CH " ({count} überfällig)" :en-GB " ({count} overdue)"}}}}
 
     :rental-show {:page-title {:de-CH "Bestellung" :en-GB "Order"}
+                  :message-403 {:de-CH "Diese Bestellung ist für das aktuelle Profil nicht sichtbar"
+                                :en-GB "This order is not visible for the current profile"}
                   :state {:de-CH "Status" :en-GB "State"}
                   :cancel-action-label {:de-CH "Bestellung stornieren" :en-GB "Cancel order"}
                   :repeat-action-label {:de-CH "Bestellung wiederholen" :en-GB "Repeat order"}

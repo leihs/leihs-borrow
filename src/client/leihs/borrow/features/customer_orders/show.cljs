@@ -36,7 +36,8 @@
                  (str
                   (rc/inline "leihs/borrow/features/customer_orders/customerOrderShow.gql") "\n"
                   (rc/inline "leihs/borrow/features/customer_orders/fragment_rentalProps.gql"))
-                 {:id order-id}
+                 {:id order-id
+                  :userId (current-user/get-current-profile-id db)}
                  [::on-fetched-data order-id]]
       :db (-> db (assoc-in [::errors order-id] nil))})))
 
@@ -67,7 +68,8 @@
                (str
                 (rc/inline "leihs/borrow/features/customer_orders/cancelOrder.gql") "\n"
                 (rc/inline "leihs/borrow/features/customer_orders/fragment_rentalProps.gql"))
-               {:id id}
+               {:id id
+                :userId (current-user/get-current-profile-id db)}
                [::on-cancel-order]]}))
 
 (reg-event-fx
@@ -185,6 +187,7 @@
         reservations-sorted @(subscribe [::reservations-sorted rental-id])
         errors @(subscribe [::errors rental-id])
         is-loading? (not (or rental errors))
+        error403? (and (not is-loading?) (some #(= 403 (-> % :extensions :code)) errors))
 
         rental-title  (or (:title rental) (:purpose rental))
 
@@ -206,7 +209,11 @@
          {:title (t :page-title)}]
         [ui/loading]]
 
-       errors [ui/error-view errors]
+       errors (if error403?
+                [:> UI/Components.Design.PageLayout.Header
+                 {:title (t :page-title)}
+                 [:> UI/Components.Design.InfoMessage {:class "mt-2"} (t :message-403)]]
+                [ui/error-view errors])
 
        :else
        [:<>

@@ -80,17 +80,4 @@ fragment rentalProps on Rental {
   createdAt
   updatedAt
 
-  # reservations {
-  #   id
-  #   status
-  #   quantity
-  #   inventoryPool {
-  #     id
-  #     name
-  #   }
-  # }
-  # subOrdersByPool {
-  #   id
-  #   state
-  # }
 }

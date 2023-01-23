@@ -1,5 +1,5 @@
-mutation cancelOrder($id: UUID!) {
-  cancelOrder(id: $id) {
+mutation cancelOrder($id: UUID!, $userId: UUID) {
+  cancelOrder(id: $id, userId: $userId) {
     ...rentalProps
   }
 }

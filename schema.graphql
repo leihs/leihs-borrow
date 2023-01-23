@@ -1,5 +1,5 @@
 # source: http://localhost:3250/app/borrow/graphql
-# timestamp: Mon Oct 24 2022 17:05:13 GMT+0200 (Central European Summer Time)
+# timestamp: Mon Jan 23 2023 13:52:50 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -338,7 +338,7 @@ type QueryRoot {
   languages: [Language]
   model(id: UUID!, userId: UUID): Model!
   models(after: String, categoryId: UUID, first: Int, ids: [UUID!], isFavorited: Boolean, onlyAvailable: Boolean, orderBy: [ModelsOrderByInput], poolIds: [UUID!], quantity: Int, searchTerm: String, userId: UUID): ModelsConnection
-  rental(id: UUID!): Rental!
+  rental(id: UUID!, userId: UUID): Rental!
   rentals(
     after: String
     first: Int
