@@ -1,5 +1,5 @@
 step 'I choose to filter by availabilty' do
-  check('Show available only')
+  check('Select date (from/until)')
 end
 
 step 'I set the quantity to :n' do |n|

@@ -189,8 +189,8 @@
                                                                         :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
              :availability {:en-GB "Availability"
                             :de-CH "Verfügbarkeit"}
-             :show-only-available {:en-GB "Show available only"
-                                   :de-CH "Nur verfügbare anzeigen"}
+             :show-only-available {:en-GB "Select date (from/until)"
+                                   :de-CH "Datum wählen (von/bis)"}
              :pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
                      :all {:en-GB "All" :de-CH "Alle"}
                      :invalid-option {:en-GB "Invalid selection" :de-CH "Ungültige Auswahl"}
