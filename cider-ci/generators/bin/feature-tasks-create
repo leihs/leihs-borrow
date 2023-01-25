@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd ../../.. > /dev/null 2>&1 && pwd -P)"
+
+cd $PROJECT_DIR
+
+./bin/rspec -f j -o tmp/features.json --dry-run spec/features/
+bundle exec ruby cider-ci/generators/bin/feature-tasks-create.rb
+
+#vi: ft=sh

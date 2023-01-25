@@ -1,0 +1,17 @@
+include:
+  - path: cider-ci/task-components/ruby-bundle.yml
+
+git_options:
+  submodules:
+    include_match: ^.*$
+
+scripts:
+  borrow-build-uberjar:
+    timeout: 60 minutes
+    exclusive_executor_resource: 'build-leihs-borrow-jar-{{CIDER_CI_TREE_ID}}'
+    start_when:
+      install-ruby-passed: { script_key: borrow-ruby-bundle }
+    body: |
+      #!/usr/bin/env bash
+      cd ${LEIHS_BORROW_DIR}
+      ./bin/build

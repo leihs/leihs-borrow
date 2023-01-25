@@ -1,10 +1,8 @@
-#!/bin/bash -eu
-
-PROJECT_DIR="$(dirname ${BASH_SOURCE})/.."
-cd "${PROJECT_DIR}"
-echo "PWD: $PWD"
-source $PROJECT_DIR/shared-clj/clojure/bin/activate
-
+#!/usr/bin/env bash
+set -euo pipefail
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+source ${PROJECT_DIR}/shared-clj/bin/helpers/clj.sh
+PROJECT_NAME=borrow ui_setup
 ./bin/cljs-watch
 cd -
 

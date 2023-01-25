@@ -1,41 +1,61 @@
 jobs:
+
   borrow-build-uberjar:
     name: Build prod ready uberjar
     run_when: &ON_BRANCH_UPDATE
       any branch has been updated:
         type: branch
         include_match: ^.*$
-    include: cider-ci/uberjar_job-component.yml
+    include: cider-ci/jobs/uberjar.yml
 
-  feature-specs:
-    name: Feature specs
-    depends_on: &SPEC_DEPS
+  backend-specs:
+    name: 'Backend: Run specs'
+    depends_on: &BACKEND_SPEC_DEPS
       uberjar was built:
         type: job
         job_key: borrow-build-uberjar
         states: [passed]
-    run_when: *SPEC_DEPS
-    context: { include: cider-ci/feature-specs_job-context.yml }
+    run_when: *BACKEND_SPEC_DEPS
+    context:  
+      include: cider-ci/jobs/backend_specs.yml 
 
-  backend-specs:
-    name: 'Backend: Run specs'
-    depends_on: *SPEC_DEPS
-    run_when: *SPEC_DEPS
-    context: { include: cider-ci/backend-specs_job-context.yml }
+  check-feature-tasks:
+    name: Check if feature tasks are up to date
+    run_when: *ON_BRANCH_UPDATE
+    context:
+      include: cider-ci/jobs/feature_tasks_check.yml 
 
-  lint:
-    name: Lint
-    depends_on: *SPEC_DEPS
-    run_when: *SPEC_DEPS
-    context: { include: cider-ci/lint_job-context.yml }
+  feature-specs:
+    name: Feature specs
+    depends_on: &FEATURE_SPECS_DEPS
+      uberjar was built:
+        type: job
+        job_key: borrow-build-uberjar
+        states: [passed]
+      feature tasks are up to date:
+        type: job
+        job_key: check-feature-tasks
+        states: [passed]
+    run_when: *FEATURE_SPECS_DEPS
+    context: 
+      include: cider-ci/jobs/feature_specs.yml
+
+  graphql-schema-check:
+    name: Check GraphQL Schema
+    depends_on: &UBERJAR
+      uberjar was built:
+        type: job
+        job_key: borrow-build-uberjar
+        states: [passed]
+    context:
+      include: cider-ci/jobs/graph-ql-check.yml
 
   meta:
     name: Meta
     description: |
       Various superordinate quality assurance tasks
-    run_when:
-      any branch is pushed: { type: branch, include_match: ^.*$ }
-    include: cider-ci/meta_job-component.yml
+    run_when: *ON_BRANCH_UPDATE
+    include: cider-ci/jobs/meta.yml
 
   all-ok:
     name: 'All Tests OK'
@@ -47,10 +67,6 @@ jobs:
       backend-specs was successful:
         type: job
         job_key: backend-specs
-        states: [passed]
-      lint was successful:
-        type: job
-        job_key: lint
         states: [passed]
       feature-specs was successful:
         type: job
@@ -78,4 +94,5 @@ jobs:
     depends_on: &GOOD_TO_MERGE_DEPENDENCIES
       all passed: { type: job, job_key: all-ok, states: [passed] }
     run_when: *GOOD_TO_MERGE_DEPENDENCIES
-    context: { include: cider-ci/good-to-merge_job-context.yml }
+    context: 
+      include: cider-ci/jobs/good-to-merge.yml

@@ -1,4 +1,10 @@
-#!/bin/sh
+##!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+cd $PROJECT_DIR
+
+./bin/env/nodejs-setup
 
 # NOTE: ensure the bin is installed (comes from npm package)
 npm run -s graphql -- -v &> /dev/null || npm install --silent --no-audit

@@ -1,2 +1,6 @@
-nodejs lts-gallium
-ruby 2.7.6
+clojure 1.10.3.1093
+firefox 102.6.0esr
+geckodriver 0.32.0
+java zulu-11.60.19
+nodejs 16.18.1
+ruby 3.1.3

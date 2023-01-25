@@ -1,12 +1,8 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
-PROJECT_DIR="$(dirname ${BASH_SOURCE})/.."
-cd "${PROJECT_DIR}"
-
-echo "PWD: $PWD"
-
-rm -rf resources/all/public/borrow/js/
-
-cd -
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+source ${PROJECT_DIR}/shared-clj/bin/helpers/clj.sh
+PROJECT_NAME=borrow cljs-clean
 
 # vi: ft=sh

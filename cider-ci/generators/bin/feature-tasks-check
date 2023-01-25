@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd ../../.. > /dev/null 2>&1 && pwd -P)"
+cd $PROJECT_DIR
+
+function echoerr { echo "$@" 1>&2; }
+FEATURE_TASKS_FILE="cider-ci/generators/feature-tasks.yml"
+
+if [ ! -f $FEATURE_TASKS_FILE ]; then
+  echoerr "$FEATURE_TASKS_FILE not present"
+  exit 1
+fi 
+
+rm $FEATURE_TASKS_FILE
+
+if [ -f $FEATURE_TASKS_FILE ]; then
+  echoerr "$FEATURE_TASKS_FILE present after deletion"
+  exit 1
+fi 
+
+./cider-ci/generators/bin/feature-tasks-create
+
+if [ ! -f $FEATURE_TASKS_FILE ]; then
+  echoerr "$FEATURE_TASKS_FILE not present"
+  exit 1
+fi 
+
+if [ -z "$(git status --porcelain $FEATURE_TASKS_FILE)" ]; then
+  echo "$FEATURE_TASKS_FILE is up to date"
+else
+  echoerr "$FEATURE_TASKS_FILE is not up to date"
+  echoerr "call ./cider-ci/generators/bin/feature-tasks-create and commit"
+  exit 1
+fi
+
+#vi: ft=sh

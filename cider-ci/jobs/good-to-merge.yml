@@ -1,0 +1,27 @@
+task_defaults:
+  git_options:
+    submodules:
+      include_match: ^.*$
+  max_trials: 1
+tasks:
+  # NOTE: "linear history" is already enforced via GitHub branch protection
+
+  git-branch-current:
+    name: 'git: tree contains latest commit from origin/master'
+    aggregate_state: satisfy-last # relies on external state!
+    scripts:
+      test:
+        body: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          set -x
+
+          git fetch origin master
+          CMT_ID=$(git rev-parse origin/master)
+
+          # pipefail and grep -q wont get along well 
+          # https://github.com/koalaman/shellcheck/issues/665
+          set +o pipefail
+          git rev-list --children HEAD | grep -q $CMT_ID
+
+          echo "OK"

@@ -4,19 +4,8 @@ require 'selenium-webdriver'
 require 'turnip/capybara'
 require 'turnip/rspec'
 
-
-
-def accepted_firefox_path 
-  ENV[ ACCEPTED_FIREFOX_ENV_PATHS.detect do |env_path|
-    ENV[env_path].present?
-  end || ""].tap { |path|
-    path.presence or raise "no accepted FIREFOX found"
-  }
-end
-
-Selenium::WebDriver::Firefox.path = accepted_firefox_path
-
-
+firefox_bin_path = Pathname.new(`asdf where firefox`.strip).join('bin/firefox').expand_path.to_s
+Selenium::WebDriver::Firefox.path = firefox_bin_path
 
 Capybara.register_driver :firefox do |app|
   capabilities = Selenium::WebDriver::Remote::Capabilities.firefox(
@@ -29,7 +18,7 @@ Capybara.register_driver :firefox do |app|
   # profile["intl.accept_languages"] = "en"
 
   opts = Selenium::WebDriver::Firefox::Options.new(
-    binary: accepted_firefox_path,
+    binary: firefox_bin_path,
     profile: profile,
     log_level: :trace)
 
@@ -39,17 +28,9 @@ Capybara.register_driver :firefox do |app|
   end
   # opts.args << '--devtools' # NOTE: useful for local debug
 
-  # driver = Selenium::WebDriver.for :firefox, options: opts
-  # Capybara::Selenium::Driver.new(app, browser: browser, options: opts)
-  Capybara::Selenium::Driver.new(
-    app,
-    browser: :firefox,
-    options: opts,
-    desired_capabilities: capabilities
-  )
+  Capybara::Selenium::Driver.new(app, browser: :firefox, options: opts)
 end
 
-# Capybara.run_server = false
 Capybara.default_driver = :firefox
 Capybara.current_driver = :firefox
 

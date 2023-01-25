@@ -1,0 +1,45 @@
+generate_tasks:
+  include_match: spec/graphql/.*_spec.rb
+task_defaults:
+  include:
+    - path: cider-ci/task-components/database.yml
+      submodule: [database]
+    - cider-ci/task-components/ruby-bundle.yml
+    - cider-ci/task-components/uberjar.yml
+    - cider-ci/task-components/service.yml
+    - cider-ci/task-components/legacy-mock-server.yml
+  ports:
+    LEIHS_BORROW_HTTP_PORT:
+      min: 3300
+      max: 3399
+    LEIHS_LEGACY_HTTP_PORT:
+      min: 3400
+      max: 3499
+  environment_variables:
+    LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
+    LEIHS_DATABASE_DIR: '{{LEIHS_BORROW_DIR}}/database'
+    LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT: '2'
+    LEIHS_DATABASE_NAME: 'leihs_{{CIDER_CI_TRIAL_ID}}'
+    LEIHS_BORROW_HTTP_BASE_URL: http://localhost:{{LEIHS_BORROW_HTTP_PORT}}
+    RAILS_ENV: test
+  traits:
+    asdf: true
+  git_options:
+    submodules:
+      include_match: ^.*$
+  scripts:
+    test:
+      start_when:
+        borrow service is running:
+          script_key: borrow-service-is-running
+        ruby is bundled:
+          script_key: borrow-ruby-bundle
+        legacy-mock-server_is-serving:
+          script_key: legacy-mock-server_is-serving
+      body: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+        mkdir -p log
+        unset PGPORT; unset PGUSER
+        PGPORT=${PG10PORT} PGUSER=${PG10USER} \
+          ./bin/rspec $CIDER_CI_TASK_FILE

@@ -1,33 +1,29 @@
 scripts:
 
-  borrow-install-nodejs:
-    exclusive_executor_resource: asdf-nodjes
-    body: |
-      set -eux
-      cd $LEIHS_BORROW_DIR
-      asdf install nodejs
-
   borrow-service-run:
     timeout: 30 Minutes
     start_when:
-      nodejs is installed:
-        script_key: borrow-install-nodejs
       uberjar has been built:
         script_key: borrow-build-uberjar
       database has been created:
         script_key: create-database
     body: |
-      set -eux
+      #!/usr/bin/env bash
+      set -euo pipefail
       cd $LEIHS_BORROW_DIR
       export LEGACY_HTTP_PORT=${LEIHS_LEGACY_HTTP_PORT}
       export DB_NAME=${LEIHS_DATABASE_NAME}
       export HTTP_PORT=${LEIHS_BORROW_HTTP_PORT}
+      unset PGPORT
+      unset PGUSER
       mkdir tmp
-      java -jar target/leihs-borrow.jar run --pid-file tmp/service.pid
+      PGPORT="${PG10PORT}" PGUSER="${PG10USER}" \
+        ./bin/run --pid-file tmp/service.pid
 
   borrow-service-is-running:
     body: |
-      set -euxo
+      #!/usr/bin/env bash
+      set -euo pipefail
       until curl --silent --fail -I \
         -H 'Accept: application/json' \
         ${LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/status;
@@ -45,7 +41,8 @@ scripts:
 
   borrow-service-stop:
     body: |
-      set -euxo
+      #!/usr/bin/env bash
+      set -euo pipefail
       cd $LEIHS_BORROW_DIR
       export PID=$(cat tmp/service.pid)
       kill $PID

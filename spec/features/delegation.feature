@@ -15,10 +15,12 @@ Feature: Delegations
 
     When I click on the user profile button
     And I click on "DD"
+    And I sleep "0.5"
     Then the user profile button shows "DD"
 
     When I click on the user profile button
     And I click on "UA"
+    And I sleep "0.5"
     Then the user profile button shows "UA"
 
 

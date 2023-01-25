@@ -1,27 +1,8 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
-INSTALL_DEPS="${INSTALL_DEPS:-YES}"
-
-PROJECT_DIR="$(dirname ${BASH_SOURCE})/.."
-cd "${PROJECT_DIR}"
-echo "PWD: $PWD"
-
-# add our clojure version to the path
-source $PROJECT_DIR/shared-clj/clojure/bin/activate
-
-if [ "$INSTALL_DEPS" == "YES" ]; then
-  npm ci --no-audit
-else
-  echo "INFO: Not installing cljs deps!"
-fi
-
-# HINT if you ever run into js problems with release resp advanced optimization
-# add the `--debug` option, this does tree shaking but keeps the original name
-# references, e.g. :
-# npx shadow-cljs release leihs-borrow-js --debug
-npx shadow-cljs release leihs-borrow-js
-rm -rf resources/public/borrow/js/cljs-runtime/
-
-cd -
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+source ${PROJECT_DIR}/shared-clj/bin/helpers/clj.sh
+PROJECT_NAME=borrow cljs-release "$@"
 
 # vi: ft=sh

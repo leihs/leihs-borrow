@@ -3,7 +3,7 @@ scripts:
   run_legacy-mock-server:
     start_when:
       bundled:
-        script_key: bundle-ruby
+        script_key: borrow-ruby-bundle
       # the following is not a hard dependency, this ist just not fall
       # into a timeout when building the uberjar taks very long
       the uberjar is ready:
@@ -11,7 +11,7 @@ scripts:
     timeout: 5 Minutes
     body: |
       #!/usr/bin/env bash
-      set -eux
+      set -euo pipefail
       bundle exec ruby spec/mock/legacy-mock-server.rb -p ${LEIHS_LEGACY_HTTP_PORT}
 
   legacy-mock-server_is-serving:
@@ -27,16 +27,11 @@ scripts:
         sleep 1;
       done
 
-  test:
-    # either passes in less than 20 seconds or not and then would run for minutes
-    start_when:
-      test-auth-system is serving:
-        script_key: legacy-mock-server_is-serving
-
   shutdown_legacy-mock-server:
     timeout: 3 Seconds
     body: |
-      set -eux
+      #!/usr/bin/env bash
+      set -euo pipefail
       kill -INT $(lsof -t -wni tcp:${LEIHS_LEGACY_HTTP_PORT})
       sleep 1
     start_when:

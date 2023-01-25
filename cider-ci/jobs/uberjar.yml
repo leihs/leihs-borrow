@@ -1,8 +1,6 @@
 context:
 
   task_defaults:
-    include:
-      - cider-ci/environment_variables.yml
     environment_variables:
       LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
     git_options:
@@ -11,4 +9,4 @@ context:
   tasks:
     borrow-build-uberjar:
       include:
-        - cider-ci/uberjar_task-component.yml
+        - cider-ci/task-components/uberjar.yml

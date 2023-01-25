@@ -19,15 +19,18 @@ scripts:
   legacy-service-run:
     timeout: 30 Minutes
     body: |
-      set -eux
+      #!/usr/bin/env bash
+      set -euo pipefail
       cd $LEIHS_LEGACY_DIR
       export RAILS_SERVE_STATIC_FILES=yes
-      ruby -S \
-      bundle exec puma \
-      -e production \
-      -t 1:2 \
-      -w 2 \
-      -b tcp://localhost:${LEIHS_LEGACY_HTTP_PORT}
+      unset PGPORT; unset PGUSER
+      PGPORT=${PG10PORT} PGUSER=${PG10USER} \
+        ruby -S \
+        bundle exec puma \
+        -e production \
+        -t 1:2 \
+        -w 2 \
+        -b tcp://localhost:${LEIHS_LEGACY_HTTP_PORT}
     start_when:
       database has been created:
         script_key: create-database
@@ -41,6 +44,8 @@ scripts:
   legacy-service-stop:
     timeout: 5 Seconds
     body: |
+      #!/usr/bin/env bash
+      set -euo pipefail
       set -eux
       kill -INT $(lsof -t -wni tcp:${LEIHS_LEGACY_HTTP_PORT})
       sleep 1

@@ -1,0 +1,5 @@
+'%{id}':
+  name: '%{name}'
+  environment_variables:
+    FEATURE_NAME: '%{name}'
+    FEATURE: '%{id}'

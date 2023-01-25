@@ -1,114 +1,32 @@
 #!/usr/bin/env bash
-set -eu
+set -euo pipefail
 
 ### VARIABLES and PWD #########################################################
 
-set -x
-
 PROJECT_NAME="leihs-borrow"
-
 PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
-UI_DIR="${PROJECT_DIR}/leihs-ui"
-ARTEFACT_PATH="$PROJECT_DIR/target/$PROJECT_NAME.jar"
-DIGEST="$(git -C "$PROJECT_DIR" log -n 1 HEAD --pretty=%T)"
-LOCAL_CACHE_DIR="${LOCAL_CACHE_DIR:-"${TMPDIR:-/tmp/}/leihs-build-cache"}"
-LOCAL_CACHED_ARTEFACT_PATH="${LOCAL_CACHE_DIR}/${PROJECT_NAME}_${DIGEST}.jar"
-S3_CACHED_ARTEFACT_NAME="${PROJECT_NAME}_${DIGEST}.jar"
-BUILD_CACHE_DISABLED="${BUILD_CACHE_DISABLED:-NO}"
-USE_DOCKER="${USE_DOCKER:-NO}"
-
-# add our clojure version to the path
-source $PROJECT_DIR/shared-clj/clojure/bin/activate
-
-set +x
-
 cd "${PROJECT_DIR}"
-echo "PWD: $PWD"
+source "shared-clj/bin/helpers/build.sh"
 
-if [ $BUILD_CACHE_DISABLED == "YES" ] ||  [ $BUILD_CACHE_DISABLED == "NO" ]; then
-  echo "BUILD_CACHE_DISABLED=$BUILD_CACHE_DISABLED"
-  mkdir -p "$LOCAL_CACHE_DIR"
-else
-  echo 'BUILD_CACHE_DISABLED must be initially unset, or "YES", or "NO"'
-  exit 1
-fi
-
-if [ $USE_DOCKER == "YES" ] ||  [ $USE_DOCKER == "NO" ]; then
-  echo "USE_DOCKER=$USE_DOCKER"
-else
-  echo 'USE_DOCKER must be initially unset, or "YES", or "NO"'
-  exit 1
-fi
+# you can override here some of the vars defined in helpers/build.sh, e.g.
+# SHARED_CLJ_DIR="${PROJECT_DIR}/server/shared-clj"
 
 
 ### functions #################################################################
 
-function build {
-  if [ $USE_DOCKER == "YES" ]; then
-    bin/docker-build
-  else
-    ${UI_DIR}/bin/build
-    ./bin/cljs-release
-    ./bin/set-built-info
-    ./bin/clj-uberjar
-  fi
+function build_core {
+  ${UI_DIR}/bin/build
+  ./bin/cljs-release
+  ./bin/set-built-info
+  ./bin/clj-uberjar
 }
 
-function pack {
-  cp "$ARTEFACT_PATH" "$LOCAL_CACHED_ARTEFACT_PATH"
-}
-
-function extract {
-  mkdir -p $(dirname $ARTEFACT_PATH)
-  cp "$LOCAL_CACHED_ARTEFACT_PATH" "$ARTEFACT_PATH"
-}
 
 
 ### MAIN ######################################################################
 
-if [ $BUILD_CACHE_DISABLED == "YES" ]; then
-
-  echo "INFO: BUILD_CACHE_DISABLED is YES, building and nothing else"
-  build
-
-else
-
-  source ${UI_DIR}/bin/require-clean-working-tree
-  require-clean-working-tree
-
-  # RUBY on CI for ${UI_DIR}/bin/s3-cache-helper
-  RUBY="${RUBY:-EMPTY}"
-  if [ "${RUBY}" != 'EMPTY' ]; then
-    export PATH=~/.rubies/$RUBY/bin:$PATH
-  fi
-
-  echo "LOCAL_CACHED_ARTEFACT_PATH: $LOCAL_CACHED_ARTEFACT_PATH"
-
-  if [ -e $LOCAL_CACHED_ARTEFACT_PATH ]; then
-
-    echo "INFO: locally cached artefact found, extracting, and caching ..."
-    extract
-
-    ${UI_DIR}/bin/s3-cache-helper upload -n "$S3_CACHED_ARTEFACT_NAME" -p "$LOCAL_CACHED_ARTEFACT_PATH"
-  else
-
-    echo "S3_CACHED_ARTEFACT_NAME: $S3_CACHED_ARTEFACT_NAME"
-    echo "INFO: trying to download from S3 cache"
-    ${UI_DIR}/bin/s3-cache-helper download -n "$S3_CACHED_ARTEFACT_NAME" -p "$LOCAL_CACHED_ARTEFACT_PATH"
-    if [ -e $LOCAL_CACHED_ARTEFACT_PATH ]; then
-      echo "INFO: artefact found, extracting "
-      extract
-    else
-      echo "INFO: no cached artefact found: building, packing, and caching ..."
-      build
-      pack
-      ${UI_DIR}/bin/s3-cache-helper upload -n "$S3_CACHED_ARTEFACT_NAME" -p "$LOCAL_CACHED_ARTEFACT_PATH"
-    fi
-  fi
-fi
-
+build
 cd -
-
 echo "OK ✔"
 
 # vi: ft=sh

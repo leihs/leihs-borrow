@@ -1,15 +1,14 @@
 traits:
-  asdf-ruby: true
-  Bash: true
+  asdf: true
 
 scripts:
-  bundle-ruby:
+  borrow-ruby-bundle:
     exclusive_executor_resource: asdf-ruby
     timeout: 20 Minutes
     body: |
       #!/usr/bin/env bash
-      set -eux
+      set -euo pipefail
       cd $LEIHS_BORROW_DIR
-      asdf install ruby
-      bundle install
+      ./bin/env/ruby-setup
+
 

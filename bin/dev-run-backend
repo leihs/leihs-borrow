@@ -1,9 +1,8 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -eux
 PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
-cd $PROJECT_DIR
-source $PROJECT_DIR/shared-clj/clojure/bin/activate
-clj -M -m leihs.borrow.main --dev-mode true --repl true run $@
+source ${PROJECT_DIR}/shared-clj/bin/helpers/clj.sh
+PROJECT_NAME=borrow clj_run --dev-mode true --repl true run "$@"
 
 # vi: ft=sh

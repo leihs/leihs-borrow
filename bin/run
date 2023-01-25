@@ -1,16 +1,11 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
-BORROW_DIR="$(dirname ${BASH_SOURCE})/.."
-cd "${BORROW_DIR}"
-echo "PWD: $PWD"
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+cd $PROJECT_DIR
 
 ./bin/build
-# if ! ./bin/build; then
-#   cd leihs-ui
-#   ./bin/build || bin/build-core
-#   cd -
-#   bin/build-core
-# fi
+./bin/env/nodejs-setup
 
 java -jar target/leihs-borrow.jar run "$@"
 

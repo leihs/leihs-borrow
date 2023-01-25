@@ -1,0 +1,49 @@
+task_defaults:
+  include:
+    - path: cider-ci/task-components/database.yml
+      submodule: [database]
+    - cider-ci/task-components/uberjar.yml
+    - cider-ci/task-components/service.yml
+  git_options:
+    submodules:
+      include_match: ^.*$
+  traits:
+    asdf: true
+  ports:
+    LEIHS_BORROW_HTTP_PORT:
+      min: 3300
+      max: 3399
+    LEIHS_LEGACY_HTTP_PORT:
+      min: 3400
+      max: 3499
+  environment_variables:
+    LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
+    LEIHS_BORROW_HTTP_BASE_URL: http://localhost:{{LEIHS_BORROW_HTTP_PORT}}
+    LEIHS_DATABASE_DIR: '{{LEIHS_BORROW_DIR}}/database'
+    LEIHS_DATABASE_NAME: 'leihs_{{CIDER_CI_TRIAL_ID}}'
+    LEIHS_LEGACY_HTTP_BASE_URL: http://localhost:{{LEIHS_LEGACY_HTTP_PORT}}
+    RAILS_ENV: test
+  scripts:
+    test:
+      start_when:
+        borrow service is running:
+          script_key: borrow-service-is-running
+          states: [passed]
+tasks:
+  test:
+    scripts:
+      test:
+        body: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          set -x 
+          cd $LEIHS_BORROW_DIR
+          export GRAPHQL_CONFIG_FILE='.graphqlconfig.yaml'
+          ls -lah "${GRAPHQL_CONFIG_FILE}"
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            SEDOPTION="-i ''"
+          else
+            SEDOPTION="-i"
+          fi
+          sed "$SEDOPTION" -e "s/localhost:3250/localhost:${LEIHS_BORROW_HTTP_PORT}/" "${GRAPHQL_CONFIG_FILE}"
+          ./bin/graphql-schema-diff

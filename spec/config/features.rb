@@ -28,18 +28,11 @@ RSpec.configure do |config|
   # Turnip:
   config.raise_error_for_unimplemented_steps = true # TODO: fix
 
-  config.before(type: :feature) do
-    feature_file_absolute = absolute_feature_file()
+  config.before(type: :feature) do |example|
+    feature_file_absolute = absolute_feature_file(example)
     require_shared_files feature_file_absolute
     require_feature_steps feature_file_absolute
-
     Capybara.current_driver = :firefox
-    begin
-      page.driver.browser.manage.window.resize_to(*BROWSER_WINDOW_SIZE)
-    rescue => e
-      fail e
-      page.driver.browser.manage.window.maximize
-    end
   end
 
   config.before(pending: true) do |example|
@@ -67,23 +60,14 @@ RSpec.configure do |config|
   end
 end
 
-def absolute_feature_file
-  spec_file_argument = ARGV.first.split(":").first
-
-  feature_file_absolute = if Pathname.new(spec_file_argument).absolute?
-      Pathname.new(spec_file_argument)
-    else
-      Pathname.pwd.join(spec_file_argument)
-    end
-
-  unless feature_file_absolute.absolute? and feature_file_absolute.exist?
+def absolute_feature_file example
+  feature_file_absolute = Pathname.new(example.file_path).expand_path
+  unless feature_file_absolute.exist?
     msg = <<~ERR.strip
       feature_file_absolute #{feature_file_absolute} must exist and be absolute
-      check arguments and #{__FILE__} code
     ERR
     raise msg
   end
-
   feature_file_absolute
 end
 

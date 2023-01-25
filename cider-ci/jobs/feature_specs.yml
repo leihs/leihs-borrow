@@ -1,0 +1,60 @@
+#generate_tasks:
+## include_match: spec\/features\/(.*)(\.feature|_spec\.rb)$
+tasks:
+  include: 
+    - cider-ci/generators/feature-tasks.yml
+task_defaults:
+  include:
+    - path: cider-ci/task-components/database.yml
+      submodule: [database]
+    - cider-ci/task-components/ruby-bundle.yml
+    - cider-ci/task-components/uberjar.yml
+    - cider-ci/task-components/service.yml
+    - cider-ci/task-components/legacy_service.yml
+# max_trials: 10
+# eager_trials: 10
+  traits:
+    asdf: true
+  ports:
+    LEIHS_BORROW_HTTP_PORT:
+      min: 3300
+      max: 3399
+    LEIHS_LEGACY_HTTP_PORT:
+      min: 3400
+      max: 3499
+  environment_variables:
+    LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
+    LEIHS_BORROW_HTTP_BASE_URL: http://localhost:{{LEIHS_BORROW_HTTP_PORT}}
+    LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT: '2'
+    LEIHS_DATABASE_DIR: '{{LEIHS_BORROW_DIR}}/database'
+    LEIHS_DATABASE_NAME: 'leihs_{{CIDER_CI_TRIAL_ID}}'
+    LEIHS_LEGACY_DIR: '{{LEIHS_BORROW_DIR}}/spec/support/legacy-api'
+    LEIHS_LEGACY_HTTP_BASE_URL: http://localhost:{{LEIHS_LEGACY_HTTP_PORT}}
+    RAILS_ENV: test
+  git_options:
+    submodules:
+      include_match: ^.*$
+  trial_attachments:
+    screenshots:
+      include_match: tmp\/(.*-|)screenshots\/.*\.png$
+      content_type: image/png
+    logs:
+      include_match: '^logs?\/.+\.log$'
+      content_type: text/plain
+  scripts:
+    test:
+      start_when:
+        borrow service is running:
+          script_key: borrow-service-is-running
+        ruby is bundled:
+          script_key: borrow-ruby-bundle
+      body: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+        echo "# FEATURE_NAME: $FEATURE_NAME"
+        echo "# FEATURE: $FEATURE"
+        mkdir -p log
+        unset PGPORT; unset PGUSER
+        PGPORT=${PG10PORT} PGUSER=${PG10USER} \
+          xvfb-run -a -e log/xvfb.log  \
+          ./bin/rspec "${FEATURE}"
