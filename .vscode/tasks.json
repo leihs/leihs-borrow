@@ -94,7 +94,7 @@
     {
       "label": "legacy-dev",
       "type": "shell",
-      "command": "source bin/set-env && bin/dev-run-legacy",
+      "command": "source bin/set-env && cd ../legacy && bundle && bundle exec rails s -p $LEGACY_HTTP_PORT",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
