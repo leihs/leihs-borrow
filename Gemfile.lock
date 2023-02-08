@@ -1,7 +1,6 @@
 GIT
   remote: https://github.com/leihs/rails_pg-tasks
-  revision: 674fdf0b7f51b0327e909e2d3c5338a76472313f
-  branch: mk/rails-6.1
+  revision: 24479792612728e27bce429da6a64cb2dbce8600
   specs:
     pg_tasks (2.2.0.pre.0)
       rails (~> 6.1.0)
