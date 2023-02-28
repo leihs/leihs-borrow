@@ -41,7 +41,7 @@ step "I click on the :menu_item in the main navigation" do |menu_item|
     when "Leihs logo"
       click_on "Leihs"
     when "cart icon"
-      find("a div.cart-badge").click
+      find("a.ui-cart-item-link").click
     else
       fail "unknown menu item '#{menu_item}'"
     end

@@ -23,7 +23,7 @@ step "I see the following text in the :name section:" do |section_name, txt|
   section = find_ui_section(title: section_name)
   expect(section).to be
   within(section) do
-    section_text = find("div")
+    section_text = first("div")
     expect(section_text.text).to eq txt
   end
 end

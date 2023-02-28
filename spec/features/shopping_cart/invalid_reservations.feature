@@ -74,7 +74,7 @@ Feature: Invalid reservations
     And I click on "Confirm"
     But the "Edit reservation" dialog did not close
 
-    When I click on "-"
+    When I click on "Minus 1"
     And I click on "Confirm"
     Then the "Edit reservation" dialog has closed
 

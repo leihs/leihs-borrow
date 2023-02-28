@@ -143,3 +143,7 @@ def fill_form_with_table(table)
     fill_in(row["field"], with: row["value"])
   end
 end
+
+step "I click on the cart icon" do
+  find("a.ui-cart-item-link").click
+end

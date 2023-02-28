@@ -146,11 +146,12 @@
                                                          :categories-path path
                                                          :query-params model-filters))}]))}
          (when has-any-reservable-item
-           [filter-comp
-            #(dispatch [:routing/navigate
-                        [::routes/categories-show
-                         {:categories-path categories-path :query-params %}]])
-            #_extra-search-args])]
+           [:div.pt-2
+            [filter-comp
+             #(dispatch [:routing/navigate
+                         [::routes/categories-show
+                          {:categories-path categories-path :query-params %}]])
+             #_extra-search-args]])]
         (when errors [ui/error-view errors])
         (if has-any-reservable-item
           [:> UI/Components.Design.Stack {:space 4}
@@ -163,10 +164,10 @@
                :on-toggle-collapse #(dispatch [::set-child-cats-collapsed category-id %])}
               (categories/sub-categories-list child-cats model-filters)])
            [:> UI/Components.Design.Section
-            {:title (t :items) :collapsible true}
+            {:title (t :items) :collapsible false}
             [models/search-results extra-search-args]]]
           ; else
           [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
            [:> UI/Components.Design.Warning {:class "fs-2"} (t :!borrow.catalog.no-reservable-items)]
-           [:a.text-decoration-underline {:href (routing/path-for ::routes/inventory-pools-index)}
+           [:a.decorate-links {:href (routing/path-for ::routes/inventory-pools-index)}
             (t :!borrow.catalog.check-available-pools)]])])]))

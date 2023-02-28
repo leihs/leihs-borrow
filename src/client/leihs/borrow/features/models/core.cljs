@@ -178,7 +178,7 @@
        [ui/loading]
        (when has-next-page?
          [:div.p-3.text-center
-          [:button.border.border-black.p-2.rounded
+          [:button.btn.btn-outline-primary
            {:on-click #(dispatch [::pagination/get-more
                                   query-gql
                                   (get-query-vars filters extra-vars profile-id)
@@ -205,6 +205,6 @@
   (let [extra-search-vars nil]
     [:<>
      [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
-      [filter-comp default-dispatch-fn]]
+      [:div.pt-2 [filter-comp default-dispatch-fn]]]
      [:> UI/Components.Design.Stack
       [search-results extra-search-vars]]]))

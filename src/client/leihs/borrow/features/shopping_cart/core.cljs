@@ -478,13 +478,13 @@
         can-change-profile? @(subscribe [::can-change-profile?])
         cart-user-id @(subscribe [::user-id])]
     [:> UI/Components.Design.Section
-     {:title (t :delegation/section-title) :collapsible true}
+     {:title (t :delegation/section-title) :collapsible false}
      (if (or (nil? cart-user-id) (= cart-user-id (:id user-data)))
-       [:<> (:name user-data) (when can-change-profile? (t :!borrow.phrases.user-or-delegation-personal-postfix))]
-       [:<> (->> (:delegations user-data)
-                 (filter #(= cart-user-id (:id %)))
-                 first
-                 :name)])]))
+       [:div.fw-bold (:name user-data) (when can-change-profile? (t :!borrow.phrases.user-or-delegation-personal-postfix))]
+       [:div.fw-bold (->> (:delegations user-data)
+                          (filter #(= cart-user-id (:id %)))
+                          first
+                          :name)])]))
 
 
 (defn countdown []
@@ -495,7 +495,7 @@
           total-minutes 30
           remaining-seconds  (max 0 (datefn/differenceInSeconds valid-until @now))
           remaining-minutes (int (/ remaining-seconds 60))]
-      [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible true}
+      [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible false}
        [:> UI/Components.Design.Stack {:space 3}
         [:> UI/Components.Design.ProgressInfo {:title (t :countdown/time-limit)
                                                :info (cond (<= remaining-seconds 0)
@@ -511,7 +511,7 @@
     (finally (js/clearInterval timer-fn))))
 
 (defn no-valid-items []
-  [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible true}
+  [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible false}
    [:> UI/Components.Design.ProgressInfo {:title (t :countdown/no-valid-items)}]])
 
 (defn order-dialog []
@@ -609,7 +609,7 @@
                 [:label.form-check-label {:html-for "lending-terms-accepted"} (t :confirm-dialog/i-accept)
                  (when (:lending-terms-url dialog-data) ":")]
                 (when-let [url (:lending-terms-url dialog-data)]
-                  [:div.mt-2 [:a.text-decoration-underline.fw-light {:href url :target "_blank"} url]])]])]]]
+                  [:div.mt-2 [:a.decorate-links {:href url :target "_blank"} url]])]])]]]
          [:> UI/Components.Design.ModalDialog.Footer
           [:button.btn.btn-primary {:form :the-form :type :submit}
            (when is-saving? [:> UI/Components.Design.Spinner]) " "
@@ -627,9 +627,9 @@
         :title (t :order-success-notification/title)
         :onConfirm on-confirm}
        [:<>
-        [:p (t :order-success-notification/order-submitted)]
+        [:p.fw-bold (t :order-success-notification/order-submitted)]
         [:> UI/Components.Design.Section {:title title}
-         (when (not= title purpose) [:p purpose])
+         [:p.fw-bold (when (not= title purpose) [:p purpose])]
          [:p.small (rentals/rental-summary-text rental)]]]])))
 
 (defn delete-dialog []
@@ -667,9 +667,9 @@
          (empty? grouped-reservations)
          [:<>
           [:> UI/Components.Design.PageLayout.Header {:title  (t :order-overview)}]
-          [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
+          [:> UI/Components.Design.Stack {:space 4 :class "text-center decorate-links"}
            (t :empty-order)
-           [:a.text-decoration-underline {:href (routing/path-for ::routes/home)}
+           [:a.fw-bold {:href (routing/path-for ::routes/home)}
             (t :borrow-items)]]]
 
          :else

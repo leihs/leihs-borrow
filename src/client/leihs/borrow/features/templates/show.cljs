@@ -124,5 +124,5 @@
               [:button.btn.btn-primary {:disabled none-reservable? :onClick #(dispatch [::apply-template/open-dialog])}
                (t :apply-button-label)]])
 
-           [:> UI/Components.Design.Section {:title (t :items) :collapsible true}
+           [:> UI/Components.Design.Section {:title (t :items) :collapsible false}
             [:> UI/Components.ModelList {:list model-list-items}]]]]))]))

@@ -21,8 +21,8 @@
    :body (html5
           (head)
           [:body
-           [:div.container-fluid
-            [:h1.text-danger "Error 404 - Not Found"]]])})
+           [:div.p-4.text-center {:style "height: 100vh"}
+            "Error 404 - Not Found"]])})
 
 (defn html-handler [_request]
   {:headers {"Content-Type" "text/html"}
@@ -31,14 +31,12 @@
           [:body
            [:div#app
             [:noscript
-             [:div.p-4
-              {:style "height: 100vh; text-align: center;"}
-              [:h1.pt-4.pb-4 "Leihs New Borrow"]
-              [:p.fw-bold "This application requires JavaScript."]]]
-            [:pre.text-center {:style "line-height: 100vh"}
-             "loading…"]]]
-          #_(hiccup.page/include-js (cache-buster/cache-busted-path
-                                     "/borrow/leihs-shared-bundle.js"))
+             [:div.p-4.text-center {:style "height: 100vh;"}
+              [:h1 "Leihs Borrow"]
+              [:p "This application requires JavaScript."]]]
+            [:div.p-4.text-center {:style "line-height: 100vh"}
+             "Loading..."]]]
+
           (hiccup.page/include-js
            (cache-buster/cache-busted-path "/app/borrow/js/main.js")))})
 

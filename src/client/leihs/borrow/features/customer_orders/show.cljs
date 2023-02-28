@@ -140,8 +140,8 @@
     [:<>
      [:> UI/Components.Design.ListCard {:href href}
       [:> UI/Components.Design.ListCard.Title
-       title (when inventory-code [:span.fw-light " (" inventory-code ")"])
-       (when option [:span.fw-light " (" (t :reservation-line.option) ")"])]
+       title (when inventory-code [:span " (" inventory-code ")"])
+       (when option [:span " (" (t :reservation-line.option) ")"])]
 
       [:> UI/Components.Design.ListCard.Body
        sub-title]
@@ -175,9 +175,9 @@
         :onCancel #(dispatch [::close-cancellation-dialog])
         :cancelLabel (t :cancellation-dialog/cancel)}
        [:<>
-        [:> UI/Components.Design.Section {:title title}
-         (when (not= title purpose) [:p purpose])
-         [:p.small (rentals/rental-summary-text rental)]]]])))
+        [:p.fw-bold title]
+        [:p (when (not= title purpose) [:p purpose])]
+        [:p.small (rentals/rental-summary-text rental)]]])))
 
 (defn view []
   (let [routing @(subscribe [:routing/routing])
@@ -220,7 +220,7 @@
         [:> UI/Components.Design.PageLayout.Header
          {:title rental-title}
 
-         [:h2.fw-light (rentals/rental-summary-text rental)]]
+         [:h2 (rentals/rental-summary-text rental)]]
 
         [cancellation-dialog rental]
 
@@ -230,7 +230,7 @@
         [:> UI/Components.Design.Stack {:space 5}
 
          [:> UI/Components.Design.Section
-          {:title (t :state) :collapsible true}
+          {:title (t :state) :collapsible false}
 
           [:> UI/Components.Design.Stack {:space 3}
 
@@ -245,22 +245,22 @@
 
          (when (not-empty (:delegations user-data))
            [:> UI/Components.Design.Section
-            {:title (t :user-or-delegation-section-title) :collapsible true}
+            {:title (t :user-or-delegation-section-title) :collapsible false}
             (if (or (nil? rental-user-id) (= rental-user-id (:id user-data)))
-              [:<> (:name user-data) (when can-change-profile? (t :!borrow.phrases.user-or-delegation-personal-postfix))]
-              [:<> (->> (:delegations user-data)
-                        (filter #(= rental-user-id (:id %)))
-                        first
-                        :name)])])
+              [:div.fw-bold (:name user-data) (when can-change-profile? (t :!borrow.phrases.user-or-delegation-personal-postfix))]
+              [:div.fw-bold (->> (:delegations user-data)
+                                 (filter #(= rental-user-id (:id %)))
+                                 first
+                                 :name)])])
 
          (when-let [contact-details (-> rental :contact-details not-empty)]
            [:> UI/Components.Design.Section
-            {:title (t :contact-details) :collapsible true}
-            contact-details])
+            {:title (t :contact-details) :collapsible false}
+            [:div.fw-bold contact-details]])
 
          [:> UI/Components.Design.Section
-          {:title (t :purpose) :collapsible true}
-          (:purpose rental)]
+          {:title (t :purpose) :collapsible false}
+          [:div.fw-bold (:purpose rental)]]
 
          [:> UI/Components.Design.Section
           {:title (t :items-section-title) :collapsible true}
@@ -278,4 +278,4 @@
                  [:> UI/Components.Design.DownloadLink
                   {:href (:print-url contract)}
                   (t :!borrow.terms/contract) " " (:compact-id contract) " "
-                  [:span.fw-light (str "(" (ui/format-date :short (:created-at contract)) ")")]]]))]])]])]))
+                  [:span (str "(" (ui/format-date :short (:created-at contract)) ")")]]]))]])]])]))

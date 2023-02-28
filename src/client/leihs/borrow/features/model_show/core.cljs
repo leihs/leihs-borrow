@@ -369,7 +369,7 @@
     :dismissible true
     :onDismiss #(dispatch [::dismiss-order-success])}
    [:<>
-    [:p
+    [:p.fw-bold
      (t :order-success-notification/item-was-added)]]])
 
 (defn view

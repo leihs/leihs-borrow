@@ -43,14 +43,14 @@ Feature: Shopping Cart - Editing Reservations
 
     When I enter "3" in the "Quantity" field
     Then the "Quantity" field has "3"
-    When I click on "+"
+    When I click on "Plus 1"
     Then the "Quantity" field has "4"
     But the form has an error message:
       """
       Item is not available in the desired quantity during this period
       """
 
-    When I click on "-"
+    When I click on "Minus 1"
     Then the "Quantity" field has "3"
     And the form has no error message
 

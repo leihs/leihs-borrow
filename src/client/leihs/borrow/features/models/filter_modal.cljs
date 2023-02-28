@@ -115,7 +115,7 @@
                                         :onChange (fn [e] (reset! term (-> e .-target .-value)))}]]
 
               [:> UI/Components.Design.Section {:title (t :availability)}
-               [:div.form-check.mb-3
+               [:div.form-check.form-switch.mb-3
                 [:input.form-check-input {:type :checkbox :name "only-available" :id "only-available"
                                           :checked @only-available
                                           :on-change (fn [_] (swap! only-available not))}]

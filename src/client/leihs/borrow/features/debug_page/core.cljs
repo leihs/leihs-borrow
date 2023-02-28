@@ -54,30 +54,34 @@
     {:title (t :borrow.debug-page/title)}]
 
    [:> UI/Components.Design.Stack {:space 4}
-    [:> UI/Components.Design.Section {:title "Dev nav" :collapsible true}
+    [:> UI/Components.Design.Section {:title "Dev nav"}
      [:> UI/Components.Design.ListCard.Stack
-      [:> UI/Components.Design.ListCard {:href (routing/path-for ::routes/categories-show
+      [:> UI/Components.Design.ListCard {:class "fw-bold"
+                                         :href (routing/path-for ::routes/categories-show
                                                                  :categories-path "09ac0343-0d83-5c7f-b112-d5921e9479fd")
                                          :one-line true}
        "a sample category"]
-      [:> UI/Components.Design.ListCard {:href (routing/path-for ::routes/models)
+      [:> UI/Components.Design.ListCard {:class "fw-bold"
+                                         :href (routing/path-for ::routes/models)
                                          :one-line true}
        "model index"]
-      [:> UI/Components.Design.ListCard {:href (routing/path-for ::routes/models-show
+      [:> UI/Components.Design.ListCard {:class "fw-bold"
+                                         :href (routing/path-for ::routes/models-show
                                                                  :model-id "1c18b3d3-88e8-57ac-8c28-24d3f8f77604")
                                          :one-line true}
        "a sample model"]
-      [:> UI/Components.Design.ListCard {:href "/app/borrow/graphiql/index.html"
+      [:> UI/Components.Design.ListCard {:class "fw-bold"
+                                         :href "/app/borrow/graphiql/index.html"
                                          :one-line true}
        "Graph" [:i "i"] "QL API console"]]]
 
-    [:> UI/Components.Design.Section {:title "Session storage" :collapsible true}
+    [:> UI/Components.Design.Section {:title "Session storage"}
      [:button.btn.btn-secondary.me-2 {:type :button :on-click #(dispatch [::browser-storage/clear-session-storage])} "Clear :ls"]]
 
-    [:> UI/Components.Design.Section {:title "Local storage" :collapsible true}
+    [:> UI/Components.Design.Section {:title "Local storage"}
      [:button.btn.btn-secondary.me-2 {:type :button :on-click #(dispatch [::browser-storage/clear-local-storage])} "Clear :ls2"]]
 
-    [:> UI/Components.Design.Section {:title "Error views" :collapsible true}
+    [:> UI/Components.Design.Section {:title "Error views"}
      [:> UI/Components.Design.Stack {:space 4}
       [:p.text-muted "Same as \"Errors\" story in Storybook, but with the live implementation."]
 

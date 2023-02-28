@@ -58,7 +58,7 @@ end
 
 def get_ui_list_card_by_title(title)
   find_ui_list_cards().find do |c|
-    divs = c.all(":scope > div")
+    divs = c.all(":scope [data-test-id=title]")
     card_title = divs[0].text
     card_title == title
   end

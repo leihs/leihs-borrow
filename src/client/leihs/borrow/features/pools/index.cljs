@@ -70,11 +70,11 @@
        :else
        [:<>
 
-        [:> UI/Components.Design.Section {:title (t :available-pools) :collapsible true}
+        [:> UI/Components.Design.Section {:title (t :available-pools) :collapsible false}
          (if (seq pools)
            [:> UI/Components.Design.ListCard.Stack
             (doall
              (for [pool pools]
                [:<> {:key (:id pool)}
                 [pool-line pool suspensions]]))]
-           [:div.fw-light (t :no-available-pools)])]])]))
+           [:div (t :no-available-pools)])]])]))

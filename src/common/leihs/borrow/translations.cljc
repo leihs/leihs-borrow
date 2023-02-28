@@ -205,10 +205,10 @@
              :quantity {:en-GB "Quantity"
                         :de-CH "Anzahl"}
 
-             :search-input-label {:de-CH "Suche",
+             :search-input-label {:de-CH "Suchen",
                                   :en-GB "Search"},
-             :search-input-placeholder {:de-CH "Suchen…",
-                                        :en-GB "Search…"},
+             :search-input-placeholder {:de-CH "Suchbegriff",
+                                        :en-GB "Search term"},
              :search-filter-label {:de-CH "Filter",
                                    :en-GB "Filter"},
              :availability-label {:de-CH "{quantity} Stück verfügbar {startDate, date, narrow} – {endDate, date, narrow}",
@@ -230,16 +230,22 @@
                             :de-CH "Inventarparks"}
                     :favorite-models {:en-GB "Favorites"
                                       :de-CH "Favoriten"}}
+           :cart-item {:menu-title {:en-GB "Cart"
+                                    :de-CH "Warenkob"}}
            :user {:section-title {:en-GB "User"
                                   :de-CH "Benutzer"}
-                  :rentals {:en-GB "My Orders"
-                            :de-CH "Meine Bestellungen"}
+                  :menu-title {:en-GB "User Menu"
+                               :de-CH "Benutzermenu"}
+                  :rentals {:en-GB "Orders"
+                            :de-CH "Bestellungen"}
                   :current-user {:en-GB "User Account"
                                  :de-CH "Benutzerkonto"}
                   :logout {:en-GB "Logout"
                            :de-CH "Abmelden"}}
-           :app-switch {:button-label {:en-GB "Section"
-                                       :de-CH "Bereich"}
+           :app-switch {:button-label {:en-GB "Borrow"
+                                       :de-CH "Ausleihen"}
+                        :menu-title {:en-GB "Section Menu"
+                                     :de-CH "Bereichsmenu"}
                         :section-title {:en-GB "Switch Section"
                                         :de-CH "Bereich wechseln"}
                         :admin {:en-GB "Admin"
@@ -248,8 +254,8 @@
                                   :de-CH "Bedarfsermittlung"}
                         :manage {:en-GB "Lending / Inventory"
                                  :de-CH "Verleih / Inventar"}}
-           :documentation {:en-GB "Documentation"
-                           :de-CH "Dokumentation"}
+           :documentation {:en-GB "Help"
+                           :de-CH "Hilfe"}
            :language {:section-title {:en-GB "Language"
                                       :de-CH "Sprache"}}
            :desktop-version {:en-GB "Leihs Classic"
@@ -306,8 +312,8 @@
     :profile-menu {:title {:en-GB "Switch Profile"
                            :de-CH "Profil wechseln"}}
 
-    :rentals {:title {:en-GB "My Orders"
-                      :de-CH "Meine Bestellungen"}
+    :rentals {:title {:en-GB "Orders"
+                      :de-CH "Bestellungen"}
               :section-title-open-rentals {:en-GB "Open"
                                            :de-CH "Offen"}
               :section-title-closed-rentals {:en-GB "Closed"

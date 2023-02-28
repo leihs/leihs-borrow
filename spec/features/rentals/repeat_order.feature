@@ -93,7 +93,7 @@ Feature: Rentals - Show - Repeat order
     And the "Send order" dialog has closed
     And I accept the "Order submitted" dialog
     And the "Order submitted" dialog has closed
-    And I see the page title "My Orders"
+    And I see the page title "Orders"
 
     Examples:
       | sourceProfileLookup | sourceProfile     | sourceProfileShort | targetProfile    | targetProfileShort |

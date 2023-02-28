@@ -79,10 +79,12 @@
       [:span.ui-spinner.ui-spinner-clock
        [:span.ui-icon-colored (get-in spinner [:frames @frame])]])))
 
+(defn spinner []
+  [:> UI/Components.Design.Spinner {:style {:font-size "10px"}}])
+
 (defn loading [loading-text]
-  [:div.text-center.fw-light {:style {:color "#cccccc"}}
-   (cond loading-text [:div.mb-3 loading-text])
-   [:div.show-after-1sec {:style {:font-size "3rem"}} [spinner-clock]]])
+  [:div.text-center.show-after-1sec
+   [spinner] " " loading-text])
 
 ; ; Intl stuff
 (defn format-date [style date]

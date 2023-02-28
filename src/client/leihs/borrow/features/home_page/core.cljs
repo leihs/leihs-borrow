@@ -43,7 +43,7 @@
       (if has-any-reservable-item
         [:<>
          [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
-          [filter-comp default-dispatch-fn]]
+          [:div.pt-2 [filter-comp default-dispatch-fn]]]
          [:> UI/Components.Design.Stack
           [:> UI/Components.Design.Section {:title (t :categories)}
            (categories/categories-list {})]]]
@@ -52,5 +52,5 @@
          [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
          [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
           [:> UI/Components.Design.Warning {:class "fs-2"} (t :no-reservable-items)]
-          [:a.text-decoration-underline {:href (routing/path-for ::routes/inventory-pools-index)}
+          [:a.decorate-links {:href (routing/path-for ::routes/inventory-pools-index)}
            (t :check-available-pools)]]]))))

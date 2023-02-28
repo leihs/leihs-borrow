@@ -1,7 +1,7 @@
 Feature: Rentals - Show - Status
 
   Tests for the relevant status situations.
-  - Status summary (as specified in Leihs UI Storybook - MobileApp/Wireframes/Meine Bestellungen/Status Summary)
+  - Status summary (as specified in Leihs UI Storybook - MobileApp/Wireframes/Bestellungen/Status Summary)
   - Status badges in the reservation list
 
   Background:

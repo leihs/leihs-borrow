@@ -25,8 +25,8 @@ Feature: Mobile screen
 
     # Open burger menu and navigate to cart
     When I click on the menu
-    And I click on "Cart"
-    Then I see the page title "Cart"
+    And I click on "Orders"
+    Then I see the page title "Orders"
 
     # Open profile menu
     When I click on the user profile button
@@ -35,7 +35,7 @@ Feature: Mobile screen
 
     # Close profile menu
     When I click on the user profile button
-    Then I see the page title "Cart"
+    Then I see the page title "Orders"
 
     # Open profile menu and navigate to user account page
     When I click on the user profile button

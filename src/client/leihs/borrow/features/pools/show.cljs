@@ -74,15 +74,15 @@
 
         (cond
           (-> pool :has-reservable-items not)
-          [:div  (t :!borrow.pools.no-reservable-models)]
+          [:div.fw-bold  (t :!borrow.pools.no-reservable-models)]
           (-> pool :maximum-reservation-time)
-          [:div  (t :!borrow.pools.maximum-reservation-time {:days (-> pool :maximum-reservation-time)})])
+          [:div.fw-bold  (t :!borrow.pools.maximum-reservation-time {:days (-> pool :maximum-reservation-time)})])
 
         (when-let [email (:email pool)]
-          [:> UI/Components.Design.Section {:collapsible true :title (t :email)}
-           [:a {:href (str "mailto:" email)}
+          [:> UI/Components.Design.Section {:collapsible false :title (t :email) :class "fw-bold"}
+           [:a.decorate-links {:href (str "mailto:" email)}
             email]])
 
         (when-let [description (some-> pool :description autolinker/link)]
-          [:> UI/Components.Design.Section {:collapsible true :title (t :description)}
-           [:div {:class "preserve-linebreaks text-break" :dangerouslySetInnerHTML {:__html description}}]])])]))
+          [:> UI/Components.Design.Section {:collapsible false :title (t :description)}
+           [:div {:class "preserve-linebreaks text-break fw-bold decorate-links" :dangerouslySetInnerHTML {:__html description}}]])])]))

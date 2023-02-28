@@ -56,7 +56,7 @@ Feature: Audits
     And there are 3 audited requests
 
     # check the cart
-    When I click on "Cart"
+    When I click on the cart icon
     Then I see the following lines in the "Items" section:
       | title     | body   |
       | 1× Kamera | Pool B |
@@ -83,7 +83,7 @@ Feature: Audits
       When I visit "/app/borrow/"
       # FIXME: wait for menu open
       And I sleep 1
-      And I click on "My Orders"
+      And I click on "Orders"
       Then I see the order "Order 1" under open orders
 
       # check the content of the order

@@ -87,9 +87,33 @@
          :<- [::current-user/current-profile]
          (fn [current-profile _] current-profile))
 
-
 (defn menu-link [href label is-selected]
   [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::set-current-menu nil]) :href href :isSelected is-selected} label])
+
+(defn- borrow-menu-items [lg-screen?]
+  (let [handler @(subscribe [:routing/current-handler])
+        user-nav @(subscribe [::user-nav])
+        documentation-url (:documentation-url user-nav)]
+    (filter some?
+            [{:href (routing/path-for ::routes/home)
+              :label (t :borrow/catalog)
+              :selected (some #{handler} [::routes/home ::routes/categories-show ::routes/models ::routes/models-show ::routes/templates-index ::routes/templates-show])}
+             (when-not lg-screen?
+               {:href (routing/path-for ::routes/shopping-cart)
+                :label (t :borrow/shopping-cart)
+                :selected (some #{handler} [::routes/shopping-cart])})
+             {:href (routing/path-for ::routes/rentals-index)
+              :label (t :user/rentals)
+              :selected (some #{handler} [::routes/rentals-index ::routes/rentals-show])}
+             {:href (routing/path-for ::routes/models-favorites)
+              :label (t :borrow/favorite-models)
+              :selected (some #{handler} [::routes/models-favorites])}
+             {:href (routing/path-for ::routes/inventory-pools-index)
+              :label (t :borrow/pools)
+              :selected (some #{handler} [::routes/inventory-pools-index ::routes/inventory-pools-show])}
+             (when documentation-url
+               {:href documentation-url
+                :label (t :documentation)})])))
 
 (defn top []
   (let [cart-item-count @(subscribe [::cart-item-count])
@@ -98,37 +122,28 @@
         current-menu (:current-menu menu-data)
         current-profile @(subscribe [::current-profile])]
 
-    [:> UI/Components.Design.Navbar
+    [:> UI/Components.Design.Topnav
      {:brandName "Leihs"
       :brandLinkProps {:href (routing/path-for ::routes/home)}
       :mainMenuIsOpen (= current-menu "main")
       :mainMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "main") "main")])
                           :aria-controls "menu"}
+      :mainMenuItems (borrow-menu-items true)
       :cartItemCount cart-item-count
       :invalidCartItemCount invalid-cart-item-count
-      :cartItemLinkProps {:href (routing/path-for ::routes/shopping-cart)}
+      :cartItemLinkProps {:href (routing/path-for ::routes/shopping-cart)
+                          :title (t :cart-item/menu-title)}
       :userMenuIsOpen (= current-menu "user")
       :userProfileShort (get-initials (:name current-profile))
       :userMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "user") "user")])
-                          :aria-controls "user-menu"}
+                          :aria-controls "user-menu"
+                          :title (t :user/menu-title)}
       :appMenuIsOpen (= current-menu "app")
       :appMenuLinkLabel (t :app-switch/button-label)
       :appMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "app") "app")])
-                         :aria-controls "app-menu"}}]))
+                         :aria-controls "app-menu"
+                         :title (t :app-switch/menu-title)}}]))
 
-(defn- borrow-menu-items []
-  (let [handler @(subscribe [:routing/current-handler])]
-    [:<>
-     [menu-link (routing/path-for ::routes/home) (t :borrow/catalog)
-      (some #{handler} [::routes/home ::routes/categories-show ::routes/models ::routes/models-show ::routes/templates-index ::routes/templates-show])]
-     [menu-link (routing/path-for ::routes/shopping-cart) (t :borrow/shopping-cart)
-      (some #{handler} [::routes/shopping-cart])]
-     [menu-link (routing/path-for ::routes/rentals-index) (t :user/rentals)
-      (some #{handler} [::routes/rentals-index ::routes/rentals-show])]
-     [menu-link (routing/path-for ::routes/models-favorites) (t :borrow/favorite-models)
-      (some #{handler} [::routes/models-favorites])]
-     [menu-link (routing/path-for ::routes/inventory-pools-index) (t :borrow/pools)
-      (some #{handler} [::routes/inventory-pools-index ::routes/inventory-pools-show])]]))
 
 (defn- app-switch-menu-items []
   (let [user-nav @(subscribe [::user-nav])
@@ -140,34 +155,31 @@
       (when-let [admin-url (:admin-url user-nav)] [menu-link admin-url (t :app-switch/admin)])
       (when-let [procure-url (:procure-url user-nav)] [menu-link procure-url (t :app-switch/procure)])
       (when (seq (:manage-nav-items user-nav))
-        [:div.pt-2 (t :app-switch/manage)])
+        [:div.pt-3 (t :app-switch/manage)])
       (doall
        (for [{:keys [name url]} (:manage-nav-items user-nav)]
          [:<> {:key name}
           [menu-link url name]]))]]))
 
-(defn side []
-  (let [user-loaded @(subscribe [::user-loaded])
-        user-nav @(subscribe [::user-nav])
-        documentation-url (:documentation-url user-nav)]
+(defn main-nav []
+  (let [user-loaded @(subscribe [::user-loaded])]
     (when user-loaded
       [:> UI/Components.Design.Menu
        {:id "menu"}
 
        [:> UI/Components.Design.Menu.Group
-        {:class "d-lg-none" :title (t :borrow/section-title)}
-        (borrow-menu-items)]
-       [:> UI/Components.Design.Menu.Group
-        {:class "d-none d-lg-block" :title (t :borrow/section-title)}
-        (borrow-menu-items)]
+        {:title (t :borrow/section-title)}
+        (doall
+         (for [[n menu-item] (map-indexed #(vector %1 %2) (borrow-menu-items false))]
+           [:<> {:key n}
+            [menu-link
+             (:href menu-item)
+             (:label menu-item)
+             (:selected menu-item)]]))]
 
        [:> UI/Components.Design.Menu.Group
-        {:title (t :app-switch/section-title) :class "d-md-none"}
-        (app-switch-menu-items)]
-
-       (when documentation-url
-         [:> UI/Components.Design.Menu.Group
-          [menu-link documentation-url (t :documentation)]])])))
+        {:title (t :app-switch/section-title)}
+        (app-switch-menu-items)]])))
 
 (defn user-profile-nav []
   (let [handler @(subscribe [:routing/current-handler])

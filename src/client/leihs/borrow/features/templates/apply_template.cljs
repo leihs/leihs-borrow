@@ -138,9 +138,9 @@
                  (t :dialog.error-no-items)]]
                [:> UI/Components.Design.Stack {:space 4}
                 [:> UI/Components.Design.Section
-                 [:p (t :dialog.info {:count models-quantity})]]
+                 [:p.fw-bold (t :dialog.info {:count models-quantity})]]
                 [:> UI/Components.Design.Section {:title (t :dialog.order-for)}
-                 current-profile-name]
+                 [:div.fw-bold current-profile-name]]
                 [:> UI/Components.Design.Section {:title (t :dialog.time-span)}
                  [:fieldset
                   [:legend.visually-hidden (t :dialog.time-span)]
@@ -176,4 +176,4 @@
           :onConfirm on-confirm
           :confirmLabel (t :success-notification.confirm)}
          [:<>
-          [:p (t :success-notification.message {:count (-> notification-data :reservations count)})]]]))))
+          [:p.fw-bold (t :success-notification.message {:count (-> notification-data :reservations count)})]]]))))

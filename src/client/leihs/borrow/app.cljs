@@ -69,16 +69,16 @@
         current-menu (:current-menu menu-data)]
     [:> UI/Components.Design.PageLayout
      {:topBar (r/as-element [main-nav/top])
-      :nav (r/as-element [main-nav/side])
-      :navShown (= current-menu "main")
+      :nav1 (r/as-element [main-nav/main-nav])
+      :nav1Shown (= current-menu "main")
       :errorBoundaryTxt {:title (t :borrow.errors.render-error)
                          :reload (t :borrow.errors.reload)
                          :goToStart (t :borrow.errors.go-to-start)}
-      :flyout (r/as-element (case current-menu
-                              "user" [main-nav/user-profile-nav]
-                              "app" [main-nav/app-nav]
-                              nil))
-      :flyoutShown (or (= current-menu "user") (= current-menu "app"))
+      :nav2 (r/as-element (case current-menu
+                            "user" [main-nav/user-profile-nav]
+                            "app" [main-nav/app-nav]
+                            nil))
+      :nav2Shown (or (= current-menu "user") (= current-menu "app"))
       :onContentClick #(dispatch [::main-nav/set-current-menu nil])}
      #_[requests/retry-banner]
      [routing/routed-view views]
@@ -87,14 +87,13 @@
 (defn- route-is-loading-view
   []
   [:div.app-loading-view
-   [:h1.text-monospace.text-center.p-5.show-after-3sec
-    [:p {:style {:font-size "3rem"}} [ui/spinner-clock]]
-    [:p "loading…"]
-    [:p.fw-light "if this takes a long time something went wrong."]
+   [:div.text-monospace.text-center.p-5.show-after-3sec
+    [:p [ui/spinner] " Loading"]
+    [:p "If this takes a long time, something might have gone wrong."]
     [:p.mt-4
-     [:button.btn.btn-lg.btn-dark.rounded-pill.px-4
+     [:button.btn.btn-secondary.btn-sm
       {:type :button, :on-click #(-> js/window (.-location) (.reload))}
-      "RELOAD"]]]])
+      "Reload"]]]])
 
 ;-; CORE APP
 (def views {::routes/home home-page/view

@@ -184,15 +184,17 @@
 
     [:<>
      [:> UI/Components.Design.ListCard {:href href}
-      [:> UI/Components.Design.ListCard.Title
-       [:a.stretched-link {:href href}
-        title]]
+      [:div.d-md-flex.flex-row.gap-5.justify-content-fill
+       [:div.list-card__md-flex-col
+        [:> UI/Components.Design.ListCard.Title
+         [:a.stretched-link {:href href}
+          title]]
 
-      [:> UI/Components.Design.ListCard.Body
-       summary-text]
+        [:> UI/Components.Design.ListCard.Body
+         summary-text]]
 
-      [:> UI/Components.Design.ListCard.Foot
-       [status-summary rental true]]]]))
+       [:> UI/Components.Design.ListCard.Foot {:class "list-card__foot--md-flex-col"}
+        [status-summary rental true]]]]]))
 
 (defn orders-list [orders]
   [:> UI/Components.Design.ListCard.Stack
