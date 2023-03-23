@@ -105,6 +105,11 @@ Feature: Rentals - Show
     And I visit "/app/borrow/rentals/"
     And I click on the card with title "Order 1"
     And I see the page title "Order 1"
+    And I see the text:
+      """
+      Order for
+      User A (personal)
+      """
     And I click on the user profile button
     And I click on "DD"
 
@@ -115,6 +120,11 @@ Feature: Rentals - Show
     When I visit "/app/borrow/rentals/"
     And I click on the card with title "Order 2"
     And I see the page title "Order 2"
+    And I see the text:
+      """
+      Order for
+      Delegation D
+      """
     And I click on the user profile button
     And I click on "UA"
 

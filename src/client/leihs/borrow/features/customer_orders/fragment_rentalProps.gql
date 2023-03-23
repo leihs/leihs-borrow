@@ -34,6 +34,9 @@ fragment rentalProps on Rental {
 
   overdueQuantity
 
+  user {
+    id
+  }
   contracts {
     ...contractsConnectionProps
   }
