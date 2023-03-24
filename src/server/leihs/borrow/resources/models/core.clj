@@ -17,3 +17,14 @@
       sql/format
       (->> (jdbc/query tx))
       first))
+
+(defn borrowable-items [tx model-id pool-id]
+  (-> (sql/select :*)
+      (sql/from :items)
+      (sql/merge-where [:= :model_id model-id])
+      (sql/merge-where [:= :inventory_pool_id pool-id])
+      (sql/merge-where [:= :retired nil])
+      (sql/merge-where [:= :is_borrowable true])
+      (sql/merge-where [:= :parent_id nil])
+      sql/format
+      (->> (jdbc/query tx))))

@@ -24,6 +24,14 @@
       (->> (jdbc/query tx)
            (map :entitlement_group_id))))
 
+(defn get-one-by-id [tx id]
+  (-> (sql/select :*)
+      (sql/from :entitlement_groups)
+      (sql/where [:= :id id])
+      sql/format
+      (->> (jdbc/query tx))
+      first))
+
 (comment
  (get-inventory-pool-and-model-group-ids (db/get-ds)
                                          "804a50c1-2329-5d5b-9884-340f43833514"

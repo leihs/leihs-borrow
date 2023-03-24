@@ -35,6 +35,7 @@
                      (select-keys group-ids)
                      vals
                      (->> (map :in-quantity)
+                          (map #(if (< % 0) 0 %))
                           (apply +)))))
           (apply min)))))
 
