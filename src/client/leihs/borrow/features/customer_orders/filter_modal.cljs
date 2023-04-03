@@ -48,7 +48,9 @@
                                      presence
                                      (date-fns/parse "yyyy-MM-dd" (js/Date.))
                                      (date-fns/format "P" #js {:locale date-locale}))
-                             ""))]
+                             ""))
+        seq (-> filter-opts :seq (or 0) js/parseInt (bit-xor 1)) ; to force a reload even when query args where not changed
+        ]
     (fn [filter-opts hide! dispatch-fn date-locale]
       (let [pools @(subscribe [::inventory-pools])
             is-unselectable-pool (not-any? #{@pool-id} (concat ["" "all"] (map #(:id %) pools)))
@@ -79,7 +81,8 @@
                                       :until (some-> @end-date
                                                      presence
                                                      (date-fns/parse "P" (js/Date.) #js {:locale date-locale})
-                                                     (date-fns/format "yyyy-MM-dd"))})))}
+                                                     (date-fns/format "yyyy-MM-dd"))
+                                      :seq seq})))}
              [:> UI/Components.Design.Stack {:space 4}
 
               [:> UI/Components.Design.Section {:title (t :search.title)}

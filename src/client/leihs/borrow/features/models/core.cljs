@@ -88,8 +88,7 @@
    (let [query-vars (get-query-vars query-params extra-vars (current-user/get-current-profile-id db))
          cache-key (get-cache-key query-vars)
          n (number-of-cached db cache-key)]
-     {:db (assoc-in db [:ls ::data cache-key] nil)
-      :dispatch [::re-graph/query
+     {:dispatch [::re-graph/query
                  query-gql
                  (cond-> query-vars (>= n 20) (assoc :first n))
                  [::on-fetched-models cache-key]]})))
