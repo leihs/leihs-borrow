@@ -225,7 +225,9 @@
          (when @modal-shown?
            [filter-modal
             hide!
-            dispatch-fn
+            (fn [query-params]
+              (set-entered-search-term false)
+              (dispatch-fn query-params))
             (assoc saved-filters :term current-search-term)
             date-locale])
 
