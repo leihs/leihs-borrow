@@ -101,9 +101,8 @@
       wrap-content-type
       (wrap-resource "public"
                      {:allow-symlinks? true
-                      :cache-bust-paths ["/app/borrow/css/site.css"
-                                         "/app/borrow/css/site.min.css"
-                                         "/app/borrow/js/app.js"]
+                      :cache-bust-paths ["/app/borrow/css/theme-mobile/bootstrap-leihs-mobile.css"
+                                         "/app/borrow/js/main.js"]
                       :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
                                            #".+_[0-9a-f]{40}\..+"]
                       :enabled? true})
