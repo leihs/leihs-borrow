@@ -37,7 +37,7 @@ Feature: Rentals - Show - Repeat order
     Then the user profile button shows "<sourceProfileShort>"
 
     And I visit "/app/borrow/rentals/"
-    And I click on "Order 1"
+    And I click on the card with title "Order 1"
 
     Then I see the page title "Order 1"
     And I see the following status rows in the "State" section:
@@ -110,7 +110,7 @@ Feature: Rentals - Show - Repeat order
 
     When I log in as the user
     And I visit "/app/borrow/rentals/"
-    And I click on "Order 1"
+    And I click on the card with title "Order 1"
     And I see the page title "Order 1"
     And I click on "Repeat order"
 
@@ -131,7 +131,7 @@ Feature: Rentals - Show - Repeat order
 
     When I log in as the user
     And I visit "/app/borrow/rentals/"
-    And I click on "Order 1"
+    And I click on the card with title "Order 1"
     And I see the page title "Order 1"
     And I click on "Repeat order"
 

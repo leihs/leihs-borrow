@@ -49,7 +49,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "New order"
+    And I click on the card with title "New order"
     And I see the page title "New order"
 
     Then I see the following status rows in the "State" section:
@@ -63,7 +63,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Approved order"
+    And I click on the card with title "Approved order"
     And I see the page title "Approved order"
 
     Then I see the following status rows in the "State" section:
@@ -77,7 +77,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Some picked up"
+    And I click on the card with title "Some picked up"
     And I see the page title "Some picked up"
 
     Then I see the following status rows in the "State" section:
@@ -92,7 +92,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Some picked up, some returned"
+    And I click on the card with title "Some picked up, some returned"
     And I see the page title "Some picked up, some returned"
 
     Then I see the following status rows in the "State" section:
@@ -107,7 +107,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "All picked up, some returned"
+    And I click on the card with title "All picked up, some returned"
     And I see the page title "All picked up, some returned"
 
     Then I see the following status rows in the "State" section:
@@ -121,7 +121,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "All returned"
+    And I click on the card with title "All returned"
     And I see the page title "All returned"
 
     Then I see the following status rows in the "State" section:
@@ -168,7 +168,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Canceled order"
+    And I click on the card with title "Canceled order"
     And I see the page title "Canceled order"
 
     Then I see the following status rows in the "State" section:
@@ -182,7 +182,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Rejected order"
+    And I click on the card with title "Rejected order"
     Then I see the page title "Rejected order"
 
     Then I see the following status rows in the "State" section:
@@ -196,7 +196,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Partially approved order"
+    And I click on the card with title "Partially approved order"
     And I see the page title "Partially approved order"
 
     Then I see the following status rows in the "State" section:
@@ -211,7 +211,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Some approved, some rejected, some unapproved"
+    And I click on the card with title "Some approved, some rejected, some unapproved"
     And I see the page title "Some approved, some rejected, some unapproved"
 
     Then I see the following status rows in the "State" section:
@@ -226,7 +226,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Some approved, some rejected"
+    And I click on the card with title "Some approved, some rejected"
     And I see the page title "Some approved, some rejected"
 
     Then I see the following status rows in the "State" section:
@@ -241,7 +241,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Some expired unapproved"
+    And I click on the card with title "Some expired unapproved"
     And I see the page title "Some expired unapproved"
 
     Then I see the following status rows in the "State" section:
@@ -254,7 +254,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "All expired unapproved"
+    And I click on the card with title "All expired unapproved"
     And I see the page title "All expired unapproved"
 
     Then I see the following status rows in the "State" section:
@@ -284,7 +284,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Expired order"
+    And I click on the card with title "Expired order"
     And I see the page title "Expired order"
 
     Then I see the following status rows in the "State" section:
@@ -298,7 +298,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Some expired, some picked-up"
+    And I click on the card with title "Some expired, some picked-up"
     And I see the page title "Some expired, some picked-up"
 
     Then I see the following status rows in the "State" section:
@@ -313,7 +313,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Some expired, all others picked-up"
+    And I click on the card with title "Some expired, all others picked-up"
     And I see the page title "Some expired, all others picked-up"
 
     Then I see the following status rows in the "State" section:
@@ -341,7 +341,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "All overdue"
+    And I click on the card with title "All overdue"
     And I see the page title "All overdue"
 
     Then I see the following status rows in the "State" section:
@@ -355,7 +355,7 @@ Feature: Rentals - Show - Status
 
     # -----------------------------------
     When I visit "/app/borrow/rentals/"
-    And I click on "Some overdue, some returned"
+    And I click on the card with title "Some overdue, some returned"
     And I see the page title "Some overdue, some returned"
 
     Then I see the following status rows in the "State" section:

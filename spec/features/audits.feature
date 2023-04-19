@@ -87,7 +87,7 @@ Feature: Audits
       Then I see the order "Order 1" under open orders
 
       # check the content of the order
-      When I click on "Order 1"
+      When I click on the card with title "Order 1"
       Then I see "1× Kamera"
 
       # final check

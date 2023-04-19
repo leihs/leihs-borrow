@@ -184,8 +184,8 @@
 
     [:<>
      [:> UI/Components.Design.ListCard {:href href}
-      [:div.d-md-flex.flex-row.gap-5.justify-content-fill
-       [:div.list-card__md-flex-col
+      [:div.d-md-flex
+       [:div.pe-4 {:style {:flex "1 1 53%"}}
         [:> UI/Components.Design.ListCard.Title
          [:a.stretched-link {:href href}
           title]]
@@ -193,8 +193,9 @@
         [:> UI/Components.Design.ListCard.Body
          summary-text]]
 
-       [:> UI/Components.Design.ListCard.Foot {:class "list-card__foot--md-flex-col"}
-        [status-summary rental true]]]]]))
+       [:div {:style {:flex "1 1 47%"}}
+        [:> UI/Components.Design.ListCard.Foot {:class "p-md-0 pe-md-3"}
+         [status-summary rental true]]]]]]))
 
 (defn orders-list [orders]
   [:> UI/Components.Design.ListCard.Stack

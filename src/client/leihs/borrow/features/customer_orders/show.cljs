@@ -2,7 +2,7 @@
   (:require
    ["date-fns" :as date-fns]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
-   #_[reagent.core :as reagent]
+   [reagent.core :as reagent]
    [re-frame.core :as rf]
    [re-graph.core :as re-graph]
    [shadow.resource :as rc]
@@ -136,9 +136,13 @@
         overdue? (and (= status "SIGNED") is-over?)
         expired-unapproved? (and (= status "SUBMITTED") is-over?)
         expired? (and (= status "APPROVED") is-over?)
-        refined-status (cond expired-unapproved? "EXPIRED-UNAPPROVED" expired? "EXPIRED" :else status)]
+        refined-status (cond expired-unapproved? "EXPIRED-UNAPPROVED" expired? "EXPIRED" :else status)
+        imgSrc (or (get-in model [:cover-image :image-url])
+                   (get-in model [:images 0 :image-url]))]
     [:<>
-     [:> UI/Components.Design.ListCard {:href href}
+     [:> UI/Components.Design.ListCard
+      {:href href
+       :img (reagent/as-element [:> UI/Components.Design.SquareImage {:imgSrc imgSrc :paddingClassName "p-0"}])}
       [:> UI/Components.Design.ListCard.Title
        title (when inventory-code [:span " (" inventory-code ")"])
        (when option [:span " (" (t :reservation-line.option) ")"])]

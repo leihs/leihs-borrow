@@ -55,6 +55,14 @@ fragment reservationProps on Reservation {
   model {
     id
     name
+    images {
+      id
+      imageUrl
+    }
+    coverImage {
+      id
+      imageUrl
+    }
   }
   option {
     id

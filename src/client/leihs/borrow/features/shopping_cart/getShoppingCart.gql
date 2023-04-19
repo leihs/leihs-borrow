@@ -17,6 +17,10 @@ query getShoppingCart($userId: UUID) {
               id
               imageUrl
             }
+            coverImage {
+              id
+              imageUrl
+            }
             totalReservableQuantities {
               inventoryPool {
                 id

@@ -45,13 +45,13 @@ end
 
 def get_ui_list_cards(scope = page)
   find_ui_list_cards(scope).map do |c|
-    divs = c.all(":scope > div")
-    links = c.all(":scope > a", wait: false)
+    divs = c.all(":scope div").to_a
+      .map { |x| [x["data-test-id"], x.text]}
+      .filter { |x| x[0] }
     {
-      link: links.count > 0 ? links[0][:href] : "",
-      title: divs[0].text,
-      body: divs.count > 1 ? divs[1].text : "",
-      foot: divs.count > 2 ? divs[2].text : "",
+      title: (divs.find { |x| x[0] == "title"} || [nil, ""])[1],
+      body: (divs.find { |x| x[0] == "body"} || [nil, ""])[1],
+      foot: (divs.find { |x| x[0] == "foot"} || [nil, ""])[1]
     }
   end
 end

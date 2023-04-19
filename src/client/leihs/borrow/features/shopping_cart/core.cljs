@@ -457,10 +457,12 @@
         ;; NOTE: should be in API
         total-days (+ 1 (datefn/differenceInCalendarDays end-date start-date))
         duration (t :line.duration {:totalDays total-days :fromDate start-date})
-        action-props {:on-click #(dispatch [::edit-reservation res-lines])}]
+        imgSrc (or (get-in model [:cover-image :image-url])
+                   (get-in model [:images 0 :image-url]))]
     [:div
-     [:> UI/Components.Design.ListCard action-props
-
+     [:> UI/Components.Design.ListCard
+      {:on-click #(dispatch [::edit-reservation res-lines])
+       :img (reagent/as-element [:> UI/Components.Design.SquareImage {:imgSrc imgSrc :paddingClassName "p-0"}])}
       [:> UI/Components.Design.ListCard.Title
        (str quantity "× ")
        (:name model)]
@@ -470,7 +472,7 @@
 
       [:> UI/Components.Design.ListCard.Foot
        [:> UI/Components.Design.Badge
-        (merge action-props {:colorClassName (when invalid? " bg-danger")})
+        {:colorClassName (when invalid? " bg-danger")}
         duration]]]]))
 
 (defn delegation-section []

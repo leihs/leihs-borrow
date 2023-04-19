@@ -23,13 +23,13 @@ Feature: Pools
       | Pool A |                     |      |
       | Pool B | No reservable items |      |
 
-    When I click on "Pool A"
+    When I click on the card with title "Pool A"
     Then I see the page title "Pool A"
     And I see the "E-mail" section
 
     When I visit "/app/borrow/inventory-pools"
     And I see the page title "Inventory Pools"
-    And I click on "Pool B"
+    And I click on the card with title "Pool B"
     Then I see the page title "Pool B"
     And I see the text:
       """
