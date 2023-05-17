@@ -182,15 +182,25 @@ describe 'models connection' do
         :leihs_model,
         id: 'da28cf22-db3e-4b9d-bfa8-199923b629cf'
       )
-      FactoryBot.create(:item,
-                        leihs_model: @model,
-                        responsible: @inventory_pool,
-                        is_borrowable: true)
+      2.times do 
+        FactoryBot.create(:item,
+                          leihs_model: @model,
+                          responsible: @inventory_pool,
+                          is_borrowable: true)
+      end
 
       FactoryBot.create(:holiday,
                         inventory_pool: @inventory_pool,
                         start_date: "#{Date.today}",
                         end_date: "#{Date.today}")
+
+      FactoryBot.create(:reservation,
+                        leihs_model: @model,
+                        user: @user2,
+                        inventory_pool: @inventory_pool,
+                        start_date: Date.today,
+                        end_date: Date.tomorrow,
+                        status: "approved")
 
       Workday.find(inventory_pool_id: @inventory_pool.id)
         .update(reservation_advance_days: 1,

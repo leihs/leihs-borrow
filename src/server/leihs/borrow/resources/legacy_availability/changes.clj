@@ -84,7 +84,7 @@
   (let [most-recent-date (or (most-recent-before-or-equal changes date1)
                              date1)
         dates-between (set/intersection (set (keys changes))
-                                      (set (explode-date-range most-recent-date date2)))]
+                                        (set (explode-date-range most-recent-date date2)))]
     (select-keys changes dates-between)))
 
 (defn insert-for-single-date [changes date]

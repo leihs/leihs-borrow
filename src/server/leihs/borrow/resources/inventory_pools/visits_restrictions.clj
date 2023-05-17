@@ -1,5 +1,6 @@
 (ns leihs.borrow.resources.inventory-pools.visits-restrictions
-  (:require [clojure.tools.logging :as log]
+  (:require [taoensso.timbre :as timbre :refer [debug info spy]]
+            [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [java-time :refer [local-date before?] :as jt]
             [leihs.core.sql :as sql]))
@@ -58,6 +59,7 @@
         :VISITS_CAPACITY_REACHED))
 
 (defn end-date-restriction [tx date-with-avail pool]
+  (debug date-with-avail)
   (cond (close-time? tx (:date date-with-avail) pool)
         :CLOSE_TIME
         (visits-capacity-reached? (:date date-with-avail)

@@ -42,7 +42,7 @@
 ;###############################################################################
 
 (defn exec-query [{{query :query vars :variables} :body :as request}]
-  (debug "graphql query" query "with variables" vars)
+  ; (debug "graphql query" query "with variables" vars)
   (if (or (:authenticated-entity request) (core-graphql/get-schema? request))
     (lacinia/execute (core-graphql/schema)
                      query

@@ -50,7 +50,7 @@
  (settings! (db/get-ds))
  (let [pool-id "8bd16d45-056d-5590-bc7f-12849f034351"
        model-id "804a50c1-2329-5d5b-9884-340f43833514"]
-   (-> (running-reservations (db/get-ds) model-id pool-id)
+   (-> (running-reservations (db/get-ds) model-id pool-id nil)
        ; first
        ; :user_group_ids
        )))

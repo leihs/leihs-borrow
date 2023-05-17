@@ -66,21 +66,12 @@
                tx (db/get-ds)
                user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
                start-date (ch/local-date)
-               end-date (ch/local-date "2022-05-25")]
-           (-> (maximum-available-in-period-summed-for-groups tx
-                                                              model-id
-                                                              user-id
-                                                              start-date
-                                                              end-date
-                                                              pool-id))))
-
-; (defn available?
-;   [tx model-id user-id start-date end-date pool-ids desired-quantity]
-;   (let [max-possible-quantity
-;           (maximum-available-in-period-summed-for-groups tx
-;                                                          model-id
-;                                                          user-id
-;                                                          start-date
-;                                                          end-date
-;                                                          pool-ids)]
-;     (<= desired-quantity max-possible-quantity)))
+               end-date (t/plus (ch/local-date) #_start-date (t/days 30))
+               changes (ch/main tx model-id pool-id nil)
+               ]
+           (maximum-available-in-pool-and-period-summed-for-groups tx
+                                                                   model-id
+                                                                   user-id
+                                                                   start-date
+                                                                   end-date
+                                                                   pool-id)))

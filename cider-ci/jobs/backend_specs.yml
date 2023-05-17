@@ -7,7 +7,6 @@ task_defaults:
     - cider-ci/task-components/ruby-bundle.yml
     - cider-ci/task-components/uberjar.yml
     - cider-ci/task-components/service.yml
-    - cider-ci/task-components/legacy-mock-server.yml
   ports:
     LEIHS_BORROW_HTTP_PORT:
       min: 3300
@@ -34,8 +33,6 @@ task_defaults:
           script_key: borrow-service-is-running
         ruby is bundled:
           script_key: borrow-ruby-bundle
-        legacy-mock-server_is-serving:
-          script_key: legacy-mock-server_is-serving
       body: |
         #!/usr/bin/env bash
         set -euo pipefail

@@ -24,8 +24,8 @@
     (.toString local-date)))
 
 (defn date-serialize [x]
-  (debug 'date-serialize {:value x
-                          :type (type x)})
+  ; (debug 'date-serialize {:value x
+  ;                         :type (type x)})
   (try (-> x ; expected type of java.lang.String
            .toString ; for type of java.sql.Date
            (->> (java-time/local-date DateTimeFormatter/ISO_LOCAL_DATE))

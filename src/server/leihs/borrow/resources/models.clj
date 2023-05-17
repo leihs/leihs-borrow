@@ -9,7 +9,6 @@
             [java-time :as jt :refer [before? local-date]]
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
-            [leihs.borrow.resources.availability :as availability]
             [leihs.borrow.resources.legacy-availability.core :as av]
             [leihs.borrow.resources.categories.descendents :as descendents]
             [leihs.borrow.resources.entitlements :as entitlements]
@@ -18,6 +17,7 @@
             [leihs.borrow.resources.inventory-pools.visits-restrictions
              :as
              restrict]
+            [leihs.borrow.resources.legacy-availability.booking-calendar :as cal]
             [leihs.borrow.resources.models.core :refer [base-sqlmap]]
             [leihs.core.core :refer [presence]]
             [leihs.core.sql :as sql]
@@ -200,15 +200,13 @@
     (map (fn [{pool-id :id}]
            (let [pool (pools/get-by-id (-> context :request :tx)
                                        pool-id)
-                 avail (availability/get
-                        context
-                        {:start-date start-date
-                         :end-date end-date
-                         :inventory-pool-id pool-id
-                         :user-id user-id
-                         :model-id (:id value)
-                         :reservation-ids (or exclude-reservation-ids [])}
-                        nil)]
+                 avail (cal/get tx
+                                start-date
+                                end-date
+                                pool-id
+                                user-id
+                                (:id value)
+                                (or exclude-reservation-ids []))]
              (-> avail
                  (update :dates
                          (fn [dates-with-avail]

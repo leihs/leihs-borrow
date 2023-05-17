@@ -1,7 +1,6 @@
 (ns leihs.borrow.graphql.queries
   (:require
    [leihs.borrow.resources.attachments :as attachments]
-   [leihs.borrow.resources.availability :as availability]
    [leihs.borrow.resources.categories :as categories]
    [leihs.borrow.resources.contracts :as contracts]
    [leihs.borrow.resources.delegations :as delegations]
