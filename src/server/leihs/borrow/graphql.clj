@@ -8,7 +8,6 @@
     [com.walmartlabs.lacinia.resolve :as graphql-resolve]
     [com.walmartlabs.lacinia.schema :as graphql-schema]
     [com.walmartlabs.lacinia.util :as graphql-util]
-    [leihs.borrow.after-tx :as after-tx]
     [leihs.borrow.graphql.resolvers :as resolvers]
     [leihs.borrow.graphql.mutations :as mutations]
     [leihs.borrow.graphql.scalars :as scalars]

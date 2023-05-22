@@ -7,5 +7,3 @@ Feature: Borrow Smoke
     Given I log in as the user
     When I visit "/app/borrow/"
     Then the borrow app is loaded
-    When I visit legacy borrow
-    Then legacy borrow is loaded

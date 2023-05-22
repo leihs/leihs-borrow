@@ -177,8 +177,6 @@ GEM
       method_source (~> 1.0)
     psych (3.3.4)
     public_suffix (5.0.1)
-    puma (6.0.2)
-      nio4r (~> 2.0)
     racc (1.6.2)
     rack (2.2.5)
     rack-protection (3.0.5)
@@ -280,7 +278,6 @@ DEPENDENCIES
   pg_tasks!
   pry
   psych (~> 3)
-  puma
   rails (~> 6.1.0)
   rspec
   selenium-webdriver

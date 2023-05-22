@@ -67,9 +67,8 @@ Feature: Search and order
     And I accept the "Order submitted" dialog
     And the "Order submitted" dialog has closed
 
-    # approve the order in legacy
-    When I visit the orders page of the pool "Pool B"
-    Then I approve the order of the delegation
+    # approve the order
+    Then I approve the order "Order 1"
 
     # check the new status of the order
     When I visit "/app/borrow/"

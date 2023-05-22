@@ -22,12 +22,15 @@
       (->> (jdbc/query tx))
       first))
 
-(defn one-to-use [{{:keys [tx]} :request} _ {user-id :id}]
+(defn get-the-one-to-use [tx user-id]
   (or (some->> user-id
                (users/get-by-id tx)
                :language_locale
                (get-by-locale tx))
       (default tx)))
+
+(defn one-to-use [{{:keys [tx]} :request} _ {user-id :id}]
+  (get-the-one-to-use tx user-id))
 
 (defn get-one [{{:keys [tx]} :request} _ {:keys [language-locale]}]
   (get-by-locale tx language-locale))

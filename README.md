@@ -41,9 +41,6 @@ source bin/set-env && bin/dev-run-backend
 source bin/set-env && bin/dev-run-frontend
 
 # run in another shell:
-source bin/set-env && bin/dev-run-legacy
-
-# run in another shell:
 cd leihs-ui && npm run watch:lib
 
 # run in another shell:
@@ -96,10 +93,6 @@ https://github.com/nimaai/vim-shadow-cljs
 ./scripts/prepare-shared-ui.sh \
 && ./scripts/build-uberjar-prod.sh \
 && ./scripts/start-backend-test
-```
-
-```bash
-./scripts/start-legacy-test
 ```
 
 ```bash

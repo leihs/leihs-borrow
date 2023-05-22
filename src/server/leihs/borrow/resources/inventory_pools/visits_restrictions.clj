@@ -59,7 +59,6 @@
         :VISITS_CAPACITY_REACHED))
 
 (defn end-date-restriction [tx date-with-avail pool]
-  (debug date-with-avail)
   (cond (close-time? tx (:date date-with-avail) pool)
         :CLOSE_TIME
         (visits-capacity-reached? (:date date-with-avail)

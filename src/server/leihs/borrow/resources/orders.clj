@@ -10,9 +10,11 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as rs]
             [leihs.borrow.time :as time :refer [past?]]
+            [leihs.core.core :refer [spy-with]]
             [leihs.core.database.helpers :as database]
             [leihs.core.db :as ds]
             [leihs.core.settings :refer [settings!]]
+            [taoensso.timbre :refer [debug info warn error spy]]
             [leihs.core.sql :as sql])
   (:import java.time.format.DateTimeFormatter))
 
@@ -345,7 +347,7 @@
                               (map :id <>))}))
 
 (defn submit
-  [{{:keys [tx after-tx-hooks*]} :request user-id ::target-user/id :as context}
+  [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [purpose title contact-details lending-terms-accepted]}
    _]
   (let [reservations (rs/unsubmitted tx user-id)]
@@ -385,13 +387,10 @@
                         :inventory_pool_id pool-id
                         :order_id (:id order)})
               (sql/where [:in :id (map :id rs)])
-              (sql/returning :*)
               sql/format
-              (rs/query tx))
-          (swap! after-tx-hooks*
-                 conj
-                 (fn [_req _resp] (mails/send-received context order))
-                 (fn [_req _resp] (mails/send-submitted context order)))))
+              (->> (jdbc/execute! tx)))
+          (mails/send-received context order)
+          (mails/send-submitted context order)))
       (get-one-by-id tx user-id uuid))))
 
 (defn cancel

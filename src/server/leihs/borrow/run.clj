@@ -6,7 +6,6 @@
    [clojure.pprint :refer [pprint]]
    [clojure.tools.cli :as cli :refer [parse-opts]]
    [leihs.borrow.graphql :as graphql]
-   [leihs.borrow.legacy :as legacy]
    [leihs.borrow.routes :as routes]
    [leihs.borrow.ssr]
    [leihs.core.db :as db]
@@ -28,7 +27,6 @@
     {:return-fn (fn [e] (System/exit -1))}
     (info "Invoking run with options: " options)
     (shutdown/init options)
-    (legacy/init options)
     (ssr-engine/init options)
     (leihs.core.ssr/init leihs.borrow.ssr/render-page-base)
     (graphql/init options)
@@ -45,7 +43,6 @@
     [["-h" "--help"]
      shutdown/pid-file-option]
     (http-server/cli-options :default-http-port 3250)
-    legacy/cli-opts
     db/cli-options))
 
 (defn main-usage [options-summary & more]

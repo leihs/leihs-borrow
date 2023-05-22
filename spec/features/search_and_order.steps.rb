@@ -90,13 +90,14 @@ step "the cart is empty" do
   expect(page).to have_content "Your order is empty"
 end
 
-step "I visit the orders page of the pool :name" do |name|
-  pool = InventoryPool.find(name: name)
-  visit("http://localhost:#{LEIHS_LEGACY_HTTP_PORT}/manage/#{pool.id}/orders")
-end
-
-step "I approve the order of the user/delegation" do
-  find("[data-order-approve]").click
+step "I approve the order :title" do |title|
+  database.transaction do
+    c_order = Order.find(title: title)
+    PoolOrder.where(customer_order_id: c_order.id).each do |pool_order|
+      pool_order.update(state: "approved")
+      Reservation.where(order_id: pool_order.id).update(status: "approved")
+    end
+  end
 end
 
 step "I see the order :purpose under open orders" do |purpose|

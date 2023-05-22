@@ -69,27 +69,5 @@ Feature: Audits
       And I accept the "Order submitted" dialog
       And the "Order submitted" dialog has closed
 
-      # +2 (incl. submit mail request in legacy)
-      And there are 5 audited requests
-
-      # approve the order in legacy
-      When I visit the orders page of the pool "Pool B"
-      Then I approve the order of the delegation
-
       # +1
-      And there are 6 audited requests
-
-      # check the new status of the order
-      When I visit "/app/borrow/"
-      # FIXME: wait for menu open
-      And I sleep 1
-      And I click on "Orders"
-      Then I see the order "Order 1" under open orders
-
-      # check the content of the order
-      When I click on the card with title "Order 1"
-      Then I see "1× Kamera"
-
-      # final check
-      And there are 6 audited requests
-
+      Then there are 4 audited requests

@@ -2,10 +2,8 @@ environment_variables:
   CI: 'true'
   LEIHS_DATABASE_NAME: leihs_{{CIDER_CI_TRIAL_ID}}
   LEIHS_BORROW_HTTP_BASE_URL: http://localhost:{{LEIHS_BORROW_HTTP_PORT}}
-  LEIHS_LEGACY_HTTP_BASE_URL: http://localhost:{{LEIHS_LEGACY_HTTP_PORT}}
   LEIHS_SECRET: '{{CIDER_CI_TRIAL_ID}}'
   LEIHS_BORROW_DIR: "{{CIDER_CI_WORKING_DIR}}"
-  LEIHS_LEGACY_DIR: "{{CIDER_CI_WORKING_DIR}}/spec/support/legacy-api"
   LEIHS_DATABASE_DIR: "{{LEIHS_BORROW_DIR}}/database"
   RAILS_ENV: production
 

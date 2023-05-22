@@ -11,10 +11,6 @@ if ! . ${PROJECT_DIR}/.env.local; then
   return 1 # not exit, because we are being sourced and dont want to close the partent shell!
 fi
 
-# needed defaults (server has most defaults built in, but some are needed cross-service)
-LEGACY_HTTP_PORT=${LEGACY_HTTP_PORT:-3210}
-LEGACY_HTTP_HOST=${LEGACY_HTTP_HOST:-localhost}
-
 # export all the vars
 export DB_NAME
 export DB_USER
@@ -24,10 +20,6 @@ export DB_PORT
 
 export HTTP_HOST
 export HTTP_PORT
-
-export LEGACY_HTTP_PROTOCOL
-export LEGACY_HTTP_HOST
-export LEGACY_HTTP_PORT
 
 export LOAD_TRANSLATIONS
 

@@ -23,14 +23,14 @@ describe 'orders' do
 
   let(:inventory_pool_1) do
     FactoryBot.create(
-      :inventory_pool,
+      :inventory_pool, :with_mail_templates,
       id: '8633ce17-37da-4802-a377-66ca78291d0a'
     )
   end
 
   let(:inventory_pool_2) do
     FactoryBot.create(
-      :inventory_pool,
+      :inventory_pool, :with_mail_templates,
       id: '4e2f1362-0891-4df7-b760-16a2a8d3373f',
       is_active: false
     )
@@ -181,6 +181,11 @@ describe 'orders' do
         }
       })
       expect(result[:errors]).to be_nil
+      expect(Email.count).to eq 2
+      expect(Email.first(inventory_pool_id: inventory_pool_1.id,
+                         subject: "[leihs] Order received")).to be
+      expect(Email.first(user_id: user.id,
+                         subject: "[leihs] Reservation Submitted")).to be
     end
 
     it 'fails due to availability validation' do

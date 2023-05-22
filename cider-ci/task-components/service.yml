@@ -11,7 +11,6 @@ scripts:
       #!/usr/bin/env bash
       set -euo pipefail
       cd $LEIHS_BORROW_DIR
-      export LEGACY_HTTP_PORT=${LEIHS_LEGACY_HTTP_PORT}
       export DB_NAME=${LEIHS_DATABASE_NAME}
       export HTTP_PORT=${LEIHS_BORROW_HTTP_PORT}
       unset PGPORT

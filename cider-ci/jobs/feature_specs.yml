@@ -10,7 +10,6 @@ task_defaults:
     - cider-ci/task-components/ruby-bundle.yml
     - cider-ci/task-components/uberjar.yml
     - cider-ci/task-components/service.yml
-    - cider-ci/task-components/legacy_service.yml
 # max_trials: 10
 # eager_trials: 10
   traits:
@@ -19,17 +18,12 @@ task_defaults:
     LEIHS_BORROW_HTTP_PORT:
       min: 3300
       max: 3399
-    LEIHS_LEGACY_HTTP_PORT:
-      min: 3400
-      max: 3499
   environment_variables:
     LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
     LEIHS_BORROW_HTTP_BASE_URL: http://localhost:{{LEIHS_BORROW_HTTP_PORT}}
     LEIHS_BORROW_SPECIAL_PER_PAGE_DEFAULT: '2'
     LEIHS_DATABASE_DIR: '{{LEIHS_BORROW_DIR}}/database'
     LEIHS_DATABASE_NAME: 'leihs_{{CIDER_CI_TRIAL_ID}}'
-    LEIHS_LEGACY_DIR: '{{LEIHS_BORROW_DIR}}/spec/support/legacy-api'
-    LEIHS_LEGACY_HTTP_BASE_URL: http://localhost:{{LEIHS_LEGACY_HTTP_PORT}}
     RAILS_ENV: test
   git_options:
     submodules:

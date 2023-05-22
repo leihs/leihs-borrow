@@ -7,6 +7,7 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.workdays :as workdays]
             [leihs.core.settings :refer [settings!]]
+            [taoensso.timbre :refer [debug info warn error spy]]
             [leihs.core.sql :as sql]))
 
 (hugsql/def-sqlvec-fns "sql/pools_to_reserve_from.sql")

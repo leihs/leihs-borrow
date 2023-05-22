@@ -50,20 +50,9 @@ jobs:
     context:
       include: cider-ci/jobs/graph-ql-check.yml
 
-  meta:
-    name: Meta
-    description: |
-      Various superordinate quality assurance tasks
-    run_when: *ON_BRANCH_UPDATE
-    include: cider-ci/jobs/meta.yml
-
   all-ok:
     name: 'All Tests OK'
     depends_on: &ALLOK_DEPS
-      meta was successful:
-        type: job
-        job_key: meta
-        states: [passed]
       backend-specs was successful:
         type: job
         job_key: backend-specs

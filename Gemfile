@@ -8,4 +8,3 @@ gem 'graphlient'
 gem 'selenium-webdriver'
 gem 'sinatra'
 gem 'turnip', github: 'leihs/turnip', branch: 'ambiguous-steps'
-gem 'puma' # legacy mock requires some server now
