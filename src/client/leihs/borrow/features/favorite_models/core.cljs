@@ -28,7 +28,7 @@
   (let [cache-key @(subscribe [::models/cache-key {} fav-filter])
         models @(subscribe [::models/edges cache-key])
         errors @(subscribe [::models/errors cache-key])]
-    [:<>
+    [:> UI/Components.Design.PageLayout.ContentContainer
 
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}]

@@ -30,9 +30,6 @@
 
 (set-default-translate-path :borrow.categories)
 
-(def query
-  (rc/inline "leihs/borrow/features/categories/getCategoryShow.gql"))
-
 (def categories-query
   (rc/inline "leihs/borrow/features/categories/getCategories.gql"))
 
@@ -115,59 +112,74 @@
         categories-path (get-in routing [:bidi-match :route-params :categories-path])
         cat-ids (split categories-path #"/")
         category-id (last cat-ids)
-        prev-ids (butlast cat-ids)
-        cat-ancestors @(subscribe [::ancestors prev-ids])
+        ancestory-ids (butlast cat-ids)
+        ancestors @(subscribe [::ancestors ancestory-ids])
         {:keys [children] :as category} @(subscribe [::category-data category-id])
         errors @(subscribe [::errors category-id])
-        categories-loaded (and category (every? some? cat-ancestors))
+        categories-loaded (and category (every? some? ancestors))
         model-filters @(subscribe [::filter-modal/options])
         extra-search-args {:categoryId category-id}
-
-        ;; FIXME: get current url from router (bidi-match)!
-        child-cats  (for [cat children] (merge cat {:url (-> js/window .-location .-pathname
-                                                             (str "/" (:id cat) "?" (cemerick.url/map->query model-filters)))}))
         child-cats-collapsed? @(subscribe [::child-cats-collapsed? category-id])]
     [:<>
      (cond
-       (and (not errors) (not categories-loaded)) [ui/loading]
-       (and errors (not categories-loaded)) [ui/error-view errors]
+       (and (not errors) (not categories-loaded))
+       [:> UI/Components.Design.PageLayout.ContentContainer [ui/loading]]
+
+       (and errors (not categories-loaded))
+       [:> UI/Components.Design.PageLayout.ContentContainer [ui/error-view errors]]
+
        :else
        [:<>
-        [:> UI/Components.Design.PageLayout.Header
-         {:title (:name category)
-          :preTitle (when (seq cat-ancestors)
-                      (r/as-element
-                       [:> UI/Components.CategoryBreadcrumbs
-                        {:className "text-center"
-                         :ancestorCats (h/camel-case-keys cat-ancestors)
-                       ;; FIXME: either add url to all ancestor cats OR extend router to take list of ids (instead of prejoined path)
-                         :getPathForCategory (fn [path] (routing/path-for
-                                                         ::routes/categories-show
-                                                         :categories-path path
-                                                         :query-params model-filters))}]))}
-         (when has-any-reservable-item
-           [:div.pt-2
-            [filter-comp
-             #(dispatch [:routing/navigate
-                         [::routes/categories-show
-                          {:categories-path categories-path :query-params %}]])
-             #_extra-search-args]])]
-        (when errors [ui/error-view errors])
+        [:div.row
+         [:div.col-md-3.d-none.d-md-block]
+         [:div.col-md-9
+
+          ; category breadcrumbs for screens below `md` breakpoint
+          [:div.d-md-none
+           (categories/category-breadcrumbs ancestors model-filters)]
+
+          [:> UI/Components.Design.PageLayout.Header
+           {:title (:name category)}]
+
+          (when errors [ui/error-view errors])]]
+
         (if has-any-reservable-item
-          [:> UI/Components.Design.Stack {:space 4}
-           (when-not (empty? child-cats)
-             [:> UI/Components.Design.Section.Controlled
-              {:title (t :sub-categories)
-               :collapsible true
-               :collapsed child-cats-collapsed?
-               :class (when (not child-cats-collapsed?) "mb-5")
-               :on-toggle-collapse #(dispatch [::set-child-cats-collapsed category-id %])}
-              (categories/sub-categories-list child-cats model-filters)])
-           [:> UI/Components.Design.Section
-            {:title (t :items) :collapsible false}
-            [models/search-results extra-search-args]]]
-          ; else
-          [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
-           [:> UI/Components.Design.Warning {:class "fs-2"} (t :!borrow.catalog.no-reservable-items)]
-           [:a.decorate-links {:href (routing/path-for ::routes/inventory-pools-index)}
-            (t :!borrow.catalog.check-available-pools)]])])]))
+          [:div.row
+           [:div.col-md-3.d-none.d-md-block
+
+            ; category navigation and breadcrumbs for md+ screens
+            [:div {:style {:margin-top "-8px"}}
+             (categories/sub-categories-list-menu ancestors category children model-filters)]]
+
+           [:div.col-md-9
+
+            [:> UI/Components.Design.PageLayout.ContentContainer
+             [:> UI/Components.Design.Stack {:space 4}
+
+              [:div.text-center
+               [filter-comp
+                #(dispatch [:routing/navigate
+                            [::routes/categories-show
+                             {:categories-path categories-path :query-params %}]])]]
+
+              ; category navigation for screens below `md` breakpoint
+              (when-not (empty? children)
+                [:> UI/Components.Design.Section.Controlled
+                 {:title (t :sub-categories)
+                  :collapsible true
+                  :collapsed child-cats-collapsed?
+                  :class (str "d-md-none " (when (not child-cats-collapsed?) "mb-5"))
+                  :on-toggle-collapse #(dispatch [::set-child-cats-collapsed category-id %])}
+                 (categories/sub-categories-list ancestory-ids category children model-filters)])
+
+              ; models
+              [:> UI/Components.Design.Section
+               {:title (r/as-element [:span.d-md-none {:key "key"} (t :items)]) :collapsible false}
+               [models/search-results extra-search-args]]]]]]
+
+          ; else (does not have any reservable item)
+          [:> UI/Components.Design.PageLayout.ContentContainer
+           [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
+            [:> UI/Components.Design.Warning {:class "fs-2"} (t :!borrow.catalog.no-reservable-items)]
+            [:a.decorate-links {:href (routing/path-for ::routes/inventory-pools-index)}
+             (t :!borrow.catalog.check-available-pools)]]])])]))

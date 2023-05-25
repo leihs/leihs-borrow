@@ -46,40 +46,41 @@
 (defn view []
   (let [data @(subscribe [::data])
         errors @(subscribe [::errors])]
-    (cond
-      (not (or errors data)) [ui/loading]
-      errors
-      [ui/error-view errors]
-      data
-      (let [current-user (:current-user data)
-            user (:user current-user)
-            delegations
-            (doall
-             (for [delegation (get-in user [:delegations])]
-               {:id (:id delegation)
-                :name (:name delegation)
-                :responsible-name (str (-> delegation :responsible :firstname) " " (-> delegation :responsible :lastname))
-                :responsible-email (-> delegation :responsible :email)}))
-            contracts
-            (doall
-             (for [edge (get-in current-user [:user :contracts :edges])]
-               (let [c (:node edge)]
-                 {:id (:id c)
-                  :download-url (:print-url c)
-                  :display-name (t :!borrow.phrases.contract-display-name
-                                   {:ID (:compact-id c)
-                                    :date (js/Date. (:created-at c))
-                                    :poolName (get-in c [:inventory-pool :name])})})))]
+    [:> UI/Components.Design.PageLayout.ContentContainer
+     (cond
+       (not (or errors data)) [ui/loading]
+       errors
+       [ui/error-view errors]
+       data
+       (let [current-user (:current-user data)
+             user (:user current-user)
+             delegations
+             (doall
+              (for [delegation (get-in user [:delegations])]
+                {:id (:id delegation)
+                 :name (:name delegation)
+                 :responsible-name (str (-> delegation :responsible :firstname) " " (-> delegation :responsible :lastname))
+                 :responsible-email (-> delegation :responsible :email)}))
+             contracts
+             (doall
+              (for [edge (get-in current-user [:user :contracts :edges])]
+                (let [c (:node edge)]
+                  {:id (:id c)
+                   :download-url (:print-url c)
+                   :display-name (t :!borrow.phrases.contract-display-name
+                                    {:ID (:compact-id c)
+                                     :date (js/Date. (:created-at c))
+                                     :poolName (get-in c [:inventory-pool :name])})})))]
 
-        [:<>
-         [:> UI/Components.UserProfilePage
-          (h/camel-case-keys
-           {:user user
-            :delegations delegations
-            :contracts contracts
-            :txt {:pageTitle (t :title)
-                  :sectionUserData (t :user-data)
-                  :sectionContracts (t :!borrow.terms.contracts)
-                  :sectionDelegations (t :!borrow.terms.delegations)
-                  :logout (t :!borrow.logout)
-                  :noContracts (t :no-contracts)}})]]))))
+         [:<>
+          [:> UI/Components.UserProfilePage
+           (h/camel-case-keys
+            {:user user
+             :delegations delegations
+             :contracts contracts
+             :txt {:pageTitle (t :title)
+                   :sectionUserData (t :user-data)
+                   :sectionContracts (t :!borrow.terms.contracts)
+                   :sectionDelegations (t :!borrow.terms.delegations)
+                   :logout (t :!borrow.logout)
+                   :noContracts (t :no-contracts)}})]]))]))

@@ -1,9 +1,0 @@
-query getCategoryShow(
-  $categoryId: UUID!,
-  $parentId: UUID,
-) {
-  category(id: $categoryId, parentId: $parentId) {
-    id
-    name
-  }
-}

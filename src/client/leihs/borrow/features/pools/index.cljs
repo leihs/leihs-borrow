@@ -60,7 +60,7 @@
   (let [pools @(subscribe [::inventory-pools])
         is-loading? (not pools)
         suspensions @(subscribe [::suspensions])]
-    [:<>
+    [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}]
 

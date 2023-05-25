@@ -15,16 +15,16 @@ Feature: Mobile screen
     Then I see the page title "Catalog"
 
     # Open burger menu
-    When I click on the menu
+    When I click on the burger menu
     Then I see "Borrow"
     And I see "Switch Section"
 
     # Close burger menu
-    When I click on the menu
+    When I click on the burger menu
     Then I see the page title "Catalog"
 
     # Open burger menu and navigate to cart
-    When I click on the menu
+    When I click on the burger menu
     And I click on "Orders"
     Then I see the page title "Orders"
 

@@ -203,7 +203,7 @@
 
 (defn view []
   (let [extra-search-vars nil]
-    [:<>
+    [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
       [:div.pt-2 [filter-comp default-dispatch-fn]]]
      [:> UI/Components.Design.Stack

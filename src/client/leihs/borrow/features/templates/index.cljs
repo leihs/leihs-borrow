@@ -49,7 +49,7 @@
   (let [data @(subscribe [::data])
         errors @(subscribe [::errors])
         is-loading? @(subscribe [::loading])]
-    [:<>
+    [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
       (when (and (not is-loading?) (not errors) (empty? data))
         [:div (t :no-templates-for-current-profile)])]

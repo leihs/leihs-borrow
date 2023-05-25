@@ -103,20 +103,15 @@ Feature: Search results (and caching)
     And I click button "Apply"
     Then I see 1 "Hasselblad 500C" model
 
-    When I expand the "Sub-categories" section
-    And I click on the card with title "Analog Cameras"
+    When I click on "Analog Cameras"
     Then the title of the page is "Analog Cameras"
-    And I see the following breadcrumbs:
-      | category |
-      | Cameras  |
     And I see 1 "Hasselblad 500C" model
     And the search field contains "Hasselblad"
 
     # FIXME: why is "Medium Format" subcategory no shown? ideally test should go 2 levels deep
 
-    When I click on "Cameras" within breadcrumbs
+    When I click on "Cameras"
     Then the title of the page is "Cameras"
-    And I don't see any breadcrumbs
     And I see 1 "Hasselblad 500C" model
     And the search field contains "Hasselblad"
 

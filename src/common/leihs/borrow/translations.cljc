@@ -131,7 +131,9 @@
     :categories {:sub-categories {:en-GB "Sub-categories"
                                   :de-CH "Unterkategorien"}
                  :items {:en-GB "Items"
-                         :de-CH "Gegenstände"}}
+                         :de-CH "Gegenstände"}
+                 :category-root {:en-GB "All Categories"
+                                 :de-CH "Alle Kategorien"}}
     :current-user {:title {:en-GB "User Account"
                            :de-CH "Benutzerkonto"}
                    :user-data {:en-GB "User data"

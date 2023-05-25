@@ -48,7 +48,7 @@
 (def show-error-view-401 (reagent/atom false))
 
 (defn view []
-  [:<>
+  [:> UI/Components.Design.PageLayout.ContentContainer
 
    [:> UI/Components.Design.PageLayout.Header
     {:title (t :borrow.debug-page/title)}]

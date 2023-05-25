@@ -61,7 +61,7 @@
         suspensions (filter #(= (get-in % [:inventory-pool :id]) (:id pool)) @(subscribe [::suspensions]))
         errors @(subscribe [::errors pool-id])
         is-loading? (not (or pool errors))]
-    [:<>
+    [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header
       {:title (cond (:name pool) (:name pool) :else "…")
        :sub-title (when (seq suspensions)

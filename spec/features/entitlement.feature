@@ -22,6 +22,8 @@ Feature: Borrow Entitlement
     And the group "Famous directors" is entitled for 1 item of model "Better Camera"
     And the group "Famous directors" is entitled for 2 items of model "Super Camera"
 
+    And I resize the window to mobile size
+
   Scenario: User without entitlement
     Given there is a user "Normin Normalo"
     And the user is customer of pool "Filmpool"
@@ -51,7 +53,8 @@ Feature: Borrow Entitlement
     And I click on "Cancel"
 
     # Better Camera
-    When I click on "Catalog"
+    When I click on the burger menu
+    And I click on "Catalog"
     And I click on "Film"
     And I click on "Better Camera"
     And I click on "Add item"
@@ -98,7 +101,8 @@ Feature: Borrow Entitlement
     And I click on "Cancel"
 
     # Better Camera
-    When I click on "Catalog"
+    When I click on the burger menu
+    And I click on "Catalog"
     And I click on "Film"
     And I click on "Better Camera"
     And I click on "Add item"
@@ -109,7 +113,8 @@ Feature: Borrow Entitlement
     And I click on "Cancel"
 
     # Super Camera (not findable via normal navigation for this user)
-    When I click on "Catalog"
+    When I click on the burger menu
+    And I click on "Catalog"
     And I click on "Film"
     And I click on "Super Camera"
     And I click on "Add item"

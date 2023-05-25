@@ -385,7 +385,7 @@
         any-availability? (boolean (seq (:availability model)))
         current-profile @(subscribe [::current-profile])
         user-id (:id current-profile)]
-    [:section
+    [:> UI/Components.Design.PageLayout.ContentContainer
      (cond
        is-loading? [ui/loading (t :loading)]
        errors [ui/error-view errors]

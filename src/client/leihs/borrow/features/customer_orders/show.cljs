@@ -204,7 +204,7 @@
         rental-user-id (-> rental :user :id)
         date-locale @(subscribe [::translate/date-locale])]
 
-    [:<>
+    [:> UI/Components.Design.PageLayout.ContentContainer
      (cond
 
        is-loading?

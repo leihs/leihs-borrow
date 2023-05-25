@@ -177,10 +177,6 @@ step "I select :name xxx" do |name|
     .select_option
 end
 
-step "I click on the menu" do
-  find("nav .ui-menu-icon").click
-end
-
 step "the order panel is shown" do
   find(".ui-booking-calendar")
 end

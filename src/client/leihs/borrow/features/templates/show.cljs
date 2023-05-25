@@ -57,7 +57,7 @@
         error403? (and (not is-loading?) (some #(= 403 (-> % :extensions :code)) errors))
         current-profile-id @(subscribe [::current-profile-id])
         date-locale @(subscribe [::translate/date-locale])]
-    [:<>
+    [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)
        :sub-title (:name template)}

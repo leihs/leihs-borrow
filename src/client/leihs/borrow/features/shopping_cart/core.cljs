@@ -660,7 +660,7 @@
           edit-mode-data @(subscribe [::edit-mode-data])
           is-loading? (not (or data errors))]
 
-      [:<>
+      [:> UI/Components.Design.PageLayout.ContentContainer
        (cond
          is-loading? [ui/loading]
 

@@ -210,7 +210,7 @@
         open-rentals @(subscribe [::open-rentals])
         closed-rentals @(subscribe [::closed-rentals])
         filter-options @(subscribe [::filter-modal/options])]
-    [:<>
+    [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}
       (when-not loading?

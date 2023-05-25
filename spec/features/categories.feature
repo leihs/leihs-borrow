@@ -25,6 +25,7 @@ Feature: Search results (and caching)
     And parent of category "Beamers" is category "Video"
 
     Given I log in as the user
+    And I resize the window to mobile size
 
   Scenario: Navigation and breadcrumbs
     When I click on category "Video"

@@ -40,17 +40,18 @@
 (defn view []
   (fn []
     (let [has-any-reservable-item @(subscribe [::has-any-reservable-item])]
-      (if has-any-reservable-item
-        [:<>
-         [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
-          [:div.pt-2 [filter-comp default-dispatch-fn]]]
-         [:> UI/Components.Design.Stack
-          [:> UI/Components.Design.Section {:title (t :categories)}
-           (categories/categories-list {})]]]
+      [:> UI/Components.Design.PageLayout.ContentContainer
+       (if has-any-reservable-item
+         [:<>
+          [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
+           [:div.pt-2 [filter-comp default-dispatch-fn]]]
+          [:> UI/Components.Design.Stack
+           [:> UI/Components.Design.Section {:title (t :categories)}
+            (categories/categories-list {})]]]
         ; else
-        [:<>
-         [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
-         [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
-          [:> UI/Components.Design.Warning {:class "fs-2"} (t :no-reservable-items)]
-          [:a.decorate-links {:href (routing/path-for ::routes/inventory-pools-index)}
-           (t :check-available-pools)]]]))))
+         [:<>
+          [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
+          [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
+           [:> UI/Components.Design.Warning {:class "fs-2"} (t :no-reservable-items)]
+           [:a.decorate-links {:href (routing/path-for ::routes/inventory-pools-index)}
+            (t :check-available-pools)]]])])))
