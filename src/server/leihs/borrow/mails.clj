@@ -7,15 +7,11 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [wet.core :as wet]
-
    [leihs.borrow.resources.languages :as lang]
    [leihs.borrow.resources.inventory-pools :as pools]
    [leihs.borrow.resources.users.shared :as users]
-
-   ; [leihs.borrow.legacy :as legacy ]
-   ; [leihs.core.ring-exception :as ring-ex :refer [logstr]]
-   [taoensso.timbre :refer [debug info warn error spy]]
-   ))
+   [leihs.borrow.translate :refer [t]]
+   [taoensso.timbre :refer [debug info warn error spy]]))
 
 (defn get-tmpl [tx name pool-id lang-locale]
   (-> (sql/select :body)
@@ -59,11 +55,11 @@
                    address (or (:email inventory-pool) (:smtp_default_from_address settings))]
                (debug email-body)
                (-> (sql/insert-into :emails)
-                   (sql/values [(spy {:inventory_pool_id (:id inventory-pool)
-                                      :from_address address
-                                      :to_address address
-                                      :subject "[leihs] Order received" ; TODO: TRANSLATE!!!
-                                      :body email-body})])
+                   (sql/values [{:inventory_pool_id (:id inventory-pool)
+                                 :from_address address
+                                 :to_address address
+                                 :subject (t :borrow.mail-templates.received.subject lang-locale)
+                                 :body email-body}])
                    sql-format
                    (->> (jdbc/execute! tx))))))))
 
@@ -100,11 +96,11 @@
                  from-address (or (:email inventory-pool) (:smtp_default_from_address settings))]
              (debug email-body)
              (-> (sql/insert-into :emails)
-                 (sql/values [(spy {:user_id target-user-id
-                                    :from_address to-address
-                                    :to_address from-address
-                                    :subject "[leihs] Reservation Submitted" ; TODO: TRANSLATE!!!
-                                    :body email-body})])
+                 (sql/values [{:user_id target-user-id
+                               :from_address from-address
+                               :to_address to-address
+                               :subject (t :borrow.mail-templates.submitted.subject lang-locale)
+                               :body email-body}])
                  sql-format
                  (->> (jdbc/execute! tx)))))))
 

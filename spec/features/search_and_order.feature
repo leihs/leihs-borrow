@@ -24,7 +24,7 @@ Feature: Search and order
     Then the user profile button shows "<shortname>"
 
     # search for a model
-    And I visit "/app/borrow/"
+    And I visit "/borrow/"
     And I click on "Filter"
     And I enter "Kamera" in the search field
     And I select "Pool B" from the pools select box
@@ -71,7 +71,7 @@ Feature: Search and order
     Then I approve the order "Order 1"
 
     # check the new status of the order
-    When I visit "/app/borrow/"
+    When I visit "/borrow/"
     # FIXME: wait for menu open
     And I sleep 1
     And I click on "Orders"

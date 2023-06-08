@@ -25,7 +25,7 @@ scripts:
       set -euo pipefail
       until curl --silent --fail -I \
         -H 'Accept: application/json' \
-        ${LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/status;
+        ${LEIHS_BORROW_HTTP_BASE_URL}/borrow/status;
         do sleep 1;
       done
     start_when:

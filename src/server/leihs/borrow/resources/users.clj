@@ -43,8 +43,7 @@
   (let [settings (settings! tx [:external_base_url :documentation_link])
         base-url (:external_base_url settings)
         sub-apps (sub-apps tx authenticated-entity)]
-    {:legacy-url (str base-url "/borrow/")
-     :admin-url (when (:admin sub-apps) (str base-url "/admin/"))
+    {:admin-url (when (:admin sub-apps) (str base-url "/admin/"))
      :procure-url (when (:procure sub-apps) (str base-url "/procure/"))
      :manage-nav-items (map #(assoc % :url (:href %)) (:manage sub-apps))
      :documentation-url (:documentation_link settings)}))

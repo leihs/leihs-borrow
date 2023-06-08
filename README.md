@@ -47,9 +47,8 @@ cd leihs-ui && npm run watch:lib
 cd leihs-ui && npm run storybook
 
 # open in browser:
-open "http://localhost:3210/borrow"       # sign in / old borrow
-open "http://localhost:3250/app/borrow/"  # new borrow
-open "http://localhost:9009/"             # storybook
+open "http://localhost:3250/borrow/"  # borrow
+open "http://localhost:9009/"         # leihs-ui storybook
 ```
 
 ### Graph*i*QL (GraphQL console)
@@ -58,7 +57,7 @@ There is a built-in [console for the GraphQL API](https://github.com/graphql/gra
 It is enabled in all environments (so it can also be used on a server, not just the local development env).
 
 - sign in
-- open <http://localhost:3250/app/borrow/graphiql/> or <https://test.leihs.zhdk.ch/app/borrow/graphiql/> or similar
+- open <http://localhost:3250/borrow/graphiql/> or <https://test.leihs.zhdk.ch/borrow/graphiql/> or similar
 - configure
   - click button "Edit HTTP Headers"
   - add header with key `x-csrf-token`

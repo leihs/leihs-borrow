@@ -15,7 +15,7 @@ Feature: Pools
     When the user is customer of pool "Pool B"
     And the user is customer of pool "Pool A"
     And I log in as the user
-    And I visit "/app/borrow/inventory-pools"
+    And I visit "/borrow/inventory-pools"
     And I see the page title "Inventory Pools"
 
     Then I see the following lines in the "Available inventory pools" section:
@@ -27,7 +27,7 @@ Feature: Pools
     Then I see the page title "Pool A"
     And I see the "E-mail" section
 
-    When I visit "/app/borrow/inventory-pools"
+    When I visit "/borrow/inventory-pools"
     And I see the page title "Inventory Pools"
     And I click on the card with title "Pool B"
     Then I see the page title "Pool B"

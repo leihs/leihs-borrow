@@ -4,7 +4,7 @@ projects:
     extensions:
       endpoints:
         dev:
-          url: "http://localhost:3250/app/borrow/graphql"
+          url: "http://localhost:3250/borrow/graphql"
           headers:
             # NOTE: we're outside a browser, so we just need to send the same value as a header and a cookie!
             "X-CSRF-Token": "00000000-0000-0000-0000-000000000000"

@@ -13,6 +13,13 @@
             :delegation {:de-CH "Delegation" :en-GB "Delegation"}
             :delegations {:de-CH "Delegationen" :en-GB "Delegations"}}
 
+
+    ; --- MAIL TEMPLATES ---
+    :mail-templates {:received {:subject {:en-GB "[leihs] Order received"
+                                          :de-CH "[leihs] Bestellung eingetroffen"}}
+                     :submitted {:subject {:en-GB "[leihs] Reservation Submitted"
+                                           :de-CH "[leihs] Reservation abgeschickt"}}}
+
   ; --- GENERAL PHRASES ---
   ; use them for consistency between different parts of the app
   ; but NOT for interpolation / string concating (that assumes to much about the languages)
@@ -259,9 +266,7 @@
            :documentation {:en-GB "Help"
                            :de-CH "Hilfe"}
            :language {:section-title {:en-GB "Language"
-                                      :de-CH "Sprache"}}
-           :desktop-version {:en-GB "Leihs Classic"
-                             :de-CH "Klassisches Leihs"}}
+                                      :de-CH "Sprache"}}}
     :model-show {:loading {:en-GB "Loading item"
                            :de-CH "Gegenstand wird geladen"}
                  :description {:en-GB "Description"

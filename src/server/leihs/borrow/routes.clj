@@ -92,8 +92,8 @@
       datasource/wrap-tx
       after-tx/wrap
       core-graphql/wrap-with-schema
-      (wrap-graphiql {:path "/app/borrow/graphiql",
-                      :endpoint "/app/borrow/graphql"})
+      (wrap-graphiql {:path "/borrow/graphiql",
+                      :endpoint "/borrow/graphql"})
       core-routing/wrap-canonicalize-params-maps
       wrap-params
       wrap-multipart-params
@@ -101,8 +101,8 @@
       wrap-content-type
       (wrap-resource "public"
                      {:allow-symlinks? true
-                      :cache-bust-paths ["/app/borrow/css/theme-mobile/bootstrap-leihs-mobile.css"
-                                         "/app/borrow/js/main.js"]
+                      :cache-bust-paths ["/borrow/css/theme-mobile/bootstrap-leihs-mobile.css"
+                                         "/borrow/js/main.js"]
                       :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
                                            #".+_[0-9a-f]{40}\..+"]
                       :enabled? true})

@@ -25,7 +25,7 @@ Feature: Rentals
       | user         | quantity | model       | pool   | relative-start-date | relative-end-date   | state    |
       | Delegation D | 1        | DSLR Camera | Pool A | ${30.days.from_now} | ${31.days.from_now} | approved |
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     Then I see the following orders:
       | title   |
       | Order 1 |
@@ -45,7 +45,7 @@ Feature: Rentals
       | 1        | DSLR Camera | Pool A | ${30.days.from_now} | ${31.days.from_now} | approved  |
       | 1        | Tripod      | Pool B | ${30.days.from_now} | ${31.days.from_now} | submitted |
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     Then I see the following orders:
       | title   |
       | Order 1 |
@@ -85,7 +85,7 @@ Feature: Rentals
       | quantity | model       | pool   | start-date | end-date   | state    | pickup-date |
       | 1        | DSLR Camera | Pool A | 9999-12-30 | 9999-12-31 | approved |             |
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     Then I see the following orders:
       | title   |
       | Order 1 |
@@ -120,7 +120,7 @@ Feature: Rentals
       | 1        | DSLR Camera | Pool A | ${30.day.from_now}  | ${31.day.from_now} | approved  |
       | 1        | Tripod      | Pool B | ${30.day.from_now}  | ${31.day.from_now} | submitted |
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     Then I see the following orders:
       | title   |
       | Order 1 |
@@ -150,7 +150,7 @@ Feature: Rentals
       | 1        | DSLR Camera | Pool A | ${30.day.from_now}  | ${31.day.from_now} | approved  |
       | 1        | Tripod      | Pool B | ${30.day.from_now}  | ${31.day.from_now} | submitted |
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     Then I see the following orders:
       | title   |
       | Order 1 |

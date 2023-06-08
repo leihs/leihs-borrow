@@ -36,7 +36,7 @@ Feature: Rentals - Show - Repeat order
     And I click on "<sourceProfile>"
     Then the user profile button shows "<sourceProfileShort>"
 
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     And I click on the card with title "Order 1"
 
     Then I see the page title "Order 1"
@@ -109,7 +109,7 @@ Feature: Rentals - Show - Repeat order
       | user | 1        | USB Adapter   | Pool A | 2020-02-05 | 2020-02-05 | closed |
 
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     And I click on the card with title "Order 1"
     And I see the page title "Order 1"
     And I click on "Repeat order"
@@ -130,7 +130,7 @@ Feature: Rentals - Show - Repeat order
       | user | 1        |             | USB Adapter | Pool A | 2020-02-05 | 2020-02-05 | closed |
 
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     And I click on the card with title "Order 1"
     And I see the page title "Order 1"
     And I click on "Repeat order"

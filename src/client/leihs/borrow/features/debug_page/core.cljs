@@ -71,7 +71,7 @@
                                          :one-line true}
        "a sample model"]
       [:> UI/Components.Design.ListCard {:class "fw-bold"
-                                         :href "/app/borrow/graphiql/index.html"
+                                         :href "/borrow/graphiql/index.html"
                                          :one-line true}
        "Graph" [:i "i"] "QL API console"]]]
 

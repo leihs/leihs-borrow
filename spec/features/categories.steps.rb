@@ -20,7 +20,7 @@ step 'I see :n sub-categor(y/ies)' do |n|
 end
 
 def make_category_link(c_chain)
-  "/app/borrow/categories/#{c_chain.map(&:id).join('/')}"
+  "/borrow/categories/#{c_chain.map(&:id).join('/')}"
 end
 
 def categories_seq(category)

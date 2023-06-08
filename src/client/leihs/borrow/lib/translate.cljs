@@ -1,8 +1,8 @@
 (ns leihs.borrow.lib.translate
   (:require-macros [leihs.borrow.lib.translate])
   (:require ["/leihs-ui-client-side-external-react" :as UI]
-            ; [leihs.borrow.features.languages.core :as languages]
             ["date-fns/locale" :as date-locale]
+            [leihs.borrow.translate-base :as t-base]
             [cljs.test :refer-macros [deftest is testing run-tests]]
             [clojure.string :as string]
             [leihs.borrow.features.current-user.core :as current-user]
@@ -12,40 +12,6 @@
             [re-frame.db :as db]))
 
 (def ^:dynamic *default-path* "Default path to use for locating a key." nil)
-(def path-escape-char \!)
-
-(def fallbacks {:gsw-CH :de-CH
-                :de-CH :en-GB
-                :es :en-GB
-                :en-US :en-GB
-                :fr-CH :en-GB})
-
-(def remove-first-char #(-> % str rest string/join))
-
-(defn qualify [p]
-  (cond (= (first p) path-escape-char)
-        (remove-first-char p)
-        *default-path*
-        (str (remove-first-char *default-path*) "." p)
-        :else p))
-
-(defn dict-path-keys [dict-path]
-  (-> dict-path
-      remove-first-char
-      qualify
-      (string/split #"[\./]")
-      (->> (map keyword))))
-
-(defn missing-translation [path-keys]
-  (->> path-keys
-       (map name)
-       (string/join ".")
-       (format "{{ missing: %s }}")))
-
-(defn translate [message locale values]
-  (-> message
-      (UI/IntlMessageFormat. (name locale))
-      (.format (clj->js values))))
 
 (reg-sub ::text-locale
          :<- [::current-user/locale-to-use]
@@ -61,15 +27,19 @@
                      :gsw-CH date-locale/de
                      date-locale/enGB)))
 
+(defn translate [message locale values]
+  (-> message
+      (UI/IntlMessageFormat. (name locale))
+      (.format (clj->js values))))
 
 (defn t-base [dict-path values]
-  (let [path-keys (dict-path-keys dict-path)]
+  (let [path-keys (t-base/dict-path-keys dict-path *default-path*)]
     (loop [locale (or (current-user/get-locale-to-use @db/app-db) :en-GB)]
       (if locale
         (if-let [message (get-in translations/dict (concat path-keys [locale]))]
           (translate message locale values)
-          (recur (locale fallbacks)))
-        (missing-translation path-keys)))))
+          (recur (locale t-base/fallbacks)))
+        (t-base/missing-translation path-keys)))))
 
 ; ============================= TESTS ==============================
 
@@ -120,13 +90,13 @@
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use {:locale "gsw-CH"}}}})]
-      (is (= (t-base :test nil) (missing-translation [:test]))
+      (is (= (t-base :test nil) (t-base/missing-translation [:test]))
           "No translation for language to use."))
     (with-redefs [translations/dict {:test {:de-CH "de-CH"}}
                   db/app-db (atom {:ls
                                    {::current-user/data
                                     {:language-to-use nil}}})]
-      (is (= (t-base :test nil) (missing-translation [:test]))
+      (is (= (t-base :test nil) (t-base/missing-translation [:test]))
           "No language to use."))))
 
 (comment (run-tests))

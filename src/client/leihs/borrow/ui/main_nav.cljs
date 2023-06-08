@@ -146,12 +146,10 @@
 
 
 (defn- app-switch-menu-items []
-  (let [user-nav @(subscribe [::user-nav])
-        legacy-url (:legacy-url user-nav)]
+  (let [user-nav @(subscribe [::user-nav])]
     [:> UI/Components.Design.Menu {:id "app-menu"}
      [:> UI/Components.Design.Menu.Group
       [menu-link (routing/path-for ::routes/home) (t :borrow/section-title) true]
-      [menu-link legacy-url (t :desktop-version)]
       (when-let [admin-url (:admin-url user-nav)] [menu-link admin-url (t :app-switch/admin)])
       (when-let [procure-url (:procure-url user-nav)] [menu-link procure-url (t :app-switch/procure)])
       (when (seq (:manage-nav-items user-nav))

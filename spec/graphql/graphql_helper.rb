@@ -14,7 +14,7 @@ class GraphqlQuery
   end
 
   def perform
-    @response = Faraday.post("#{LEIHS_BORROW_HTTP_BASE_URL}/app/borrow/graphql") do |req|
+    @response = Faraday.post("#{LEIHS_BORROW_HTTP_BASE_URL}/borrow/graphql") do |req|
       req.headers['Accept'] = 'application/json'
       req.headers['Content-Type'] = 'application/json'
       req.headers['X-CSRF-Token'] = @csrf_token

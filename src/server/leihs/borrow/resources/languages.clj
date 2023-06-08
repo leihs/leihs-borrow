@@ -6,7 +6,8 @@
 
 (def base-sqlmap (-> (sql/select :languages.*)
                      (sql/from :languages)
-                     (sql/merge-where [:= :active true])))
+                     (sql/merge-where [:= :active true])
+                     (sql/order-by [:name :asc])))
 
 (defn get-by-locale [tx locale]
   (-> base-sqlmap

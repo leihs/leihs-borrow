@@ -22,8 +22,8 @@
                 [clj-kondo "RELEASE"]]
  :builds
  {:leihs-borrow-js
-  {:output-dir "resources/public/app/borrow/js"
-   :asset-path "/app/borrow/js"
+  {:output-dir "resources/public/borrow/js"
+   :asset-path "/borrow/js"
    :target :browser
    ; NOTE: comment out and adjust in order for re-frame-10x to work
    ; :main leihs.borrow.app/main

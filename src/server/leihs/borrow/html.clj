@@ -13,7 +13,7 @@
    [:meta {:name "viewport"
            :content "width=device-width, initial-scale=1, shrink-to-fit=no"}]
 
-   (hiccup.page/include-css (cache-buster/cache-busted-path "/app/borrow/css/theme-mobile/bootstrap-leihs-mobile.css"))])
+   (hiccup.page/include-css (cache-buster/cache-busted-path "/borrow/css/theme-mobile/bootstrap-leihs-mobile.css"))])
 
 (defn not-found-handler [_request]
   {:status 404
@@ -38,7 +38,7 @@
              "Loading..."]]]
 
           (hiccup.page/include-js
-           (cache-buster/cache-busted-path "/app/borrow/js/main.js")))})
+           (cache-buster/cache-busted-path "/borrow/js/main.js")))})
 
 
 ;#### debug ###################################################################

@@ -80,7 +80,7 @@ Feature: Templates
       | Animals |
       | Video   |
 
-    When I visit "/app/borrow/templates/"
+    When I visit "/borrow/templates/"
     Then I see "No templates available for the current profile"
 
   Scenario: Ordering by template

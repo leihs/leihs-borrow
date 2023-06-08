@@ -2,7 +2,7 @@ step 'I click on category :category_name' do |category_name|
   within(
     # NOTE: this a workaround for an apparent capybara/selenium/webdrive bug
     # using `click_on` throws an error:
-    # Selenium::WebDriver::Error::ElementNotInteractableError: Element <a class="stretched-link" href="/app/borrow/categories/1234"> could not be scrolled into view
+    # Selenium::WebDriver::Error::ElementNotInteractableError: Element <a class="stretched-link" href="/borrow/categories/1234"> could not be scrolled into view
     # the trick is to not match a link but just some div which capybara will happily click 🙄
     # normally this should work:
     # within('section', text: 'Categories') { click_on(category_name) }

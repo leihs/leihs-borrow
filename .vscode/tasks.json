@@ -29,7 +29,6 @@
         "env: switch to dev",
         "backend-dev",
         "frontend-dev",
-        "legacy-dev",
         "leihs-ui: watch lib",
         "leihs-ui: watch theme",
         "storybook"
@@ -39,12 +38,7 @@
     {
       "label": "Frontend Development Services (without Leihs UI)",
       "detail": "(assumes preparations steps already ran)",
-      "dependsOn": [
-        "env: switch to dev",
-        "backend-dev",
-        "frontend-dev",
-        "legacy-dev"
-      ],
+      "dependsOn": ["env: switch to dev", "backend-dev", "frontend-dev"],
       "problemMatcher": []
     },
     {
@@ -53,7 +47,6 @@
       "dependsOn": [
         "env: switch to test",
         "tests: run server",
-        "tests: run legacy API",
         "tests: open shell for RSpec"
       ],
       "problemMatcher": []
@@ -79,22 +72,6 @@
       "label": "frontend-dev",
       "type": "shell",
       "command": "source bin/set-env && bin/dev-run-frontend",
-      "problemMatcher": [],
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "clear": true,
-        "group": "dev"
-      }
-    },
-    {
-      "label": "legacy-dev",
-      "type": "shell",
-      "command": "source bin/set-env && cd ../legacy && bundle && bundle exec rails s -p $LEGACY_HTTP_PORT",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
@@ -234,21 +211,6 @@
       "label": "tests: run server",
       "type": "shell",
       "command": "source bin/set-env && bin/run",
-      "problemMatcher": [],
-      "presentation": {
-        "echo": true,
-        "focus": true,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "close": false,
-        "clear": true,
-        "group": "test"
-      }
-    },
-    {
-      "label": "tests: run legacy API",
-      "type": "shell",
-      "command": "source bin/set-env && bin/test-run-legacy",
       "problemMatcher": [],
       "presentation": {
         "echo": true,

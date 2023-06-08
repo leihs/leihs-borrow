@@ -27,7 +27,7 @@ Feature: Delegations
   Scenario: Delegations in user account
     Given I log in as the user
 
-    When I visit "/app/borrow/current-user"
+    When I visit "/borrow/current-user"
     And I see the page title "User Account"
 
     Then I see the following lines in the "Delegations" section:
@@ -61,7 +61,7 @@ Feature: Delegations
       Item not available for current profile
       """
 
-    When I visit "/app/borrow/"
+    When I visit "/borrow/"
     And I click on "Filter"
     And I click button "Apply"
     Then I see one model with the title "Beamer"
@@ -89,7 +89,7 @@ Feature: Delegations
     Then the user profile button shows "DD"
 
     When I switch to a new window
-    And I visit "/app/borrow/"
+    And I visit "/borrow/"
     Then the user profile button shows "DD"
 
     # Check that changing the profile in window 2 does not change window 1
@@ -97,7 +97,7 @@ Feature: Delegations
     And I click on "UA"
     And the user profile button shows "UA"
     And I go back to the first window
-    And I visit "/app/borrow/order"
+    And I visit "/borrow/order"
     Then the user profile button shows "DD"
 
   Scenario: Open a new window as personal user
@@ -105,7 +105,7 @@ Feature: Delegations
     Then the user profile button shows "UA"
 
     When I switch to a new window
-    And I visit "/app/borrow/"
+    And I visit "/borrow/"
     Then the user profile button shows "UA"
 
     # Check that changing the profile in window 2 does not change window 1
@@ -113,5 +113,5 @@ Feature: Delegations
     And I click on "DD"
     And the user profile button shows "DD"
     And I go back to the first window
-    And I visit "/app/borrow/order"
+    And I visit "/borrow/order"
     Then the user profile button shows "UA"

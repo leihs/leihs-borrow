@@ -19,7 +19,7 @@ Feature: Rentals - Show - Cancel rental
       | user | 1        | DSLR Camera | Pool A | ${Date.tomorrow}    | ${2.days.from_now} | submitted |
 
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     And I click on the card with title "Order 1"
 
     Then I see the page title "Order 1"
@@ -44,7 +44,7 @@ Feature: Rentals - Show - Cancel rental
       | user | 1        | DSLR Camera | Pool A | ${Date.tomorrow}    | ${2.days.from_now} | approved |
 
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     And I click on the card with title "Order 1"
 
     Then I see the page title "Order 1"

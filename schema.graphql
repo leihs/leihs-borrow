@@ -1,4 +1,4 @@
-# source: http://localhost:3250/app/borrow/graphql
+# source: http://localhost:3250/borrow/graphql
 # timestamp: Mon Jan 23 2023 13:52:50 GMT+0100 (Central European Standard Time)
 
 schema {
@@ -568,7 +568,6 @@ type User {
 type UserNavigation {
   adminUrl: String
   documentationUrl: String
-  legacyUrl: String!
   manageNavItems: [UserNavigationItem]
   procureUrl: String
 }

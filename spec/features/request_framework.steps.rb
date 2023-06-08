@@ -4,7 +4,7 @@ step "there is a borrowable item in pool :name" do |name|
 end
 
 step "I visit the model show page for the borrowable item" do
-  visit "/app/borrow/models/#{@item.model_id}"
+  visit "/borrow/models/#{@item.model_id}"
 end
 
 step "I clear the browser cookies" do
@@ -13,7 +13,7 @@ step "I clear the browser cookies" do
 end
 
 step "the cart is not empty" do
-  visit("/app/borrow/order")
+  visit("/borrow/order")
   step "I see the 'Items' section"
 end
 

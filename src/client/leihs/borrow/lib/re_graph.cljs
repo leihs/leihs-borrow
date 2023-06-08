@@ -9,7 +9,7 @@
 
 (def config
   {:ws nil 
-   :http {:url "/app/borrow/graphql"
+   :http {:url "/borrow/graphql"
           :impl {:headers headers}}})
 
 (defn init []

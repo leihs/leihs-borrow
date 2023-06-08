@@ -67,7 +67,7 @@ end
 
 step "I visit the model show page of model :name" do |name|
   m = LeihsModel.find(product: name)
-  visit "/app/borrow/models/#{m.id}"
+  visit "/borrow/models/#{m.id}"
 end
 
 step ":term is pre-filled as the search term" do |term|
@@ -124,7 +124,7 @@ step "I clear ls from the borrow app-db" do
 end
 
 step "I visit the url with query params for dates as before but :m_name as term" do |m_name|
-  visit "/app/borrow/" \
+  visit "/borrow/" \
         "?only-available=true" \
         "&start-date=#{Date.today}" \
         "&end-date=#{Date.tomorrow}" \
@@ -177,7 +177,7 @@ end
 
 step "I visit the show page for :name model" do |name|
   m = LeihsModel.find(product: name)
-  visit "/app/borrow/models/#{m.id}"
+  visit "/borrow/models/#{m.id}"
 end
 
 step "the delegations select field is disabled" do

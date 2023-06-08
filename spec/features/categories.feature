@@ -166,7 +166,7 @@ Feature: Search results (and caching)
     And there is 1 borrowable item for model "Active Speaker Anchor AN-100" in pool "Pool A"
 
     # root
-    When I visit "/app/borrow/"
+    When I visit "/borrow/"
     And I click on category "Audio"
     Then I see 3 models
     And I see model "Mikrofon Meteor Mic"

@@ -10,7 +10,8 @@ describe 'orders' do
   let(:user) do
     FactoryBot.create(
       :user,
-      id: '8c360361-f70c-4b31-a271-b4050d4b9d26'
+      id: '8c360361-f70c-4b31-a271-b4050d4b9d26',
+      language_locale: "de-CH"
     )
   end
 
@@ -183,9 +184,13 @@ describe 'orders' do
       expect(result[:errors]).to be_nil
       expect(Email.count).to eq 2
       expect(Email.first(inventory_pool_id: inventory_pool_1.id,
+                         to_address: inventory_pool_1.email,
+                         from_address: inventory_pool_1.email,
                          subject: "[leihs] Order received")).to be
       expect(Email.first(user_id: user.id,
-                         subject: "[leihs] Reservation Submitted")).to be
+                         to_address: user.email,
+                         from_address: inventory_pool_1.email,
+                         subject: "[leihs] Reservation abgeschickt")).to be
     end
 
     it 'fails due to availability validation' do

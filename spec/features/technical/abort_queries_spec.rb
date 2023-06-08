@@ -8,7 +8,7 @@ feature 'abort queries' do
 
     @user = FactoryBot.create(:user)
     login(@user)
-    visit "/app/borrow/testing/step-1"
+    visit "/borrow/testing/step-1"
     wait_until { parse_pre("#requests").empty? } 
     click_on "mutate"
     mutation_id = parse_pre("#requests").first.first
@@ -26,7 +26,7 @@ def parse_pre(id)
 end
 
 def login(user)
-  visit '/app/borrow/'
+  visit '/borrow/'
   within('.ui-form-signin') do
     fill_in 'user', with: user.email
     find('button[type="submit"]').click

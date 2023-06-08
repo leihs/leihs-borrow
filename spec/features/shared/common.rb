@@ -18,7 +18,7 @@ end
 def log_in_as_user_with_email(email)
   user = User.find(email: email)
   expect(user).to be
-  visit "/app/borrow/"
+  visit "/borrow/"
   within(".ui-form-signin") do
     fill_in("user", with: email)
     find('button[type="submit"]').click

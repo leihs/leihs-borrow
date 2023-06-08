@@ -5,5 +5,5 @@ Feature: Borrow Smoke
 
   Scenario: Access borrow app
     Given I log in as the user
-    When I visit "/app/borrow/"
+    When I visit "/borrow/"
     Then the borrow app is loaded

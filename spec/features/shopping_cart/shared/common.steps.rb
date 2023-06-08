@@ -1,5 +1,5 @@
 step "I navigate to the cart" do
-  visit "/app/borrow/order"
+  visit "/borrow/order"
 end
 
 def create_reservations_from_table_for_user(user, table)
@@ -34,7 +34,7 @@ step "the following reservations exist for the user :username:" do |username, ta
 end
 
 step "I have been redirected to the orders list" do
-  expect(current_path).to eq "/app/borrow/rentals/"
+  expect(current_path).to eq "/borrow/rentals/"
 end
 
 step "the newly created order in the DB has:" do |table|

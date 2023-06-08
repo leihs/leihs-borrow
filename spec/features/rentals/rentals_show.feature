@@ -28,7 +28,7 @@ Feature: Rentals - Show
       | user | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | approved |
 
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     And I click on the card with title "Order 1"
     And I sleep 1
 
@@ -60,7 +60,7 @@ Feature: Rentals - Show
       | user | 2        | Tripod      | Pool B | ${Date.today}       | ${Date.tomorrow}    | approved |
 
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     And I click on the card with title "Order 1"
 
     Then I see the following lines in the "Items" section:
@@ -81,7 +81,7 @@ Feature: Rentals - Show
       | user | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | signed |
 
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     And I click on the card with title "Order 1"
     Then I see the page title "Order 1"
     And the page subtitle is "Between ${Date.today} and ${Date.tomorrow}, 2 items"
@@ -102,7 +102,7 @@ Feature: Rentals - Show
       | Delegation D | 1        | DSLR Camera | Pool A | ${30.days.from_now} | ${31.days.from_now} | approved |
 
     When I log in as the user
-    And I visit "/app/borrow/rentals/"
+    And I visit "/borrow/rentals/"
     And I click on the card with title "Order 1"
     And I see the page title "Order 1"
     And I see the text:
@@ -117,7 +117,7 @@ Feature: Rentals - Show
     And I see the page title "Order"
     And I see "This order is not visible for the current profile"
 
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Order 2"
     And I see the page title "Order 2"
     And I see the text:

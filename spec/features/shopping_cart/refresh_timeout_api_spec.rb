@@ -60,7 +60,7 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
 
     if DEVELOP_UI
       log_in_as_user_with_email(user.email)
-      visit "/app/borrow/order"
+      visit "/borrow/order"
 
       # dev_take_screenshots_of_each_order_panel
       binding.pry

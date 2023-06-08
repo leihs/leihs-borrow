@@ -26,7 +26,6 @@ query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID, $includeL
     }
     sessionId
     nav {
-      legacyUrl
       adminUrl
       procureUrl
       manageNavItems {

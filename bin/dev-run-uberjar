@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+$PROJECT_DIR/bin/env/java-setup
+cd $PROJECT_DIR
+./bin/build
+java -jar target/leihs-borrow.jar --dev-mode true -r run "$@"
+
+# vi: ft=sh

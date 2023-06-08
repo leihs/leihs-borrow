@@ -1,6 +1,6 @@
 (ns leihs.borrow.client.routes)
 
-; the route prefix is for this app "/app/borrow".
+; the route prefix is for this app "/borrow".
 ; define the un-prefixed map so it can be more easily used in backend,
 ; maybe this can be made better because we anyhow want to ensure the same prefix.
 
@@ -30,4 +30,4 @@
 (def routes-map
   ["/"
    {"" ::absolute-root ; only applicable in dev, does a redirect
-    "app/borrow/" client-routes}])
+    "borrow/" client-routes}])

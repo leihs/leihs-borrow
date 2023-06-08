@@ -48,7 +48,7 @@ Feature: Rentals - Show - Status
     And I log in as the user
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "New order"
     And I see the page title "New order"
 
@@ -62,7 +62,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} In approval |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Approved order"
     And I see the page title "Approved order"
 
@@ -76,7 +76,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To pick up |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Some picked up"
     And I see the page title "Some picked up"
 
@@ -91,7 +91,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 2 days from ${Date.today} To return until ${Date.tomorrow} |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Some picked up, some returned"
     And I see the page title "Some picked up, some returned"
 
@@ -106,7 +106,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 2 days from ${Date.today} Returned                         |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "All picked up, some returned"
     And I see the page title "All picked up, some returned"
 
@@ -120,7 +120,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 2 days from ${Date.today} Returned                         |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "All returned"
     And I see the page title "All returned"
 
@@ -167,7 +167,7 @@ Feature: Rentals - Show - Status
     When I log in as the user
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Canceled order"
     And I see the page title "Canceled order"
 
@@ -181,7 +181,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} Canceled |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Rejected order"
     Then I see the page title "Rejected order"
 
@@ -195,7 +195,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} Rejected |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Partially approved order"
     And I see the page title "Partially approved order"
 
@@ -210,7 +210,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool C | 2 days from ${Date.tomorrow} In approval |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Some approved, some rejected, some unapproved"
     And I see the page title "Some approved, some rejected, some unapproved"
 
@@ -225,7 +225,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool C | 2 days from ${Date.tomorrow} Rejected    |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Some approved, some rejected"
     And I see the page title "Some approved, some rejected"
 
@@ -240,7 +240,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool C | 2 days from ${Date.tomorrow} Rejected   |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Some expired unapproved"
     And I see the page title "Some expired unapproved"
 
@@ -253,7 +253,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} In approval                          |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "All expired unapproved"
     And I see the page title "All expired unapproved"
 
@@ -283,7 +283,7 @@ Feature: Rentals - Show - Status
     And I log in as the user
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Expired order"
     And I see the page title "Expired order"
 
@@ -297,7 +297,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 1 day from ${Date.yesterday} Not picked up until ${Date.yesterday} |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Some expired, some picked-up"
     And I see the page title "Some expired, some picked-up"
 
@@ -312,7 +312,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To return until ${2.days.from_now}    |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Some expired, all others picked-up"
     And I see the page title "Some expired, all others picked-up"
 
@@ -340,7 +340,7 @@ Feature: Rentals - Show - Status
     And I log in as the user
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "All overdue"
     And I see the page title "All overdue"
 
@@ -354,7 +354,7 @@ Feature: Rentals - Show - Status
       | 1× Elefant | Pool A | 1 day from ${Date.yesterday} To return until ${Date.yesterday} |
 
     # -----------------------------------
-    When I visit "/app/borrow/rentals/"
+    When I visit "/borrow/rentals/"
     And I click on the card with title "Some overdue, some returned"
     And I see the page title "Some overdue, some returned"
 

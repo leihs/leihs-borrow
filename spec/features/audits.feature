@@ -23,7 +23,7 @@ Feature: Audits
     And there are 2 audited requests
 
     # search for a model
-    And I visit "/app/borrow/"
+    And I visit "/borrow/"
     And I click on "Filter"
     And I enter "Kamera" in the search field
     And I select "Pool B" from the pools select box
@@ -47,9 +47,9 @@ Feature: Audits
     And I click on "Add"
     And the "Add item" dialog has closed
     And I accept the "Item added" dialog with the text:
-    """
-    The item was added to the cart
-    """
+      """
+      The item was added to the cart
+      """
     And the "Item added" dialog has closed
 
     # +1
@@ -61,13 +61,13 @@ Feature: Audits
       | title     | body   |
       | 1× Kamera | Pool B |
 
-      # submit the order
-      When I click on "Send order"
-      And I name the order as "Order 1"
-      And I click on "Send"
-      And the "Send order" dialog has closed
-      And I accept the "Order submitted" dialog
-      And the "Order submitted" dialog has closed
+    # submit the order
+    When I click on "Send order"
+    And I name the order as "Order 1"
+    And I click on "Send"
+    And the "Send order" dialog has closed
+    And I accept the "Order submitted" dialog
+    And the "Order submitted" dialog has closed
 
-      # +1
-      Then there are 4 audited requests
+    # +1
+    Then there are 4 audited requests

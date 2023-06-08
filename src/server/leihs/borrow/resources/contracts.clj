@@ -59,10 +59,10 @@
       (cond-> (seq order-by)
         (sql/order-by (helpers/treat-order-arg order-by :contracts)))))
 
-(defn print-url [{{:keys [tx]} :request} _ {:keys [id]}]
+(defn print-url [{{:keys [tx]} :request} _ {:keys [id inventory-pool-id]}]
   (str (:external_base_url (settings! tx))
-       "/borrow/user/contracts/"
-       id))
+       "/manage/" inventory-pool-id 
+       "/contracts/" id))
 
 (defn get-one
   [{{:keys [tx]} :request user-id ::target-user/id}

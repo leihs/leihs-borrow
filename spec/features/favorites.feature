@@ -12,41 +12,41 @@ Feature: Favorites
     Given I log in as the user
 
   Scenario: Whole cycle of favor, check, unfavor, check
-    When I visit "/app/borrow/models/favorites"
+    When I visit "/borrow/models/favorites"
     Then I see "No favorites added yet"
 
-    When I visit "/app/borrow/"
+    When I visit "/borrow/"
     And I click on "Filter"
     And I click on "Apply"
     And I click on model "Beamer"
     And I click on "Add to favorites"
-    When I visit "/app/borrow/models/favorites"
+    When I visit "/borrow/models/favorites"
     Then I see 1 favorite
     And I see model "Beamer"
 
-    When I visit "/app/borrow/"
+    When I visit "/borrow/"
     And I click on "Filter"
     And I click on "Apply"
     And I click on model "Camera"
     And I click on "Add to favorites"
-    When I visit "/app/borrow/models/favorites"
+    When I visit "/borrow/models/favorites"
     Then I see 2 favorites
     And I see model "Beamer"
     And I see model "Camera"
 
-    When I visit "/app/borrow/"
+    When I visit "/borrow/"
     And I click on "Filter"
     And I click on "Apply"
     And I click on model "Beamer"
     And I click on "Remove from favorites"
-    When I visit "/app/borrow/models/favorites"
+    When I visit "/borrow/models/favorites"
     Then I see 1 favorite
     And I see model "Camera"
 
-    When I visit "/app/borrow/"
+    When I visit "/borrow/"
     And I click on "Filter"
     And I click on "Apply"
     And I click on model "Camera"
     And I click on "Remove from favorites"
-    When I visit "/app/borrow/models/favorites"
+    When I visit "/borrow/models/favorites"
     Then I see "No favorites added yet"

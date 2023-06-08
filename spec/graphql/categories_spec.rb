@@ -158,8 +158,8 @@ describe 'categories' do
             id: '9a1dc177-a2b2-4a16-8fbf-6552b5313f38',
             images: [
               {
-                imageUrl: '/app/borrow/images/081c8aa7-b514-4935-a9ea-bd698f378d9a',
-                thumbnails: [imageUrl: '/app/borrow/images/82085a7b-b428-4c4b-b977-efbc2045ff46']
+                imageUrl: '/borrow/images/081c8aa7-b514-4935-a9ea-bd698f378d9a',
+                thumbnails: [imageUrl: '/borrow/images/82085a7b-b428-4c4b-b977-efbc2045ff46']
               }
             ],
             directModels: {
