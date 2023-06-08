@@ -22,7 +22,11 @@
           (head)
           [:body
            [:div.p-4.text-center {:style "height: 100vh"}
-            "Error 404 - Not Found"]])})
+            [:div.mb-4.mt-5
+             "Error 404 - Not Found"]
+            [:div.mb-4
+             [:a.decorate-links.fw-bold {:href "/borrow/"}
+              "Leihs Home"]]]])})
 
 (defn html-handler [_request]
   {:headers {"Content-Type" "text/html"}
