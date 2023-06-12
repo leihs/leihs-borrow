@@ -17,13 +17,15 @@ Feature: Mobile screen
     # Open burger menu
     When I click on the burger menu
     Then I see "Borrow"
-    And I see "Switch Section"
+    And I see "Catalog"
+    And I see "Cart"
+    And I see "Orders"
 
     # Close burger menu
     When I click on the burger menu
     Then I see the page title "Catalog"
 
-    # Open burger menu and navigate to cart
+    # Open burger menu and navigate to orders
     When I click on the burger menu
     And I click on "Orders"
     Then I see the page title "Orders"

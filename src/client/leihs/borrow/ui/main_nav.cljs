@@ -115,12 +115,32 @@
                {:href documentation-url
                 :label (t :documentation)})])))
 
+(defn- show-app-menu? [user-nav]
+  (or (:admin-url user-nav)
+      (:procure-url user-nav)
+      (seq (:manage-nav-items user-nav))))
+
+(defn- app-switch-menu-items []
+  (let [user-nav @(subscribe [::user-nav])]
+    [:> UI/Components.Design.Menu {:id "app-menu"}
+     [:> UI/Components.Design.Menu.Group
+      [menu-link (routing/path-for ::routes/home) (t :borrow/section-title) true]
+      (when-let [admin-url (:admin-url user-nav)] [menu-link admin-url (t :app-switch/admin)])
+      (when-let [procure-url (:procure-url user-nav)] [menu-link procure-url (t :app-switch/procure)])
+      (when (seq (:manage-nav-items user-nav))
+        [:div.pt-3 (t :app-switch/manage)])
+      (doall
+       (for [{:keys [name url]} (:manage-nav-items user-nav)]
+         [:<> {:key name}
+          [menu-link url name]]))]]))
+
 (defn top []
   (let [cart-item-count @(subscribe [::cart-item-count])
         invalid-cart-item-count @(subscribe [::invalid-cart-item-count])
         menu-data @(subscribe [::menu-data])
         current-menu (:current-menu menu-data)
-        current-profile @(subscribe [::current-profile])]
+        current-profile @(subscribe [::current-profile])
+        user-nav @(subscribe [::user-nav])]
 
     [:> UI/Components.Design.Topnav
      {:brandName "Leihs"
@@ -139,28 +159,14 @@
                           :aria-controls "user-menu"
                           :title (t :user/menu-title)}
       :appMenuIsOpen (= current-menu "app")
-      :appMenuLinkLabel (t :app-switch/button-label)
+      :appMenuLinkLabel (when (show-app-menu? user-nav) (t :app-switch/button-label))
       :appMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "app") "app")])
                          :aria-controls "app-menu"
                          :title (t :app-switch/menu-title)}}]))
 
-
-(defn- app-switch-menu-items []
-  (let [user-nav @(subscribe [::user-nav])]
-    [:> UI/Components.Design.Menu {:id "app-menu"}
-     [:> UI/Components.Design.Menu.Group
-      [menu-link (routing/path-for ::routes/home) (t :borrow/section-title) true]
-      (when-let [admin-url (:admin-url user-nav)] [menu-link admin-url (t :app-switch/admin)])
-      (when-let [procure-url (:procure-url user-nav)] [menu-link procure-url (t :app-switch/procure)])
-      (when (seq (:manage-nav-items user-nav))
-        [:div.pt-3 (t :app-switch/manage)])
-      (doall
-       (for [{:keys [name url]} (:manage-nav-items user-nav)]
-         [:<> {:key name}
-          [menu-link url name]]))]]))
-
 (defn main-nav []
-  (let [user-loaded @(subscribe [::user-loaded])]
+  (let [user-loaded @(subscribe [::user-loaded])
+        user-nav @(subscribe [::user-nav])]
     (when user-loaded
       [:> UI/Components.Design.Menu
        {:id "menu"}
@@ -175,9 +181,10 @@
              (:label menu-item)
              (:selected menu-item)]]))]
 
-       [:> UI/Components.Design.Menu.Group
-        {:title (t :app-switch/section-title)}
-        (app-switch-menu-items)]])))
+       (when (show-app-menu? user-nav)
+         [:> UI/Components.Design.Menu.Group
+          {:title (t :app-switch/section-title)}
+          (app-switch-menu-items)])])))
 
 (defn user-profile-nav []
   (let [handler @(subscribe [:routing/current-handler])
