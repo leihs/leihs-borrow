@@ -29,7 +29,8 @@
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.model-show.availability :as availability]
    [leihs.core.core :refer [dissoc-in flip]]
-   [leihs.borrow.lib.prefs :as prefs]))
+   [leihs.borrow.lib.prefs :as prefs]
+   ["autolinker" :as autolinker]))
 
 ; TODO: 
 ; * separate fetching of page & calendar data
@@ -361,6 +362,9 @@
                                           (-> % :node :id)
                                           :query-params filters))))
 
+(defn autolink-description [model]
+  (assoc model :description (autolinker/link (:description model) (clj->js {:sanitizeHtml true}))))
+
 (defn order-success-notification [order-panel-data]
   [:> UI/Components.Design.ConfirmDialog
    {:shown (:success? order-panel-data)
@@ -393,7 +397,8 @@
        [:<>
         [:> UI/Components.ModelShow {:model (-> model
                                                 h/camel-case-keys
-                                                (enrich-recommends-with-href filters))
+                                                (enrich-recommends-with-href filters)
+                                                autolink-description)
                                      :t {:description (t :description)
                                          :properties (t :properties)
                                          :documents (t :documents)
