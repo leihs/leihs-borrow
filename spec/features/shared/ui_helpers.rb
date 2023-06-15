@@ -13,7 +13,7 @@
 # * should move into `leihs-ui` repo and also be tested there (run against storybook)
 # * helpers to *interact* with components, e.g. open/close collapsible sections, navigate the calendar…
 
-# `Section` <https://ui.leihs.app/?path=/story/mobileapp-design-components-content-section>
+# `Section` component
 def find_ui_section(title:)
   # NOTE: `@class=foo` does not work for `class="foo bar"` http://pivotallabs.com/xpath-css-class-matching/
   xps =
@@ -22,7 +22,7 @@ def find_ui_section(title:)
   find(:xpath, xps)
 end
 
-# `ModalDialog` <https://ui.leihs.app/?path=/story/mobileapp-design-components-layout-modaldialog>
+# `ModalDialog` component
 def find_ui_modal_dialog(title:, present: true)
   xps =
     "//div[contains(concat(' ',normalize-space(@class),' '), ' modal-dialog ')]" \
@@ -34,7 +34,7 @@ def find_ui_modal_dialog(title:, present: true)
   end
 end
 
-# `ListCard` <https://ui.leihs.app/?path=/story/mobileapp-design-components-content-listcard>
+# `ListCard` component
 def find_ui_list_cards(scope = page)
   scope.all(".ui-list-card")
 end

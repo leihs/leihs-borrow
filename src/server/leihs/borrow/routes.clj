@@ -30,8 +30,7 @@
    [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
    [ring.middleware.multipart-params :refer [wrap-multipart-params]]
    [ring.middleware.params :refer [wrap-params]]
-   ring.middleware.accept
-   ))
+   ring.middleware.accept))
 
 (def resolve-table
   (merge core-routes/resolve-table
@@ -42,8 +41,7 @@
           :my-user user/routes,
           :attachment attachments/handler-one,
           :attachment-with-filename attachments/handler-one,
-          :not-found html/not-found-handler
-          }))
+          :not-found html/not-found-handler}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -52,22 +50,22 @@
   (if-let [handler (:handler request)]
     (handler request)
     (throw
-      (ex-info
-        "There is no handler for this resource and the accepted content type."
-        {:status 404, :uri (get request :uri)}))))
+     (ex-info
+      "There is no handler for this resource and the accepted content type."
+      {:status 404, :uri (get request :uri)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn wrap-accept
   [handler]
   (ring.middleware.accept/wrap-accept
-    handler
-    {:mime ["application/json" :qs 1 :as :json
-            "application/javascript" :qs 1 :as :javascript
-            "image/apng" :qs 1 :as :apng
-            "image/*" :qs 1 :as :image
-            "text/css" :qs 1 :as :css
-            "text/html" :qs 1 :as :html]}))
+   handler
+   {:mime ["application/json" :qs 1 :as :json
+           "application/javascript" :qs 1 :as :javascript
+           "image/apng" :qs 1 :as :apng
+           "image/*" :qs 1 :as :image
+           "text/css" :qs 1 :as :css
+           "text/html" :qs 1 :as :html]}))
 
 (defn wrap-empty [handler]
   (fn [request]
@@ -78,37 +76,37 @@
   (core-routing/init paths resolve-table)
   (->
   ; (I> wrap-handler-with-logging
-      dispatch-to-handler
-      ring-audits/wrap
-      anti-csrf/wrap
-      locale/wrap
-      authenticate/wrap
-      session/wrap-authenticate
-      wrap-cookies
-      settings/wrap
-      wrap-json-response
-      (wrap-json-body {:keywords? true})
-      wrap-empty
-      datasource/wrap-tx
-      after-tx/wrap
-      core-graphql/wrap-with-schema
-      (wrap-graphiql {:path "/borrow/graphiql",
-                      :endpoint "/borrow/graphql"})
-      core-routing/wrap-canonicalize-params-maps
-      wrap-params
-      wrap-multipart-params
-      (status/wrap (path :status))
-      wrap-content-type
-      (wrap-resource "public"
-                     {:allow-symlinks? true
-                      :cache-bust-paths ["/borrow/css/theme-mobile/bootstrap-leihs-mobile.css"
-                                         "/borrow/js/main.js"]
-                      :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
-                                           #".+_[0-9a-f]{40}\..+"]
-                      :enabled? true})
-      (core-routing/wrap-resolve-handler html/html-handler)
-      wrap-accept
-      ring-exception/wrap))
+   dispatch-to-handler
+   ring-audits/wrap
+   anti-csrf/wrap
+   locale/wrap
+   authenticate/wrap
+   session/wrap-authenticate
+   wrap-cookies
+   settings/wrap
+   wrap-json-response
+   (wrap-json-body {:keywords? true})
+   wrap-empty
+   datasource/wrap-tx
+   after-tx/wrap
+   core-graphql/wrap-with-schema
+   (wrap-graphiql {:path "/borrow/graphiql",
+                   :endpoint "/borrow/graphql"})
+   core-routing/wrap-canonicalize-params-maps
+   wrap-params
+   wrap-multipart-params
+   (status/wrap (path :status))
+   wrap-content-type
+   (wrap-resource "public"
+                  {:allow-symlinks? true
+                   :cache-bust-paths ["/borrow/css/borrow-theme/bootstrap-theme.css"
+                                      "/borrow/js/main.js"]
+                   :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
+                                        #".+_[0-9a-f]{40}\..+"]
+                   :enabled? true})
+   (core-routing/wrap-resolve-handler html/html-handler)
+   wrap-accept
+   ring-exception/wrap))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
