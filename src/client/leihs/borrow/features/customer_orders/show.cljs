@@ -103,7 +103,7 @@
                    [(get-in line [:start-date])
                     (get-in line [:inventory-pool :name])
                     (get-in line [:model :name])
-                    (get-in line [:end-date])])))))
+                    (get-in line [:actual-end-date])])))))
 
 (reg-sub ::cancellation-dialog-data
          (fn [db _] (get-in db [::data :cancellation-dialog])))
@@ -123,16 +123,16 @@
         name (:name (or model option))
         quantity (:quantity reservation)
         start-date (js/Date. (:start-date reservation))
-        end-date (js/Date. (:end-date reservation))
+        actual-end-date (js/Date. (:actual-end-date reservation))
         ;; NOTE: should be in API
-        total-days (+ 1 (date-fns/differenceInCalendarDays end-date start-date))
+        total-days (+ 1 (date-fns/differenceInCalendarDays actual-end-date start-date))
         title (t :reservation-line.title {:itemCount quantity, :itemName name})
         inventory-code (-> reservation :item :inventory-code)
         duration (t :reservation-line.duration {:totalDays total-days, :fromDate start-date})
         sub-title (get-in reservation [:inventory-pool :name])
         href (when model (routing/path-for ::routes/models-show :model-id (:id (:model reservation))))
         status (:status reservation)
-        is-over? (date-fns/isAfter (js/Date.) (date-fns/addDays end-date 1))
+        is-over? (date-fns/isAfter (js/Date.) (date-fns/addDays actual-end-date 1))
         overdue? (and (= status "SIGNED") is-over?)
         expired-unapproved? (and (= status "SUBMITTED") is-over?)
         expired? (and (= status "APPROVED") is-over?)
@@ -153,7 +153,7 @@
       [:> UI/Components.Design.ListCard.Foot
        [:> UI/Components.Design.Badge duration] " "
        [:> UI/Components.Design.Badge {:colorClassName (when overdue? " bg-danger")}
-        (t (str :reservation-status-label "/" refined-status) {:endDate end-date})]]]]))
+        (t (str :reservation-status-label "/" refined-status) {:endDate actual-end-date})]]]]))
 
 (defn ui-items-list [reservations]
   [:> UI/Components.Design.ListCard.Stack

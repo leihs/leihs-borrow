@@ -276,6 +276,8 @@
                                   :poolOrder {:type :PoolOrder :resolve :pool-order}
                                   :contract {:type :Contract :resolve :contract}
                                   :endDate {:type (non-null :Date)}
+                                  :returnedDate {:type :Date}
+                                  :actualEndDate {:type (non-null :Date)}
                                   :createdAt {:type (non-null :DateTime)}
                                   :updatedAt {:type (non-null :DateTime)}}}
            :PoolOrder {:fields {:id {:type (non-null :UUID)}

@@ -438,7 +438,7 @@
                               (map #(get-repeated-res % user-id delegated-user-id start-date end-date (time/now tx))))
         created-rs (-> (sql/insert-into :reservations)
                        (sql/values new-reservations)
-                       (assoc :returning (rs/columns tx))
+                       (as-> <> (apply sql/returning <> (rs/columns tx)))
                        sql/format
                        (->> (jdbc/query tx)))]
     created-rs))

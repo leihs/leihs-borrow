@@ -13,7 +13,8 @@
             [leihs.core.core :refer [raise]]
             [leihs.core.database.helpers :as database]
             [leihs.core.settings :refer [settings!]]
-            [leihs.core.sql :as sql]))
+            [leihs.core.sql :as sql]
+            [taoensso.timbre :refer [debug info warn error spy]]))
 
 (doseq [s [::inventory_pool_id ::start_date ::end_date]]
   (spec/def s (comp not nil?)))
@@ -31,7 +32,8 @@
     (remove #{:created_at :updated_at} <>)
     (conj <>
           (helpers/date-time-created-at :reservations)
-          (helpers/date-time-updated-at :reservations))))
+          (helpers/date-time-updated-at :reservations)
+          [(sql/call :coalesce :returned_date :end_date) :actual_end_date])))
 
 (defn get-by-ids [tx ids]
   (-> (apply sql/select (columns tx))
@@ -190,7 +192,7 @@
   (-> (sql/update :reservations)
       (sql/set {:updated_at (time/now tx)})
       (sql/where [:in :id ids])
-      (sql/returning (valid-until-sql tx))
+      (as-> <> (apply sql/returning <> (valid-until-sql tx)))
       sql/format
       (query tx)
       first
@@ -312,7 +314,7 @@
         (sql/values (->> row
                          repeat
                          (take quantity)))
-        (assoc :returning (columns tx))
+        (as-> <> (apply sql/returning <> (columns tx)))
         sql/format
         (query tx))))
 
@@ -381,7 +383,7 @@
                        :updated_at (time/now tx)))
         created-rs (-> (sql/insert-into :reservations)
                        (sql/values (->> row repeat (take quantity)))
-                       (assoc :returning (columns tx))
+                       (as-> <> (apply sql/returning <> (columns tx)))
                        sql/format
                        (query tx))]
     (when-some [broken-rs (not-empty (broken tx user-id))]
