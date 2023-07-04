@@ -3,7 +3,9 @@
             [clojure.tools.logging :as log]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
-            [leihs.core.sql :as sql]))
+            [leihs.core.core :refer [raise]]
+            [leihs.core.sql :as sql]
+            [taoensso.timbre :refer [debug info warn error spy]]))
 
 (defn responsible
   [{{tx :tx} :request} _ {responsible-id :delegator-user-id}]
@@ -48,10 +50,15 @@
       (->> (jdbc/query tx))))
 
 (defn get-one
-  [{{tx :tx} :request} {:keys [id]} _]
+  [{{tx :tx {auth-user-id :id} :authenticated-entity} :request} {:keys [id]} _]
   (-> (sql/select [:users.id :id] [:firstname :name] :delegator_user_id)
       (sql/from :users)
       (sql/where [:= :users.id id])
+      (sql/merge-where [:is-not-null :users.delegator_user_id])
+      (sql/merge-where [:exists (-> (sql/select true)
+                                    (sql/from :delegations_users)
+                                    (sql/where [:= :delegation_id :users.id])
+                                    (sql/merge-where [:= :user_id auth-user-id]))])
       sql/format
       (->> (jdbc/query tx))
       first))

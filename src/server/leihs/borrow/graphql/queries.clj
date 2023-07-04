@@ -76,7 +76,6 @@
    :user users/get-one
    :user-navigation users/get-navigation
    :user-settings users/get-settings
-   :users users/get-multiple
    :draft-order orders/get-draft
    :template templates/get-one
    :templates templates/get-multiple

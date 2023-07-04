@@ -12,20 +12,6 @@
             [leihs.core.user.queries :refer [merge-search-term-where-clause]]
             [leihs.core.remote-navbar.shared :refer [sub-apps]]))
 
-(defn get-multiple [context {:keys [offset limit order-by search-term]} _]
-  (jdbc/query
-   (-> context :request :tx)
-   (-> (cond-> base-sqlmap
-         search-term
-         (merge-search-term-where-clause search-term)
-         (seq order-by)
-         (-> (sql/order-by (helpers/treat-order-arg order-by :users)))
-         offset
-         (sql/offset offset)
-         limit
-         (sql/limit limit))
-       sql/format)))
-
 (defn get-one
   [{{:keys [tx]} :request target-user-id ::target-user/id} _ {:keys [user-id]}]
   (get-by-id tx (or user-id target-user-id)))

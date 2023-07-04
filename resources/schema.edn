@@ -365,13 +365,7 @@
                  :UsersOrderByInput {:fields {:attribute {:type (non-null :UsersOrderByAttributeEnum)}
                                               :direction {:type (non-null :OrderByDirectionEnum)}}}}
 
- :queries {:users {:args {:limit {:type Int}
-                          :offset {:type Int}
-                          :searchTerm {:type String}
-                          :orderBy {:type (list :UsersOrderByInput)}}
-                   :resolve :users
-                   :type (list :User)}
-           :currentUser {:args {:userId {:type :UUID}}
+ :queries {:currentUser {:args {:userId {:type :UUID}}
                          :resolve :current-user
                          :type (non-null :CurrentUser)}
            :contracts {:resolve :contracts-connection
