@@ -21,4 +21,8 @@ tasks:
         start_when:
           ruby is bundled:
             script_key: borrow-ruby-bundle
-        body: ./cider-ci/generators/bin/feature-tasks-check
+        body: | 
+          #!/usr/bin/env bash
+          set -euo pipefail
+          PGPORT=${PG15PORT} PGUSER=${PG15USER}  \
+            ./cider-ci/generators/bin/feature-tasks-check

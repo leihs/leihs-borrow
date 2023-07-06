@@ -1,4 +1,3 @@
-require 'config/database.rb'
 require 'factory_bot'
 require 'faker'
 

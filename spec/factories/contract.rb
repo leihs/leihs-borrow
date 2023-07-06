@@ -9,7 +9,7 @@ class Contract < Sequel::Model
                                          state = :open,
                                          compact_id = id,
                                          purpose = Faker::Lorem.word)
-    with_disabled_triggers do
+    db_with_disabled_triggers do
       database.run <<-SQL
         INSERT INTO contracts(
           id,
@@ -35,7 +35,7 @@ class Contract < Sequel::Model
     end
 
     def self.update_with_disabled_triggers(id, column, value)
-      with_disabled_triggers do
+      db_with_disabled_triggers do
         database.run <<-SQL
           UPDATE contracts SET #{column} = #{value} WHERE id = '#{id}'
         SQL

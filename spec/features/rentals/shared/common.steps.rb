@@ -31,7 +31,7 @@ step "a customer order with title :title and the following reservations exists f
           end)
         end
       if h["pickup-date"].presence
-        with_disabled_triggers do
+        db_with_disabled_triggers do
           Contract.update_with_disabled_triggers(c.id, :created_at, "'#{h["pickup-date"]}'")
         end
       end
