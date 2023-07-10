@@ -180,7 +180,7 @@
         :cancelLabel (t :cancellation-dialog/cancel)}
        [:<>
         [:p.fw-bold title]
-        [:p (when (not= title purpose) [:p purpose])]
+        [:p (when (not= title purpose) [:p.preserve-linebreaks purpose])]
         [:p.small (rentals/rental-summary-text rental)]]])))
 
 (defn view []
@@ -264,7 +264,7 @@
 
          [:> UI/Components.Design.Section
           {:title (t :purpose) :collapsible false}
-          [:div.fw-bold (:purpose rental)]]
+          [:div.fw-bold.preserve-linebreaks (:purpose rental)]]
 
          [:> UI/Components.Design.Section
           {:title (t :items-section-title) :collapsible true}

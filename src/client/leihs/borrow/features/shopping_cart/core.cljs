@@ -631,7 +631,7 @@
        [:<>
         [:p.fw-bold (t :order-success-notification/order-submitted)]
         [:> UI/Components.Design.Section {:title title}
-         [:p.fw-bold (when (not= title purpose) [:p purpose])]
+         [:p (when (not= title purpose) [:p.preserve-linebreaks purpose])]
          [:p.small (rentals/rental-summary-text rental)]]]])))
 
 (defn delete-dialog []
