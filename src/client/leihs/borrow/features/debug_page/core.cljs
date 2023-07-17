@@ -15,7 +15,7 @@
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.components :as ui]
    [leihs.borrow.lib.errors :as errors]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["/borrow-ui" :as UI]))
 
 ; is kicked off from router when this view is loaded
 (reg-event-fx

@@ -38,7 +38,7 @@
    [leihs.borrow.features.shopping-cart.core :as shopping-cart]
    [leihs.borrow.features.templates.index :as templates-index]
    [leihs.borrow.features.templates.show :as templates-show]
-   ["/leihs-ui-client-side-external-react" :as UI]
+   ["/borrow-ui" :as UI]
    [leihs.borrow.testing.step-1 :as testing-step-1]
    [leihs.borrow.testing.step-2 :as testing-step-2]))
 

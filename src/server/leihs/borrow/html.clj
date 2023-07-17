@@ -1,7 +1,6 @@
 (ns leihs.borrow.html
   (:require [leihs.core.http-cache-buster2 :as cache-buster]
             #_[leihs.core.json :refer [to-json]]
-            #_[leihs.core.ssr :as ssr]
             #_[leihs.core.url.core :as url]
             #_[clojure.tools.logging :as log]
             [hiccup.page :refer [html5 #_include-js]]
@@ -13,7 +12,7 @@
    [:meta {:name "viewport"
            :content "width=device-width, initial-scale=1, shrink-to-fit=no"}]
 
-   (hiccup.page/include-css (cache-buster/cache-busted-path "/borrow/css/borrow-theme/borrow-theme.css"))])
+   (hiccup.page/include-css (cache-buster/cache-busted-path "/borrow/ui/borrow-ui.css"))])
 
 (defn not-found-handler [_request]
   {:status 404

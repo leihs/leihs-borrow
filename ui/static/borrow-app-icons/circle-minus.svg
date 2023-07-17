@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Circle Minus</title>
+    <g id="Circle-Minus" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="Oval" stroke="currentColor" stroke-width="1.6" cx="8" cy="8" r="7.2"></circle>
+        <line x1="4.5" y1="8" x2="11.5" y2="8" id="Line-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></line>
+    </g>
+</svg>

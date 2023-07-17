@@ -7,14 +7,13 @@
    [clojure.tools.cli :as cli :refer [parse-opts]]
    [leihs.borrow.graphql :as graphql]
    [leihs.borrow.routes :as routes]
-   [leihs.borrow.ssr]
    [leihs.core.db :as db]
    [leihs.core.http-server :as http-server]
    [leihs.core.shutdown :as shutdown]
    [leihs.core.ssr-engine :as ssr-engine]
-   [leihs.core.ssr]
    [leihs.core.status :as status]
    [leihs.core.url.jdbc]
+   [leihs.core.sign-in.back :refer [use-simple-login]]
    [logbug.catcher :as catcher]
    [logbug.debug :as debug]
    [logbug.thrown :as thrown]
@@ -27,8 +26,7 @@
     {:return-fn (fn [e] (System/exit -1))}
     (info "Invoking run with options: " options)
     (shutdown/init options)
-    (ssr-engine/init options)
-    (leihs.core.ssr/init leihs.borrow.ssr/render-page-base)
+    (use-simple-login)
     (graphql/init options)
     (let [status (status/init)]
       (db/init options (:health-check-registry status)))

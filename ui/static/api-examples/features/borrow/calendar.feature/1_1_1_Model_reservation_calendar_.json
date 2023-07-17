@@ -1,0 +1,450 @@
+{
+  "spec": {
+    "block": "#<Proc:0x00007fa3e227f078@/Users/ma/CODE/leihs/integration-tests/spec/features/borrow/calendar.feature:13>",
+    "description_args": [
+      "Given there is an initial admin -> And there is a user -> And the user is customer of the pool \"Videopool\" -> Given there is some model with some reservations -> Then I log in as the user -> When I fetch the ModelCalendarData from the API -> Then I save this data as an artefact -> Then I look at the calendar in legacy UI -> And I pry"
+    ],
+    "description": "Given there is an initial admin -> And there is a user -> And the user is customer of the pool \"Videopool\" -> Given there is some model with some reservations -> Then I log in as the user -> When I fetch the ModelCalendarData from the API -> Then I save this data as an artefact -> Then I look at the calendar in legacy UI -> And I pry",
+    "full_description": "Borrow Calendar Model reservation calendar Given there is an initial admin -> And there is a user -> And the user is customer of the pool \"Videopool\" -> Given there is some model with some reservations -> Then I log in as the user -> When I fetch the ModelCalendarData from the API -> Then I save this data as an artefact -> Then I look at the calendar in legacy UI -> And I pry",
+    "described_class": null,
+    "file_path": "./spec/features/borrow/calendar.feature",
+    "line_number": 13,
+    "location": "./spec/features/borrow/calendar.feature:13",
+    "absolute_file_path": "/Users/ma/CODE/leihs/integration-tests/spec/features/borrow/calendar.feature",
+    "rerun_file_path": "./spec/features/borrow/calendar.feature",
+    "scoped_id": "1:1:1",
+    "type": "feature",
+    "turnip": true,
+    "execution_result": "#<RSpec::Core::Example::ExecutionResult:0x00007fa3e227ed80>",
+    "example_group": {
+      "block": "#<Proc:0x00007fa3e2275d70@/Users/ma/.rbenv/versions/2.6.0/lib/ruby/gems/2.6.0/bundler/gems/turnip-c2411d1f14e4/lib/turnip/rspec.rb:92>",
+      "description_args": ["Model reservation calendar"],
+      "description": "Model reservation calendar",
+      "full_description": "Borrow Calendar Model reservation calendar",
+      "described_class": null,
+      "file_path": "/Users/ma/.rbenv/versions/2.6.0/lib/ruby/gems/2.6.0/bundler/gems/turnip-c2411d1f14e4/lib/turnip/rspec.rb",
+      "line_number": 92,
+      "location": "/Users/ma/.rbenv/versions/2.6.0/lib/ruby/gems/2.6.0/bundler/gems/turnip-c2411d1f14e4/lib/turnip/rspec.rb:92",
+      "absolute_file_path": "/Users/ma/.rbenv/versions/2.6.0/lib/ruby/gems/2.6.0/bundler/gems/turnip-c2411d1f14e4/lib/turnip/rspec.rb",
+      "rerun_file_path": "./spec/features/borrow/calendar.feature",
+      "scoped_id": "1:1",
+      "type": "feature",
+      "turnip": true,
+      "parent_example_group": {
+        "block": null,
+        "description_args": ["Borrow Calendar"],
+        "description": "Borrow Calendar",
+        "full_description": "Borrow Calendar",
+        "described_class": null,
+        "file_path": "./spec/features/borrow/calendar.feature",
+        "line_number": 1,
+        "location": "./spec/features/borrow/calendar.feature:1",
+        "absolute_file_path": "/Users/ma/CODE/leihs/integration-tests/spec/features/borrow/calendar.feature",
+        "rerun_file_path": "./spec/features/borrow/calendar.feature",
+        "scoped_id": "1",
+        "type": "feature",
+        "turnip": true
+      }
+    },
+    "shared_group_inclusion_backtrace": [],
+    "last_run_status": "unknown"
+  },
+  "result": {
+    "data": {
+      "models": {
+        "edges": [
+          {
+            "node": {
+              "id": "4a2db46e-7333-4238-b724-2dada5ddb75b",
+              "name": "AVCHD-Kamera Sony HXR-NX5E",
+              "availability": [
+                {
+                  "inventoryPool": {
+                    "id": "7d32a165-7879-4dda-b33d-4d5c842a20de",
+                    "name": "Videopool",
+                    "totalReservableQuantity": 5,
+                    "reservationAdvanceDays": 1
+                  },
+                  "dates": [
+                    {
+                      "date": "2020-04-01",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-02",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-03",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-04",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-05",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-06",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-07",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-08",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-09",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-10",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-11",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 1,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-04-12",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 1,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-04-13",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-14",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-15",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-16",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-17",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-18",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 1,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-04-19",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 1,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-04-20",
+                      "endDateRestriction": null,
+                      "quantity": 0,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-21",
+                      "endDateRestriction": null,
+                      "quantity": 0,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-22",
+                      "endDateRestriction": null,
+                      "quantity": 0,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-23",
+                      "endDateRestriction": null,
+                      "quantity": 0,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-24",
+                      "endDateRestriction": null,
+                      "quantity": 0,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-25",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 1,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-04-26",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 1,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-04-27",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-28",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-29",
+                      "endDateRestriction": null,
+                      "quantity": 3,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-04-30",
+                      "endDateRestriction": null,
+                      "quantity": 3,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-01",
+                      "endDateRestriction": null,
+                      "quantity": 1,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-02",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 1,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-05-03",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 1,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-05-04",
+                      "endDateRestriction": null,
+                      "quantity": 3,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-05",
+                      "endDateRestriction": null,
+                      "quantity": 3,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-06",
+                      "endDateRestriction": null,
+                      "quantity": 3,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-07",
+                      "endDateRestriction": null,
+                      "quantity": 3,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-08",
+                      "endDateRestriction": null,
+                      "quantity": 3,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-09",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 5,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-05-10",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 5,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-05-11",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-12",
+                      "endDateRestriction": null,
+                      "quantity": 28,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-13",
+                      "endDateRestriction": null,
+                      "quantity": 28,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-14",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-15",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-16",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 5,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-05-17",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 5,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-05-18",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-19",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-20",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-21",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-22",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-23",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 5,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-05-24",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 5,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-05-25",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-26",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-27",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-28",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-29",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    },
+                    {
+                      "date": "2020-05-30",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 5,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-05-31",
+                      "endDateRestriction": "CLOSE_TIME",
+                      "quantity": 5,
+                      "startDateRestriction": "CLOSE_TIME"
+                    },
+                    {
+                      "date": "2020-06-01",
+                      "endDateRestriction": null,
+                      "quantity": 5,
+                      "startDateRestriction": null
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

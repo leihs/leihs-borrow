@@ -13,7 +13,7 @@
    [leihs.borrow.lib.form-helpers :refer [UiDateRangePicker]]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.current-user.core :as current-user]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["/borrow-ui" :as UI]))
 
 (set-default-translate-path :borrow.templates.apply)
 

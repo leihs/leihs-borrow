@@ -19,7 +19,7 @@
    [leihs.borrow.lib.pagination :as pagination]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.components :as ui]
-   ["/leihs-ui-client-side-external-react" :as UI]
+   ["/borrow-ui" :as UI]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.models.filter-modal :as filter-modal :refer [filter-comp default-dispatch-fn]]
    [leihs.core.core :refer [remove-blanks]]))

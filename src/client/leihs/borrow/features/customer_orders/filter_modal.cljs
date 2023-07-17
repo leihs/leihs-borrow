@@ -18,7 +18,7 @@
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [remove-nils presence]]
    ["date-fns" :as date-fns]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["/borrow-ui" :as UI]))
 
 (reg-event-db ::save-filter-options
               (fn-traced [db [_ query-params]]

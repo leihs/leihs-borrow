@@ -28,7 +28,7 @@
    [leihs.borrow.features.model-show.availability :as availability]
    [leihs.borrow.translations :as translations]
    [leihs.borrow.lib.prefs :as prefs]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["/borrow-ui" :as UI]))
 
 (set-default-translate-path :borrow.shopping-cart)
 

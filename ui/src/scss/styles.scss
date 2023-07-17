@@ -1,0 +1,29 @@
+// Bootstrap
+
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/mixins';
+
+@import './variables-defaults';
+
+@import '~bootstrap/scss/variables';
+
+@import './variables-overrides';
+
+@import '~bootstrap/scss/bootstrap';
+
+// Leihs Calendar
+
+@import '~@leihs/calendar/dist/styles.css'; // main css file
+@import '~@leihs/calendar/dist/theme/default.css'; // theme css file
+
+// Custom styles
+
+@import './custom/globals';
+@import './custom/bootstrap-extensions';
+@import './custom/fonts';
+@import './custom/typography';
+@import './custom/utilities';
+@import './custom/layout';
+@import './custom/topnav';
+@import './custom/components';
+@import './custom/calendar';

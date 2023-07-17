@@ -8,7 +8,7 @@
    [leihs.borrow.lib.re-frame :refer [dispatch]]
    [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.routing :as routing]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["/borrow-ui" :as UI]))
 
 (defn merge-props [defaults givens]
   (merge

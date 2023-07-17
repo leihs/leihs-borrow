@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="Star-Icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linejoin="round">
+        <polygon id="Star" stroke="currentColor" stroke-width="1.6" points="8 12.625 3.59161061 15.0198817 4.43353806 9.94744085 0.867076128 6.35511829 5.7958053 5.61505915 8 1 10.2041947 5.61505915 15.1329239 6.35511829 11.5664619 9.94744085 12.4083894 15.0198817"></polygon>
+    </g>
+</svg>

@@ -1,6 +1,6 @@
 # UI Helpers
 #
-# for specific *Design Components* from `leihs-ui`
+# for specific *Design Components* from `borrow-ui`
 #
 # conventions:
 # * methods `find_ui_EXAMPLE` to return component EXAMPLE like capybara `find` would
@@ -10,7 +10,7 @@
 #   * bar: match reservation line items, serialize to `{model: "Foo", quantity: "Bar"}`
 #
 # TODO:
-# * should move into `leihs-ui` repo and also be tested there (run against storybook)
+# * should move into `borrow-ui` repo and also be tested there (run against storybook)
 # * helpers to *interact* with components, e.g. open/close collapsible sections, navigate the calendar…
 
 # `Section` component

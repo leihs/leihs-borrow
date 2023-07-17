@@ -1,0 +1,15 @@
+// Source Sans Pro <https://fontsource.org/fonts/source-sans-pro> / <https://github.com/fontsource/fontsource/tree/main/packages/source-sans-pro#readme>
+
+@import '~@fontsource/source-sans-pro/scss/mixins';
+
+@include faces(
+  $subsets: latin,
+  $weights: (
+    300,
+    400,
+    600,
+    700
+  ),
+  $styles: all,
+  $directory: '~@fontsource/source-sans-pro/files'
+);

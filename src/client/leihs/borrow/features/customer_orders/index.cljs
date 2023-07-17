@@ -21,7 +21,7 @@
    [leihs.borrow.features.customer-orders.filter-modal :refer [filter-comp]
     :as filter-modal]
    [leihs.borrow.features.current-user.core :as current-user]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["/borrow-ui" :as UI]))
 
 (set-default-translate-path :borrow.rentals)
 

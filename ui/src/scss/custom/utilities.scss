@@ -1,0 +1,92 @@
+.preserve-linebreaks {
+  white-space: pre-wrap;
+}
+
+.show-after-1sec {
+  animation: animation-to-visible 0s 1s forwards;
+  visibility: hidden;
+}
+.show-after-3sec {
+  animation: animation-to-visible 0s 3s forwards;
+  visibility: hidden;
+}
+@keyframes animation-to-visible {
+  to {
+    visibility: visible;
+  }
+}
+
+/* Horizontal inset of pages (page-inset-x) */
+@include media-breakpoint-down(md) {
+  .page-inset-x {
+    padding-left: 20px;
+    padding-right: 20px;
+    /* Use this to invert it (break out of it) */
+    & &-inverse {
+      margin-left: -20px;
+      margin-right: -20px;
+    }
+  }
+}
+
+/* Input with calendar icon (not necessarily type=date).  */
+input.calendar-indicator {
+  $leihs-calendar-icon: url("data:image/svg+xml,<svg width='16' height='16' xmlns='http://www.w3.org/2000/svg'><g fill='none' fill-rule='evenodd' stroke-linecap='round' stroke-linejoin='round' stroke='currentColor' stroke-width='1.6'><rect x='1.5' y='3.5' width='13' height='11' rx='1'/><path d='M1.5 11h13M5 1.5v4M11 1.5v4'/></g></svg>");
+
+  background-image: escape-svg($leihs-calendar-icon);
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  background-position: calc(100% - 20px) 50%;
+
+  // Feedback icon + indicator like in a <select>
+  @each $state, $data in $form-validation-states {
+    @include form-validation-state-selector($state) {
+      padding-right: $form-select-feedback-icon-padding-end;
+      background-image: escape-svg($leihs-calendar-icon), escape-svg($form-feedback-icon-invalid);
+      background-position: $form-select-bg-position, $form-select-feedback-icon-position;
+      background-size: $form-select-bg-size, $form-select-feedback-icon-size;
+    }
+  }
+}
+
+/* Position feedback icon like in a <select>, to make room for an indicator. E.g. for an input with clear button inside. */
+input.selectish-feedback-icon {
+  @each $state, $data in $form-validation-states {
+    @include form-validation-state-selector($state) {
+      background-position: $form-select-feedback-icon-position;
+    }
+  }
+}
+
+/* Fluid square */
+.square-container {
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%;
+
+  @include media-breakpoint-up(sm) {
+    &--not-too-high {
+      padding-bottom: 65%;
+    }
+  }
+  @include media-breakpoint-up(md) {
+    &--not-too-high {
+      padding-bottom: 55%;
+    }
+  }
+}
+
+.object-center {
+  -o-object-position: center;
+  object-position: center;
+}
+
+.object-contain {
+  -o-object-fit: contain;
+  object-fit: contain;
+}
+
+.decorate-links a,
+a.decorate-links {
+  color: $blue;
+}

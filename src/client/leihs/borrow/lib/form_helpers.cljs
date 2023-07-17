@@ -2,7 +2,7 @@
   (:require [reagent.core :as reagent]
             [reagent.impl.template :as rtpl]
             [react :as react]
-            ["/leihs-ui-client-side-external-react" :as UI]))
+            ["/borrow-ui" :as UI]))
 
 ;; NOTE: workaround for reagent input handling when using custom components
 ;;       for details see <https://github.com/reagent-project/reagent/blob/b71fc361b85338ef4e4cd52a7b21e0f3f3f89628/doc/ControlledInputs.md>

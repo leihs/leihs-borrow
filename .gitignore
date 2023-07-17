@@ -8,12 +8,15 @@
 .shadow-cljs
 /.env*
 !/.env.local-example
-/leihs-ui.tgz
-log
+
+dist
 node_modules
+log
 scratch*
 target
 tmp/
 
 resources/built-info.yml
 resources/public/borrow/js
+
+storybook-static/

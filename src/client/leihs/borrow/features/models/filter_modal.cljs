@@ -19,7 +19,7 @@
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [remove-blanks presence]]
    ["date-fns" :as date-fns]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["/borrow-ui" :as UI]))
 
 (defn default-dispatch-fn [query-params]
   (dispatch [:routing/navigate

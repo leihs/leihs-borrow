@@ -1,0 +1,16 @@
+// add an icon to invalid feedback
+.invalid-feedback-icon {
+  text-indent: -1.5em;
+  padding-left: 1.5em;
+
+  &::before {
+    content: '';
+    background-image: escape-svg($form-feedback-icon-invalid);
+    background-repeat: no-repeat;
+    padding-left: 1.5em;
+    background-position: 0 0.0625em;
+    background-size: 1.2em;
+    width: 2em;
+    display: inline;
+  }
+}

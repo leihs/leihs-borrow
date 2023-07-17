@@ -1,0 +1,338 @@
+/* Component: Styling wrapper for @leihs/calendar (referenced by DatePicker AND DateRangePicker) */
+
+.leihs-calendar {
+  .rdrCalendarWrapper,
+  .rdrDateRangeWrapper {
+    margin: auto;
+    font-size: 14px;
+  }
+
+  .rdrMonthAndYearWrapper {
+    padding: calc(6px + 5%) 0.65rem 0 0.65rem;
+    height: auto;
+  }
+
+  .rdrMonthAndYearPickers {
+    font-size: 1rem;
+    font-weight: $font-weight-bold;
+  }
+
+  .rdrMonth {
+    padding: 3% 0.75rem 3% 0.75rem;
+    width: initial;
+  }
+
+  .rdrDay {
+    background-color: transparent;
+  }
+
+  .rdrMonthPassiveOverlay {
+    background-color: transparent;
+  }
+
+  .rdrNextPrevButton {
+    width: 14%;
+    margin: 0;
+
+    & > i {
+      display: none;
+    }
+
+    $leihs-calendar-icon: url("data:image/svg+xml,<svg width='12' height='21' xmlns='http://www.w3.org/2000/svg'><path stroke='currentColor' stroke-width='1.8' d='M1.25 1l9.5 9.5-9.5 9.5' fill='none' fill-rule='evenodd' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-image: escape-svg($leihs-calendar-icon);
+    background-repeat: no-repeat;
+    background-size: 12px 21px;
+    background-position: 50% 0;
+
+    &.rdrPprevButton {
+      transform: scale(-1, 1);
+    }
+  }
+
+  .rdrWeekDays {
+    margin-bottom: 0;
+  }
+
+  .rdrWeekDay {
+    color: $body-color;
+    font-weight: $font-weight-bold;
+    text-transform: uppercase;
+  }
+
+  .rdrDayNumber {
+    font-weight: $font-weight-bold;
+  }
+
+  // Selection preview
+  .rdrDayStartPreview,
+  .rdrDayInPreview,
+  .rdrDayEndPreview {
+    border-color: $blue;
+    filter: none;
+  }
+
+  // Selection
+  .rdrInRange,
+  .rdrStartEdge,
+  .rdrEndEdge,
+  .rdrSelected {
+    background-color: $blue;
+    filter: none;
+    & ~ .rdrDayNumber {
+      span {
+        color: white !important;
+      }
+    }
+  }
+  .rdrInRange,
+  .rdrStartEdge,
+  .rdrEndEdge,
+  .rdrDayInPreview,
+  .rdrDayStartPreview,
+  .rdrDayEndPreview {
+    border-radius: 0;
+  }
+  .rdrStartEdge,
+  .rdrDayStartPreview {
+    border-top-left-radius: 2em;
+    border-bottom-left-radius: 2em;
+  }
+  .rdrEndEdge,
+  .rdrDayEndPreview {
+    border-top-right-radius: 2em;
+    border-bottom-right-radius: 2em;
+  }
+
+  // Days which are past, before min date or disabled on component level: mark selection red
+  .cal-day--past,
+  .rdrDayDisabled,
+  .cal-day--before-min-date {
+    background-color: transparent;
+    .rdrStartEdge,
+    .rdrInRange,
+    .rdrEndEdge,
+    .rdrSelected {
+      background-color: $red !important;
+    }
+
+    .rdrDayStartPreview,
+    .rdrDayInPreview,
+    .rdrDayEndPreview,
+    .rdrDayHovered {
+      border-color: $red;
+    }
+  }
+  // Days which are past or disabled on component level: gray font
+  .cal-day--past,
+  .rdrDayDisabled {
+    .rdrDayNumber {
+      span {
+        color: rgba(0, 0, 0, 0.4);
+        text-decoration: none !important;
+      }
+    }
+  }
+
+  // Hide days of adjacent months ("passive")
+  .rdrDayPassive {
+    background: transparent !important;
+    * {
+      display: none;
+    }
+  }
+
+  // marker for today
+  .rdrDayToday .rdrDayNumber span {
+    font-weight: $font-weight-normal;
+    &:after {
+      background: $body-color;
+    }
+  }
+}
+
+/* Component: DateRangePicker (see also .leihs-calendar) */
+
+.date-range-picker {
+  // hide the div with the built-in input fields
+  .rdrDateDisplayWrapper {
+    display: none;
+  }
+
+  // red border when invalid
+  .rdrCalendarWrapper {
+    border: 1px solid transparent;
+  }
+  &.invalid-date-range .rdrCalendarWrapper {
+    border-color: $red;
+  }
+
+  // Disabled start/end dates
+  @mixin start-end-warn-icon {
+    $leihs-calendar-cross-icon: url("data:image/svg+xml,<svg width='10' height='10' xmlns='http://www.w3.org/2000/svg'><g fill='none' fill-rule='evenodd' stroke-linecap='round' stroke-linejoin='round' stroke='white' stroke-width='1.4'><path d='M1 1l8 8M9 1L1 9'/></g></svg>");
+    background-image: escape-svg($leihs-calendar-cross-icon);
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+    background-position: 50% 50%;
+    color: transparent;
+  }
+  // Non-pickup (close) days
+  .cal-day--invalid-as-start {
+    background-color: rgba(0, 0, 0, 0.03);
+    .rdrStartEdge {
+      background-color: $red !important;
+      & ~ .rdrDayNumber span {
+        @include start-end-warn-icon();
+        color: transparent !important;
+      }
+    }
+    .rdrDayStartPreview {
+      border-color: $red;
+    }
+  }
+  // Non-return (close) days
+  .cal-day--invalid-as-end {
+    background-color: rgba(0, 0, 0, 0.03);
+    .rdrEndEdge {
+      background-color: $red !important;
+      & ~ .rdrDayNumber span {
+        @include start-end-warn-icon();
+        color: transparent !important;
+      }
+    }
+    .rdrDayEndPreview {
+      border-color: $red;
+    }
+  }
+
+  // Days with under-availability
+  .cal-day--under-availability {
+    .rdrDayNumber > * {
+      //color: $black;
+      color: $red;
+    }
+
+    /* background-image: repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent 5px,
+      rgba($red, 0.25) 0,
+      rgba($red, 0.25) 6px
+    );
+    background-attachment: fixed; */
+
+    .rdrInRange,
+    .rdrStartEdge,
+    .rdrEndEdge,
+    .rdrSelected {
+      background-color: $red;
+    }
+
+    .rdrDayStartPreview,
+    .rdrDayInPreview,
+    .rdrDayEndPreview {
+      border-color: $red;
+    }
+
+    .rdrDayNumber {
+      span {
+        text-decoration: none;
+      }
+    }
+  }
+}
+
+/* Available quantity per day (defined by OrderPanel component) */
+
+.opcal {
+  &__day {
+    > .rdrDayNumber {
+      line-height: normal;
+      flex-direction: column;
+      top: 3px;
+    }
+    > .rdrStartEdge,
+    .rdrInRange,
+    .rdrEndEdge {
+      height: 32px;
+    }
+    > .rdrDayStartPreview,
+    .rdrDayInPreview,
+    .rdrDayEndPreview {
+      height: 36px;
+    }
+  }
+
+  &__day-num {
+    display: block;
+    position: relative;
+
+    // indicator for "today"
+    &:after {
+      bottom: -1px !important;
+      height: 1.5px !important;
+      width: 16px !important;
+    }
+    &--with-quantity {
+      &:after {
+        bottom: 0 !important;
+        height: 1.5px !important;
+      }
+    }
+  }
+
+  &__day-quantity {
+    color: $black;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1;
+    padding: 0;
+  }
+}
+
+.rdrInRange,
+.rdrStartEdge,
+.rdrEndEdge,
+.rdrSelected {
+  & ~ .rdrDayNumber .opcal__day-quantity {
+    color: white;
+  }
+}
+
+/* Component: DatePicker (see also .leihs-calendar) */
+
+.date-picker {
+  .leihs-calendar {
+    overflow: hidden;
+    transition: max-height 0.4s;
+    max-height: 0;
+
+    .rdrCalendarWrapper {
+      border: 1px solid transparent;
+      border-top-width: 0;
+    }
+  }
+
+  &--calendar-active {
+    .form-control {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-color: $blue;
+      border-bottom-color: $light-gray !important;
+    }
+
+    .leihs-calendar {
+      max-height: 23rem; // needed for the animation. not an exact value, just a bit more than needed
+      .rdrCalendarWrapper {
+        border-color: $blue;
+      }
+    }
+
+    &.date-picker--invalid {
+      .leihs-calendar {
+        .rdrCalendarWrapper {
+          border-color: $red;
+        }
+      }
+    }
+  }
+}

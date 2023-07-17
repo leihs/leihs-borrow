@@ -1,6 +1,6 @@
 {:source-paths ["src/client"
                 "src/common"
-                "leihs-ui/dist"
+                "ui/dist"
                 "shared-clj/src"]
  :dependencies [[binaryage/devtools "1.0.6"]
                 [better-cond "2.1.4"]
@@ -25,12 +25,7 @@
   {:output-dir "resources/public/borrow/js"
    :asset-path "/borrow/js"
    :target :browser
-   ; NOTE: comment out and adjust in order for re-frame-10x to work
-   ; :main leihs.borrow.app/main
-   ;
-   ; NOTE: only (temporarily!) enable this to debug problems in release builds
-   ;; :compiler-options {:source-map true :optimizations :whitespace}
-   ;
+   :compiler-options {:infer-externs true}
 
    :devtools {:preloads [day8.re-frame-10x.preload]
               :http-root "resources/public"}

@@ -1,0 +1,34 @@
+// Variables for Borrow theme
+
+// This file is loaded AFTER Bootstrap's own variables.
+
+$utilities: (
+  'background-color': (
+    property: background-color,
+    class: bg,
+    values:
+      map-merge(
+        $theme-colors,
+        (
+          'body': $body-bg,
+          'white': $white,
+          'transparent': transparent,
+          'light-shade': $light-shade,
+          'light-gray': $light-gray
+        )
+      )
+  ),
+  'doc-bg-gray': (
+    property: background-color,
+    class: doc-bg-gray,
+    values: $grays
+  ),
+  'doc-design-color': (
+    property: background-color,
+    class: doc-design-color,
+    values: $design-colors
+  )
+);
+
+// do not show valid state (only invalid)
+$form-validation-states: map-remove($form-validation-states, 'valid');

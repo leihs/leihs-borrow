@@ -1,6 +1,6 @@
 (ns leihs.borrow.lib.translate
   (:require-macros [leihs.borrow.lib.translate])
-  (:require ["/leihs-ui-client-side-external-react" :as UI]
+  (:require ["/borrow-ui" :as UI]
             ["date-fns/locale" :as date-locale]
             [leihs.borrow.translate-base :as t-base]
             [cljs.test :refer-macros [deftest is testing run-tests]]

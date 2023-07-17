@@ -5,38 +5,25 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "App Development",
-      "detail": "run all preparation steps and then start all services",
-      "dependsOn": [
-        "env: switch to dev",
-        "Development Preparations Steps",
-        "Frontend Development Services"
-      ],
-      "dependsOrder": "sequence",
-      "problemMatcher": []
-    },
-
-    {
       "label": "Development Preparations Steps",
-      "dependsOn": ["migrate DB", "prepare ui"],
+      "dependsOn": ["migrate DB", "ui: install"],
       "problemMatcher": []
     },
 
     {
-      "label": "Frontend Development Services (including Leihs UI)",
+      "label": "Frontend Development Services (including UI)",
       "detail": "(assumes preparations steps already ran)",
       "dependsOn": [
         "env: switch to dev",
         "backend-dev",
         "frontend-dev",
-        "leihs-ui: watch lib",
-        "leihs-ui: watch theme",
-        "storybook"
+        "ui: watch",
+        "ui: storybook"
       ],
       "problemMatcher": []
     },
     {
-      "label": "Frontend Development Services (without Leihs UI)",
+      "label": "Frontend Development Services (without UI)",
       "detail": "(assumes preparations steps already ran)",
       "dependsOn": ["env: switch to dev", "backend-dev", "frontend-dev"],
       "problemMatcher": []
@@ -85,9 +72,9 @@
       }
     },
     {
-      "label": "leihs-ui: watch lib",
+      "label": "ui: watch",
       "type": "shell",
-      "command": "cd leihs-ui && npm run watch:lib",
+      "command": "cd ui && npm run watch",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
@@ -101,9 +88,9 @@
       }
     },
     {
-      "label": "leihs-ui: watch theme",
+      "label": "ui: storybook",
       "type": "shell",
-      "command": "cd leihs-ui && npm run watch:theme",
+      "command": "cd ui && npm run storybook",
       "problemMatcher": [],
       "isBackground": true,
       "presentation": {
@@ -117,25 +104,9 @@
       }
     },
     {
-      "label": "storybook",
+      "label": "ui: install",
       "type": "shell",
-      "command": "cd leihs-ui && npm run storybook",
-      "problemMatcher": [],
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "clear": true,
-        "group": "dev"
-      }
-    },
-    {
-      "label": "prepare ui",
-      "type": "shell",
-      "command": "bin/ui-prepare",
+      "command": "cd ui && npm install",
       "problemMatcher": [],
       "presentation": {
         "echo": true,
@@ -148,24 +119,9 @@
       }
     },
     {
-      "label": "build lib",
+      "label": "ui: build",
       "type": "shell",
-      "command": "cd leihs-ui && npm run build:ssr",
-      "problemMatcher": [],
-      "presentation": {
-        "echo": true,
-        "focus": true,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "close": false,
-        "clear": true,
-        "group": "dev-prepare"
-      }
-    },
-    {
-      "label": "build theme",
-      "type": "shell",
-      "command": "cd leihs-ui && npm run build:theme",
+      "command": "cd ui && npm run build",
       "problemMatcher": [],
       "presentation": {
         "echo": true,

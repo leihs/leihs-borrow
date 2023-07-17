@@ -1,22 +1,27 @@
 # leihs-borrow
 
-## stack
+## Stack
 
-- (to be documented)
+### App (frontend)
 
-### translations
+- [Shadow CLJS](https://github.com/thheller/shadow-cljs)
+- [Reagent](https://github.com/reagent-project/reagent)
+- [Re-frame](https://github.com/day8/re-frame)
+
+### UI component library and theme (`borrow-ui`)
+
+See: [ui/README.md](ui/README.md)
+
+### Translations
 
 - translations strings are stored [in this repo in an EDN map](src/common/leihs/borrow/translations.cljc)
-- for the translation function we currently use `tongue`
-- long-term we maybe want to use a more generic translation function (for example [Format.JS](https://formatjs.io/docs/core-concepts/icu-syntax) or [i18next](https://www.i18next.com/translation-function/essentials))
-- we definitly want to use the ICU syntax (could just reuse the underlying lib [`intl-messageformat`](https://formatjs.io/docs/intl-messageformat/))
-- in the meantime, to make a later adaptation easier, we just a subset on the `tongue` API: only
-  - `"plain strings"` and
-  - simple interpolation `"hello {username}"`
+- we use the ICU syntax, lib: [`intl-messageformat`](https://formatjs.io/docs/intl-messageformat/)
 
 ## DEV
 
-quickstart:
+For seamless dependency installation: use [__asdf__ version manager](https://asdf-vm.com)
+
+### Quickstart (shell):
 
 ```shell
 # ENV config: copy from template
@@ -25,31 +30,44 @@ cp .env.local-example .env.local.test
 ln -sf .env.local.dev .env.local
 # ln -sf .env.local.test .env.local # to switch settings to dev env
 
-# preparation steps:
+# == prepare ==
+
 # ensure correct version of shared code (UI/React and ClojureScript) and DB migrations
 git submodule update --init --recursive --force
 
-# In VS Code, do "Run Task" > "App Development" or manually start the following:
-# (when resuming work, preparation steps can be skipped by running the task "Frontend Development Services")
-bin/ui-prepare
+# prepare UI (npm install and build)
+bin/ui-build
+
+# prepare DB
 source bin/set-env && bin/db-migrate
 
-# run in a shell:
+# == run the services (in separate shells) ==
+
+# run backend
 source bin/set-env && bin/dev-run-backend
 
-# run in another shell:
+# run frontend
 source bin/set-env && bin/dev-run-frontend
 
-# run in another shell:
-cd leihs-ui && npm run watch:lib
+# run ui watch (only when working on ui components and theme) 
+cd ui && npm run watch
 
-# run in another shell:
-cd leihs-ui && npm run storybook
+# run storybook (only when working on ui components and theme)
+cd ui && npm run storybook
 
 # open in browser:
 open "http://localhost:3250/borrow/"  # borrow
-open "http://localhost:9009/"         # leihs-ui storybook
+open "http://localhost:6006/"         # storybook
 ```
+
+### Quickstart (VS Code Task Runner)
+
+- Make sure `.env.local.dev` is configured for your development DB
+- Cmd-Shift-R and type "Run Task"
+- Task "Development Preparations Steps"
+- Task "Frontend Development Services (including UI)"
+
+See `.vscode/tasks.json` for infos and more options
 
 ### Graph*i*QL (GraphQL console)
 
@@ -64,11 +82,6 @@ It is enabled in all environments (so it can also be used on a server, not just 
   - the correct value is found in the `leihs-anti-csrf-token` cookie (try `javascript:alert(document.cookie)`)
 - click the button "Fetch"
 - if it worked, the output should show `Schema fetched`
-
-### boot watcher
-
-1. Setup your bash environment.
-2. `$ boot focus`
 
 ### shadow-cljs watcher
 
@@ -86,17 +99,20 @@ It is enabled in all environments (so it can also be used on a server, not just 
 
 https://github.com/nimaai/vim-shadow-cljs
 
-## RUN TESTS
+## TEST
+
+Start in prod mode:
 
 ```bash
-./scripts/prepare-shared-ui.sh \
-&& ./scripts/build-uberjar-prod.sh \
-&& ./scripts/start-backend-test
+bin/run
 ```
 
+...or start in dev mode (instructions see above), but you might want to comment-out `:preloads [day8.re-frame-10x.preload]` in `shadow-cljs.edn` to prevent the `re-frame-10x` debugger from covering buttons etc. 
+
+Then run a spec:
+
 ```bash
-while ! curl -I --silent --fail http://localhost:3250; do sleep 5; done \
-&& be rspec spec/features/smoke.feature
+./bin/rspec spec/features/smoke.feature
 ```
 
 ## PROD
@@ -104,48 +120,18 @@ while ! curl -I --silent --fail http://localhost:3250; do sleep 5; done \
 compile it:
 
 ```shell
-# Build frontend
-npx shadow-cljs release app
-
-# Build backend
-boot uberjar
+bin/build
 ```
 
 start it:
 
 ```shell
-java -jar ./target/leihs-borrow.jar run
+# TODO: document
 ```
 
-### known issues
+## Known issues
 
-#### app framework
+### app framework
 
 - i18n: formatting numbers in translated messages uses browser locale instead of message locale.
 
-#### tech stack
-
-- we need to install `tslib` in our `package.json`,so that `intl-messageformat` works correctly
-  - see bug report https://github.com/formatjs/formatjs/issues/2645
-  - we are using a newer version of the package which is fixed, but the `tslib` dep is not picked up. we dont know why, hence the workaround of installing it ourselves
-
-#### developing and building on Apple Silicon
-
-Some fixes needed for Apple Silicon and/or newer macOS versions.
-
-```sh
-# ruby 2.6.6
-RUBY_CFLAGS=-DUSE_FFI_CLOSURE_ALLOC rbenv install 2.6.6
-
-# JAVA 11
-brew install java11
-brew install clojure
-
-# boot needs a not-yet-released fix
-git clone https://github.com/eins78/boot && cd boot
-echo 'version=2.8.4-fix.1' > version.properties
-make deps && make install
-
-export BOOT_VERSION=2.8.4-fix.1
-bin/build
-```

@@ -99,8 +99,8 @@
    wrap-content-type
    (wrap-resource "public"
                   {:allow-symlinks? true
-                   :cache-bust-paths ["/borrow/css/borrow-theme/bootstrap-theme.css"
-                                      "/borrow/js/main.js"]
+                   :cache-bust-paths ["/borrow/ui/borrow-ui.css"
+                                      "/borrow/ui/components.js"]
                    :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
                                         #".+_[0-9a-f]{40}\..+"]
                    :enabled? true})

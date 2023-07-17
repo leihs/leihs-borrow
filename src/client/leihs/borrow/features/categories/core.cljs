@@ -22,7 +22,7 @@
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.models.filter-modal :as filter-modal]
-   ["/leihs-ui-client-side-external-react" :as UI]
+   ["/borrow-ui" :as UI]
    [reagent.core :as r]))
 
 (set-default-translate-path :borrow.catalog)
@@ -152,7 +152,7 @@
         (let [id-path (concat (map :id ancestors)
                               (when (not show-siblings?) [(:id current-cat)])
                               [(:id cat)])
-              has-children? (-> cat :children seq)]
+              has-children? (-> cat :children seq boolean)]
           [:<> {:key (:id cat)}
            [:> UI/Components.Design.ListMenu.Link
             {:href (path-for id-path model-filters)

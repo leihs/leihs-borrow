@@ -11,7 +11,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.components :as ui]
    [leihs.borrow.lib.routing :as routing]
-   ["/leihs-ui-client-side-external-react" :as UI]
+   ["/borrow-ui" :as UI]
    [leihs.borrow.features.models.core :as models]))
 
 (set-default-translate-path :borrow.favorite-models)

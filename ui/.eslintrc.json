@@ -1,0 +1,9 @@
+{
+  "parser": "@babel/eslint-parser",
+  "plugins": ["prettier"],
+  "extends": ["prettier"],
+  "rules": {
+    "prettier/prettier": ["warn"]
+  },
+  "ignorePatterns": ["static/**", "dist/**"]
+}

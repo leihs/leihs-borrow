@@ -1,0 +1,316 @@
+/*
+ * Component Styles for Borrow App
+ */
+
+/* Component: SectionTitle (collapsible) */
+
+.section-title {
+  &__arrow-icon {
+    margin-left: 0.7rem;
+    margin-bottom: 0.1rem;
+
+    &--collapsed {
+      transform: scale(1, -1);
+    }
+  }
+}
+
+/* Component: Square Image Grid */
+
+.square-image-grid {
+  &__favorite-marker {
+    padding-right: 0.55rem;
+    padding-top: 0.35rem;
+    right: 0;
+    top: 0;
+    z-index: 1;
+  }
+}
+
+/* CSS Component: .gallery-button */
+
+.gallery-button {
+  display: inline-block;
+  border: none;
+  background-color: $gray;
+  width: 0.5em;
+  height: 0.5em;
+  padding: 0.25rem;
+  border-radius: 0.5em;
+  text-align: center;
+  margin: auto 0.1875em;
+
+  &--selected {
+    background-color: $black;
+  }
+}
+
+/* Component: LabelInside */
+
+.label-inside {
+  display: block;
+  position: relative;
+
+  label:first-of-type {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: $input-border-width solid transparent;
+    padding: $input-padding-y 0 $input-padding-y $input-padding-x;
+    width: 4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    font-weight: $font-weight-normal;
+  }
+
+  :is(input, textarea, select):first-of-type {
+    padding-left: 4.25rem;
+  }
+}
+
+/* Component: Modal */
+.dismissible-modal-header {
+  // fine tuning: position of title and close button
+  padding-left: 30px;
+  padding-right: 30px;
+  .btn-close {
+    position: absolute;
+    top: 17px;
+    right: 20px;
+  }
+}
+
+.modal-dialog {
+  max-width: map-get($grid-breakpoints, sm);
+}
+
+.modal-content {
+  // min width must correspond with body
+  min-width: 300px;
+}
+
+.modal-header {
+  padding: 15px 30px;
+  @include media-breakpoint-up(md) {
+  }
+}
+
+.modal-body {
+  padding: 30px 20px;
+  @include media-breakpoint-up(md) {
+    padding: 30px 30px;
+  }
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  @include media-breakpoint-up(md) {
+    padding: 15px 30px;
+  }
+}
+
+/* Component: Menu */
+.leihs-menu-item {
+  &--selected {
+    background-color: $gray-600 !important;
+    color: $light !important;
+  }
+}
+
+/* Component: Info message */
+$info-color: $gray-600;
+$info-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='#{$info-color}'><circle cx='6' cy='6' r='4.5'/><line stroke-linecap='round' stroke-width='1.2' x1='6' x2='6' y1='6' y2='8' /><circle cx='6' cy='4.2' r='.7' fill='#{$info-color}' stroke='none'/></svg>");
+.info-message {
+  text-indent: -1.5em;
+  padding-left: 1.5em;
+  font-size: $font-size-sm;
+  color: $info-color;
+
+  &::before {
+    content: '';
+    background-image: escape-svg($info-icon);
+    background-repeat: no-repeat;
+    padding-left: 1.5em;
+    background-position: 0 0.0625em;
+    background-size: 1.2em;
+    width: 2em;
+    display: inline;
+  }
+}
+
+/* Component: Slide Button */
+
+.slide-button {
+  display: none;
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.5rem;
+  width: 3.5rem;
+  height: 3.5rem;
+
+  &--previous {
+    left: 0;
+    text-align: left;
+    padding-left: 0.9rem;
+  }
+
+  &--next {
+    right: 0;
+    text-align: right;
+    padding-right: 0.9rem;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .slide-button-visibility-controller:hover {
+    .slide-button {
+      display: block;
+    }
+  }
+}
+
+/* Category breadcrumbs (mostly bootstrap-utility-styled) */
+
+ul.category-breadcrumbs {
+  margin-bottom: 0;
+  text-align: center;
+  > li {
+    a {
+      font-weight: 400;
+      color: $primary;
+    }
+  }
+
+  @include media-breakpoint-down(md) {
+    > li {
+      margin-bottom: 8px;
+      &:last-child {
+        margin-bottom: 12px;
+      }
+    }
+  }
+  @include media-breakpoint-up(md) {
+    margin-bottom: 8px;
+    > li {
+      display: inline-block;
+      + li:before {
+        content: '/';
+        margin: 0 5px;
+      }
+    }
+  }
+}
+
+/* Progress info (mostly bootstrap-utility-styled) */
+
+.progress-info--small {
+  @include media-breakpoint-up(sm) {
+    max-width: 400px;
+  }
+}
+
+/* List card */
+
+.list-card {
+  padding: 15px 0;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+
+  &--clickable {
+    cursor: pointer;
+  }
+  &--clickable:not(&--one-line) {
+    min-height: 70px;
+  }
+  &__image {
+    display: none; // hide for xs screen
+    margin-top: -5px;
+    margin-bottom: -5px;
+    @include media-breakpoint-up(sm) {
+      display: block;
+      flex: 0 0 100px;
+    }
+  }
+
+  &__content {
+    flex: 1 1 auto;
+  }
+
+  &__arrow {
+    flex: 0 0 auto;
+    display: block;
+    text-align: right;
+    padding-left: 10px;
+  }
+
+  &:not(&--one-line) &__arrow {
+    padding-top: 8px;
+    padding-bottom: 12px;
+  }
+
+  // Placeable components:
+
+  &__title {
+    margin-bottom: 5px;
+    font-weight: $font-weight-bold;
+    word-break: break-word;
+  }
+
+  &__body {
+    font-size: $font-size-sm;
+  }
+
+  &__foot {
+    padding-top: 10px;
+  }
+}
+
+/* List menu */
+$arrow-icon: url("data:image/svg+xml,<svg width='12px' height='7px' viewBox='0 0 12 7' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g id='Section-Arrow' stroke='none' stroke-width='1' fill='none' fill-rule='evenodd' stroke-linecap='round' stroke-linejoin='round'><polyline id='Path-2' stroke='currentColor' stroke-width='1.5' points='1 1 6 6 11 1'></polyline></g></svg>");
+.list-menu {
+  &__item {
+    position: relative;
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    padding: 5px 0 3px 0;
+    word-wrap: break-word;
+    line-height: 1.4;
+
+    &--breadcrumb {
+      font-size: 14px;
+      &::after {
+        content: $arrow-icon;
+        position: absolute;
+        top: 5px;
+        left: -20px;
+        transform: rotate(90deg);
+      }
+    }
+    &--selected {
+      font-weight: 600;
+    }
+    &--current {
+      font-size: 14px;
+      padding-bottom: 12px;
+      font-weight: 600;
+    }
+    /* &--child {
+    } */
+  }
+  &__dash {
+    position: absolute;
+    top: 15px;
+    left: -16px;
+    width: 9px;
+    height: 2.5px;
+    background-color: black;
+  }
+}

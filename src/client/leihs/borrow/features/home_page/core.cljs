@@ -22,7 +22,7 @@
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.categories.core :as categories]
    [leihs.core.core :refer [remove-nils presence]]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["/borrow-ui" :as UI]))
 
 (set-default-translate-path :borrow.catalog) ; ("catalog" because it is currently the only feature on the home page)
 

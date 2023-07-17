@@ -1,0 +1,25 @@
+body {
+  /* auto-break words */
+  hyphens: auto;
+}
+
+b,
+strong {
+  font-weight: $font-weight-bold;
+}
+
+// font size even smaller than Bootstrap's small / .small
+.very-small {
+  font-size: 0.75rem;
+}
+
+// our form controls have bold font, but placeholder text should not
+input.form-control::placeholder {
+  font-weight: $font-weight-normal;
+}
+
+/*
+.form-check-label {
+  font-weight: $font-weight-bold;
+}
+*/

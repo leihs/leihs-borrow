@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
-source ${PROJECT_DIR}/shared-clj/bin/helpers/clj.sh
-PROJECT_NAME=borrow ui_setup
 ./bin/cljs-watch
-cd -
 
 # vi: ft=sh

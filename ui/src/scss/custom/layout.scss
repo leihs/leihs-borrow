@@ -1,0 +1,121 @@
+$layout-width: map-get($grid-breakpoints, lg);
+$content-max-width: map-get($grid-breakpoints, md);
+$md-center: true; // controls alignment of content zone for medium width and up
+$md-title-left: not $md-center;
+$burger-breakpoint: 820px; // somewhat more then `md` to have enough space for horizontal nav
+
+.page-layout {
+  min-height: 100vh;
+
+  &__top-row {
+    position: fixed;
+    z-index: 100;
+    top: 0;
+    width: 100%;
+    height: 51px;
+    background-color: $light-shade;
+    border-bottom: 1px solid $border-color;
+  }
+
+  &__top-nav-container {
+    padding-left: 15px;
+    padding-right: 15px;
+    margin: 0 auto;
+    max-width: $layout-width;
+    @include media-breakpoint-up(md) {
+      padding-left: 25px;
+      padding-right: 25px;
+    }
+  }
+
+  &__main-row {
+    min-height: 100vh;
+    padding-top: 51px;
+
+    @include media-breakpoint-up(md) {
+      & {
+        margin: 0 auto;
+        padding-left: 25px;
+        padding-right: 25px;
+        max-width: $layout-width;
+        position: relative;
+      }
+    }
+  }
+
+  // nav1 (xs+sm: full overlay, md+: hidden)
+  &__nav1 {
+    position: fixed;
+    z-index: 100;
+    height: calc(100vh - 51px);
+    top: 51px;
+    left: 0;
+    width: 100%;
+    padding-top: 50px;
+    padding-bottom: 100px;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    background-color: $light-shade;
+    @media screen and (min-width > $burger-breakpoint) {
+      & {
+        display: none;
+      }
+    }
+  }
+
+  // nav2 (xs+sm: full overlay, md+: offcanvas on the right)
+  &__nav2 {
+    position: fixed;
+    z-index: 100;
+    height: calc(100vh - 51px);
+    top: 51px;
+    right: 0;
+    width: 100%;
+    padding-top: 50px;
+    padding-bottom: 50px;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    background-color: $light-shade;
+    @include media-breakpoint-up(md) {
+      & {
+        padding-top: 50px;
+        width: 440px;
+        border-left: 1px solid $gray;
+      }
+    }
+  }
+
+  &__nav-container {
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+    max-width: 400px;
+  }
+
+  &__content {
+    min-height: calc(100vh - 51px);
+    padding-top: 30px;
+    padding-bottom: 4rem;
+    margin: 0;
+  }
+
+  &__content-container {
+    margin: 0 auto;
+    @include media-breakpoint-up(md) {
+      max-width: $content-max-width;
+      @if (not $md-center) {
+        margin: 0;
+      }
+    }
+  }
+}
+
+// Utility
+.text-center-if-layout-allows {
+  text-align: center;
+  @include media-breakpoint-up(md) {
+    @if ($md-title-left) {
+      text-align: left;
+    }
+  }
+}

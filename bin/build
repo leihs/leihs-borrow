@@ -15,7 +15,7 @@ source "shared-clj/bin/helpers/build.sh"
 ### functions #################################################################
 
 function build_core {
-  ${UI_DIR}/bin/build
+  ./bin/ui-build
   ./bin/cljs-release
   ./bin/set-built-info
   ./bin/clj-uberjar

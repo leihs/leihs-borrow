@@ -18,7 +18,7 @@
    [leihs.borrow.features.languages.language-switch :as language-switch]
    [leihs.borrow.features.shopping-cart.core :as cart]
    [leihs.borrow.components :as ui]
-   ["/leihs-ui-client-side-external-react" :as UI]))
+   ["/borrow-ui" :as UI]))
 
 (set-default-translate-path :borrow.menu)
 
