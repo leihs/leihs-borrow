@@ -50,6 +50,16 @@ jobs:
     context:
       include: cider-ci/jobs/graph-ql-check.yml
 
+  ui-checks:
+    name: Check UI package
+    run_when: *ON_BRANCH_UPDATE
+    tasks:
+      ui-lint:
+        scripts:
+          test:
+            body: |
+              ./bin/ui-lint
+              
   all-ok:
     name: 'All Tests OK'
     depends_on: &ALLOK_DEPS
@@ -64,6 +74,10 @@ jobs:
       borrow-build-uberjar was successful:
         type: job
         job_key: borrow-build-uberjar
+        states: [passed]
+      ui-checks were successful:
+        type: job
+        job_key: ui-checks
         states: [passed]
       good to merge of the database:
         job_key: good-to-merge
