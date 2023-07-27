@@ -563,7 +563,8 @@
                             (let [v (-> e .-target .-value)]
                               (swap! title assoc :value v)
                               (when @title-purpose-linked? (swap! purpose assoc :value v))))
-               :on-blur #(swap! title assoc :was-validated true)}]]
+               :on-blur #(swap! title assoc :was-validated true)}]
+             [:> UI/Components.Design.InfoMessage {:class "mt-2"} (t :confirm-dialog/title-hint)]]
 
             [:> UI/Components.Design.Section
              {:title (t :confirm-dialog/purpose)
@@ -580,7 +581,8 @@
                :on-change (fn [e]
                             (swap! purpose assoc :value (-> e .-target .-value))
                             (reset! title-purpose-linked? false))
-               :on-blur #(swap! purpose assoc :was-validated true)}]]
+               :on-blur #(swap! purpose assoc :was-validated true)}]
+             [:> UI/Components.Design.InfoMessage {:class "mt-2"} (t :confirm-dialog/purpose-hint)]]
             (when (:show-contact-details? dialog-data)
               [:> UI/Components.Design.Section
                {:title (t :confirm-dialog/contact-details)

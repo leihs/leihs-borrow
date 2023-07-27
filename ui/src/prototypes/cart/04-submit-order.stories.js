@@ -5,6 +5,7 @@ import ModalDialog from '../../components/ModalDialog'
 import Stack from '../../components/Stack'
 import Section from '../../components/Section'
 import Textarea from '../../components/Textarea'
+import InfoMessage from '../../components/InfoMessage'
 
 export default {
   title: 'Prototypes/Cart/Submit Order',
@@ -33,6 +34,7 @@ export default {
 export const submitOrder = ({ user, onSubmit, onCancel, initialTitle, initialPurpose, initialUserId }) => {
   const [title, setTitle] = useState(initialTitle)
   const [purpose, setPurpose] = useState(initialPurpose)
+  const [titlePurposeLinked, setTitlePurposeLinked] = useState(true)
 
   const [formValidated, setFormValidated] = useState()
   const [titleValidated, setTitleValidated] = useState()
@@ -47,9 +49,13 @@ export const submitOrder = ({ user, onSubmit, onCancel, initialTitle, initialPur
 
   function changeTitle(e) {
     setTitle(e.target.value)
+    if (titlePurposeLinked) {
+      setPurpose(e.target.value)
+    }
   }
   function changePurpose(e) {
     setPurpose(e.target.value)
+    setTitlePurposeLinked(false)
   }
 
   function submit(e) {
@@ -84,6 +90,7 @@ export const submitOrder = ({ user, onSubmit, onCancel, initialTitle, initialPur
                 onChange={changeTitle}
                 onBlur={blurTitle}
               />
+              <InfoMessage className="mt-2">Als Referenz für dich</InfoMessage>
             </Section>
             <Section title="Zweck" className={cx({ 'was-validated': summaryValidated })}>
               <label htmlFor="purpose" className="visually-hidden">
@@ -100,6 +107,7 @@ export const submitOrder = ({ user, onSubmit, onCancel, initialTitle, initialPur
                 onChange={changePurpose}
                 onBlur={blurSummary}
               />
+              <InfoMessage className="mt-2">Für den Inventarpark</InfoMessage>
             </Section>
           </Stack>
         </form>

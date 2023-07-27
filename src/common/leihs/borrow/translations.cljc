@@ -615,7 +615,9 @@
                                    :de-CH "Hier geht's zum Katalog"}
                     :confirm-dialog {:dialog-title {:en-GB "Send order" :de-CH "Bestellung abschicken"}
                                      :title {:en-GB "Title" :de-CH "Titel"}
+                                     :title-hint {:en-GB "As a reference for you" :de-CH "Als Referenz für dich"}
                                      :purpose {:en-GB "Purpose" :de-CH "Zweck"}
+                                     :purpose-hint {:en-GB "For the inventory pool" :de-CH "Für den Inventarpark"}
                                      :contact-details {:en-GB "Contact details" :de-CH "Kontaktdaten"}
                                      :contact-details-hint {:en-GB "The indication of a telephone number is recommended"
                                                             :de-CH "Die Angabe einer Telefonnummer ist empfohlen"}
