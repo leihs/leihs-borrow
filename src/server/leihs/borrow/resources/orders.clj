@@ -46,7 +46,11 @@
       (sql/from :unified_customer_orders)
       (sql/where [(if (coll? user-id) :in :=)
                   :unified_customer_orders.user_id
-                  user-id])))
+                  user-id])
+      ; this is temporary work around! move to a db trigger!
+      (sql/merge-where [:is-not-null :unified_customer_orders.from_date])
+      (sql/merge-where [:is-not-null :unified_customer_orders.until_date])
+      ))
 
 (defn refine-rental-state [tx row]
   (let [rs (->> row
