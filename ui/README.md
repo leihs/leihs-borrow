@@ -25,8 +25,8 @@ Shared UI components (React), theme (based on Bootstrap) and styleguide (Storybo
 Modes of development:
 
 - Start Storybook (`npm run storybook`)
-- Run Borrow app in watch mode (instructions see ../README.md) and start UI library in watch mode (`npm run watch`)  
-  Changes in components will automatically reflect in Borrow app. Changes in SCSS require a browser reload. 
+- Start UI library in watch mode (`npm run watch`), then start `leihs-my` app (`../bin/cljs-watch`)  
+  Changes in components will automatically reflect in `leihs-my` app. Changes in SCSS require a browser reload.
 - (or both together)
 
 Note that Storybook has its own build chain and is not affected by `webpack.config.js`. 

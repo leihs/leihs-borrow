@@ -13,7 +13,6 @@
    [leihs.core.ssr-engine :as ssr-engine]
    [leihs.core.status :as status]
    [leihs.core.url.jdbc]
-   [leihs.core.sign-in.back :refer [use-simple-login]]
    [logbug.catcher :as catcher]
    [logbug.debug :as debug]
    [logbug.thrown :as thrown]
@@ -26,7 +25,6 @@
     {:return-fn (fn [e] (System/exit -1))}
     (info "Invoking run with options: " options)
     (shutdown/init options)
-    (use-simple-login)
     (graphql/init options)
     (let [status (status/init)]
       (db/init options (:health-check-registry status)))

@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+cd $PROJECT_DIR
+
+echo "building ui lib..."
+echo "hint: run bin/cljs-watch directly to skip this step"
+cd ui
+npm i
+npm run build
+cd -
+echo "OK, ui lib built"
+echo ""
+
 ./bin/cljs-watch
 
 # vi: ft=sh

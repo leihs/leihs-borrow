@@ -9,7 +9,6 @@ export const Components = {
   ModelList: require('./features/ModelList').default,
   ModelShow: require('./features/ModelShow').default,
   UserProfilePage: require('./features/UserProfilePage').default,
-  Snoopy: require('./Snoopy').default,
 
   // Design components
   Design: {
