@@ -69,7 +69,7 @@
         target-user-id (or (:delegator_user_id user) (:id user))
         target-user (users/get-by-id tx target-user-id)
         lang-locale (:locale (lang/get-the-one-to-use tx target-user-id))
-        tmpl (get-tmpl tx "received" (:id inventory-pool) lang-locale)]
+        tmpl (get-tmpl tx "submitted" (:id inventory-pool) lang-locale)]
     (cond
      (not inventory-pool) (warn "Pool for sending email not found or it is inactive.")
      (not tmpl) (warn (format "No 'submitted' mail template found for pool '%s'." (:id inventory-pool)))
