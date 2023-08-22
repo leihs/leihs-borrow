@@ -59,7 +59,10 @@ jobs:
           test:
             body: |
               ./bin/ui-lint
-              
+      ui-test:
+        include: 
+          - cider-ci/task-components/storybook-test.yml
+
   all-ok:
     name: 'All Tests OK'
     depends_on: &ALLOK_DEPS

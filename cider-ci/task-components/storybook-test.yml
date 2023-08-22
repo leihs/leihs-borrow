@@ -1,0 +1,62 @@
+traits:
+  asdf: true
+environment_variables:
+  LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
+git_options:
+  submodules:
+    include_match: ^.*$
+ports: 
+  STORYBOOK_PORT:
+    min: 6006
+    max: 6100
+
+scripts:
+  storybook-run:
+    timeout: 2 minutes
+    body: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      cd ${LEIHS_BORROW_DIR}
+      ./bin/env/nodejs-setup
+      cd ui
+      npm ci
+      echo ${STORYBOOK_PORT}
+      npm run storybook -- -p ${STORYBOOK_PORT} || [[ $? = 0 || $? = 143 ]] # because kill -SIGTERM yields exit code 143
+
+  storybook-is-running:
+    timeout: 2 minutes
+    start_when:
+      storybook is running:
+        script_key: storybook-run
+        states: [executing]
+    body: |
+      until curl --silent --fail -I  \
+        http://localhost:${STORYBOOK_PORT};
+        do sleep 1;
+      done
+
+  test:
+    timeout: 5 minutes
+    start_when:
+      storybook is running:
+        script_key: storybook-is-running
+    body: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      cd $LEIHS_BORROW_DIR
+      cd ui
+      npm run test-storybook -- --url=http://localhost:${STORYBOOK_PORT}
+
+  
+  storybook-shutdown:
+    timeout: 5 seconds
+    start_when:
+      test is terminal:
+        script_key: test
+        states: [aborted, passed, failed, skipped]
+    body: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      echo ${STORYBOOK_PORT}
+      kill -SIGTERM $(lsof -t -wni tcp:${STORYBOOK_PORT})
+      sleep 1
