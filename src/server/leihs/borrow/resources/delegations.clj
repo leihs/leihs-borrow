@@ -7,6 +7,9 @@
             [leihs.core.sql :as sql]
             [taoensso.timbre :refer [debug info warn error spy]]))
 
+(defn delegation? [user]
+  (:delegator_user_id user))
+
 (defn responsible
   [{{tx :tx} :request} _ {responsible-id :delegator-user-id}]
   (-> (sql/select :users.*)

@@ -7,8 +7,10 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
    [wet.core :as wet]
+   [leihs.borrow.resources.delegations :refer [delegation?]]
    [leihs.borrow.resources.languages :as lang]
    [leihs.borrow.resources.inventory-pools :as pools]
+   [leihs.borrow.resources.orders.shared :as orders]
    [leihs.borrow.resources.users.shared :as users]
    [leihs.borrow.translate :refer [t]]
    [taoensso.timbre :refer [debug info warn error spy]]))
@@ -66,7 +68,9 @@
 (defn send-submitted [{{:keys [tx settings]} :request} order]
   (let [inventory-pool (pools/get-by-id tx (:inventory_pool_id order))
         user (users/get-by-id tx (:user_id order))
-        target-user-id (or (:delegator_user_id user) (:id user))
+        target-user-id (if (delegation? user)
+                         (orders/delegated-user-id tx (:id order))
+                         (:id user))
         target-user (users/get-by-id tx target-user-id)
         lang-locale (:locale (lang/get-the-one-to-use tx target-user-id))
         tmpl (get-tmpl tx "submitted" (:id inventory-pool) lang-locale)]
@@ -84,7 +88,7 @@
                  purpose (:purpose order)
                  order-url (str (:external_base_url settings) "/manage/" (:id inventory-pool) "/orders/" (:id order) "/edit")
                  email-body (wet/render (wet/parse tmpl)
-                                        {:params {:user user
+                                        {:params {:user target-user
                                                   :inventory_pool inventory-pool
                                                   :email_signature email-signature
                                                   :reservations reservations
