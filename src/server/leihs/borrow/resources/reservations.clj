@@ -108,21 +108,25 @@
       :result))
 
 (defn broken [tx user-id]
-  (let [brs (-> (unsubmitted-sqlmap tx user-id)
+  (let [urs (-> (unsubmitted-sqlmap tx user-id)
                 sql/format
-                (query tx))]
-    (reduce (fn [memo r]
-              (cond-> memo
-                (not (and (->> (pools/to-reserve-from tx
-                                                      user-id
-                                                      (:start_date r)
-                                                      (:end_date r))
-                               (map :id)
-                               (some #{(:inventory_pool_id r)}))
-                          (complies-with-max-reservation-time? tx r)))
+                (query tx))
+        start-end->pool-ids
+          (->> urs
+               (group-by #(-> % (select-keys [:start_date :end_date]) vals))
+               (map (fn [[[start end :as start-end] _]]
+                      [start-end (map :id (pools/to-reserve-from tx user-id start end))])))]
+    (reduce (fn [brs r]
+              (cond-> brs
+                (or (let [pool-ids (->> start-end->pool-ids
+                                        (filter #(= (first %) [(:start_date r) (:end_date r)]))
+                                        first
+                                        second)]
+                      (not (some #{(:inventory_pool_id r)} pool-ids)))
+                    (not (complies-with-max-reservation-time? tx r)))
                 (conj r)))
             []
-            brs)))
+            urs)))
 
 (defn with-invalid-availability
   [{{:keys [tx]} :request :as context} reservations]
