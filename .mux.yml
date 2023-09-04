@@ -24,7 +24,3 @@ windows:
     name: shared-clj
     command: |
       cd shared-clj
-  9:
-    name: legacy-api
-    command: |
-      cd spec/support/legacy-api

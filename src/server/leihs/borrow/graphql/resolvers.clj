@@ -6,7 +6,6 @@
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.graphql.mutations :as mutations]
             [leihs.borrow.graphql.queries :as queries]
-            [leihs.core.core :refer [spy-with]]
             [leihs.core.graphql.helpers :refer [transform-resolvers
                                                 wrap-resolver-with-error
                                                 wrap-resolver-with-kebab-case

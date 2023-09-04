@@ -10,7 +10,6 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as rs]
             [leihs.borrow.time :as time :refer [past?]]
-            [leihs.core.core :refer [spy-with]]
             [leihs.core.database.helpers :as database]
             [leihs.core.db :as ds]
             [leihs.core.settings :refer [settings!]]

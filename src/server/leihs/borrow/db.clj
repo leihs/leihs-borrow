@@ -2,7 +2,6 @@
   (:require [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]
-            [leihs.core.core :refer [spy-with]]
             [camel-snake-kebab.core :as csk]
             [wharf.core :refer [transform-keys]]))
 

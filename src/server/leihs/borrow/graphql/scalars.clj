@@ -2,7 +2,7 @@
   (:require
     [java-time]
     [clojure.tools.logging :as log]
-    [leihs.core.core :refer [spy-with presence raise]]
+    [leihs.core.core :refer [presence raise]]
     [taoensso.timbre :refer [debug info warn error spy]]
     )
   (:import [java.util UUID]

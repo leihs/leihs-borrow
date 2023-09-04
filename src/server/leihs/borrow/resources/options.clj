@@ -3,8 +3,7 @@
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [logbug.debug :as debug]
-            [leihs.core.sql :as sql]
-            [leihs.core.core :refer [spy-with]]))
+            [leihs.core.sql :as sql]))
 
 (def base-sqlmap
   (-> (sql/select :options.*

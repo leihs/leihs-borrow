@@ -1,7 +1,8 @@
 (ns leihs.borrow.translate-base
-  #?(:clj (:refer-clojure :exclude [format]))
-  (:require [clojure.string :as string]
-            [leihs.borrow.translations :as translations]))
+  (:require 
+    [cuerdas.core :as string]
+    [leihs.borrow.translations :as translations]
+    ))
 
 (def path-escape-char \!)
 
@@ -27,10 +28,8 @@
       (string/split #"[\./]")
       (->> (map keyword))))
 
-(def format #?(:clj clojure.core/format :cljs leihs.borrow.lib.helpers/format))
-
 (defn missing-translation [path-keys]
   (->> path-keys
        (map name)
        (string/join ".")
-       (format "{{ missing: %s }}")))
+       (string/format "{{ missing: %s }}")))

@@ -2,7 +2,6 @@
   (:refer-clojure :exclude [first])
   (:require [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
-            [leihs.core.core :refer [spy-with]]
             [leihs.core.sql :as sql]))
 
 (def PER-PAGE

@@ -5,7 +5,6 @@
             [clojure.tools.logging :as log]
             [clojure.java.jdbc :as jdbc]
             [leihs.core.sql :as sql]
-            [leihs.core.core :refer [spy-with]]
             [leihs.borrow.db :refer [query]]
             [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.graphql.target-user :as target-user]
@@ -61,8 +60,7 @@
                        :inventory_pools_model_groups.inventory_pool_id])
       (pools/accessible-to-user-condition user-id)
       sql/format
-      (->> (jdbc/query tx))
-      (->> (spy-with count))))
+      (->> (jdbc/query tx))))
 
 (defn lines [tx tmpl-id]
   (-> (sql/select :model_links.id

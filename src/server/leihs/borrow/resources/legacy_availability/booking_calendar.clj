@@ -3,7 +3,6 @@
   (:require [taoensso.timbre :as timbre :refer [debug info spy]]
             [hugsql.core :as hugsql]
             [clojure.java.jdbc :as jdbc]
-            [leihs.core.core :refer [spy-with]]
             [leihs.core.db :as db]
             [leihs.core.settings :refer [settings!]]
             [leihs.core.sql :as sql]
