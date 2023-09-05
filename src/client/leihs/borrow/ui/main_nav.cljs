@@ -1,6 +1,8 @@
 (ns leihs.borrow.ui.main-nav
   (:require
    [clojure.string :refer [join split replace]]
+   [reagent.core :as reagent]
+   ["date-fns" :as datefn]
    [leihs.borrow.lib.re-frame :refer [subscribe
                                       dispatch
                                       reg-event-db
@@ -38,6 +40,11 @@
          :<- [::cart/data]
          (fn [cart _]
            (-> cart :invalid-reservation-ids count)))
+
+(reg-sub ::cart-valid-until
+         :<- [::cart/data]
+         (fn [cart _]
+           (-> cart :valid-until datefn/parseISO)))
 
 (reg-sub ::menu-data
          (fn [db] (get-in db [:ls ::data])))
@@ -135,34 +142,43 @@
           [menu-link url name]]))]]))
 
 (defn top []
-  (let [cart-item-count @(subscribe [::cart-item-count])
-        invalid-cart-item-count @(subscribe [::invalid-cart-item-count])
-        menu-data @(subscribe [::menu-data])
-        current-menu (:current-menu menu-data)
-        current-profile @(subscribe [::current-profile])
-        user-nav @(subscribe [::user-nav])]
-
-    [:> UI/Components.Design.Topnav
-     {:brandName "Leihs"
-      :brandLinkProps {:href (routing/path-for ::routes/home)}
-      :mainMenuIsOpen (= current-menu "main")
-      :mainMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "main") "main")])
-                          :aria-controls "menu"}
-      :mainMenuItems (borrow-menu-items true)
-      :cartItemCount cart-item-count
-      :invalidCartItemCount invalid-cart-item-count
-      :cartItemLinkProps {:href (routing/path-for ::routes/shopping-cart)
-                          :title (t :cart-item/menu-title)}
-      :userMenuIsOpen (= current-menu "user")
-      :userProfileShort (get-initials (:name current-profile))
-      :userMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "user") "user")])
-                          :aria-controls "user-menu"
-                          :title (t :user/menu-title)}
-      :appMenuIsOpen (= current-menu "app")
-      :appMenuLinkLabel (when (show-app-menu? user-nav) (t :app-switch/button-label))
-      :appMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "app") "app")])
-                         :aria-controls "app-menu"
-                         :title (t :app-switch/menu-title)}}]))
+  (reagent/with-let [now (reagent/atom (js/Date.))
+                     timer-fn  (js/setInterval #(reset! now (js/Date.)) 1000)]
+    (let [cart-item-count @(subscribe [::cart-item-count])
+          invalid-cart-item-count @(subscribe [::invalid-cart-item-count])
+          cart-valid-until @(subscribe [::cart-valid-until])
+          cart-remaining-seconds (max 0 (datefn/differenceInSeconds cart-valid-until @now))
+          cart-remaining-minutes (if (js/Number.isNaN cart-remaining-seconds)
+                                   ##NaN
+                                   (-> cart-remaining-seconds (/ 60) int))
+          menu-data @(subscribe [::menu-data])
+          current-menu (:current-menu menu-data)
+          current-profile @(subscribe [::current-profile])
+          user-nav @(subscribe [::user-nav])]
+      [:> UI/Components.Design.Topnav
+       {:brandName "Leihs"
+        :brandLinkProps {:href (routing/path-for ::routes/home)}
+        :mainMenuIsOpen (= current-menu "main")
+        :mainMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "main") "main")])
+                            :aria-controls "menu"}
+        :mainMenuItems (borrow-menu-items true)
+        :cartItemCount cart-item-count
+        :invalidCartItemCount invalid-cart-item-count
+        :cartItemLinkProps {:href (routing/path-for ::routes/shopping-cart)
+                            :title (t :cart-item/menu-title)}
+        :cartRemainingMinutes cart-remaining-minutes
+        :cartExpired (< cart-remaining-seconds 0)
+        :userMenuIsOpen (= current-menu "user")
+        :userProfileShort (get-initials (:name current-profile))
+        :userMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "user") "user")])
+                            :aria-controls "user-menu"
+                            :title (t :user/menu-title)}
+        :appMenuIsOpen (= current-menu "app")
+        :appMenuLinkLabel (when (show-app-menu? user-nav) (t :app-switch/button-label))
+        :appMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "app") "app")])
+                           :aria-controls "app-menu"
+                           :title (t :app-switch/menu-title)}}])
+    (finally (js/clearInterval timer-fn))))
 
 (defn main-nav []
   (let [user-loaded @(subscribe [::user-loaded])

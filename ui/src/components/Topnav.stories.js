@@ -87,6 +87,14 @@ export const moreExamples = () => {
       <div className="mb-3">
         <Topnav cartItemCount={3} invalidCartItemCount={1} />
       </div>
+      <p className="text-muted">With timeout soon</p>
+      <div className="mb-3">
+        <Topnav cartItemCount={3} cartRemainingMinutes={5} />
+      </div>
+      <p className="text-muted">With timeout reached</p>
+      <div className="mb-3">
+        <Topnav cartItemCount={3} cartRemainingMinutes={-1} cartExpired={true} />
+      </div>
     </div>
   )
 }

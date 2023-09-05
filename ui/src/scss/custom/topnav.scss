@@ -74,6 +74,10 @@
   display: flex;
   align-items: center;
 
+  &--expired {
+    color: $red;
+  }
+
   &__badge {
     margin-left: -5px;
     background-color: $body-color;
@@ -88,6 +92,22 @@
 
     &--with-conflict {
       background-color: $red !important;
+    }
+
+    &--expiring-soon {
+      @keyframes flickerAnimation {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+      background-color: $red !important;
+      animation: flickerAnimation 2s infinite;
     }
   }
 }

@@ -333,6 +333,9 @@
 (reg-sub ::order-success-data
          (fn [db _] (-> db (get-in [::data :order-success]))))
 
+(reg-sub ::valid-until
+         (fn [db _] (-> db (get-in [::data :valid-until]))))
+
 (defn order-panel-texts []
   ;; NOTE: maybe add a helper function for this in lib.translate?
   {:label (clj->js (get-in translations/dict [:borrow :order-panel :label]))

@@ -9,6 +9,8 @@ export default function Topnav({
 
   cartItemCount,
   invalidCartItemCount = 0,
+  cartRemainingMinutes,
+  cartExpired,
   cartItemLinkProps = {},
 
   // main menu mobile
@@ -30,6 +32,7 @@ export default function Topnav({
   ...restProps
 }) {
   const showCartCounter = !!cartItemCount || cartItemCount === 0
+  const cartExpiringSoon = cartRemainingMinutes <= 5
 
   return (
     <nav className={cx('ui-main-nav topnav', className)} {...restProps}>
@@ -64,15 +67,28 @@ export default function Topnav({
       {/* Buttons on the right hand side */}
       <div className="topnav__right-buttons">
         {/* Cart */}
-        <a role="button" className="ui-cart-item-link topnav__cart-item-link cart-icon" {...cartItemLinkProps}>
+        <a
+          role="button"
+          className={cx('ui-cart-item-link topnav__cart-item-link cart-icon', {
+            'cart-icon--expired': cartExpired
+          })}
+          {...cartItemLinkProps}
+        >
           <Icon icon={iconBag} />
           {showCartCounter && (
             <div
               className={cx('cart-icon__badge', {
-                'cart-icon__badge--with-conflict': invalidCartItemCount > 0
+                'cart-icon__badge--with-conflict': invalidCartItemCount > 0,
+                'cart-icon__badge--expiring-soon': cartExpiringSoon
               })}
             >
-              <span>{invalidCartItemCount > 0 ? '!' : cartItemCount}</span>
+              <span>
+                {cartExpiringSoon
+                  ? Math.max(0, cartRemainingMinutes) + '′'
+                  : invalidCartItemCount > 0
+                  ? '!'
+                  : cartItemCount}
+              </span>
             </div>
           )}
         </a>
@@ -120,6 +136,10 @@ Topnav.propTypes = {
   cartItemCount: PropTypes.node,
   /** When a number greater than zero is given, the cart icon is decorated with a warning symbol */
   invalidCartItemCount: PropTypes.number,
+  /** When a number 5 or lesser is given, the cart icon will flicker and show the minutes left  */
+  cartRemainingMinutes: PropTypes.number,
+  /** When true, the cart icon will get red */
+  cartExpired: PropTypes.bool,
   /** Props for the `a` element around the cart icon */
   cartItemLinkProps: PropTypes.object,
 
