@@ -1,9 +1,12 @@
 (ns leihs.borrow.resources.images
-  (:require [clojure.java.jdbc :as jdbc]
-            [clojure.tools.logging :as log]
-            [compojure.core :as cpj]
-            [leihs.borrow.paths :refer [path]]
-            [leihs.core.sql :as sql])
+  (:require 
+    [clojure.java.jdbc :as jdbc ]
+    [clojure.tools.logging :as log]
+    [compojure.core :as cpj]
+    [leihs.borrow.paths :refer [path]]
+    [leihs.core.sql :as sql]
+    [logbug.debug :as debug]
+    [taoensso.timbre :refer [debug error info spy warn]])
   (:import java.util.Base64))
 
 (def image-base-query
@@ -48,15 +51,26 @@
       sql/format
       (query tx)))
 
+(defn set-cache-control-header [response request]
+  (warn request)
+  (-> response
+      (assoc-in 
+        [:headers "Cache-Control"] 
+        (if (get-in request  [:settings :public_image_caching_enabled])
+          "public, max-age=31536000, immutable"
+          "private"))))
+
 (defn handler-one
-  [{tx :tx, {image-id :image-id} :route-params}]
+  [{tx :tx, {image-id :image-id} :route-params :as request}]
+  (warn request)
   (if-let [image (get-one tx image-id)]
-    (->> image
+    (-> image
          :content
-         (.decode (Base64/getMimeDecoder))
-         (hash-map :body)
+         (->> (.decode (Base64/getMimeDecoder))
+              (hash-map :body))
          (merge {:headers {"Content-Type" (:content_type image),
-                           "Content-Transfer-Encoding" "binary"}}))
+                           "Content-Transfer-Encoding" "binary"}})
+         (set-cache-control-header request))
     {:status 404}))
 
 ;#### debug ###################################################################
