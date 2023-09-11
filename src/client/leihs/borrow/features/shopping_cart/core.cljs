@@ -499,7 +499,7 @@
           valid-until (-> data :valid-until datefn/parseISO)
           total-minutes 30
           remaining-seconds  (max 0 (datefn/differenceInSeconds valid-until @now))
-          remaining-minutes (int (/ remaining-seconds 60))]
+          remaining-minutes (-> remaining-seconds (/ 60) (js/Math.ceil))]
       [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible false}
        [:> UI/Components.Design.Stack {:space 3}
         [:> UI/Components.Design.ProgressInfo {:title (t :countdown/time-limit)
