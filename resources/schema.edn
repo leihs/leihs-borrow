@@ -115,8 +115,6 @@
                                             :resolve :inventory-pools}
                            :unsubmittedOrder {:type :UnsubmittedOrder
                                               :resolve :cart}
-                           :draftOrder {:type :DraftOrder
-                                        :resolve :draft-order}
                            :favoriteModels {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
                                                    :orderBy {:type (list :ModelsOrderByInput)}
                                                    :searchTerm {:type String}
@@ -136,10 +134,6 @@
                                                       :resolve :reservations}
                                        :invalidReservationIds {:type (list (non-null :UUID))}
                                        :userId {:type :UUID}}}
-           :DraftOrder {:fields {:reservations {:type (list (non-null :Reservation))
-                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
-                                                :resolve :reservations}
-                                 :invalidReservationIds {:type (list (non-null :UUID))}}}
            :CurrentUser {:fields {:id {:type (non-null :UUID)
                                        :description "Same as user ID"}
                                   :user {:type :User}

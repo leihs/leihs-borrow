@@ -107,26 +107,28 @@
       first
       :result))
 
-(defn broken [tx user-id]
-  (let [urs (-> (unsubmitted-sqlmap tx user-id)
-                sql/format
-                (query tx))
-        start-end->pool-ids
-          (->> urs
-               (group-by #(-> % (select-keys [:start_date :end_date]) vals))
-               (map (fn [[[start end :as start-end] _]]
-                      [start-end (map :id (pools/to-reserve-from tx user-id start end))])))]
-    (reduce (fn [brs r]
-              (cond-> brs
-                (or (let [pool-ids (->> start-end->pool-ids
-                                        (filter #(= (first %) [(:start_date r) (:end_date r)]))
-                                        first
-                                        second)]
-                      (not (some #{(:inventory_pool_id r)} pool-ids)))
-                    (not (complies-with-max-reservation-time? tx r)))
-                (conj r)))
-            []
-            urs)))
+(defn broken
+  ([tx user-id]
+   (broken tx user-id (-> (unsubmitted-sqlmap tx user-id)
+                          sql/format
+                          (query tx))))
+  ([tx user-id rs]
+   (let [start-end->pool-ids
+         (->> rs
+              (group-by #(-> % (select-keys [:start_date :end_date]) vals))
+              (map (fn [[[start end :as start-end] _]]
+                     [start-end (map :id (pools/to-reserve-from tx user-id start end))])))]
+     (reduce (fn [brs r]
+               (cond-> brs
+                 (or (let [pool-ids (->> start-end->pool-ids
+                                         (filter #(= (first %) [(:start_date r) (:end_date r)]))
+                                         first
+                                         second)]
+                       (not (some #{(:inventory_pool_id r)} pool-ids)))
+                     (not (complies-with-max-reservation-time? tx r)))
+                 (conj r)))
+             []
+             rs))))
 
 (defn with-invalid-availability
   [{{:keys [tx]} :request :as context} reservations]
@@ -322,33 +324,6 @@
         sql/format
         (query tx))))
 
-#_(defn unsubmitted-for-affiliated-user-exists?
-    "Returns true if there exists some reservation created either
-  for oneself or for one's delegation which is different from `user-id`.
-  It means that there is already some shopping cart open for such a user.
-  A user can have only one shopping cart open: either for oneself or for
-  one's delegation."
-    [tx user-id auth-user-id]
-    (let [d-ids (->> auth-user-id
-                     (delegations/get-multiple-by-user-id tx)
-                     (map :id))]
-      (-> (sql/select {:exists
-                       (-> (sql/select true)
-                           (sql/from :reservations)
-                           (sql/where [:= :status "unsubmitted"])
-                           (sql/merge-where (cond
-                                              (and (= user-id auth-user-id) (not (empty? d-ids)))
-                                              [:in :user_id d-ids]
-                                              (and (= user-id auth-user-id) (empty? d-ids))
-                                              false
-                                              (some #{user-id} d-ids)
-                                              [:= :user_id auth-user-id]
-                                              :else (raise "No condition met."))))})
-          sql/format
-          (->> (jdbc/query tx))
-          first
-          :exists)))
-
 (defn create
   [{{:keys [tx] {auth-user-id :id} :authenticated-entity} :request
     user-id ::target-user/id
@@ -361,8 +336,6 @@
    _]
   (when-not (models/reservable? context args {:id model-id})
     (raise "Model either does not exist or is not reservable by the user."))
-  #_(when (unsubmitted-for-affiliated-user-exists? tx user-id auth-user-id)
-      (raise "There already exists an unsubmitted reservation for another user."))
   (when-not (->> (pools/to-reserve-from tx user-id start-date end-date)
                  (map :id)
                  (some #{pool-id}))

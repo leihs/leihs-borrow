@@ -11,7 +11,8 @@ Feature: Invalid reservations
 
     When I log in as the user
     And I navigate to the cart
-    And I see "29 minutes left"
+    And I click on "Reset time limit"
+    And I see "30 minutes left"
     Then I see the following lines in the "Items" section:
       | title                       |
       | 1× Start Date In Past       |

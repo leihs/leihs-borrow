@@ -25,6 +25,7 @@ Feature: Shopping Cart - Editing Reservations
       | 1        | Tripod      | Pool A | ${Date.today}       | ${1.day.from_now}  |
     And I log in as the user
     When I navigate to the cart
+    And I sleep "0.5"
     Then I see the following lines in the "Items" section:
       | title          | body   | foot                      |
       | 1× DSLR Camera | Pool A | 3 days from ${Date.today} |
@@ -56,6 +57,7 @@ Feature: Shopping Cart - Editing Reservations
 
     When I click on "Confirm"
     And the "Edit reservation" dialog has closed
+    And I sleep "0.5"
     Then I see the following lines in the "Items" section:
       | title          | body   | foot                      |
       | 3× DSLR Camera | Pool A | 3 days from ${Date.today} |
@@ -84,6 +86,7 @@ Feature: Shopping Cart - Editing Reservations
       | 1        | Tripod      | Pool A | ${Date.today}       | ${Date.tomorrow}   |
     And I log in as the user
     When I navigate to the cart
+    And I sleep "0.5"
     Then I see the following lines in the "Items" section:
       | title          | body   | foot                      |
       | 1× DSLR Camera | Pool A | 3 days from ${Date.today} |
@@ -93,6 +96,7 @@ Feature: Shopping Cart - Editing Reservations
     And I see the "Edit reservation" dialog
     And I click on "Remove reservation"
     And the "Edit reservation" dialog has closed
+    And I sleep "0.5"
     Then I see the following lines in the "Items" section:
       | title     | body   | foot                      |
       | 1× Tripod | Pool A | 2 days from ${Date.today} |

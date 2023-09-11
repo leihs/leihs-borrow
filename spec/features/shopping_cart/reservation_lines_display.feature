@@ -33,6 +33,7 @@ Feature: Shopping Cart - Display of Reservation Lines
       | 1        | Tripod      | Pool B | ${Date.today}       | ${Date.tomorrow}    |
     When I log in as the user
     And I navigate to the cart
+    And I sleep "0.5"
     Then I see the following lines in the "Items" section:
       | title          | body   | foot                            |
       | 2× DSLR Camera | Pool A | 2 days from ${Date.today}       |
@@ -60,6 +61,7 @@ Feature: Shopping Cart - Display of Reservation Lines
       | 1        | Tripod      | Pool B | ${Date.today}       | ${Date.tomorrow}    |
     When I log in as the user
     And I navigate to the cart
+    And I sleep "0.5"
     Then I see the following lines in the "Items" section:
       | title          | body   | foot                            |
       | 1× DSLR Camera | Pool A | 2 days from ${Date.today}       |
@@ -86,6 +88,7 @@ Feature: Shopping Cart - Display of Reservation Lines
     When I click on the user profile button
     And I click on "English (UK)"
     And I navigate to the cart
+    And I sleep "0.5"
     Then I see the following lines in the "Items" section:
       | title          | body   | foot                 |
       | 1× DSLR Camera | Pool A | 1 day from 13/02/01  |
@@ -94,6 +97,7 @@ Feature: Shopping Cart - Display of Reservation Lines
     When I click on the user profile button
     And I click on "Züritüütsch"
     And I navigate to the cart
+    And I sleep "0.5"
     Then I see the following lines in the "Gegenstände" section:
       | title          | body   | foot              |
       | 1× DSLR Camera | Pool A | 1 Tag ab 13.2.01  |

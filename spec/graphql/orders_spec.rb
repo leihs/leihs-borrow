@@ -37,6 +37,13 @@ describe 'orders' do
     )
   end
 
+  let(:inventory_pool_3) do
+    FactoryBot.create(
+      :inventory_pool, :with_mail_templates,
+      id: 'cf623c28-a322-4830-8d7b-e1de077ec055'
+    )
+  end
+
   let(:model_1) do
     FactoryBot.create(:leihs_model,
                       id: '98d398e7-08b3-49d4-807c-42a3eac07de9')
@@ -62,6 +69,10 @@ describe 'orders' do
                       user: user)
 
     FactoryBot.create(:direct_access_right,
+                      inventory_pool: inventory_pool_3,
+                      user: user)
+
+    FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool_1,
                       user: user_2)
   end
@@ -77,13 +88,13 @@ describe 'orders' do
       model_1.add_item(
         FactoryBot.create(:item,
                           is_borrowable: true,
-                          responsible: inventory_pool_2)
+                          responsible: inventory_pool_3)
       )
 
       model_2.add_item(
         FactoryBot.create(:item,
                           is_borrowable: true,
-                          responsible: inventory_pool_2)
+                          responsible: inventory_pool_3)
       )
 
       start_date = Date.tomorrow
@@ -99,14 +110,14 @@ describe 'orders' do
       FactoryBot.create(:reservation,
                         id: '20fbda2e-9265-4728-8e70-418c2b348d8a',
                         leihs_model: model_1,
-                        inventory_pool: inventory_pool_2,
+                        inventory_pool: inventory_pool_3,
                         start_date: start_date,
                         end_date: end_date,
                         user: user)
       FactoryBot.create(:reservation,
                         id: 'bf7080fb-2118-472e-8cff-50a51d648389',
                         leihs_model: model_2,
-                        inventory_pool: inventory_pool_2,
+                        inventory_pool: inventory_pool_3,
                         start_date: start_date,
                         end_date: end_date,
                         user: user)
@@ -162,19 +173,19 @@ describe 'orders' do
             { id: 'bf7080fb-2118-472e-8cff-50a51d648389' }
           ],
           subOrdersByPool: [
-            { inventoryPool: { id: '4e2f1362-0891-4df7-b760-16a2a8d3373f' },
-              reservations: [
-                { id: '20fbda2e-9265-4728-8e70-418c2b348d8a',
-                  status: 'SUBMITTED' },
-                { id: 'bf7080fb-2118-472e-8cff-50a51d648389',
-                  status: 'SUBMITTED' }
-              ],
-              state: 'SUBMITTED'
-            },
             { inventoryPool: { id: '8633ce17-37da-4802-a377-66ca78291d0a' },
               reservations: [
                 { id: '100ffcc9-5401-415b-9185-5fffa8e5c526',
                   status: 'SUBMITTED' }
+              ],
+              state: 'SUBMITTED'
+            },
+            { inventoryPool: { id: 'cf623c28-a322-4830-8d7b-e1de077ec055' },
+              reservations: [
+                { id: '20fbda2e-9265-4728-8e70-418c2b348d8a',
+                  status: 'SUBMITTED' },
+                  { id: 'bf7080fb-2118-472e-8cff-50a51d648389',
+                    status: 'SUBMITTED' }
               ],
               state: 'SUBMITTED'
             }
@@ -182,15 +193,25 @@ describe 'orders' do
         }
       })
       expect(result[:errors]).to be_nil
-      expect(Email.count).to eq 2
-      expect(Email.first(inventory_pool_id: inventory_pool_1.id,
-                         to_address: inventory_pool_1.email,
-                         from_address: inventory_pool_1.email,
-                         subject: "[leihs] Order received")).to be
-      expect(Email.first(user_id: user.id,
-                         to_address: user.email,
-                         from_address: inventory_pool_1.email,
-                         subject: "[leihs] Reservation abgeschickt")).to be
+      expect(Email.count).to eq 4
+
+      expect(Email.find(inventory_pool_id: inventory_pool_1.id,
+                        to_address: inventory_pool_1.email,
+                        from_address: inventory_pool_1.email,
+                        subject: "[leihs] Order received")).to be
+      expect(Email.find(inventory_pool_id: inventory_pool_3.id,
+                        to_address: inventory_pool_3.email,
+                        from_address: inventory_pool_3.email,
+                        subject: "[leihs] Order received")).to be
+
+      expect(Email.find(user_id: user.id,
+                        to_address: user.email,
+                        from_address: inventory_pool_1.email,
+                        subject: "[leihs] Reservation abgeschickt")).to be
+      expect(Email.find(user_id: user.id,
+                        to_address: user.email,
+                        from_address: inventory_pool_3.email,
+                        subject: "[leihs] Reservation abgeschickt")).to be
     end
 
     it 'fails due to availability validation' do

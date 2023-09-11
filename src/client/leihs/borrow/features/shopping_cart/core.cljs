@@ -40,7 +40,8 @@
  (fn-traced [{:keys [db]} [_ _]]
    {:db (-> db
             (assoc ::edit-mode nil)
-            (assoc ::errors  nil))
+            (assoc ::errors nil)
+            (assoc ::loading true))
     :dispatch [::re-graph/query
                (rc/inline "leihs/borrow/features/shopping_cart/getShoppingCart.gql")
                {:userId (current-user/get-current-profile-id db)}
@@ -50,12 +51,20 @@
  ::on-fetched-data
  (fn-traced [db [_ {:keys [data errors]}]]
    (if errors
-     (-> db (assoc ::errors errors))
+     (-> db 
+         (assoc ::loading nil)
+         (assoc ::errors errors))
      (-> db
+         (assoc ::loading nil)
          (assoc-in [:ls ::data]
                    (get-in data [:current-user :user :unsubmitted-order]))
          (assoc-in [:ls ::settings]
                    (get-in data [:current-user :settings]))))))
+
+(reg-event-db
+ ::set
+ (fn-traced [db [_ cart-data]]
+   (assoc-in db [:ls ::data] cart-data)))
 
 (defn pool-ids-with-reservable-quantity [db]
   (let [quants (get-in db [::edit-mode
@@ -336,6 +345,9 @@
 (reg-sub ::valid-until
          (fn [db _] (-> db (get-in [::data :valid-until]))))
 
+(reg-sub ::loading
+         (fn [db _] (-> db (get ::loading))))
+
 (defn order-panel-texts []
   ;; NOTE: maybe add a helper function for this in lib.translate?
   {:label (clj->js (get-in translations/dict [:borrow :order-panel :label]))
@@ -499,7 +511,8 @@
           valid-until (-> data :valid-until datefn/parseISO)
           total-minutes 30
           remaining-seconds  (max 0 (datefn/differenceInSeconds valid-until @now))
-          remaining-minutes (int (/ remaining-seconds 60))]
+          remaining-minutes (-> remaining-seconds (/ 60) (js/Math.ceil))
+          waiting? @(subscribe [::timeout/waiting])]
       [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible false}
        [:> UI/Components.Design.Stack {:space 3}
         [:> UI/Components.Design.ProgressInfo {:title (t :countdown/time-limit)
@@ -512,7 +525,9 @@
                                                :totalCount (* 60 total-minutes)
                                                :doneCount (- (* 60 total-minutes) remaining-seconds)}]
         [:> UI/Components.Design.ActionButtonGroup
-         [:button.btn.btn-secondary {:type "button" :on-click #(dispatch [::timeout/refresh])} (t :countdown/reset)]]]])
+         [:button.btn.btn-secondary {:type "button" :on-click #(dispatch [::timeout/refresh])}
+          (when waiting? [:<> [:> UI/Components.Design.Spinner] " "])
+          (t :countdown/reset)]]]])
     (finally (js/clearInterval timer-fn))))
 
 (defn no-valid-items []
@@ -663,11 +678,13 @@
           reservations @(subscribe [::reservations])
           grouped-reservations @(subscribe [::reservations-grouped])
           edit-mode-data @(subscribe [::edit-mode-data])
-          is-loading? (not (or data errors))]
+          is-initial-loading? (not (or data errors))
+          is-loading? @(subscribe [::loading])
+          refreshing-timeout? @(subscribe [::timeout/waiting])]
 
       [:> UI/Components.Design.PageLayout.ContentContainer
        (cond
-         is-loading? [ui/loading]
+         is-initial-loading? [ui/loading]
 
          errors [ui/error-view errors]
 
@@ -700,7 +717,14 @@
            (when (not-empty (:delegations user-data))
              [delegation-section])
 
-           [:> UI/Components.Design.Section {:title (t :line/section-title) :collapsible true}
+           [:> UI/Components.Design.Section
+            {:class :position-relative
+             :title (reagent/as-element
+                     [:<>
+                      (t :line/section-title)
+                      (when (or is-loading? refreshing-timeout?)
+                        [:div.position-absolute {:style {:right "0" :top "3px"}} [:> UI/Components.Design.Spinner]])])
+             :collapsible true}
             [:> UI/Components.Design.ListCard.Stack
              (doall
               (for [[grouped-key res-lines] grouped-reservations]

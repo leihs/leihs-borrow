@@ -74,8 +74,7 @@
       :dispatch-n (list
                    #_[::requests/abort-running-queries] ; disabled for now, see #1294
                    [::scroll-to-top true]
-                   [(:handler bidi-match) bidi-match]
-                   [:leihs.borrow.features.shopping-cart.timeout/refresh])})))
+                   [(:handler bidi-match) bidi-match])})))
 
 (reg-event-fx
  :routing/navigate

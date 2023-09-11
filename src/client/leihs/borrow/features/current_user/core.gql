@@ -20,6 +20,30 @@ query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID, $includeL
           id
         }
       }
+      unsubmittedOrder {
+        validUntil
+        reservations {
+          id
+          inventoryPool {
+            id
+            name
+          }
+          model {
+            id
+            name
+            images {
+              id
+              imageUrl
+            }
+            coverImage {
+              id
+              imageUrl
+            }
+          }
+        }
+        invalidReservationIds
+        userId
+      }
     }
     languageToUse {
       locale

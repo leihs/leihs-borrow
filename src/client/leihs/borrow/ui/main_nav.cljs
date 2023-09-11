@@ -150,7 +150,7 @@
           cart-remaining-seconds (max 0 (datefn/differenceInSeconds cart-valid-until @now))
           cart-remaining-minutes (if (js/Number.isNaN cart-remaining-seconds)
                                    ##NaN
-                                   (-> cart-remaining-seconds (/ 60) int))
+                                   (-> cart-remaining-seconds (/ 60) (js/Math.ceil)))
           menu-data @(subscribe [::menu-data])
           current-menu (:current-menu menu-data)
           current-profile @(subscribe [::current-profile])
@@ -167,7 +167,7 @@
         :cartItemLinkProps {:href (routing/path-for ::routes/shopping-cart)
                             :title (t :cart-item/menu-title)}
         :cartRemainingMinutes cart-remaining-minutes
-        :cartExpired (< cart-remaining-seconds 0)
+        :cartExpired (<= cart-remaining-seconds 0)
         :userMenuIsOpen (= current-menu "user")
         :userProfileShort (get-initials (:name current-profile))
         :userMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "user") "user")])

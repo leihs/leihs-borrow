@@ -66,7 +66,8 @@
                         current-delegation (:delegation data)
                         session-id (:session-id current-user-data)
                         ls-session-id (-> db :ls ::data :session-id)
-                        languages-data (:languages data)]
+                        languages-data (:languages data)
+                        cart-data (-> current-user-data :user :unsubmitted-order)]
                     (list (when (not= session-id ls-session-id)
                             [::browser-storage/clear-session-storage])
                           [::set (merge current-user-data
@@ -74,6 +75,7 @@
                                                    (some #(= (:id %) (:id current-delegation))
                                                          (-> current-user-data :user :delegations)))
                                           {:current-delegation current-delegation}))]
+                          [:leihs.borrow.features.shopping-cart.core/set cart-data]
                           (when (seq languages-data)
                             [::languages/set-languages languages-data])))})))
 

@@ -9,7 +9,7 @@
             [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as rs]
-            [leihs.borrow.time :as time :refer [past?]]
+            [leihs.borrow.time :as time :refer [past-date?]]
             [leihs.core.database.helpers :as database]
             [leihs.core.db :as ds]
             [leihs.core.settings :refer [settings!]]
@@ -52,10 +52,10 @@
                 :reservation_ids
                 (rs/get-by-ids tx))
         expired? (some #(and (contains? #{"submitted" "approved"} (:status %))
-                             (past? (:end_date %)))
+                             (past-date? (:end_date %)))
                        rs)
         overdue? (some #(and (-> % :status (= "signed"))
-                             (past? (:end_date %)))
+                             (past-date? (:end_date %)))
                        rs)
         states (-> row
                    :reservation_states
@@ -322,8 +322,16 @@
       first
       :updated_at))
 
+(defn validate-cart! [{{:keys [tx]} :request user-id ::target-user/id :as context}]
+  (rs/draft->unsubmitted tx user-id)
+  (when-some [broken-rs (not-empty (rs/broken tx user-id))]
+    (->> broken-rs (map :id) (rs/unsubmitted->draft tx)))
+  (when-some [invalid-rs (not-empty (rs/unsubmitted-with-invalid-availability context))]
+    (->> invalid-rs (map :id) (rs/unsubmitted->draft tx))))
+
 (defn get-cart
   [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
+  (validate-cart! context)
   (let [rs (-> (rs/unsubmitted-and-draft-sqlmap tx user-id)
                sql/format
                (rs/query tx))
@@ -335,25 +343,17 @@
        :invalidReservationIds (->> (rs/get-drafts tx user-id) (map :id))
        :user-id user-id})))
 
-(defn get-draft
-  [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
-  (let [rs  (-> (rs/draft-sqlmap tx user-id)
-                sql/format
-                (rs/query tx))]
-    {:reservations rs
-     :invalidReservationIds (as-> rs <>
-                              (rs/with-invalid-availability context <>)
-                              (map :id <>))}))
-
 (defn submit
   [{{:keys [tx]} :request user-id ::target-user/id :as context}
    {:keys [purpose title contact-details lending-terms-accepted]}
    _]
   (let [reservations (rs/unsubmitted tx user-id)]
-    (if (empty? reservations)
+    (when (empty? reservations)
       (throw (ex-info "User does not have any unsubmitted reservations." {})))
-    (if-not (empty? (rs/with-invalid-availability context reservations))
+    (when-not (empty? (rs/with-invalid-availability context reservations))
       (throw (ex-info "Some reserved quantities are not available anymore." {})))
+    (when-not (empty? (rs/broken tx user-id reservations))
+      (throw (ex-info "Some combination of start/end date and pool has become invalid." {})))
     (when-not lending-terms-accepted
       (when (-> (settings! tx [:lending_terms_acceptance_required_for_order])
                 :lending_terms_acceptance_required_for_order)
@@ -442,13 +442,12 @@
                        (->> (jdbc/query tx)))]
     created-rs))
 
+(defn extend-valid-until! [tx user-id]
+  (when-some [unsub-rs (not-empty (rs/unsubmitted tx user-id))]
+    (->> unsub-rs (map :id) (rs/touch! tx))))
+
 (defn refresh-timeout
   [{{:keys [tx]} :request user-id ::target-user/id :as context} args value]
-  (rs/draft->unsubmitted tx user-id)
-  (when-some [broken-rs (not-empty (rs/broken tx user-id))]
-    (->> broken-rs (map :id) (rs/unsubmitted->draft tx)))
-  (when-some [invalid-rs (not-empty (rs/unsubmitted-with-invalid-availability context))]
-    (->> invalid-rs (map :id) (rs/unsubmitted->draft tx)))
-  (when-some [unsub-rs (not-empty (rs/unsubmitted tx user-id))]
-    (->> unsub-rs (map :id) (rs/touch! tx)))
+  (validate-cart! context)
+  (extend-valid-until! tx user-id)
   {:unsubmitted-order (get-cart context args value)})

@@ -47,6 +47,7 @@ Feature: Shopping Cart - Filling out title and purpose
 
     And I log in as the user
     And I navigate to the cart
+    And I sleep "0.5"
     And I click on "Send order"
     And I enter "Movie Shoot" in the "Title" field
 
@@ -63,6 +64,7 @@ Feature: Shopping Cart - Filling out title and purpose
 
     And I log in as the user
     And I navigate to the cart
+    And I sleep "0.5"
     And I click on "Send order"
     And I enter "Movie Shoot" in the "Title" field
 

@@ -53,6 +53,9 @@ describe 'currentUser' do
                             inventory_pool: pool_A,
                             start_date: Date.tomorrow,
                             end_date: Date.tomorrow + 5.days)
+    res_model.add_item(
+      FactoryBot.create(:item, responsible: pool_A, is_borrowable: true)
+    )
 
     model_1 = FactoryBot.create(:leihs_model, product: 'Model A')
     model_2 = FactoryBot.create(:leihs_model, product: 'Model B')
