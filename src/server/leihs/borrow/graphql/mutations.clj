@@ -16,6 +16,7 @@
    :favorite-model favorites/create
    :delete-reservations reservations/delete
    :refresh-timeout orders/refresh-timeout
+   :refresh-timeout-and-get-cart orders/refresh-timeout-and-get-cart
    :submit-order orders/submit
    :testing-mutate testing/mutate
    :unfavorite-model favorites/delete})

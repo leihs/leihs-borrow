@@ -376,7 +376,7 @@ enum RefinedRentalStateEnum {
 }
 
 type RefreshTimeoutResult {
-  unsubmittedOrder: UnsubmittedOrder
+  validUntil: DateTime
 }
 
 type Rental {

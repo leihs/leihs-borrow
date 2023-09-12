@@ -28,7 +28,8 @@
    [leihs.borrow.features.model-show.availability :as availability]
    [leihs.borrow.translations :as translations]
    [leihs.borrow.lib.prefs :as prefs]
-   ["/borrow-ui" :as UI]))
+   ["/borrow-ui" :as UI]
+   [clojure.set :as set]))
 
 (set-default-translate-path :borrow.shopping-cart)
 
@@ -51,15 +52,37 @@
  ::on-fetched-data
  (fn-traced [db [_ {:keys [data errors]}]]
    (if errors
-     (-> db 
+     (-> db
          (assoc ::loading nil)
          (assoc ::errors errors))
      (-> db
          (assoc ::loading nil)
          (assoc-in [:ls ::data]
                    (get-in data [:current-user :user :unsubmitted-order]))
+         (dissoc-in [:ls ::data :pending-count])
          (assoc-in [:ls ::settings]
                    (get-in data [:current-user :settings]))))))
+
+(reg-event-fx
+ ::refresh-timeout-and-get-cart
+ (fn-traced [{:keys [db]} [_ _]]
+   {:db (-> db
+            (assoc ::refreshing true))
+    :dispatch [::re-graph/mutate
+               (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeoutAndGetCart.gql")
+               {:userId (current-user/get-current-profile-id db)}
+               [::on-refresh-timeout-and-get-cart]]}))
+
+(reg-event-db
+ ::on-refresh-timeout-and-get-cart
+ (fn-traced [db [_ {:keys [data errors]}]]
+   (if errors
+     (-> db
+         (assoc ::refreshing nil)
+         (assoc ::errors errors))
+     (-> db
+         (assoc ::refreshing nil)
+         (assoc-in [:ls ::data] (:refresh-timeout-and-get-cart data))))))
 
 (reg-event-db
  ::set
@@ -144,9 +167,7 @@
 (reg-event-fx
  ::delete-reservations
  (fn-traced [{:keys [db]} [_ ids]]
-   {:db (-> db
-            (assoc-in [:ls ::data :pending-count] (- 0 (count ids))))
-    :dispatch [::re-graph/mutate
+   {:dispatch [::re-graph/mutate
                (rc/inline "leihs/borrow/features/shopping_cart/deleteReservationLines.gql")
                {:ids ids}
                [::on-delete-reservations]]}))
@@ -155,7 +176,6 @@
  ::delete-all-reservations
  (fn-traced [{:keys [db]} [_ ids]]
    {:db (-> db
-            (assoc-in [:ls ::data :pending-count] (- 0 (count ids)))
             (assoc-in [::data :delete-dialog :is-saving?] true))
     :dispatch [::re-graph/mutate
                (rc/inline "leihs/borrow/features/shopping_cart/deleteReservationLines.gql")
@@ -167,13 +187,12 @@
  (fn-traced [{:keys [db]} [_ {{ids :delete-reservation-lines} :data errors :errors}]]
    (if errors
      {:db (-> db
-              (dissoc-in [:ls ::data :pending-count])
               (dissoc-in [::data :delete-dialog :is-saving?]))
       :dispatch [::errors/add-many errors]}
      {:db (-> db
               (update-in [:ls ::data :reservations]
                          (partial filter #(->> % :id ((set ids)) not)))
-              (dissoc-in [:ls ::data :pending-count])
+              (update-in [:ls ::data :invalid-reservation-ids] #(set/difference (set %) (set ids)))
               (dissoc-in [::data :delete-dialog])
               (dissoc-in [::edit-mode]))
       :dispatch [::timeout/refresh]})))
@@ -200,7 +219,8 @@
                        :start-date start-date
                        :end-date end-date
                        :quantity quantity
-                       :user-id user-id})
+                       :user-id user-id
+                       :original-quantity (count res-lines)})
         :dispatch [::fetch-availability
                    (h/date-format-day start-of-current-month)
                    (h/date-format-day fetch-until-date)]}))))
@@ -257,9 +277,9 @@
  ::update-reservations
  (fn-traced [{:keys [db]} [_ args]]
    (let [new-quantity (:quantity args)
-         original-quantity (-> db ::edit-mode :original-quantity)]
+         old-quantity (-> db ::edit-mode :original-quantity)]
      {:db (-> db
-              (assoc-in [:ls ::data :pending-count] (- new-quantity original-quantity))
+              (update-in [:ls ::data :pending-count] + (- new-quantity old-quantity))
               (assoc-in [::edit-mode :is-saving?] true))
       :dispatch [::re-graph/mutate
                  (rc/inline "leihs/borrow/features/shopping_cart/updateReservations.gql")
@@ -347,6 +367,9 @@
 
 (reg-sub ::loading
          (fn [db _] (-> db (get ::loading))))
+
+(reg-sub ::refreshing
+         (fn [db _] (-> db (get ::refreshing))))
 
 (reg-sub ::settings
          (fn [db _] (-> db (get-in [:ls ::settings]))))
@@ -516,7 +539,7 @@
           total-minutes (-> settings :timeout-minutes)
           remaining-seconds  (max 0 (datefn/differenceInSeconds valid-until @now))
           remaining-minutes (-> remaining-seconds (/ 60) (js/Math.ceil))
-          waiting? @(subscribe [::timeout/waiting])]
+          is-refreshing? @(subscribe [::refreshing])]
       [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible false}
        [:> UI/Components.Design.Stack {:space 3}
         [:> UI/Components.Design.ProgressInfo {:title (t :countdown/time-limit)
@@ -529,8 +552,8 @@
                                                :totalCount (* 60 total-minutes)
                                                :doneCount (- (* 60 total-minutes) remaining-seconds)}]
         [:> UI/Components.Design.ActionButtonGroup
-         [:button.btn.btn-secondary {:type "button" :on-click #(dispatch [::timeout/refresh])}
-          (when waiting? [:<> [:> UI/Components.Design.Spinner] " "])
+         [:button.btn.btn-secondary {:type "button" :on-click #(dispatch [::refresh-timeout-and-get-cart])}
+          (when is-refreshing? [:<> [:> UI/Components.Design.Spinner] " "])
           (t :countdown/reset)]]]])
     (finally (js/clearInterval timer-fn))))
 
@@ -684,7 +707,7 @@
           edit-mode-data @(subscribe [::edit-mode-data])
           is-initial-loading? (not (or data errors))
           is-loading? @(subscribe [::loading])
-          refreshing-timeout? @(subscribe [::timeout/waiting])]
+          is-refreshing? @(subscribe [::refreshing])]
 
       [:> UI/Components.Design.PageLayout.ContentContainer
        (cond
@@ -726,7 +749,7 @@
              :title (reagent/as-element
                      [:<>
                       (t :line/section-title)
-                      (when (or is-loading? refreshing-timeout?)
+                      (when (or is-loading? is-refreshing?)
                         [:div.position-absolute {:style {:right "0" :top "3px"}} [:> UI/Components.Design.Spinner]])])
              :collapsible true}
             [:> UI/Components.Design.ListCard.Stack

@@ -26,8 +26,7 @@
      {:db (-> db (assoc-in [::data :waiting] true))
       :dispatch [::re-graph/mutate
                  (str
-                  (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql") "\n"
-                  (rc/inline "leihs/borrow/features/shopping_cart/fragment_unsubmittedOrderProps.gql"))
+                  (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql"))
                  {:userId user-id}
                  [::on-refresh]]})))
 
@@ -43,8 +42,8 @@
      (-> db
          (assoc-in [::data :waiting] nil)
          (assoc-in
-          [:ls :leihs.borrow.features.shopping-cart.core/data]
-          (-> data :refresh-timeout :unsubmitted-order))))))
+          [:ls :leihs.borrow.features.shopping-cart.core/data :valid-until]
+          (-> data :refresh-timeout :valid-until))))))
 
 (reg-sub ::waiting
          (fn [db _] (get-in db [::data :waiting])))

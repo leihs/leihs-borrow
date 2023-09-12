@@ -13,7 +13,8 @@
    [leihs.borrow.lib.form-helpers :refer [UiDateRangePicker]]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.current-user.core :as current-user]
-   ["/borrow-ui" :as UI]))
+   ["/borrow-ui" :as UI]
+   [clojure.set :as set]))
 
 (set-default-translate-path :borrow.templates.apply)
 
@@ -34,8 +35,7 @@
             (assoc-in [::data :dialog :is-saving?] true))
     :dispatch [::re-graph/mutate
                (str
-                (rc/inline "leihs/borrow/features/templates/apply.gql") "\n"
-                (rc/inline "leihs/borrow/features/shopping_cart/fragment_unsubmittedOrderProps.gql"))
+                (rc/inline "leihs/borrow/features/templates/apply.gql"))
                args
                [::on-mutate-result]]}))
 
@@ -49,8 +49,12 @@
               (dissoc-in [::data :dialog :is-saving?]))
       :dispatch [::errors/add-many errors]}
      {:db (-> db
-              (assoc-in [:ls :leihs.borrow.features.shopping-cart.core/data]
-                        (:unsubmitted-order refresh-timeout-data))
+              (assoc-in [:ls :leihs.borrow.features.shopping-cart.core/data :valid-until]
+                        (-> refresh-timeout-data :valid-until))
+              (update-in [:ls :leihs.borrow.features.shopping-cart.core/data :invalid-reservation-ids]
+                         #(set/union (set %) (->> reservations (map :id) set)))
+              (assoc-in [:ls :leihs.borrow.features.shopping-cart.core/data :pending-count]
+                        (-> reservations count))
               (assoc-in [::data :success-notification] {:reservations reservations})
               (dissoc-in [::data :dialog]))})))
 
@@ -110,7 +114,7 @@
             current-profile-name @(subscribe [::current-profile-name])
             is-saving? (:is-saving? dialog-data)
             template-id (:id template)
-            models-quantity (get-quantity models #(-> % :is-reservable))]
+            items-quantity (get-quantity models #(-> % :is-reservable))]
         (if-not dialog-data
           nil
           [:> UI/Components.Design.ModalDialog
@@ -126,19 +130,20 @@
                                  (when (-> e .-target .checkValidity)
                                    (dispatch [::mutate
                                               {:id template-id
+                                               :count items-quantity
                                                :startDate (h/date-format-day (:startDate @selected-range))
                                                :endDate (h/date-format-day (:endDate @selected-range))
                                                :userId user-id}])))
                     :no-validate true
                     :auto-complete :off
                     :id :the-form}
-             (if (= models-quantity 0)
+             (if (= items-quantity 0)
                [:> UI/Components.Design.Stack {:space 4}
                 [:> UI/Components.Design.Warning {:class "fs-2"}
                  (t :dialog.error-no-items)]]
                [:> UI/Components.Design.Stack {:space 4}
                 [:> UI/Components.Design.Section
-                 [:p.fw-bold (t :dialog.info {:count models-quantity})]]
+                 [:p.fw-bold (t :dialog.info {:count items-quantity})]]
                 [:> UI/Components.Design.Section {:title (t :dialog.order-for)}
                  [:div.fw-bold current-profile-name]]
                 [:> UI/Components.Design.Section {:title (t :dialog.time-span)}
@@ -159,7 +164,7 @@
                      [:> UI/Components.Design.Warning
                       (:date-message @validation-result)])]]]])]]
            [:> UI/Components.Design.ModalDialog.Footer
-            [:button.btn.btn-primary {:form :the-form :type :submit :disabled (or (= 0 models-quantity) (not (:valid? @validation-result)))}
+            [:button.btn.btn-primary {:form :the-form :type :submit :disabled (or (= 0 items-quantity) (not (:valid? @validation-result)))}
              (when is-saving? [:> UI/Components.Design.Spinner]) " "
              (t :dialog.submit)]
             [:button.btn.btn-secondary {:on-click #(dispatch [::close-dialog])} (t :dialog.cancel)]]])))))

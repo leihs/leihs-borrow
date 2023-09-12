@@ -341,7 +341,7 @@
                              :isCustomerOrder {:type (non-null Boolean)}
                              :createdAt {:type (non-null :DateTime)}
                              :updatedAt {:type (non-null :DateTime)}}}
-           :RefreshTimeoutResult {:fields {:unsubmittedOrder {:type :UnsubmittedOrder}}}}
+           :RefreshTimeoutResult {:fields {:validUntil {:type :DateTime}}}}
 
  :input-objects {:ModelsOrderByInput {:fields {:attribute {:type (non-null :ModelsOrderByAttributeEnum)}
                                                :direction {:type (non-null :OrderByDirectionEnum)}}}
@@ -494,6 +494,9 @@
              :refreshTimeout {:args {:userId {:type :UUID}}
                               :resolve :refresh-timeout
                               :type :RefreshTimeoutResult}
+             :refreshTimeoutAndGetCart {:args {:userId {:type :UUID}}
+                                        :resolve :refresh-timeout-and-get-cart
+                                        :type :UnsubmittedOrder}
              :applyTemplate {:args {:id {:type (non-null :UUID)}
                                     :startDate {:type (non-null :Date)}
                                     :endDate {:type (non-null :Date)}

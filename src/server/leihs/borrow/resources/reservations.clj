@@ -185,7 +185,7 @@
        (unsubmitted tx)
        (with-invalid-availability context)))
 
-(defn valid-until-sql [tx]
+(defn unsubmitted-valid-until-sql [tx]
   [(sql/call :to_char
              (sql/raw
                (str "updated_at + interval '"
@@ -194,15 +194,29 @@
              helpers/date-time-format)
    :updated_at])
 
+(defn unsubmitted-valid-until [tx user-id]
+  (-> (unsubmitted-sqlmap tx user-id)
+      (sql/select (unsubmitted-valid-until-sql tx))
+      (sql/order-by [:updated_at :asc])
+      (sql/limit 1)
+      sql/format
+      (->> (jdbc/query tx))
+      first
+      :updated_at))
+
 (defn touch! [tx ids]
   (-> (sql/update :reservations)
       (sql/set {:updated_at (time/now tx)})
       (sql/where [:in :id ids])
-      (as-> <> (apply sql/returning <> (valid-until-sql tx)))
+      (as-> <> (apply sql/returning <> (unsubmitted-valid-until-sql tx)))
       sql/format
       (query tx)
       first
       :updated_at))
+
+(defn refresh-updated-at-on-unsubmitted! [tx user-id]
+  (when-some [unsub-rs (not-empty (unsubmitted tx user-id))]
+    (->> unsub-rs (map :id) (touch! tx))))
 
 (defn unsubmitted->draft [tx ids]
   (-> (sql/update :reservations)
@@ -313,7 +327,7 @@
              :end_date (sql/call :cast end-date :date)
              :quantity 1
              :user_id user-id
-             :status "unsubmitted"
+             :status "draft"
              :created_at (time/now tx)
              :updated_at (time/now tx)}]
     (-> (sql/insert-into :reservations)
@@ -368,6 +382,7 @@
                 (set/intersection (->> broken-rs (map :id) set))
                 empty? not)
         (raise "Reservation could not be created due to broken conditions.")))
+    (refresh-updated-at-on-unsubmitted! tx user-id)
     created-rs))
 
 (defn add-to-cart

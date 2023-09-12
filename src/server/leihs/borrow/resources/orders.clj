@@ -312,16 +312,6 @@
                         <>
                         {:row-fn pool-order-row}))))
 
-(defn valid-until [tx user-id]
-  (-> (rs/unsubmitted-sqlmap tx user-id)
-      (sql/select (rs/valid-until-sql tx))
-      (sql/order-by [:updated_at :asc])
-      (sql/limit 1)
-      sql/format
-      (->> (jdbc/query tx))
-      first
-      :updated_at))
-
 (defn validate-cart! [{{:keys [tx]} :request user-id ::target-user/id :as context}]
   (rs/draft->unsubmitted tx user-id)
   (when-some [broken-rs (not-empty (rs/broken tx user-id))]
@@ -335,7 +325,7 @@
   (let [rs (-> (rs/unsubmitted-and-draft-sqlmap tx user-id)
                sql/format
                (rs/query tx))
-        va (valid-until tx user-id)]
+        va (rs/unsubmitted-valid-until tx user-id)]
     (if (empty? rs)
       {}
       {:valid-until va
@@ -442,12 +432,12 @@
                        (->> (jdbc/query tx)))]
     created-rs))
 
-(defn extend-valid-until! [tx user-id]
-  (when-some [unsub-rs (not-empty (rs/unsubmitted tx user-id))]
-    (->> unsub-rs (map :id) (rs/touch! tx))))
-
 (defn refresh-timeout
   [{{:keys [tx]} :request user-id ::target-user/id :as context} args value]
-  (validate-cart! context)
-  (extend-valid-until! tx user-id)
-  {:unsubmitted-order (get-cart context args value)})
+  (rs/refresh-updated-at-on-unsubmitted! tx user-id)
+  {:valid-until (rs/unsubmitted-valid-until tx user-id)})
+
+(defn refresh-timeout-and-get-cart
+  [{{:keys [tx]} :request user-id ::target-user/id :as context} args value]
+  (rs/refresh-updated-at-on-unsubmitted! tx user-id)
+  (get-cart context args value))

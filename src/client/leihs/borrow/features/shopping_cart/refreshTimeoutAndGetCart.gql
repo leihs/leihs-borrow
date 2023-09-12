@@ -1,0 +1,41 @@
+mutation refreshTimeoutAndGetCart($userId: UUID) {
+  refreshTimeoutAndGetCart(userId: $userId) {
+    validUntil
+    reservations {
+      endDate
+      id
+      inventoryPool {
+        id
+        name
+      }
+      model {
+        id
+        name
+        images {
+          id
+          imageUrl
+        }
+        coverImage {
+          id
+          imageUrl
+        }
+        totalReservableQuantities {
+          inventoryPool {
+            id
+            name
+          }
+          quantity
+        }
+      }
+      startDate
+      status
+      user {
+        id
+      }
+      # createdAt
+      # updatedAt
+    }
+    invalidReservationIds
+    userId
+  }
+}
