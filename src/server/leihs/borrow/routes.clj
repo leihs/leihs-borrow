@@ -84,11 +84,11 @@
    session/wrap-authenticate
    wrap-cookies
    settings/wrap
+   datasource/wrap-tx
+   after-tx/wrap
    wrap-json-response
    (wrap-json-body {:keywords? true})
    wrap-empty
-   datasource/wrap-tx
-   after-tx/wrap
    core-graphql/wrap-with-schema
    (wrap-graphiql {:path "/borrow/graphiql",
                    :endpoint "/borrow/graphql"})
