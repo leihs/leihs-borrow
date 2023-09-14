@@ -40,6 +40,8 @@ query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID, $includeL
               imageUrl
             }
           }
+          startDate
+          endDate
         }
         invalidReservationIds
         userId
