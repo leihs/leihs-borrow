@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Mon Jan 23 2023 13:52:50 GMT+0100 (Central European Standard Time)
+# timestamp: Thu Sep 14 2023 13:12:01 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -115,11 +115,6 @@ type Delegation {
   suspensions: [Suspension]
 }
 
-type DraftOrder {
-  invalidReservationIds: [UUID!]
-  reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
-}
-
 enum endDateRestrictionEnum {
   CLOSE_TIME
   VISITS_CAPACITY_REACHED
@@ -225,7 +220,7 @@ input ModelsOrderByInput {
 type MutationRoot {
   addToCart(ids: [UUID!], userId: UUID): [Reservation]
   applyTemplate(endDate: Date!, id: UUID!, startDate: Date!, userId: UUID): [Reservation]
-  cancelOrder(id: UUID!): Rental!
+  cancelOrder(id: UUID!, userId: UUID): Rental!
   createReservation(
     endDate: Date!
     excludeReservationIds: [UUID!]
@@ -366,7 +361,6 @@ type QueryRoot {
   template(id: UUID!, userId: UUID): Template!
   templates(userId: UUID): [Template!]
   testing(sleepSecs: Int): String
-  users(limit: Int, offset: Int, orderBy: [UsersOrderByInput], searchTerm: String): [User]
 }
 
 enum RefinedRentalStateEnum {
@@ -452,6 +446,7 @@ enum RentalStateEnum {
 }
 
 type Reservation {
+  actualEndDate: Date!
   contract: Contract
   createdAt: DateTime!
   endDate: Date!
@@ -462,6 +457,7 @@ type Reservation {
   option: Option
   poolOrder: PoolOrder
   quantity: Int!
+  returnedDate: Date
   startDate: Date!
   status: ReservationStateEnum!
   updatedAt: DateTime!
@@ -547,7 +543,6 @@ type User {
   badgeId: String
   contracts(after: String, first: Int, orderBy: [ContractsOrderByInput], states: [ContractStateEnum]): ContractsConnection
   delegations: [Delegation!]
-  draftOrder: DraftOrder
   email: String
   favoriteModels(after: String, endDate: Date, first: Int, inventoryPoolIds: [UUID!], orderBy: [ModelsOrderByInput], searchTerm: String, startDate: Date): ModelsConnection
   firstname: String
@@ -581,6 +576,7 @@ type UserSettings {
   lendingTermsAcceptanceRequiredForOrder: Boolean
   lendingTermsUrl: String
   showContactDetailsOnCustomerOrder: Boolean
+  timeoutMinutes: Int
 }
 
 enum UsersOrderByAttributeEnum {

@@ -37,10 +37,12 @@
 (defn get-settings [{{:keys [tx]} :request} _ {user-id :id}]
   (let [settings (settings! tx [:lending_terms_acceptance_required_for_order
                                 :lending_terms_url
-                                :show_contact_details_on_customer_order])]
+                                :show_contact_details_on_customer_order
+                                :timeout_minutes])]
     {:lending-terms-acceptance-required-for-order (:lending_terms_acceptance_required_for_order settings)
      :lending-terms-url (:lending_terms_url settings)
-     :show-contact-details-on-customer-order (:show_contact_details_on_customer_order settings)}))
+     :show-contact-details-on-customer-order (:show_contact_details_on_customer_order settings)
+     :timeout-minutes (:timeout_minutes settings)}))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)

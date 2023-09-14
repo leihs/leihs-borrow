@@ -89,7 +89,8 @@
                                      :documentationUrl {:type String}}}
            :UserSettings {:fields {:lendingTermsAcceptanceRequiredForOrder {:type Boolean}
                                    :lendingTermsUrl {:type String}
-                                   :showContactDetailsOnCustomerOrder {:type Boolean}}}
+                                   :showContactDetailsOnCustomerOrder {:type Boolean}
+                                   :timeoutMinutes {:type Int}}}
            :User {:description "A `User` represents a human agent that can log into and use the system."
                   :fields {:id {:type (non-null :UUID)}
                            :firstname {:type String}

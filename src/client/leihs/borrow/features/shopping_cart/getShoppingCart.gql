@@ -45,6 +45,7 @@ query getShoppingCart($userId: UUID) {
       lendingTermsAcceptanceRequiredForOrder
       lendingTermsUrl
       showContactDetailsOnCustomerOrder
+      timeoutMinutes
     }
   }
 }

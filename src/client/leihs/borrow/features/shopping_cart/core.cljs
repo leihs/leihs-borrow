@@ -348,6 +348,9 @@
 (reg-sub ::loading
          (fn [db _] (-> db (get ::loading))))
 
+(reg-sub ::settings
+         (fn [db _] (-> db (get-in [:ls ::settings]))))
+
 (defn order-panel-texts []
   ;; NOTE: maybe add a helper function for this in lib.translate?
   {:label (clj->js (get-in translations/dict [:borrow :order-panel :label]))
@@ -508,8 +511,9 @@
   (reagent/with-let [now (reagent/atom (js/Date.))
                      timer-fn  (js/setInterval #(reset! now (js/Date.)) 1000)]
     (let [data @(subscribe [::data])
+          settings @(subscribe [::settings])
           valid-until (-> data :valid-until datefn/parseISO)
-          total-minutes 30
+          total-minutes (-> settings :timeout-minutes)
           remaining-seconds  (max 0 (datefn/differenceInSeconds valid-until @now))
           remaining-minutes (-> remaining-seconds (/ 60) (js/Math.ceil))
           waiting? @(subscribe [::timeout/waiting])]
