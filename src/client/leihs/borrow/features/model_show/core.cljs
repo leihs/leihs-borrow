@@ -274,7 +274,7 @@
                              datefn/parseISO
                              availability/with-future-buffer
                              h/date-format-day)]
-                        [::timeout/refresh]
+                        [::timeout/refresh :without-quantities]
                         [::order-success data])})))
 
 (defn order-panel

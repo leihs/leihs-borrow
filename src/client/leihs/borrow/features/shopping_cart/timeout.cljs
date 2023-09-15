@@ -21,13 +21,13 @@
 
 (reg-event-fx
  ::refresh
- (fn-traced [{:keys [db]} [_ _]]
-   (let [user-id (current-user/get-current-profile-id db)]
+ (fn-traced [{:keys [db]} [_ without-quantities]]
+            (let [user-id (current-user/get-current-profile-id db)]
      {:db (-> db (assoc-in [::data :waiting] true))
       :dispatch [::re-graph/mutate
-                 (str
-                  (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql") "\n"
-                  (rc/inline "leihs/borrow/features/shopping_cart/fragment_unsubmittedOrderProps.gql"))
+                 (if without-quantities
+                   (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeoutWithoutQuantities.gql")
+                   (rc/inline "leihs/borrow/features/shopping_cart/refreshTimeout.gql"))
                  {:userId user-id}
                  [::on-refresh]]})))
 

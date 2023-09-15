@@ -4,19 +4,41 @@ mutation applyTemplate(
   $startDate: Date!
   $userId: UUID
 ) {
-   applyTemplate(
-     userId: $userId
-     id: $id
-     startDate: $startDate
-     endDate: $endDate
-   ) {
+  applyTemplate(
+    userId: $userId
+    id: $id
+    startDate: $startDate
+    endDate: $endDate
+  ) {
     id
   }
 
   refreshTimeout(userId: $userId) {
     unsubmittedOrder {
-      ...unsubmittedOrderProps
+      validUntil
+      reservations {
+        endDate
+        id
+        inventoryPool {
+          id
+          name
+        }
+        model {
+          id
+          name
+          images {
+            id
+            imageUrl
+          }
+        }
+        startDate
+        status
+        user {
+          id
+        }
+      }
+      invalidReservationIds
+      userId
     }
   }
-
 }

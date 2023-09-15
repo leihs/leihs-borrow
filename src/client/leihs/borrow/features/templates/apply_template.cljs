@@ -33,9 +33,7 @@
    {:db (-> db
             (assoc-in [::data :dialog :is-saving?] true))
     :dispatch [::re-graph/mutate
-               (str
-                (rc/inline "leihs/borrow/features/templates/apply.gql") "\n"
-                (rc/inline "leihs/borrow/features/shopping_cart/fragment_unsubmittedOrderProps.gql"))
+               (rc/inline "leihs/borrow/features/templates/apply.gql")
                args
                [::on-mutate-result]]}))
 

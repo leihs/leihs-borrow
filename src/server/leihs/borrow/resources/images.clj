@@ -52,7 +52,6 @@
       (query tx)))
 
 (defn set-cache-control-header [response request]
-  (warn request)
   (-> response
       (assoc-in 
         [:headers "Cache-Control"] 
@@ -62,7 +61,6 @@
 
 (defn handler-one
   [{tx :tx, {image-id :image-id} :route-params :as request}]
-  (warn request)
   (if-let [image (get-one tx image-id)]
     (-> image
          :content

@@ -1,4 +1,4 @@
-mutation refreshTimeout($userId: UUID) {
+mutation refreshTimeoutWithoutQuantities($userId: UUID) {
   refreshTimeout(userId: $userId) {
     unsubmittedOrder {
       validUntil
@@ -15,13 +15,6 @@ mutation refreshTimeout($userId: UUID) {
           images {
             id
             imageUrl
-          }
-          totalReservableQuantities {
-            inventoryPool {
-              id
-              name
-            }
-            quantity
           }
         }
         startDate

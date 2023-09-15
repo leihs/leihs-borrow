@@ -17,7 +17,7 @@
     [taoensso.timbre :refer [debug info warn error spy]]
     ))
 
-(def lacinia-enable-timing* (atom nil))
+(def lacinia-enable-timing* (atom false))
 
 (defn load-schema []
   (or (some-> (io/resource "schema.edn")
@@ -27,21 +27,14 @@
               graphql-schema/compile)
       (throw (ex-info "Failed to load schema" {}))))
 
-(defn init-lacinia-timing! [options]
-  (reset! lacinia-enable-timing*
-          (:leihs-borrow-lacinia-enable-timing options))
-  (when @lacinia-enable-timing*
-    (info (str "Lacinia timing is enabled."))))
-
 (defn init [options]
   (core-graphql/init-schema! (load-schema))
-  (core-graphql/init-audit-exceptions! mutations/audit-exceptions)
-  (init-lacinia-timing! options))
+  (core-graphql/init-audit-exceptions! mutations/audit-exceptions))
 
 ;###############################################################################
 
 (defn exec-query [{{query :query vars :variables} :body :as request}]
-  ; (debug "graphql query" query "with variables" vars)
+  (debug "graphql query" query "with variables" vars)
   (if (or (:authenticated-entity request) (core-graphql/get-schema? request))
     (lacinia/execute (core-graphql/schema)
                      query
