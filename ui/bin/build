@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd ../.. > /dev/null 2>&1 && pwd -P)"
+cd $PROJECT_DIR
+echo $PROJECT_DIR
+source shared-clj/bin/helpers/clj.sh
+debug_setup
+$PROJECT_DIR/bin/env/nodejs-setup
+
+cd ui
+npm ci
+npm run build
+cd -
+
+# vi: ft=sh

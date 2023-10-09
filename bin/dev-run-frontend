@@ -6,10 +6,7 @@ cd $PROJECT_DIR
 
 echo "building ui lib..."
 echo "hint: run bin/cljs-watch directly to skip this step"
-cd ui
-npm i
-npm run build
-cd -
+${PROJECT_DIR}/ui/bin/build
 echo "OK, ui lib built"
 echo ""
 
