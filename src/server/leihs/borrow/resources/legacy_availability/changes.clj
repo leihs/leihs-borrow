@@ -1,6 +1,5 @@
 (ns leihs.borrow.resources.legacy-availability.changes
   (:require [taoensso.timbre :as timbre :refer [debug info spy]]
-            [clojure.java.jdbc :as jdbc]
             [clojure.data.generators :refer [uuid]]
             [clojure.set :as set]
             [java-time :as t]
@@ -10,7 +9,7 @@
             [leihs.borrow.resources.legacy-availability.queries :as q]
             [leihs.borrow.resources.models.core :as m]
             [leihs.core.db :as db]
-            [leihs.core.sql :as sql]
+            [logbug.debug :as logbug]
             [com.rpl.specter :as s]))
 
 (def UTC-ZONE-ID (java.time.ZoneId/of "UTC"))
@@ -154,6 +153,6 @@
 
 (comment (let [model-id "804a50c1-2329-5d5b-9884-340f43833514"
                pool-id "8bd16d45-056d-5590-bc7f-12849f034351"
-               tx (db/get-ds)]
+               tx (db/get-ds-next)]
            (-> (main tx model-id pool-id)
                #_(between (local-date) (t/plus (local-date) (t/days 15))))))

@@ -1,11 +1,9 @@
 (ns leihs.borrow.resources.legacy-availability.allocations
   (:require [taoensso.timbre :as timbre :refer [debug info spy]]
-            [clojure.java.jdbc :as jdbc]
             [clojure.set :as s]
             [java-time :as t]
             [leihs.core.core :refer [detect]]
-            [leihs.core.db :as db]
-            [leihs.core.sql :as sql]))
+            [leihs.core.db :as db]))
 
 (defn intersection [a1 a2]
   (filter #(some #{%} a2) a1))

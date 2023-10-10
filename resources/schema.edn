@@ -278,12 +278,13 @@
            :PoolOrder {:fields {:id {:type (non-null :UUID)}
                                 :inventoryPool {:type (non-null :InventoryPool)
                                                 :resolve :inventory-pool}
+                                :purpose {:type (non-null :NonEmptyText)}
                                 :state {:type (non-null :PoolOrderStateEnum)}
                                 :rejectedReason {:type String}
                                 :reservations {:type (list (non-null :Reservation))
                                                :args {:orderBy {:type (list :ReservationsOrderByInput)}}
                                                :resolve :reservations}
-                                :order {:type :Rental, :resolve :order}
+                                :order {:type :PoolOrder, :resolve :pool-order}
                                 :contracts {:type :ContractsConnection
                                             :args {:first {:type Int}
                                                    :after {:type String}

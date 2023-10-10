@@ -2,7 +2,16 @@
 -- (as hashmaps) will be returned
 -- :name to-reserve-from :? :*
 -- :doc Get all pools which are relevant for making a reservation
-SELECT *
+SELECT inventory_pools.*,
+       workdays.monday,
+       workdays.tuesday,
+       workdays.wednesday,
+       workdays.thursday,
+       workdays.friday,
+       workdays.saturday,
+       workdays.sunday,
+       workdays.reservation_advance_days,
+       workdays.max_visits
 FROM inventory_pools
 INNER JOIN access_rights ON access_rights.inventory_pool_id = inventory_pools.id
 INNER JOIN workdays ON workdays.inventory_pool_id = inventory_pools.id

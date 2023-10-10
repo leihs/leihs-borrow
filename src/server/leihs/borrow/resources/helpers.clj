@@ -1,38 +1,16 @@
 (ns leihs.borrow.resources.helpers
   (:require [clojure.string :as string]
-            [leihs.core.sql :as sql]))
+            [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]))
 
 (defn treat-order-arg
-  ([order] (treat-order-arg order nil))
-  ([order table]
-   (map #(as-> % <>
-           (into (sorted-map) <>)
-           (update <>
-                   :attribute
-                   (comp (partial sql/qualify table)
-                         string/lower-case
-                         name))
-           (vals <>))
-        order)))
-
-(def date-time-format "YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"")
-
-(defn date-time-created-at
-  ([] (date-time-created-at nil))
-  ([table]
-   [(sql/call :to_char
-              (if table
-                (sql/qualify table :created_at)
-                :created_at)
-              date-time-format)
-    :created_at]))
-
-(defn date-time-updated-at
-  ([] (date-time-updated-at nil))
-  ([table]
-   [(sql/call :to_char
-              (if table
-                (sql/qualify table :updated_at)
-                :updated_at)
-              date-time-format)
-    :updated_at]))
+  ([order-specs] (treat-order-arg order-specs nil))
+  ([order-specs table]
+   (map  (fn [{:keys [attribute direction]}]
+           (let [col* (-> attribute name string/lower-case keyword)
+                 col** (if table [:. table col*] col*)
+                 dir* (-> direction name string/lower-case keyword)]
+             [col** dir*]))
+        order-specs)))

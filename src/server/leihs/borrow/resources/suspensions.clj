@@ -1,17 +1,19 @@
 (ns leihs.borrow.resources.suspensions
   (:require [clojure.tools.logging :as log]
-            [clojure.java.jdbc :as jdbc]
+            [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
-            [leihs.core.database.helpers :as database]
-            [leihs.core.sql :as sql]))
+            [leihs.borrow.database.helpers :as database]))
 
 (defn get-multiple
-  [{{:keys [tx]} :request user-id ::target-user/id}
+  [{{tx :tx-next} :request user-id ::target-user/id}
    _
    {value-user-id :id}]
   (-> (sql/select :*)
       (sql/from :suspensions)
       (sql/where [:= :user_id (or value-user-id user-id)])
-      sql/format
-      (->> (jdbc/query tx))))
+      sql-format
+      (->> (jdbc-query tx))))

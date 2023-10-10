@@ -1,19 +1,21 @@
 (ns leihs.borrow.resources.inventory-pools.visits-restrictions
   (:require [taoensso.timbre :as timbre :refer [debug info spy]]
             [clojure.tools.logging :as log]
-            [clojure.java.jdbc :as jdbc]
-            [java-time :refer [local-date before?] :as jt]
-            [leihs.core.sql :as sql]))
+            [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
+            [java-time :refer [local-date before?] :as jt]))
 
 (defn holiday? [tx date pool]
-  (let [date* (sql/call :cast date :date)]
+  (let [date* [:cast date :date]]
     (-> (sql/select true)
         (sql/from :holidays)
         (sql/where [:= :inventory_pool_id (:id pool)])
-        (sql/merge-where [:>= date* :start_date])
-        (sql/merge-where [:<= date* :end_date])
-        sql/format
-        (->> (jdbc/query tx))
+        (sql/where [:>= date* :start_date])
+        (sql/where [:<= date* :end_date])
+        sql-format
+        (->> (jdbc-query tx))
         empty?
         not)))
 

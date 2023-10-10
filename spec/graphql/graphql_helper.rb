@@ -13,6 +13,20 @@ class GraphqlQuery
     @cookies = get_cookies(user_id, @csrf_token)
   end
 
+  def log_errors
+    if result["errors"]
+      puts <<~STR
+
+        =============
+        GRAPHQL ERROR
+        =============
+        #{result.slice("errors")}
+        =============
+
+      STR
+    end
+  end
+
   def perform
     @response = Faraday.post("#{LEIHS_BORROW_HTTP_BASE_URL}/borrow/graphql") do |req|
       req.headers['Accept'] = 'application/json'
@@ -29,6 +43,7 @@ class GraphqlQuery
       req.headers['Cookie'] = cookies.map { |k, v| "#{k}=#{v}" }.join('; ')
     end
 
+    log_errors
     self
   end
 

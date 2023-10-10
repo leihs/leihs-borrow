@@ -1,9 +1,11 @@
 (ns leihs.borrow.resources.attachments
-  (:require [clojure.java.jdbc :as jdbc]
+  (:require [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [clojure.tools.logging :as log]
             [compojure.core :as cpj]
-            [leihs.borrow.paths :refer [path]]
-            [leihs.core.sql :as sql])
+            [leihs.borrow.paths :refer [path]])
   (:import java.util.Base64))
 
 (def attachment-base-query
@@ -13,8 +15,8 @@
 (defn get-one [tx id]
   (-> attachment-base-query
       (sql/where [:= :attachments.id id])
-      sql/format
-      (->> (jdbc/query tx))
+      sql-format
+      (->> (jdbc-query tx))
       first))
 
 (defn merge-attachment-url [{:keys [filename] :as attachment}]
@@ -25,14 +27,15 @@
     (str <> "/" (:filename attachment))
     (assoc attachment :attachment-url <>)))
 
-(defn get-multiple [{{:keys [tx]} :request} _ value]
+(defn get-multiple [{{tx :tx-next} :request} _ value]
   (-> attachment-base-query
-      (sql/merge-where [:= :attachments.model_id (:id value)])
-      sql/format
-      (as-> <> (jdbc/query tx <> {:row-fn merge-attachment-url}))))
+      (sql/where [:= :attachments.model_id (:id value)])
+      sql-format
+      (->> (jdbc-query tx))
+      (->> (map merge-attachment-url))))
 
 (defn handler-one
-  [{tx :tx, {attachment-id :attachment-id} :route-params}]
+  [{tx :tx-next, {attachment-id :attachment-id} :route-params}]
   (if-let [attachment (get-one tx attachment-id)]
     (->> attachment
          :content

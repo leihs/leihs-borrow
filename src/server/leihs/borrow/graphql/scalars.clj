@@ -9,10 +9,17 @@
            [java.time.format DateTimeFormatter]
            [java.time ZoneOffset]))
 
-(defn date-time [x]
+(defn date-time-parse [x]
   (try (->> x
             (java-time/instant DateTimeFormatter/ISO_INSTANT)
             (java-time/format DateTimeFormatter/ISO_INSTANT))
+       (catch Throwable _
+         nil)))
+
+(defn date-time-serialize [x]
+  (try (->> x
+            .toLocalDateTime
+            (.format (DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss'Z'")))
        (catch Throwable _
          nil)))
 
@@ -42,8 +49,8 @@
    :uuid-serialize str
    :date-parse date-parse
    :date-serialize date-serialize
-   :date-time-parse date-time
-   :date-time-serialize date-time
+   :date-time-parse date-time-parse
+   :date-time-serialize date-time-serialize
    :non-empty-text-parse validate-non-empty-text
    :non-empty-text-serialize validate-non-empty-text})
 

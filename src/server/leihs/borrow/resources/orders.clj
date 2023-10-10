@@ -1,6 +1,9 @@
 (ns leihs.borrow.resources.orders
   (:refer-clojure :exclude [resolve])
-  (:require [clojure.java.jdbc :as jdbc]
+  (:require [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [clojure.set :as set]
             [clojure.string :refer [upper-case]]
             [leihs.borrow.graphql.connections :as connections]
@@ -10,11 +13,11 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as rs]
             [leihs.borrow.time :as time :refer [past-date?]]
-            [leihs.core.database.helpers :as database]
-            [leihs.core.db :as ds]
+            [leihs.borrow.database.helpers :as database]
+            [leihs.core.db :as db]
             [leihs.core.settings :refer [settings!]]
-            [taoensso.timbre :refer [debug info warn error spy]]
-            [leihs.core.sql :as sql])
+            [logbug.debug :as debug]
+            [taoensso.timbre :refer [debug info warn error spy]])
   (:import java.time.format.DateTimeFormatter))
 
 (def refined-rental-state->reservation-status
@@ -35,9 +38,9 @@
                   :unified_customer_orders.rental_state
                   :unified_customer_orders.from_date
                   :unified_customer_orders.until_date
-                  (helpers/date-time-created-at :unified_customer_orders)
-                  (helpers/date-time-updated-at :unified_customer_orders)
-                  [(sql/call := :unified_customer_orders.origin_table "customer_orders")
+                  :unified_customer_orders.created_at
+                  :unified_customer_orders.updated_at
+                  [[:= :unified_customer_orders.origin_table "customer_orders"]
                    :is_customer_order]
                   :unified_customer_orders.origin_table
                   :unified_customer_orders.reservation_ids
@@ -62,8 +65,8 @@
                    (->> (map (set/map-invert
                               refined-rental-state->reservation-status)))
                    (cond->
-                    expired? (conj :EXPIRED)
-                    overdue? (conj :OVERDUE))
+                     expired? (conj :EXPIRED)
+                     overdue? (conj :OVERDUE))
                    distinct)]
     (assoc row :refined_rental_state states)))
 
@@ -81,59 +84,59 @@
         (->> (refine-rental-state tx)))))
 
 (defn total-rental-quantity
-  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  [{{tx :tx-next} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
-      sql/format
-      (->> (jdbc/query tx)
+      sql-format
+      (->> (jdbc-query tx)
            (map :quantity)
            (apply +))))
 
 (defn overdue-rental-quantity
-  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  [{{tx :tx-next} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
-      (sql/merge-where [:= :reservations.status "signed"])
-      (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.end_date])
-      sql/format
-      (->> (jdbc/query tx)
+      (sql/where [:= :reservations.status "signed"])
+      (sql/where [:> [:raw "CURRENT_DATE"] :reservations.end_date])
+      sql-format
+      (->> (jdbc-query tx)
            (map :quantity)
            (apply +))))
 
 (defn expired-unapproved-rental-quantity
-  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  [{{tx :tx-next} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
-      (sql/merge-where [:in :reservations.status ["submitted"]])
-      (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.end_date])
-      sql/format
-      (->> (jdbc/query tx)
+      (sql/where [:in :reservations.status ["submitted"]])
+      (sql/where [:> [:raw "CURRENT_DATE"] :reservations.end_date])
+      sql-format
+      (->> (jdbc-query tx)
            (map :quantity)
            (apply +))))
 
 (defn expired-rental-quantity
-  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  [{{tx :tx-next} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
-      (sql/merge-where [:in :reservations.status ["approved"]])
-      (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.end_date])
-      sql/format
-      (->> (jdbc/query tx)
+      (sql/where [:in :reservations.status ["approved"]])
+      (sql/where [:> [:raw "CURRENT_DATE"] :reservations.end_date])
+      sql-format
+      (->> (jdbc-query tx)
            (map :quantity)
            (apply +))))
 
 (defn rejected-rental-quantity
-  [{{:keys [tx]} :request} _ {:keys [reservation-ids]}]
+  [{{tx :tx-next} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
-      (sql/merge-where [:= :status "rejected"])
-      sql/format
-      (->> (jdbc/query tx)
+      (sql/where [:= :status "rejected"])
+      sql-format
+      (->> (jdbc-query tx)
            (map :quantity)
            (apply +))))
 
@@ -141,188 +144,183 @@
   (update row :state upper-case))
 
 (defn get-one-by-pool
-  [{{:keys [tx]} :request user-id ::target-user/id}
+  [{{tx :tx-next} :request user-id ::target-user/id}
    _
-   {pool-order-id :order-id}]
+   {pool-order-id :id}]
   (-> (sql/select :orders.id
                   :orders.purpose
                   :orders.inventory_pool_id
                   :orders.customer_order_id
-                  [(sql/call :upper :orders.state) :state]
-                  (helpers/date-time-created-at :orders)
-                  (helpers/date-time-updated-at :orders))
+                  [[:upper :orders.state] :state]
+                  :orders.created_at
+                  :orders.updated_at)
       (sql/from :orders)
-      (sql/merge-where [:= :id pool-order-id])
-      sql/format
-      (->> (jdbc/query tx))
+      (sql/where [:= :id pool-order-id])
+      sql-format
+      (->> (jdbc-query tx))
       first))
 
 (defn get-one-by-id [tx user-id id]
-  (if-let
-   [order
-    (-> (multiple-base-sqlmap user-id)
-        (sql/merge-where [:= :unified_customer_orders.id id])
-        sql/format
-        (as-> <> (jdbc/query tx <> {:row-fn (partial row-fn tx)}))
-        first)]
+  (if-let [order
+           (-> (multiple-base-sqlmap user-id)
+               (sql/where [:= :unified_customer_orders.id id])
+               sql-format
+               (->> (jdbc-query tx))
+               (->> (map (partial row-fn tx)))
+               first)]
     order
     (throw (ex-info "Resource not found or not accessible for profile user id" {:status 403}))))
 
 (defn get-one
-  [{{:keys [tx]} :request user-id ::target-user/id}
+  [{{tx :tx-next} :request user-id ::target-user/id}
    {:keys [id]}
    _]
   (get-one-by-id tx user-id id))
 
 (defn equal-condition [a1 a2]
-  [:and ["@>" a1 a2] ["<@" a1 a2]])
+  [:and [(keyword "@>") a1 a2] [(keyword "<@") a1 a2]])
 
 (defn merge-refined-rental-state-condition [sqlmap refined-rental-state]
   (case refined-rental-state
     (:IN_APPROVAL :REJECTED :CANCELED :RETURNED :TO_PICKUP :TO_RETURN)
-    (sql/merge-where sqlmap
-                     [:any (refined-rental-state->reservation-status
-                            refined-rental-state)
-                      :unified_customer_orders.reservation_states])
+    (sql/where sqlmap
+               [:= (refined-rental-state->reservation-status
+                     refined-rental-state)
+                [:any [:array [:unified_customer_orders.reservation_states]]]])
     :EXPIRED
-    (sql/merge-where
+    (sql/where
      sqlmap
      [:exists (-> (sql/select true)
                   (sql/from :reservations)
-                  (sql/where [:any :reservations.id :unified_customer_orders.reservation_ids])
-                  (sql/merge-where [:in :reservations.status ["submitted" "approved"]])
-                  (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.end_date]))])
+                  (sql/where [:= :reservations.id
+                              [:any [:array [:unified_customer_orders.reservation_ids]]]])
+                  (sql/where [:in :reservations.status ["submitted" "approved"]])
+                  (sql/where [:> [:raw "CURRENT_DATE"] :reservations.end_date]))])
     :OVERDUE
-    (sql/merge-where
+    (sql/where
      sqlmap
      [:exists (-> (sql/select true)
                   (sql/from :reservations)
-                  (sql/where [:any :reservations.id :unified_customer_orders.reservation_ids])
-                  (sql/merge-where [:= :reservations.status "signed"])
-                  (sql/merge-where [:> (sql/raw "CURRENT_DATE") :reservations.end_date]))])))
+                  (sql/where [:= :reservations.id
+                              [:any [:array [:unified_customer_orders.reservation_ids]]]])
+                  (sql/where [:= :reservations.status "signed"])
+                  (sql/where [:> [:raw "CURRENT_DATE"] :reservations.end_date]))])))
 
 (defn get-connection-sql-map
-  [{{:keys [tx]} :request user-id ::target-user/id}
+  [{{tx :tx-next} :request user-id ::target-user/id}
    {:keys [order-by states rental-state from until pool-ids
            search-term with-pickups with-returns refined-rental-state]}
    value]
   (-> (multiple-base-sqlmap user-id)
       (cond->
-       states
-        (sql/merge-where (equal-condition
-                          :unified_customer_orders.state
-                          (->> states
-                               set
-                               (map #(sql/call :cast (name %) :text))
-                               sql/array)))
+        states
+        (sql/where (equal-condition
+                    :unified_customer_orders.state
+                    (->> states
+                         set
+                         (map #(identity [:cast (name %) :text]))
+                         (vector :array))))
 
         rental-state
-        (sql/merge-where [:= :unified_customer_orders.rental_state (name rental-state)])
+        (sql/where [:= :unified_customer_orders.rental_state (name rental-state)])
 
         (or from until)
-        (sql/merge-where
-         (sql/raw
+        (sql/where
+         [:raw
           (format
            "(unified_customer_orders.from_date, unified_customer_orders.until_date) OVERLAPS (%s, %s)"
            (or (some->> from (format "'%s'")) "'1900-01-01'::date")
-           (or (some->> until (format "'%s'")) "'9999-12-31'::date"))))
+           (or (some->> until (format "'%s'")) "'9999-12-31'::date"))])
 
         (not (empty? pool-ids))
-        (sql/merge-where ["<@"
-                          (->> pool-ids (map #(sql/call :cast % :uuid)) sql/array)
-                          :unified_customer_orders.inventory_pool_ids])
+        (sql/where [(keyword "<@")
+                    [:array (map (fn [id] [:cast id :uuid]) pool-ids)]
+                    :unified_customer_orders.inventory_pool_ids])
 
         search-term
-        (sql/merge-where ["~~*"
-                          :unified_customer_orders.searchable
-                          (str "%" search-term "%")])
+        (sql/where [(keyword "~~*")
+                    :unified_customer_orders.searchable
+                    (str "%" search-term "%")])
 
         refined-rental-state
         (merge-refined-rental-state-condition refined-rental-state)
 
         (not (nil? with-pickups))
-        (sql/merge-where [:= :unified_customer_orders.with_pickups with-pickups])
+        (sql/where [:= :unified_customer_orders.with_pickups with-pickups])
 
         (not (nil? with-returns))
-        (sql/merge-where [:= :unified_customer_orders.with_returns with-returns])
+        (sql/where [:= :unified_customer_orders.with_returns with-returns])
 
         (seq order-by)
-        (sql/order-by
-         (helpers/treat-order-arg order-by :unified_customer_orders)))))
+        (as-> sqlmap
+          (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :unified_customer_orders))))))
 
-(defn get-connection [{{:keys [tx]} :request :as context} args value]
+(defn get-connection [{{tx :tx-next} :request :as context} args value]
   (connections/wrap get-connection-sql-map
                     context
                     args
                     value
                     #(map (partial row-fn tx) %)))
 
-(defn orders-columns [tx]
-  (as-> (database/columns tx "orders") <>
-    (remove #{:created_at :updated_at} <>)
-    (conj <>
-          (helpers/date-time-created-at)
-          (helpers/date-time-updated-at))))
-
 (defn pool-orders-sqlmap [tx customer-order-id]
-  (-> (apply sql/select (orders-columns tx))
+  (-> (sql/select :*)
       (sql/from :orders)
       (sql/where [:= :customer_order_id customer-order-id])))
 
 (defn pool-orders [tx customer-order-id]
   (-> (pool-orders-sqlmap tx customer-order-id)
-      sql/format
-      (->> (jdbc/query tx))))
+      sql-format
+      (->> (jdbc-query tx))))
 
 (defn pool-orders-for-state-count [tx customer-order-id state]
   (-> (pool-orders-sqlmap tx customer-order-id)
-      (sql/merge-where [:= :state state])
-      sql/format
-      (->> (jdbc/query tx))
+      (sql/where [:= :state state])
+      sql-format
+      (->> (jdbc-query tx))
       count))
 
 (defn pool-orders-count
-  [{{:keys [tx]} :request} _ {:keys [id]}]
+  [{{tx :tx-next} :request} _ {:keys [id]}]
   (count (pool-orders tx id)))
 
 (defn approved-pool-orders-count
-  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  [{{tx :tx-next} :request} _ {:keys [id origin-table]}]
   (when (= origin-table "customer_orders")
     (pool-orders-for-state-count tx id "approved")))
 
 (defn rejected-pool-orders-count
-  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  [{{tx :tx-next} :request} _ {:keys [id origin-table]}]
   (when (= origin-table "customer_orders")
     (pool-orders-for-state-count tx id "rejected")))
 
 (defn submitted-pool-orders-count
-  [{{:keys [tx]} :request} _ {:keys [id origin-table]}]
+  [{{tx :tx-next} :request} _ {:keys [id origin-table]}]
   (when (= origin-table "customer_orders")
     (pool-orders-for-state-count tx id "submitted")))
 
-(defn get-multiple-by-pool [{{:keys [tx]} :request :as context}
+(defn get-multiple-by-pool [{{tx :tx-next} :request :as context}
                             {:keys [order-by]}
                             value]
   (-> (pool-orders-sqlmap tx (:id value))
       (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by :orders)))
-      sql/format
-      (as-> <>
-            (jdbc/query tx
-                        <>
-                        {:row-fn pool-order-row}))))
+        (as-> sqlmap
+          (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :orders))))
+      sql-format
+      (->> (jdbc-query tx))
+      (->> (map pool-order-row))))
 
 (defn valid-until [tx user-id]
   (-> (rs/unsubmitted-sqlmap tx user-id)
+      (dissoc :select)
       (sql/select (rs/valid-until-sql tx))
-      (sql/order-by [:updated_at :asc])
+      (sql/order-by [:reservations.updated_at :asc])
       (sql/limit 1)
-      sql/format
-      (->> (jdbc/query tx))
+      sql-format
+      (->> (jdbc-query tx))
       first
       :updated_at))
 
-(defn validate-cart! [{{:keys [tx]} :request user-id ::target-user/id :as context}]
+(defn validate-cart! [{{tx :tx-next} :request user-id ::target-user/id :as context}]
   (rs/draft->unsubmitted tx user-id)
   (when-some [broken-rs (not-empty (rs/broken tx user-id))]
     (->> broken-rs (map :id) (rs/unsubmitted->draft tx)))
@@ -330,10 +328,10 @@
     (->> invalid-rs (map :id) (rs/unsubmitted->draft tx))))
 
 (defn get-cart
-  [{{:keys [tx]} :request user-id ::target-user/id :as context} _ _]
+  [{{tx :tx-next} :request user-id ::target-user/id :as context} _ _]
   (validate-cart! context)
   (let [rs (-> (rs/unsubmitted-and-draft-sqlmap tx user-id)
-               sql/format
+               sql-format
                (rs/query tx))
         va (valid-until tx user-id)]
     (if (empty? rs)
@@ -344,7 +342,7 @@
        :user-id user-id})))
 
 (defn submit
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+  [{{tx :tx-next} :request user-id ::target-user/id :as context}
    {:keys [purpose title contact-details lending-terms-accepted]}
    _]
   (let [reservations (rs/unsubmitted tx user-id)]
@@ -365,8 +363,8 @@
                                  :lending_terms_accepted lending-terms-accepted
                                  :user_id user-id}])
                    (sql/returning :id)
-                   sql/format
-                   (->> (jdbc/query tx))
+                   sql-format
+                   (->> (jdbc-query tx))
                    first
                    :id)]
       (doseq [[pool-id rs :as group-el]
@@ -378,22 +376,22 @@
                                       :purpose purpose
                                       :customer_order_id uuid}])
                         (sql/returning :*)
-                        sql/format
-                        (->> (jdbc/query tx))
+                        sql-format
+                        (->> (jdbc-query tx))
                         first)]
           (-> (sql/update :reservations)
               (sql/set {:status "submitted"
                         :inventory_pool_id pool-id
                         :order_id (:id order)})
               (sql/where [:in :id (map :id rs)])
-              sql/format
+              sql-format
               (->> (jdbc/execute! tx)))
           (mails/send-received context order)
           (mails/send-submitted context order)))
       (get-one-by-id tx user-id uuid))))
 
 (defn cancel
-  [{{:keys [tx]} :request user-id ::target-user/id} {:keys [id]} _]
+  [{{tx :tx-next} :request user-id ::target-user/id} {:keys [id]} _]
   (let [customer-order (get-one-by-id tx user-id id)
         pool-orders (pool-orders tx id)]
     (when-not (:is_customer_order customer-order)
@@ -403,12 +401,12 @@
     (-> (sql/update :reservations)
         (sql/set {:status "canceled"})
         (sql/where [:in :order_id (map :id pool-orders)])
-        sql/format
+        sql-format
         (->> (jdbc/execute! tx)))
     (-> (sql/update :orders)
         (sql/set {:state "canceled"})
         (sql/where [:= :customer_order_id id])
-        sql/format
+        sql-format
         (->> (jdbc/execute! tx)))
     (get-one-by-id tx user-id id)))
 
@@ -420,13 +418,13 @@
    :status "unsubmitted"
    :model_id (:model_id r)
    :quantity (:quantity r)
-   :start_date (sql/call :cast start-date :date)
-   :end_date (sql/call :cast end-date :date)
+   :start_date [:cast start-date :date]
+   :end_date [:cast end-date :date]
    :created_at now
    :updated_at now})
 
 (defn repeat-order
-  [{{:keys [tx] {auth-user-id :id} :authenticated-entity} :request
+  [{{tx :tx-next {auth-user-id :id} :authenticated-entity} :request
     user-id ::target-user/id}
    {:keys [id start-date end-date]} _]
   (let [customer-order (get-one-by-id tx user-id id)
@@ -437,9 +435,9 @@
                               (map #(get-repeated-res % user-id delegated-user-id start-date end-date (time/now tx))))
         created-rs (-> (sql/insert-into :reservations)
                        (sql/values new-reservations)
-                       (as-> <> (apply sql/returning <> (rs/columns tx)))
-                       sql/format
-                       (->> (jdbc/query tx)))]
+                       (as-> <> (apply sql/returning <> rs/columns))
+                       sql-format
+                       (->> (jdbc-query tx)))]
     created-rs))
 
 (defn extend-valid-until! [tx user-id]
@@ -447,7 +445,7 @@
     (->> unsub-rs (map :id) (rs/touch! tx))))
 
 (defn refresh-timeout
-  [{{:keys [tx]} :request user-id ::target-user/id :as context} args value]
+  [{{tx :tx-next} :request user-id ::target-user/id :as context} args value]
   (validate-cart! context)
   (extend-valid-until! tx user-id)
   {:unsubmitted-order (get-cart context args value)})

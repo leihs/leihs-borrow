@@ -1,35 +1,37 @@
 (ns leihs.borrow.resources.entitlement-groups
   (:require [clojure.tools.logging :as log]
-            [clojure.java.jdbc :as jdbc]
-            [leihs.core.db :as db]
-            [leihs.core.sql :as sql]))
+            [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
+            [leihs.core.db :as db]))
 
 (defn get-inventory-pool-and-model-group-ids [tx model-id pool-id]
   (-> (sql/select :*)
       (sql/from :entitlements)
-      (sql/merge-join :entitlement_groups
-                      [:= :entitlement_groups.id :entitlements.entitlement_group_id])
-      (sql/merge-where [:= :entitlements.model_id model-id])
-      (sql/merge-where [:= :entitlement_groups.inventory_pool_id pool-id])
+      (sql/join :entitlement_groups
+                [:= :entitlement_groups.id :entitlements.entitlement_group_id])
+      (sql/where [:= :entitlements.model_id model-id])
+      (sql/where [:= :entitlement_groups.inventory_pool_id pool-id])
       (sql/order-by [:entitlement_groups.name :asc])
-      sql/format
-      (->> (jdbc/query tx)
+      sql-format
+      (->> (jdbc-query tx)
            (map :entitlement_group_id))))
 
 (defn get-user-group-ids [tx user-id]
   (-> (sql/select :*)
       (sql/from :entitlement_groups_users_unified)
-      (sql/merge-where [:= :user_id user-id])
-      sql/format
-      (->> (jdbc/query tx)
+      (sql/where [:= :user_id user-id])
+      sql-format
+      (->> (jdbc-query tx)
            (map :entitlement_group_id))))
 
 (defn get-one-by-id [tx id]
   (-> (sql/select :*)
       (sql/from :entitlement_groups)
       (sql/where [:= :id id])
-      sql/format
-      (->> (jdbc/query tx))
+      sql-format
+      (->> (jdbc-query tx))
       first))
 
 (comment

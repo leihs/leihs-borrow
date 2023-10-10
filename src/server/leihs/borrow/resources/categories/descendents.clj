@@ -1,7 +1,9 @@
 (ns leihs.borrow.resources.categories.descendents
   (:require [clojure.tools.logging :as log]
-            [clojure.java.jdbc :as jdbc]
-            [leihs.core.sql :as sql]))
+            [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]))
 
 (defn descendent-ids [tx parent-id]
   (assert (uuid? parent-id))
@@ -20,8 +22,8 @@
                  WHERE NOT mgl.child_id = ANY(path))
               SELECT DISTINCT(category_tree.child_id) AS id
               FROM category_tree")]
-    (->> [query] (jdbc/query tx) (map :id))))
+    (->> [query] (jdbc-query tx) (map :id))))
 
 (comment
-  (descendent-ids (leihs.core.db/get-ds)
+  (descendent-ids (leihs.core.db/get-ds-next)
                   "9a1dc177-a2b2-4a16-8fbf-6552b5313f38"))

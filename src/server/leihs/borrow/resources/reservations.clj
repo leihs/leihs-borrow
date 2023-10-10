@@ -1,6 +1,9 @@
 (ns leihs.borrow.resources.reservations
   (:refer-clojure :exclude [count])
-  (:require [clojure.java.jdbc :as jdbc]
+  (:require [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [clojure.set :as set]
             [clojure.spec.alpha :as spec]
             [com.walmartlabs.lacinia :as lacinia]
@@ -9,11 +12,12 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.inventory-pools :as pools]
             [leihs.borrow.resources.models :as models]
+            [leihs.borrow.resources.workdays :as workdays]
             [leihs.borrow.time :as time]
             [leihs.core.core :refer [raise]]
-            [leihs.core.database.helpers :as database]
+            [leihs.core.db :as db]
+            [leihs.borrow.database.helpers :as database]
             [leihs.core.settings :refer [settings!]]
-            [leihs.core.sql :as sql]
             [taoensso.timbre :refer [debug info warn error spy]]))
 
 (doseq [s [::inventory_pool_id ::start_date ::end_date]]
@@ -27,34 +31,27 @@
                       ::start_date
                       ::end_date]))
 
-(defn columns [tx]
-  (as-> (database/columns tx "reservations") <>
-    (remove #{:created_at :updated_at} <>)
-    (conj <>
-          (helpers/date-time-created-at :reservations)
-          (helpers/date-time-updated-at :reservations)
-          [(sql/call :coalesce :returned_date :end_date) :actual_end_date])))
+(def columns 
+  [:* [[:coalesce :returned_date :end_date] :actual_end_date]])
 
 (defn get-by-ids [tx ids]
-  (-> (apply sql/select (columns tx))
+  (-> (apply sql/select columns)
       (sql/from :reservations)
       (sql/where [:in :id ids])
-      sql/format
-      (->> (jdbc/query tx))))
+      sql-format
+      (->> (jdbc-query tx))))
 
 (defn query [sql-format tx]
-  (jdbc/query tx
-              sql-format
-              {:row-fn 
-               #(cond-> %
-                  (:status %)
-                  (update :status clojure.string/upper-case))}))
+  (->> (jdbc-query tx sql-format)
+       (map #(cond-> %
+               (:status %)
+               (update :status clojure.string/upper-case)))))
 
 (defn count [tx model-id]
   (-> (sql/select :%count.*)
       (sql/from :reservations)
       (sql/where [:= :reservations.model_id model-id])
-      sql/format
+      sql-format
       (query tx)
       first
       :count))
@@ -65,52 +62,69 @@
       (sql/where [:= :model_id model-id])
       (sql/order-by [:reservations.updated_at :desc])
       (sql/limit 1)
-      sql/format
+      sql-format
       (query tx)
       first
       :updated_at))
 
 (defn base-sqlmap [tx user-id]
-  (-> (apply sql/select (columns tx))
+  (-> (apply sql/select columns)
       (sql/from :reservations)
-      (sql/merge-where [:= :reservations.user_id user-id])))
+      (sql/where [:= :reservations.user_id user-id])))
+
+(comment (require '[java-time])
+         (import [java.util UUID]
+                 [java.time.format DateTimeFormatter]
+                 [java.time ZoneOffset ZoneId])
+         (-> (base-sqlmap scratch/tx scratch/user-id)
+             sql-format
+             (->> (jdbc-query scratch/tx))
+             first
+             :updated_at
+             .toLocalDateTime
+             (.format (DateTimeFormatter/ofPattern "yyyy-MM-dd'T'HH:mm:ss'Z'")))
+         (-> (DateTimeFormatter/ofPattern "yyyy-MM-dd HH:mm:ss")
+             (.withZone (ZoneId/systemDefault)))
+         (ZoneId/getAvailableZoneIds)
+         (ZoneId/of "Europe/Paris")
+         (java-time/instant))
 
 (defn unsubmitted-sqlmap [tx user-id]
   (-> (base-sqlmap tx user-id)
-      (sql/merge-where [:= :reservations.status "unsubmitted"])))
+      (sql/where [:= :reservations.status "unsubmitted"])))
 
 (defn draft-sqlmap [tx user-id]
   (-> (base-sqlmap tx user-id)
-      (sql/merge-where [:= :reservations.status "draft"])))
+      (sql/where [:= :reservations.status "draft"])))
 
 (defn unsubmitted-and-draft-sqlmap [tx user-id]
   (-> (base-sqlmap tx user-id)
-      (sql/merge-where [:in :reservations.status ["unsubmitted" "draft"]])))
+      (sql/where [:in :reservations.status ["unsubmitted" "draft"]])))
 
 (defn unsubmitted [tx user-id]
   (-> (unsubmitted-sqlmap tx user-id)
-      sql/format
+      sql-format
       (query tx)))
 
 (defn complies-with-max-reservation-time? [tx r]
   (-> (sql/select
-       [(sql/raw (format "CASE
-                          WHEN maximum_reservation_time IS NOT NULL
-                          THEN '%s'::date - '%s'::date <= maximum_reservation_time
-                          ELSE TRUE
-                          END"
-                         (:end_date r) (:start_date r)))
+       [[:raw (format "CASE
+                      WHEN maximum_reservation_time IS NOT NULL
+                      THEN '%s'::date - '%s'::date <= maximum_reservation_time
+                      ELSE TRUE
+                      END"
+                      (:end_date r) (:start_date r))]
         :result])
       (sql/from :settings)
-      sql/format
-      (->> (jdbc/query tx))
+      sql-format
+      (->> (jdbc-query tx))
       first
       :result))
 
 (defn broken
   ([tx user-id]
    (broken tx user-id (-> (unsubmitted-sqlmap tx user-id)
-                          sql/format
+                          sql-format
                           (query tx))))
   ([tx user-id rs]
    (let [start-end->pool-ids
@@ -131,7 +145,7 @@
              rs))))
 
 (defn with-invalid-availability
-  [{{:keys [tx]} :request :as context} reservations]
+  [{{tx :tx-next} :request :as context} reservations]
   (->> reservations
        (map #(spec/assert ::reservation %))
        (group-by #(-> %
@@ -156,50 +170,47 @@
                [])))
 
 (defn merge-where-invalid-start-date [sqlmap]
-  (sql/merge-where
+  (sql/where
     sqlmap
     [:<
      :reservations.start_date 
-     (sql/raw
-       (str "CURRENT_DATE"
-            " + "
-            "MAKE_INTERVAL("
-            "days => COALESCE(workdays.reservation_advance_days, 0)"
-            ")"))]))
+     [:raw
+      (str "CURRENT_DATE"
+           " + "
+           "MAKE_INTERVAL("
+           "days => COALESCE(workdays.reservation_advance_days, 0)"
+           ")")]]))
 
 (defn unsubmitted-with-invalid-start-date
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}]
+  [{{tx :tx-next} :request user-id ::target-user/id :as context}]
   (-> (unsubmitted-sqlmap tx user-id)
-      (sql/merge-join :inventory_pools
+      (sql/join :inventory_pools
                       [:=
                        :reservations.inventory_pool_id
                        :inventory_pools.id])
-      pools/with-workdays-sqlmap
+      workdays/with-workdays-sqlmap
       merge-where-invalid-start-date
-      sql/format
+      sql-format
       (query tx)))
 
 (defn unsubmitted-with-invalid-availability
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}]
+  [{{tx :tx-next} :request user-id ::target-user/id :as context}]
   (->> user-id
        (unsubmitted tx)
        (with-invalid-availability context)))
 
 (defn valid-until-sql [tx]
-  [(sql/call :to_char
-             (sql/raw
-               (str "updated_at + interval '"
-                    (:timeout_minutes (settings! tx [:timeout_minutes]))
-                    " minutes'"))
-             helpers/date-time-format)
-   :updated_at])
+  [[:raw (str "reservations.updated_at + interval '"
+             (:timeout_minutes (settings! tx [:timeout_minutes]))
+             " minutes'"
+             " AS updated_at")]])
 
 (defn touch! [tx ids]
   (-> (sql/update :reservations)
       (sql/set {:updated_at (time/now tx)})
       (sql/where [:in :id ids])
-      (as-> <> (apply sql/returning <> (valid-until-sql tx)))
-      sql/format
+      (sql/returning (valid-until-sql tx))
+      sql-format
       (query tx)
       first
       :updated_at))
@@ -208,48 +219,45 @@
   (-> (sql/update :reservations)
       (sql/set {:status "draft"})
       (sql/where [:in :id ids])
-      sql/format
+      sql-format
       (->> (jdbc/execute! tx))))
 
 (defn draft->unsubmitted [tx user-id]
   (-> (sql/update :reservations)
       (sql/set {:status "unsubmitted"})
-      (sql/merge-where [:= :status "draft"])
-      (sql/merge-where [:= :user_id user-id])
-      sql/format
+      (sql/where [:= :status "draft"])
+      (sql/where [:= :user_id user-id])
+      sql-format
       (->> (jdbc/execute! tx))))
 
 (defn get-drafts
   ([tx user-id] (get-drafts tx user-id nil))
   ([tx user-id ids]
    (-> (draft-sqlmap tx user-id)
-       (cond-> ids (sql/merge-where [:in :id ids]))
-       sql/format
+       (cond-> ids (sql/where [:in :id ids]))
+       sql-format
        (query tx))))
 
 (defn merge-where-according-to-container
   [sqlmap container {:keys [id] :as value}]
   (case container
     :PoolOrder
-    (sql/merge-where sqlmap [:= :reservations.order_id id])
+    (sql/where sqlmap [:= :reservations.order_id id])
     :Rental
     (-> sqlmap
-        (sql/merge-where ["<@"
-                          (sql/raw "ARRAY[reservations.id]")
-                          (->> value
-                               :reservation-ids
-                               (map #(sql/call :cast % :uuid))
-                               sql/array)]))
+        (sql/where [(keyword "<@")
+                    [:array [:reservations.id]]
+                    [:array (map #(vector :cast % :uuid) (:reservation-ids value))]]))
     :Contract
-    (sql/merge-where sqlmap [:= :reservations.contract_id id])
+    (sql/where sqlmap [:= :reservations.contract_id id])
     (:User :UnsubmittedOrder)
-    (sql/merge-where sqlmap [:in :reservations.status ["unsubmitted" "draft"]])
+    (sql/where sqlmap [:in :reservations.status ["unsubmitted" "draft"]])
     :DraftOrder
-    (sql/merge-where sqlmap [:= :reservations.status "draft"])
+    (sql/where sqlmap [:= :reservations.status "draft"])
     sqlmap))
 
 (defn get-multiple
-  [{{:keys [tx]} :request
+  [{{tx :tx-next} :request
     container ::lacinia/container-type-name
     target-user-id ::target-user/id
     :as context}
@@ -258,24 +266,25 @@
   (-> (base-sqlmap tx (or user-id target-user-id))
       (merge-where-according-to-container container value)
       (cond-> (seq order-by)
-        (sql/order-by (helpers/treat-order-arg order-by :reservations)))
-      sql/format
+        (as-> sqlmap
+          (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :reservations))))
+      sql-format
       (query tx)))
 
-(defn delete [{{:keys [tx]} :request user-id ::target-user/id}
+(defn delete [{{tx :tx-next} :request user-id ::target-user/id}
               {:keys [ids]}
               _]
-  (-> (sql/delete-from [:reservations :r])
-      (sql/where [:in :r.id ids])
-      (sql/merge-where
+  (-> (sql/delete-from :reservations)
+      (sql/where [:in :reservations.id ids])
+      (sql/where
         [:or
-         [:= :r.user_id user-id]
+         [:= :reservations.user_id user-id]
          [:exists (-> (sql/select true)
                       (sql/from [:delegations_users :du])
                       (sql/where [:= :du.user_id user-id])
-                      (sql/merge-where [:= :du.delegation_id :r.user_id]))]])
+                      (sql/where [:= :du.delegation_id :reservations.user_id]))]])
       (sql/returning :id)
-      sql/format
+      sql-format
       (query tx)
       (->> (map :id))))
 
@@ -302,15 +311,15 @@
 
 (defn create-optimistic
   "Creates a reservation without checking availability (as `create` does). However the model must exist and be reservable for the user."
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+  [{{tx :tx-next} :request user-id ::target-user/id :as context}
    {:keys [model-id start-date end-date quantity inventory-pool-id] :as args}
    _]
   (when-not (models/reservable? context args {:id model-id})
     (raise "Model either does not exist or is not reservable by the user."))
   (let [row {:inventory_pool_id inventory-pool-id
              :model_id model-id
-             :start_date (sql/call :cast start-date :date)
-             :end_date (sql/call :cast end-date :date)
+             :start_date [:cast start-date :date]
+             :end_date [:cast end-date :date]
              :quantity 1
              :user_id user-id
              :status "unsubmitted"
@@ -320,12 +329,12 @@
         (sql/values (->> row
                          repeat
                          (take quantity)))
-        (as-> <> (apply sql/returning <> (columns tx)))
-        sql/format
+        (as-> <> (apply sql/returning <> columns))
+        sql-format
         (query tx))))
 
 (defn create
-  [{{:keys [tx] {auth-user-id :id} :authenticated-entity} :request
+  [{{tx :tx-next {auth-user-id :id} :authenticated-entity} :request
     user-id ::target-user/id
     :as context}
    {:keys [model-id start-date end-date quantity]
@@ -350,8 +359,8 @@
     (when (< available-quantity quantity)
       (raise "Desired quantity is not available anymore.")))
   (let [row (-> {:inventory_pool_id pool-id, :model_id model-id}
-                (assoc :start_date (sql/call :cast start-date :date))
-                (assoc :end_date (sql/call :cast end-date :date))
+                (assoc :start_date [:cast start-date :date])
+                (assoc :end_date [:cast end-date :date])
                 (assoc :quantity 1
                        :user_id user-id
                        :delegated_user_id (when (not= auth-user-id user-id) auth-user-id)
@@ -360,8 +369,8 @@
                        :updated_at (time/now tx)))
         created-rs (-> (sql/insert-into :reservations)
                        (sql/values (->> row repeat (take quantity)))
-                       (as-> <> (apply sql/returning <> (columns tx)))
-                       sql/format
+                       (as-> <> (apply sql/returning <> columns))
+                       sql-format
                        (query tx))]
     (when-some [broken-rs (not-empty (broken tx user-id))]
       (when (-> (->> created-rs (map :id) set)
@@ -371,7 +380,7 @@
     created-rs))
 
 (defn add-to-cart
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+  [{{tx :tx-next} :request user-id ::target-user/id :as context}
    {:keys [ids]}
    _]
   (let [drafts (get-drafts tx user-id ids)]
@@ -383,5 +392,5 @@
         (sql/set {:status "unsubmitted", :updated_at (time/now tx)})
         (sql/where [:in :id (map :id drafts)])
         (sql/returning :*)
-        sql/format
+        sql-format
         (query tx))))

@@ -1,7 +1,10 @@
 (ns leihs.borrow.resources.models
   (:require [taoensso.timbre :as timbre :refer [debug info spy]]
             [camel-snake-kebab.core :as csk]
-            [clojure.java.jdbc :as jdbc]
+            [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [clojure.set :as s]
             [clojure.string :as string]
             [com.walmartlabs.lacinia :as lacinia]
@@ -20,85 +23,84 @@
             [leihs.borrow.resources.legacy-availability.booking-calendar :as cal]
             [leihs.borrow.resources.models.core :refer [base-sqlmap]]
             [leihs.core.core :refer [presence]]
-            [leihs.core.sql :as sql]
             [wharf.core :refer [transform-keys]])
   (:import java.time.format.DateTimeFormatter))
 
 (defn reservable-quantity [tx model-id pool-id user-id]
   (-> (sql/select [(as-> :%sum.quantity <>
-                     (sql/call :cast <> :int)
-                     (sql/call :coalesce <> 0))
+                     [:cast <> :int]
+                     [:coalesce <> 0])
                    :total_quantity])
       (sql/from :models)
-      (sql/merge-join (sql/raw (str "(" entitlements/all-sql ") AS ents"))
-                      [:and
-                       [:= :models.id :ents.model_id]
-                       [:or
-                        [:in
-                         :ents.entitlement_group_id
-                         (-> (sql/select :entitlement_group_id)
-                             (sql/from :entitlement_groups_users)
-                             (sql/merge-where [:= :user_id user-id]))]
-                        [:= :ents.entitlement_group_id nil]]])
-      (sql/merge-where [:= :models.id model-id])
-      (sql/merge-where [:= :ents.inventory_pool_id pool-id])
-      (sql/format)
-      (->> (jdbc/query tx))
+      (sql/join [[:raw (str "(" entitlements/all-sql ") AS ents")]]
+                [:and
+                 [:= :models.id :ents.model_id]
+                 [:or
+                  [:in
+                   :ents.entitlement_group_id
+                   (-> (sql/select :entitlement_group_id)
+                       (sql/from :entitlement_groups_users)
+                       (sql/where [:= :user_id user-id]))]
+                  [:= :ents.entitlement_group_id nil]]])
+      (sql/where [:= :models.id model-id])
+      (sql/where [:= :ents.inventory_pool_id pool-id])
+      (sql-format)
+      (->> (jdbc-query tx))
       first
       :total_quantity))
 
 (defn total-reservable-quantities
-  [{{:keys [tx]} :request user-id ::target-user/id} _ {model-id :id}]
+  [{{tx :tx-next} :request user-id ::target-user/id} _ {model-id :id}]
   (let [pools (pools/accessible-to-user tx user-id)]
     (map (fn [pool]
            {:inventory-pool pool
             :quantity (reservable-quantity tx model-id (:id pool) user-id)})
          pools)))
 
-(defn merge-join-entitlements [sqlmap user-id]
-  (sql/merge-join sqlmap
-                  (sql/raw (str "(" entitlements/all-sql ") AS ents"))
-                  [:and
-                   [:= :models.id :ents.model_id]
-                   [:= :inventory_pools.id :ents.inventory_pool_id]
-                   [:> :ents.quantity 0]
-                   [:or
-                    [:in
-                     :ents.entitlement_group_id
-                     (-> (sql/select :entitlement_group_id)
-                         (sql/from :entitlement_groups_users)
-                         (sql/merge-where [:= :user_id user-id]))]
-                    [:= :ents.entitlement_group_id nil]]]))
+(defn join-entitlements [sqlmap user-id]
+  (sql/join sqlmap
+            [[:raw (str "(" entitlements/all-sql ") AS ents")]]
+            [:and
+             [:= :models.id :ents.model_id]
+             [:= :inventory_pools.id :ents.inventory_pool_id]
+             [:> :ents.quantity 0]
+             [:or
+              [:in
+               :ents.entitlement_group_id
+               (-> (sql/select :entitlement_group_id)
+                   (sql/from :entitlement_groups_users)
+                   (sql/where [:= :user_id user-id]))]
+              [:= :ents.entitlement_group_id nil]]]))
 
 (defn merge-reservable-conditions
   ([sqlmap user-id]
    (merge-reservable-conditions sqlmap user-id nil))
   ([sqlmap user-id pool-ids]
    (-> sqlmap
-       (sql/merge-join :items
-                       [:= :models.id :items.model_id])
-       (sql/merge-join :inventory_pools
-                       [:= :items.inventory_pool_id :inventory_pools.id])
-       (sql/merge-join :access_rights
-                       [:= :inventory_pools.id :access_rights.inventory_pool_id])
-       (merge-join-entitlements user-id)
-       (sql/merge-where [:= :inventory_pools.is_active true])
-       (sql/merge-where [:= :access_rights.user_id user-id])
+       (sql/join :items
+                 [:= :models.id :items.model_id])
+       (sql/join :inventory_pools
+                 [:= :items.inventory_pool_id :inventory_pools.id])
+       (sql/join :access_rights
+                 [:= :inventory_pools.id :access_rights.inventory_pool_id])
+       (join-entitlements user-id)
+       (sql/where [:= :inventory_pools.is_active true])
+       (sql/where [:= :access_rights.user_id user-id])
        (cond-> (seq pool-ids)
-         (sql/merge-where [:in :inventory_pools.id pool-ids]))
-       (sql/merge-where [:= :items.retired nil])
-       (sql/merge-where [:= :items.is_borrowable true])
-       (sql/merge-where [:= :items.parent_id nil]))))
+         (sql/where [:in :inventory_pools.id pool-ids]))
+       (sql/where [:= :items.retired nil])
+       (sql/where [:= :items.is_borrowable true])
+       (sql/where [:= :items.parent_id nil]))))
 
 (defn reservable?
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+  [{{tx :tx-next} :request user-id ::target-user/id :as context}
    _
    value]
   (-> base-sqlmap
       (merge-reservable-conditions user-id)
-      (sql/merge-where [:= :models.id (:id value)])
-      sql/format
-      (->> (jdbc/query tx))
+      (sql/where [:= :models.id (:id value)])
+      sql-format
+      (->> (jdbc-query tx))
       first
       nil?
       not))
@@ -109,23 +111,23 @@
                   (->> (map presence)
                        (filter identity)
                        (map #(str "%" % "%"))))
-        field (sql/call :concat_ws
-                        " "
-                        :models.product
-                        :models.version
-                        :models.manufacturer)
-        where-clauses (map #(vector "~~*" field %) terms)]
-    (sql/merge-where sqlmap (cons :and where-clauses))))
+        field [:concat_ws
+               " "
+               :models.product
+               :models.version
+               :models.manufacturer]
+        where-clauses (map #(vector (keyword "~~*") field %) terms)]
+    (sql/where sqlmap (cons :and where-clauses))))
 
 (defn merge-category-ids-conditions [sqlmap category-ids]
   (-> sqlmap
-      (sql/merge-join :model_links
-                      [:=
-                       :models.id
-                       :model_links.model_id])
-      (sql/merge-where [:in
-                        :model_links.model_group_id
-                        category-ids])))
+      (sql/join :model_links
+                [:=
+                 :models.id
+                 :model_links.model_id])
+      (sql/where [:in
+                  :model_links.model_group_id
+                  category-ids])))
 
 (defn get-category-ids [tx category-id direct-only]
   (if direct-only
@@ -137,7 +139,7 @@
 (defn available-quantity-in-date-range
   "If the available quantity was already computed through the enclosing
   resolver, then just return it. Otherwise fetch from legacy and compute."
-  [{{tx :tx} :request user-id ::target-user/id :as context}
+  [{{tx :tx-next} :request user-id ::target-user/id :as context}
    {:keys [inventory-pool-ids
            start-date
            end-date
@@ -173,7 +175,7 @@
 
 (defn merge-available-quantities
   [models
-   {{tx :tx} :request user-id ::target-user/id :as context}
+   {{tx :tx-next} :request user-id ::target-user/id :as context}
    {:keys [start-date end-date inventory-pool-ids] :as args}
    value]
   (let [pool-ids (relevant-pool-ids tx user-id start-date end-date inventory-pool-ids)]
@@ -193,12 +195,12 @@
          models)))
 
 (defn get-availability
-  [{{tx :tx} :request user-id ::target-user/id :as context}
+  [{{tx :tx-next} :request user-id ::target-user/id :as context}
    {:keys [start-date end-date inventory-pool-ids exclude-reservation-ids]}
    value]
   (let [pools (pools/get-multiple context {:ids inventory-pool-ids} nil)]
     (map (fn [{pool-id :id}]
-           (let [pool (pools/get-by-id (-> context :request :tx)
+           (let [pool (pools/get-by-id (-> context :request :tx-next)
                                        pool-id)
                  avail (cal/get tx
                                 start-date
@@ -217,15 +219,9 @@
 
 (defn from-compatibles [sqlmap value user-id pool-ids unscope-reservable]
   (-> sqlmap
-      (sql/from :models_compatibles)
-      (cond-> (not unscope-reservable)
-        (merge-reservable-conditions user-id pool-ids))
-      (sql/join :models [:=
-                         :models.id
-                         :models_compatibles.compatible_id])
-      (sql/merge-where [:=
-                        :models_compatibles.model_id
-                        (:id value)])))
+      (sql/where [:in :models.id (-> (sql/select :compatible_id)
+                                     (sql/from :models_compatibles)
+                                     (sql/where [:= :model_id (:id value)]))])))
 
 (defn merge-categories-conditions [sqlmap tx category-id direct-only]
   (let [category-ids (get-category-ids tx category-id direct-only)]
@@ -234,7 +230,7 @@
       (merge-category-ids-conditions category-ids))))
 
 (defn get-multiple-sqlmap
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+  [{{tx :tx-next} :request user-id ::target-user/id :as context}
    {:keys [ids
            category-id
            limit
@@ -254,20 +250,21 @@
       (cond-> (not unscope-reservable)
         (merge-reservable-conditions user-id pool-ids))
       (cond-> (seq ids)
-        (sql/merge-where [:in :models.id ids]))
+        (sql/where [:in :models.id ids]))
       (cond-> search-term
         (merge-search-conditions search-term))
       (cond-> (not (nil? is-favorited))
-        (-> (sql/merge-left-join :favorite_models
-                                 [:and
-                                  [:= :favorite_models.model_id :models.id]
-                                  [:= :favorite_models.user_id user-id]])
-            (sql/merge-where [(if is-favorited :!= :=)
-                              :favorite_models.model_id
-                              nil])))
+        (-> (sql/left-join :favorite_models
+                           [:and
+                            [:= :favorite_models.model_id :models.id]
+                            [:= :favorite_models.user_id user-id]])
+            (sql/where [(if is-favorited :!= :=)
+                        :favorite_models.model_id
+                        nil])))
       (cond-> (seq order-by)
-        (-> (sql/order-by (helpers/treat-order-arg order-by))
-            (sql/merge-order-by [:name :asc])))
+        (-> (dissoc :order-by)
+            (as-> sqlmap
+              (apply sql/order-by sqlmap (helpers/treat-order-arg order-by)))))
       (cond-> limit
         (sql/limit limit))
       (cond-> offset
@@ -280,24 +277,24 @@
   (-> (get-multiple-sqlmap context
                            (assoc args :unscope-reservable true)
                            value)
-      (sql/merge-join :favorite_models
-                      [:and
-                       [:= :models.id :favorite_models.model_id]
-                       [:= :favorite_models.user_id user-id]])))
+      (sql/join :favorite_models
+                [:and
+                 [:= :models.id :favorite_models.model_id]
+                 [:= :favorite_models.user_id user-id]])))
 
 (defn favorited?
-  [{{:keys [tx]} :request user-id ::target-user/id}
+  [{{tx :tx-next} :request user-id ::target-user/id}
    _
    value]
   (-> (sql/select
-       (sql/call :exists
-                 (-> (sql/select true)
-                     (sql/from :favorite_models)
-                     (sql/where [:and
-                                 [:= :model_id (:id value)]
-                                 [:= :user_id user-id]]))))
-      sql/format
-      (->> (jdbc/query tx))
+       [[:exists
+         (-> (sql/select true)
+             (sql/from :favorite_models)
+             (sql/where [:and
+                         [:= :model_id (:id value)]
+                         [:= :user_id user-id]]))]])
+      sql-format
+      (->> (jdbc-query tx))
       first
       :exists))
 
@@ -319,7 +316,7 @@
   (merge-availability-if-selects-fields models context args value))
 
 (defn get-connection
-  [{{:keys [tx]} :request user-id ::target-user/id :as context}
+  [{{tx :tx-next} :request user-id ::target-user/id :as context}
    {:keys [only-available quantity] limit :first :or {quantity 1} :as args}
    value]
   (let [conn-fn (fn [ext-args]
@@ -346,11 +343,11 @@
                     value
                     #(post-process % context args value)))
 
-(defn get-one [{{:keys [tx]} :request} {:keys [id]} value]
+(defn get-one [{{tx :tx-next} :request} {:keys [id]} value]
   (-> base-sqlmap
       (sql/where [:= :id (or id (:model-id value))])
-      sql/format
-      (->> (jdbc/query tx))
+      sql-format
+      (->> (jdbc-query tx))
       first))
 
 ;#### debug ###################################################################

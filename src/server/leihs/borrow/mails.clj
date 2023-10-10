@@ -1,11 +1,13 @@
 (ns leihs.borrow.mails
   (:require
-   [clojure.java.jdbc :as jdbc]
+   [next.jdbc :as jdbc :refer [execute!] :rename {execute! jdbc-execute!}]
+   [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
+   [honey.sql :refer [format] :rename {format sql-format}]
+   [honey.sql.helpers :as sql]
+
    [leihs.core.db :as db]
    [leihs.core.core :refer [presence flip]]
    [leihs.core.settings :refer [settings!]]
-   [honey.sql :refer [format] :rename {format sql-format}]
-   [honey.sql.helpers :as sql]
    [wet.core :as wet]
    [leihs.borrow.resources.delegations :refer [delegation?]]
    [leihs.borrow.resources.languages :as lang]
@@ -22,11 +24,11 @@
       (sql/where [:= :inventory_pool_id pool-id])
       (sql/where [:= :language_locale lang-locale])
       sql-format
-      (->> (jdbc/query tx))
+      (->> (jdbc-query tx))
       first
       :body))
 
-(defn send-received [{{:keys [tx settings]} :request} order]
+(defn send-received [{{:keys [settings] tx :tx-next} :request} order]
   (when (:deliver_received_order_notifications settings)
     (let [inventory-pool (pools/get-by-id tx (:inventory_pool_id order))
           lang-locale (:locale (lang/default tx))
@@ -42,7 +44,7 @@
                                     (sql/join [:models :m] [:= :r.model_id :m.id])
                                     (sql/where [:= :r.order_id (:id order)])
                                     sql-format
-                                    (->> (jdbc/query tx)))
+                                    (->> (jdbc-query tx)))
                    purpose (:purpose order)
                    order-url (str (:external_base_url settings) "/manage/" (:id inventory-pool) "/orders/" (:id order) "/edit")
                    email-body (wet/render (wet/parse tmpl)
@@ -63,9 +65,9 @@
                                  :subject (t :borrow.mail-templates.received.subject lang-locale)
                                  :body email-body}])
                    sql-format
-                   (->> (jdbc/execute! tx))))))))
+                   (->> (jdbc-execute! tx))))))))
 
-(defn send-submitted [{{:keys [tx settings]} :request} order]
+(defn send-submitted [{{:keys [settings] tx :tx-next} :request} order]
   (let [inventory-pool (pools/get-by-id tx (:inventory_pool_id order))
         user (users/get-by-id tx (:user_id order))
         target-user-id (if (delegation? user)
@@ -84,7 +86,7 @@
                                   (sql/join [:models :m] [:= :r.model_id :m.id])
                                   (sql/where [:= :r.order_id (:id order)])
                                   sql-format
-                                  (->> (jdbc/query tx)))
+                                  (->> (jdbc-query tx)))
                  purpose (:purpose order)
                  order-url (str (:external_base_url settings) "/manage/" (:id inventory-pool) "/orders/" (:id order) "/edit")
                  email-body (wet/render (wet/parse tmpl)
@@ -106,15 +108,15 @@
                                :subject (t :borrow.mail-templates.submitted.subject lang-locale)
                                :body email-body}])
                  sql-format
-                 (->> (jdbc/execute! tx)))))))
+                 (->> (jdbc-execute! tx)))))))
 
-(comment (let [tx (db/get-ds)
-               ctx {:request {:settings (settings! tx), :tx tx}}
+(comment (let [tx (db/get-ds-next)
+               ctx {:request {:settings (settings! tx), :tx-next tx}}
                order (-> (sql/select :*)
                          (sql/from :orders)
                          (sql/where [:= :id #uuid "63b4e83e-e2c3-4924-ae89-3596824b1c95"])
                          sql-format
-                         (->> (jdbc/query tx))
+                         (->> (jdbc-query tx))
                          first)]
            ; order
            (send-received ctx order)))

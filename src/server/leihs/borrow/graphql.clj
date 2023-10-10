@@ -2,7 +2,6 @@
   (:require
     [clojure.edn :as edn]
     [clojure.java.io :as io]
-    [clojure.java.jdbc :as jdbc]
     [com.walmartlabs.lacinia :as lacinia]
     [com.walmartlabs.lacinia.parser :as graphql-parser]
     [com.walmartlabs.lacinia.resolve :as graphql-resolve]

@@ -200,7 +200,6 @@ describe "rental details" do
               }
               order {
                 id
-                title
                 purpose
               }
               contracts {

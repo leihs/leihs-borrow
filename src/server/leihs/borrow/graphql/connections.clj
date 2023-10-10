@@ -1,8 +1,11 @@
 (ns leihs.borrow.graphql.connections
   (:refer-clojure :exclude [first])
   (:require [clojure.tools.logging :as log]
-            [clojure.java.jdbc :as jdbc]
-            [leihs.core.sql :as sql]))
+            [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
+            [taoensso.timbre :refer [debug info warn error spy]]))
 
 (def PER-PAGE
   "Standard per-page limit for fetching and displaying results."
@@ -17,10 +20,10 @@
 
 (defn row-cursor [column]
   (as-> column <>
-    (sql/call :cast <> :text)
-    (sql/call :replace <> "-" "")
-    (sql/call :decode <> "hex")
-    (sql/call :encode <> "base64")))
+    [:cast <> :text]
+    [:replace <> "-" ""]
+    [:decode <> "hex"]
+    [:encode <> "base64"]))
 
 (defn with-cursored-result [sqlmap after]
   (-> [[:primary_result sqlmap]
@@ -28,7 +31,7 @@
         (-> (sql/select
               :primary_result.*
               [(row-cursor :primary_result.id) :row_cursor]
-              [(sql/raw "row_number(*) over ()") :row_number])
+              [[:raw "row_number(*) over ()"] :row_number])
             (sql/from :primary_result))]]
       (cond-> after
         (conj [:cursor_row
@@ -42,8 +45,8 @@
       (with-cursored-result after)
       (sql/select :*)
       (sql/from :cursor_row)
-      sql/format
-      (->> (jdbc/query tx))
+      sql-format
+      (->> (jdbc-query tx))
       empty?
       not))
 
@@ -52,22 +55,20 @@
       (sql/select :cursored_result.*)
       (sql/from :cursored_result)
       (cond-> after
-        (-> (sql/merge-from :cursor_row)
-            (sql/merge-where [:>
-                              :cursored_result.row_number
-                              :cursor_row.row_number])))
+        (-> (sql/from :cursor_row)
+            (sql/where [:>
+                        :cursored_result.row_number
+                        :cursor_row.row_number])))
       (cond-> limit (sql/limit limit))))
 
 (defn assoc-total-count [result-map tx sqlmap]
   (assoc result-map
          :total-count
-         (-> (sql/select [(sql/call :count :*) :row_count])
-             (sql/from [(-> sqlmap
-                            (dissoc :modifiers :order-by)
-                            (update :modifiers conj :distinct))
+         (-> (sql/select [[:count :*] :row_count])
+             (sql/from [(-> sqlmap (dissoc :order-by))
                         :tmp])
-             sql/format
-             (->> (jdbc/query tx))
+             sql-format
+             (->> (jdbc-query tx))
              clojure.core/first
              :row_count)))
 
@@ -79,8 +80,8 @@
                            false
                            (-> sqlmap
                                (cursored-sqlmap end-cursor 1)
-                               sql/format
-                               (->> (jdbc/query tx))
+                               sql-format
+                               (->> (jdbc-query tx))
                                empty?
                                not))}))
 
@@ -94,7 +95,7 @@
   ([sqlmap-fn context args value]
    (wrap sqlmap-fn context args value nil))
   ([sqlmap-fn
-    {{:keys [tx]} :request :as context}
+    {{tx :tx-next} :request :as context}
     {:keys [after first] :as args}
     value
     post-process]
@@ -104,8 +105,8 @@
        (throw (ex-info "After cursor row does not exist!" {}))
        (let [rows (-> sqlmap
                       (cursored-sqlmap after first)
-                      sql/format
-                      (->> (jdbc/query tx))
+                      sql-format
+                      (->> (jdbc-query tx))
                       (cond-> post-process post-process))]
          (-> rows
              wrap-in-nodes-and-edges

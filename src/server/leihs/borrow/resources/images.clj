@@ -1,12 +1,12 @@
 (ns leihs.borrow.resources.images
-  (:require 
-    [clojure.java.jdbc :as jdbc ]
-    [clojure.tools.logging :as log]
-    [compojure.core :as cpj]
-    [leihs.borrow.paths :refer [path]]
-    [leihs.core.sql :as sql]
-    [logbug.debug :as debug]
-    [taoensso.timbre :refer [debug error info spy warn]])
+  (:require [honey.sql :refer [format] :rename {format sql-format}]
+            [honey.sql.helpers :as sql]
+            [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
+            [clojure.tools.logging :as log]
+            [compojure.core :as cpj]
+            [taoensso.timbre :as timbre :refer [debug info spy]]
+            [leihs.borrow.paths :refer [path]])
   (:import java.util.Base64))
 
 (def image-base-query
@@ -16,8 +16,8 @@
 (defn get-one [tx id]
   (-> image-base-query
       (sql/where [:= :images.id id])
-      sql/format
-      (->> (jdbc/query tx))
+      sql-format
+      (->> (jdbc-query tx))
       first))
 
 (defn merge-image-url [image]
@@ -28,27 +28,27 @@
        (assoc image :image-url)))
 
 (defn query [sql tx]
-  (jdbc/query tx sql {:row-fn merge-image-url}))
+  (->> (jdbc-query tx sql) (map merge-image-url)))
 
-(defn get-cover [{{:keys [tx]} :request} _ {model-id :id}]
+(defn get-cover [{{tx :tx-next} :request} _ {model-id :id}]
   (-> image-base-query
       (sql/join :models [:= :images.id :models.cover_image_id])
       (sql/where [:= :models.id model-id])
-      sql/format
+      sql-format
       (query tx)
       first))
 
-(defn get-multiple [{{:keys [tx]} :request} _ value]
+(defn get-multiple [{{tx :tx-next} :request} _ value]
   (-> image-base-query
-      (sql/merge-where [:= :images.target_id (:id value)])
-      (sql/merge-where [:= :images.parent_id nil])
-      sql/format
+      (sql/where [:= :images.target_id (:id value)])
+      (sql/where [:= :images.parent_id nil])
+      sql-format
       (query tx)))
 
-(defn get-multiple-thumbnails [{{:keys [tx]} :request} _ value]
+(defn get-multiple-thumbnails [{{tx :tx-next} :request} _ value]
   (-> image-base-query
-      (sql/merge-where [:= :images.parent_id (:id value)])
-      sql/format
+      (sql/where [:= :images.parent_id (:id value)])
+      sql-format
       (query tx)))
 
 (defn set-cache-control-header [response request]
@@ -60,7 +60,7 @@
           "private"))))
 
 (defn handler-one
-  [{tx :tx, {image-id :image-id} :route-params :as request}]
+  [{tx :tx-next, {image-id :image-id} :route-params :as request}]
   (if-let [image (get-one tx image-id)]
     (-> image
          :content
