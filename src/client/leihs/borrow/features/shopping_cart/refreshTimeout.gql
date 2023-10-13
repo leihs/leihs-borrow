@@ -16,13 +16,6 @@ mutation refreshTimeout($userId: UUID) {
             id
             imageUrl
           }
-          totalReservableQuantities {
-            inventoryPool {
-              id
-              name
-            }
-            quantity
-          }
         }
         startDate
         status
