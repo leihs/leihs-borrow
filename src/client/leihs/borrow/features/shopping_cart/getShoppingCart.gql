@@ -21,13 +21,13 @@ query getShoppingCart($userId: UUID) {
               id
               imageUrl
             }
-            totalReservableQuantities {
-              inventoryPool {
-                id
-                name
-              }
-              quantity
-            }
+            # totalReservableQuantities {
+            #   inventoryPool {
+            #     id
+            #     name
+            #   }
+            #   quantity
+            # }
           }
           startDate
           status

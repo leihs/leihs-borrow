@@ -389,18 +389,21 @@
                                (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id)) suspensions)]
                                  (merge pool
                                         (when is-suspended? {:user-is-suspended true}))))
-            add-inaccessible-pool (fn [selected-pool pools]
-                                    (concat pools
-                                            (when
-                                             (and selected-pool (not-any? #(= (:id %) (:id selected-pool)) pools))
-                                              [(merge selected-pool {:user-has-no-access true})])))
+            ; add-inaccessible-pool (fn [selected-pool pools]
+            ;                         (concat pools
+            ;                                 (when
+            ;                                  (and selected-pool (not-any? #(= (:id %) (:id selected-pool)) pools))
+            ;                                   [(merge selected-pool {:user-has-no-access true})])))
 
             pool-id-and-name (:inventory-pool edit-mode-data)
+            ; pools-to-reserve-from (some->> model
+            ;                                :total-reservable-quantity
+            ;                                (map flatten-pool))
             pools (->> model :total-reservable-quantities
                        (map flatten-pool)
                        (filter #(has-items-or-is-selected (:id pool-id-and-name) %))
                        (map #(-> % (assoc-suspension suspensions)))
-                       (add-inaccessible-pool pool-id-and-name))
+                       #_(add-inaccessible-pool pool-id-and-name))
 
             fetched-until-date (-> edit-mode-data
                                    :fetched-until-date
@@ -421,7 +424,9 @@
             {:initialQuantity quantity
              :initialStartDate start-date
              :initialEndDate end-date
+             :initialInventoryPool pool-id-and-name
              :initialInventoryPoolId (:id pool-id-and-name)
+             :initialInventoryPoolName (:name pool-id-and-name)
              :inventoryPools (map h/camel-case-keys pools)
              :maxDateLoaded fetched-until-date
              :maxDateTotal max-date

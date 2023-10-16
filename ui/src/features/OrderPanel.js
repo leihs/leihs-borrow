@@ -42,7 +42,9 @@ const OrderPanel = ({
   onQuantityChange = noop,
   //
   inventoryPools,
+  initialInventoryPool,
   initialInventoryPoolId,
+  initialInventoryPoolName,
   onInventoryPoolChange = noop,
   //
   initialShowDayQuants = false,
@@ -71,11 +73,14 @@ const OrderPanel = ({
   useEffect(() => {
     // Make sure the selected pool is in list (otherwise fill-in a surrogate)
     const poolFromList = inventoryPools.find(x => x.id === selectedPoolId)
-    const selectedPool = poolFromList || {
-      id: selectedPoolId,
-      name: t(txt.validate, 'unknown-pool', locale),
-      isSurrogate: true
-    }
+    const selectedPool =
+      poolFromList ||
+      initialInventoryPool ||
+      {
+        id: selectedPoolId,
+        name: t(txt.validate, 'unknown-pool', locale),
+        isSurrogate: true
+      }
     const selectablePools = poolFromList ? inventoryPools : [selectedPool, ...inventoryPools]
 
     // Get availability data for selected pool
