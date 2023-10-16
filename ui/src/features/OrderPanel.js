@@ -73,10 +73,8 @@ const OrderPanel = ({
   useEffect(() => {
     // Make sure the selected pool is in list (otherwise fill-in a surrogate)
     const poolFromList = inventoryPools.find(x => x.id === selectedPoolId)
-    const selectedPool =
-      poolFromList ||
-      initialInventoryPool ||
-      {
+    const selectedPool = poolFromList ||
+      initialInventoryPool || {
         id: selectedPoolId,
         name: t(txt.validate, 'unknown-pool', locale),
         isSurrogate: true
@@ -248,9 +246,8 @@ const OrderPanel = ({
               </option>
             ))}
           </select>
-          {validationResult.poolError ? (
-            <Warning className="mt-2">{validationResult.poolError}</Warning>
-          ) : (
+          {validationResult.poolError && <Warning className="mt-2">{validationResult.poolError}</Warning>}
+          {selectedPool.totalReservableQuantity && (
             <InfoMessage className="mt-2">
               {t(label, 'pool-max-amount-info', locale, { amount: selectedPool.totalReservableQuantity })}
             </InfoMessage>
@@ -364,11 +361,12 @@ function validatePool(inventoryPool, locale, txt) {
   if (inventoryPool.userIsSuspended) {
     return t(txt, 'pool-suspension', locale)
   }
-  if (!inventoryPool.totalReservableQuantity) {
-    return t(txt, 'item-not-available-in-pool', locale)
-  }
   if (inventoryPool.isSurrogate) {
     return t(txt, 'unknown-pool', locale)
+  }
+
+  if (inventoryPool.totalReservableQuantity && inventoryPool.totalReservableQuantity == 0) {
+    return t(txt, 'item-not-available-in-pool', locale)
   }
 }
 

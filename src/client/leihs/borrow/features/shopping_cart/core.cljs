@@ -87,8 +87,8 @@
                            (h/date-format-day max-date)
                            end-date)]
      (cond
-       (empty? pool-ids)
-       {:db (assoc-in db [::edit-mode :availability] [])}
+       ; (empty? pool-ids)
+       ; {:db (assoc-in db [::edit-mode :availability] [])}
        start-date-exceeds-max?
        {:db (update-in db [::edit-mode]
                        #(availability/set-loading-as-ended % end-date false))}
@@ -107,13 +107,15 @@
 (reg-event-fx
  ::on-fetched-availability
  (fn-traced [{:keys [db]}
-             [_ end-date {{{new-availability :availability} :model} :data
+             [_ end-date {{{new-availability :availability,
+                            total-reservable-quantities :total-reservable-quantities} :model} :data
                           errors :errors}]]
    (if errors
      {:db (update-in db [::edit-mode]
                      #(availability/set-loading-as-ended % end-date false))
       :dispatch [::errors/add-many errors]}
      {:db (-> db
+              (assoc-in [::edit-mode :model :total-reservable-quantities] total-reservable-quantities)
               (update-in [::edit-mode]
                          #(when %
                             (-> %
