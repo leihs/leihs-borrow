@@ -15,7 +15,7 @@
 
 (defn get-one [tx id]
   (-> image-base-query
-      (sql/where [:= :images.id id])
+      (sql/where [:= :images.id [:cast id :uuid]])
       sql-format
       (->> (jdbc-query tx))
       first))
