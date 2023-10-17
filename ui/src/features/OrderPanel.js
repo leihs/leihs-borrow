@@ -247,7 +247,7 @@ const OrderPanel = ({
             ))}
           </select>
           {validationResult.poolError && <Warning className="mt-2">{validationResult.poolError}</Warning>}
-          {selectedPool.totalReservableQuantity && (
+          {!validationResult.poolError && selectedPool.totalReservableQuantity && (
             <InfoMessage className="mt-2">
               {t(label, 'pool-max-amount-info', locale, { amount: selectedPool.totalReservableQuantity })}
             </InfoMessage>
