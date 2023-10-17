@@ -75,6 +75,25 @@
          (map #(-> % :inventory-pool :id)))))
 
 (reg-event-fx
+ ::fetch-total-reservable-quantities
+ (fn-traced [{:keys [db]} [_ start-date end-date]]
+   (let [edit-mode (get-in db [::edit-mode])
+         user-id (-> edit-mode :user-id)
+         model (:model edit-mode)]
+     {:dispatch [::re-graph/query
+                 (rc/inline "leihs/borrow/features/model_show/getTotalReservableQuantities.gql")
+                 {:modelId (:id model), :userId user-id}
+                 [::on-fetched-total-reservable-quantities start-date end-date]]})))
+
+(reg-event-fx
+ ::on-fetched-total-reservable-quantities
+ (fn-traced [{:keys [db]}
+             [_ start-date end-date {{{:keys [total-reservable-quantities]} :model} :data}]]
+   {:db (assoc-in db [::edit-mode :model :total-reservable-quantities]
+                  total-reservable-quantities)
+    :dispatch [::fetch-availability start-date end-date]}))
+
+(reg-event-fx
  ::fetch-availability
  (fn-traced [{:keys [db]} [_ start-date end-date]]
    (let [edit-mode (get-in db [::edit-mode])
@@ -181,7 +200,8 @@
 (reg-event-fx
  ::edit-reservation
  (fn-traced [{:keys [db]} [_ res-lines]]
-   (when-not (get-in db [::edit-mode]) ; do nothing if already editing (double event dispatch)
+    ; do nothing if already editing (double event dispatch)
+   (when-not (get-in db [::edit-mode :model :total-reservable-quantities])
      (let [now (js/Date.)
            res-line (first res-lines)
            user-id (-> res-line :user :id)
@@ -201,7 +221,7 @@
                        :end-date end-date
                        :quantity quantity
                        :user-id user-id})
-        :dispatch [::fetch-availability
+        :dispatch [::fetch-total-reservable-quantities
                    (h/date-format-day start-of-current-month)
                    (h/date-format-day fetch-until-date)]}))))
 
@@ -682,6 +702,7 @@
           reservations @(subscribe [::reservations])
           grouped-reservations @(subscribe [::reservations-grouped])
           edit-mode-data @(subscribe [::edit-mode-data])
+          total-reservable-quantities (-> edit-mode-data :model :total-reservable-quantities)
           is-initial-loading? (not (or data errors))
           is-loading? @(subscribe [::loading])
           refreshing-timeout? @(subscribe [::timeout/waiting])]
@@ -708,7 +729,7 @@
 
           [order-success-notification]
 
-          (when edit-mode-data [edit-dialog])
+          (when total-reservable-quantities [edit-dialog])
 
           [delete-dialog reservations]
 

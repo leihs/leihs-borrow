@@ -1,0 +1,17 @@
+query getTotalReservableQuantities(
+  $modelId: UUID!
+  $userId: UUID
+) {
+  model(
+    userId: $userId
+    id: $modelId
+  ) {
+    totalReservableQuantities {
+      inventoryPool {
+        id
+        name
+      }
+      quantity
+    }
+  }
+}
