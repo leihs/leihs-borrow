@@ -15,5 +15,6 @@
   (-> (sql/select :*)
       (sql/from :suspensions)
       (sql/where [:= :user_id (or value-user-id user-id)])
+      (sql/where [:<= :current_date :suspended_until])
       sql-format
       (->> (jdbc-query tx))))
