@@ -1,6 +1,6 @@
 # Borrow UI
 
-Shared UI components (React), theme (based on Bootstrap) and styleguide (Storybook) for Borrow app.
+UI components (React), theme (based on Bootstrap) and styleguide (Storybook) for Borrow app.
 
 ## Stack
 

@@ -55,10 +55,13 @@ jobs:
     run_when: *ON_BRANCH_UPDATE
     tasks:
       ui-lint:
+        git_options:
+          submodules:
+            include_match: ^.*$
         scripts:
           test:
             body: |
-              ./bin/ui-lint
+              ./ui/bin/lint
       ui-test:
         include: 
           - cider-ci/task-components/storybook-test.yml
