@@ -10,6 +10,7 @@
         leihs-core/leihs-core {:local/root "./shared-clj"}
         org.clojure/data.generators {:mvn/version "1.0.0"}
         org.clojure/spec.alpha {:mvn/version "0.3.218"}
+        org.clojure/tools.namespace {:mvn/version "1.4.4"}
         org.threeten/threeten-extra {:mvn/version "1.7.2"}
         threatgrid/ring-graphql-ui {:mvn/version "0.1.3"}
         }
