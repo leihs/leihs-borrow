@@ -4,6 +4,7 @@
             #_[leihs.core.url.core :as url]
             #_[clojure.tools.logging :as log]
             [hiccup.page :refer [html5 #_include-js]]
+            [taoensso.timbre :as timbre :refer [debug info]]
             #_[ring.util.response :refer [resource-response content-type status]]))
 
 (defn head []
@@ -28,6 +29,7 @@
               "Leihs Home"]]]])})
 
 (defn html-handler [_request]
+  ; (debug "HTML handler")
   {:headers {"Content-Type" "text/html"}
    :body (html5
           (head)

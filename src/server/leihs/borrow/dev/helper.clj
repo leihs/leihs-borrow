@@ -1,17 +1,6 @@
 (ns leihs.borrow.dev.helper
-  "For development purposes only. Implements helper function for
-  reloading namespaces according to their dependencies."
-  (:require [clojure.tools.namespace.repl :as ns-tools]
-            [leihs.core.db :as db]
-            [leihs.borrow.dev.main :as dev]
-            [leihs.borrow.main :as main]))
+  (:require [clojure.tools.namespace.repl :as ns-tools]))
 
-(defn reload []
-  (db/close)
-  (db/close-next)
-  (ns-tools/refresh)
-  (reset! main/args* @dev/main-args*)
-  (main/main))
+(ns-tools/disable-reload!)
 
-(comment (ns-tools/refresh)
-         (reload))
+(def main-args* (atom nil))

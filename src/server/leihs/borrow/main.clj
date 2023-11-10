@@ -3,9 +3,7 @@
     [clj-yaml.core :as yaml]
     [clojure.pprint :refer [pprint]]
     [clojure.tools.cli :as cli :refer [parse-opts]]
-    [clojure.tools.namespace.repl :as ns-tools]
     [environ.core :refer [env]]
-    [leihs.borrow.dev.main :as dev]
     [leihs.borrow.run :as run]
     [leihs.core.logging]
     [leihs.core.repl :as repl]
@@ -66,9 +64,7 @@
 (when @args* (main))
 
 (defn -main [& args]
-  (reset! dev/main-args* args)
-  (ns-tools/refresh)
-  (reset! args* @dev/main-args*)
+  (reset! args* args)
   (main))
 
 ;(main)
