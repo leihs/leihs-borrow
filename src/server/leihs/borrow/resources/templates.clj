@@ -31,17 +31,17 @@
 
 (defn get-one-by-id [tx id user-id]
   (if-let
-    [template
-     (-> base-sqlmap
-         (sql/join :inventory_pools
-                   [:=
-                    :inventory_pools.id
-                    :inventory_pools_model_groups.inventory_pool_id])
-         (sql/where [:= :model_groups.id id])
-         (pools/accessible-to-user-condition user-id)
-         sql-format
-         (query tx)
-         first)]
+   [template
+    (-> base-sqlmap
+        (sql/join :inventory_pools
+                  [:=
+                   :inventory_pools.id
+                   :inventory_pools_model_groups.inventory_pool_id])
+        (sql/where [:= :model_groups.id id])
+        (pools/accessible-to-user-condition user-id)
+        sql-format
+        (query tx)
+        first)]
     template
     (throw (ex-info "Resource not found or not accessible for profile user id" {:status 403}))))
 
@@ -93,10 +93,10 @@
          flatten)))
 
 (comment
- (-> base-sqlmap
-     sql-format
-     (->> (jdbc-query scratch/tx))
-     first))
+  (-> base-sqlmap
+      sql-format
+      (->> (jdbc-query scratch/tx))
+      first))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)

@@ -1,6 +1,6 @@
 (ns leihs.borrow.ui.icons
   (:require
-    #_[reagent.core :as reagent]))
+   #_[reagent.core :as reagent]))
 
 (def menu-icon [:span.ui-icon.ui-menu-icon "☰"])
 (def menu-icon-open [:span.ui-icon.ui-menu-icon "✖"])
@@ -11,6 +11,6 @@
 (def -heart-icon-styles {:display "inline-block" :text-align "center" :width "1em" :height "1em" :vertical-align "middle" :line-height 1})
 (def favorite-yes-icon [:span.ui-icon.ui-favorite-yes-icon
                         [:span {:style -heart-icon-styles} "♥"]])
-                        
+
 (def favorite-no-icon [:span.ui-icon.favorite-no-icon
                        [:span {:style -heart-icon-styles} "♡"]])

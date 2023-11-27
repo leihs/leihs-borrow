@@ -1,10 +1,9 @@
 (ns leihs.borrow.graphql.scalars
   (:require
-    [java-time]
-    [clojure.tools.logging :as log]
-    [leihs.core.core :refer [presence raise]]
-    [taoensso.timbre :refer [debug info warn error spy]]
-    )
+   [java-time]
+   [clojure.tools.logging :as log]
+   [leihs.core.core :refer [presence raise]]
+   [taoensso.timbre :refer [debug info warn error spy]])
   (:import [java.util UUID]
            [java.time.format DateTimeFormatter]
            [java.time ZoneOffset]))

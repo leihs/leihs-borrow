@@ -31,7 +31,7 @@
                       ::start_date
                       ::end_date]))
 
-(def columns 
+(def columns
   [:* [[:coalesce :returned_date :end_date] :actual_end_date]])
 
 (defn get-by-ids [tx ids]
@@ -158,12 +158,12 @@
                     [[model-id pool-id start-date end-date] rs]]
                  (let [available-quantity
                        (models/available-quantity-in-date-range
-                         context
-                         {:inventory-pool-ids [pool-id]
-                          :start-date start-date
-                          :end-date end-date
-                          :exclude-reservation-ids (->> reservations (map :id))}
-                         {:id model-id})]
+                        context
+                        {:inventory-pool-ids [pool-id]
+                         :start-date start-date
+                         :end-date end-date
+                         :exclude-reservation-ids (->> reservations (map :id))}
+                        {:id model-id})]
                    (cond-> invalid-rs
                      (< available-quantity (clojure.core/count rs))
                      (into rs))))
@@ -171,23 +171,23 @@
 
 (defn merge-where-invalid-start-date [sqlmap]
   (sql/where
-    sqlmap
-    [:<
-     :reservations.start_date 
-     [:raw
-      (str "CURRENT_DATE"
-           " + "
-           "MAKE_INTERVAL("
-           "days => COALESCE(workdays.reservation_advance_days, 0)"
-           ")")]]))
+   sqlmap
+   [:<
+    :reservations.start_date
+    [:raw
+     (str "CURRENT_DATE"
+          " + "
+          "MAKE_INTERVAL("
+          "days => COALESCE(workdays.reservation_advance_days, 0)"
+          ")")]]))
 
 (defn unsubmitted-with-invalid-start-date
   [{{tx :tx-next} :request user-id ::target-user/id :as context}]
   (-> (unsubmitted-sqlmap tx user-id)
       (sql/join :inventory_pools
-                      [:=
-                       :reservations.inventory_pool_id
-                       :inventory_pools.id])
+                [:=
+                 :reservations.inventory_pool_id
+                 :inventory_pools.id])
       workdays/with-workdays-sqlmap
       merge-where-invalid-start-date
       sql-format
@@ -201,9 +201,9 @@
 
 (defn valid-until-sql [tx]
   [[:raw (str "reservations.updated_at + interval '"
-             (:timeout_minutes (settings! tx [:timeout_minutes]))
-             " minutes'"
-             " AS updated_at")]])
+              (:timeout_minutes (settings! tx [:timeout_minutes]))
+              " minutes'"
+              " AS updated_at")]])
 
 (defn touch! [tx ids]
   (-> (sql/update :reservations)
@@ -267,7 +267,7 @@
       (merge-where-according-to-container container value)
       (cond-> (seq order-by)
         (as-> sqlmap
-          (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :reservations))))
+              (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :reservations))))
       sql-format
       (query tx)))
 
@@ -277,12 +277,12 @@
   (-> (sql/delete-from :reservations)
       (sql/where [:in :reservations.id ids])
       (sql/where
-        [:or
-         [:= :reservations.user_id user-id]
-         [:exists (-> (sql/select true)
-                      (sql/from [:delegations_users :du])
-                      (sql/where [:= :du.user_id user-id])
-                      (sql/where [:= :du.delegation_id :reservations.user_id]))]])
+       [:or
+        [:= :reservations.user_id user-id]
+        [:exists (-> (sql/select true)
+                     (sql/from [:delegations_users :du])
+                     (sql/where [:= :du.user_id user-id])
+                     (sql/where [:= :du.delegation_id :reservations.user_id]))]])
       (sql/returning :id)
       sql-format
       (query tx)
@@ -301,8 +301,8 @@
                                   (:name %2))
                          first-comp))
                     pool-avails)
-         desired-quantity quantity
-         result []]
+           desired-quantity quantity
+           result []]
       (if (< pool-quantity desired-quantity)
         (recur remaining-pool-avails
                (- desired-quantity pool-quantity)
@@ -339,7 +339,7 @@
     :as context}
    {:keys [model-id start-date end-date quantity]
     [pool-id] :inventory-pool-ids
-    exclude-reservation-ids :exclude-reservation-ids 
+    exclude-reservation-ids :exclude-reservation-ids
     :or {exclude-reservation-ids []}
     :as args}
    _]

@@ -13,7 +13,6 @@
                                       dispatch
                                       dispatch-sync]]))
 
-
 (def re-graph-requests-db-path
   [:re-graph :re-graph.internals/default :http :requests])
 

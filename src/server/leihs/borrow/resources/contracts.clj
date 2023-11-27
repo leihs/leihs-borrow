@@ -53,11 +53,11 @@
           (map #(-> % name lower-case) states)]))
       (cond-> (seq order-by)
         (as-> sqlmap
-          (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :contracts))))))
+              (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :contracts))))))
 
 (defn print-url [{{tx :tx-next} :request} _ {:keys [id inventory-pool-id]}]
   (str (:external_base_url (settings! tx))
-       "/manage/" inventory-pool-id 
+       "/manage/" inventory-pool-id
        "/contracts/" id))
 
 (defn get-one

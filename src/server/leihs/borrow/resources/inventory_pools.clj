@@ -49,7 +49,7 @@
         (-> (sql/where [:in :inventory_pools.id ids])))
       (cond-> (seq order-by)
         (-> (as-> sqlmap
-              (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :inventory_pools)))
+                  (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :inventory_pools)))
             (sql/order-by [:inventory_pools.name :asc])))
       sql-format
       (->> (jdbc-query tx))))
@@ -77,13 +77,13 @@
 (defn has-reservable-items? [{{tx :tx-next} :request} _ {:keys [id]}]
   (-> (sql/select
        [[:exists
-        (-> (sql/select :*)
-            (sql/from :items)
-            (sql/where [:and
-                        [:= :inventory_pool_id id]
-                        [:is :retired nil]
-                        :is_borrowable
-                        [:is :parent_id nil]]))]])
+         (-> (sql/select :*)
+             (sql/from :items)
+             (sql/where [:and
+                         [:= :inventory_pool_id id]
+                         [:is :retired nil]
+                         :is_borrowable
+                         [:is :parent_id nil]]))]])
       sql-format
       (->> (jdbc-query tx))
       first
@@ -113,7 +113,6 @@
 
 (defn reservation-advance-days [{{tx :tx-next} :request} _ {:keys [id]}]
   (-> tx (workdays/get id) :reservation_advance_days))
-
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)

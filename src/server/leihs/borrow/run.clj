@@ -16,30 +16,27 @@
    [logbug.catcher :as catcher]
    [logbug.debug :as debug]
    [logbug.thrown :as thrown]
-   [taoensso.timbre :refer [debug info warn error]]
-   ))
-
+   [taoensso.timbre :refer [debug info warn error]]))
 
 (defn run [options]
   (catcher/snatch
-    {:return-fn (fn [e] (System/exit -1))}
-    (info "Invoking run with options: " options)
-    (shutdown/init options)
-    (graphql/init options)
-    (let [status (status/init)]
-      (db/init options (:health-check-registry status)))
-    (let [http-handler (routes/init)]
-      (http-server/start options http-handler))))
+   {:return-fn (fn [e] (System/exit -1))}
+   (info "Invoking run with options: " options)
+   (shutdown/init options)
+   (graphql/init options)
+   (let [status (status/init)]
+     (db/init options (:health-check-registry status)))
+   (let [http-handler (routes/init)]
+     (http-server/start options http-handler))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (def cli-options
   (concat
-    [["-h" "--help"]
-     shutdown/pid-file-option]
-    (http-server/cli-options :default-http-port 3250)
-    db/cli-options))
+   [["-h" "--help"]
+    shutdown/pid-file-option]
+   (http-server/cli-options :default-http-port 3250)
+   db/cli-options))
 
 (defn main-usage [options-summary & more]
   (->> ["leihs-borrow"

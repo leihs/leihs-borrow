@@ -65,8 +65,8 @@
                    (->> (map (set/map-invert
                               refined-rental-state->reservation-status)))
                    (cond->
-                     expired? (conj :EXPIRED)
-                     overdue? (conj :OVERDUE))
+                    expired? (conj :EXPIRED)
+                    overdue? (conj :OVERDUE))
                    distinct)]
     (assoc row :refined_rental_state states)))
 
@@ -185,7 +185,7 @@
     (:IN_APPROVAL :REJECTED :CANCELED :RETURNED :TO_PICKUP :TO_RETURN)
     (sql/where sqlmap
                [:= (refined-rental-state->reservation-status
-                     refined-rental-state)
+                    refined-rental-state)
                 [:any [:array [:unified_customer_orders.reservation_states]]]])
     :EXPIRED
     (sql/where
@@ -213,7 +213,7 @@
    value]
   (-> (multiple-base-sqlmap user-id)
       (cond->
-        states
+       states
         (sql/where (equal-condition
                     :unified_customer_orders.state
                     (->> states
@@ -253,7 +253,7 @@
 
         (seq order-by)
         (as-> sqlmap
-          (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :unified_customer_orders))))))
+              (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :unified_customer_orders))))))
 
 (defn get-connection [{{tx :tx-next} :request :as context} args value]
   (connections/wrap get-connection-sql-map
@@ -304,7 +304,7 @@
   (-> (pool-orders-sqlmap tx (:id value))
       (cond-> (seq order-by)
         (as-> sqlmap
-          (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :orders))))
+              (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :orders))))
       sql-format
       (->> (jdbc-query tx))
       (->> (map pool-order-row))))

@@ -1,18 +1,18 @@
 (ns leihs.borrow.testing.step-2
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [re-frame.core :as rf]
-    [re-graph.core :as re-graph]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.helpers :refer [spy log pp]]
-    [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.lib.requests :as requests]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [re-frame.core :as rf]
+   [re-graph.core :as re-graph]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.borrow.lib.helpers :refer [spy log pp]]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.requests :as requests]))
 
 (reg-event-fx ::routes/testing-step-2
               (fn-traced [& _]))

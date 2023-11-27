@@ -25,7 +25,6 @@
   (dispatch [:routing/navigate
              [::routes/models {:query-params query-params}]]))
 
-
 (reg-event-db ::clear-options
               (fn-traced [db _]
                 (assoc-in db [:ls ::options] nil)))

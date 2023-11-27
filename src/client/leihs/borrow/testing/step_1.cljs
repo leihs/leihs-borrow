@@ -1,18 +1,18 @@
 (ns leihs.borrow.testing.step-1
   (:require
-    [day8.re-frame.tracing :refer-macros [fn-traced]]
-    [re-frame.core :as rf]
-    [re-graph.core :as re-graph]
-    [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                       reg-event-db
-                                       reg-sub
-                                       reg-fx
-                                       subscribe
-                                       dispatch]]
-    [leihs.borrow.lib.helpers :refer [spy log pp]]
-    [leihs.borrow.lib.routing :as routing]
-    [leihs.borrow.client.routes :as routes]
-    [leihs.borrow.lib.requests :as requests]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [re-frame.core :as rf]
+   [re-graph.core :as re-graph]
+   [leihs.borrow.lib.re-frame :refer [reg-event-fx
+                                      reg-event-db
+                                      reg-sub
+                                      reg-fx
+                                      subscribe
+                                      dispatch]]
+   [leihs.borrow.lib.helpers :refer [spy log pp]]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.lib.requests :as requests]))
 
 (def sleep-secs 5)
 
@@ -20,28 +20,28 @@
               (fn-traced [& _]))
 
 (reg-event-fx
-  ::query
-  (fn-traced [_ [_ sleep-secs]]
-    {:dispatch [::re-graph/query
-                (str "query { testing(sleepSecs: " sleep-secs ")}")
-                nil
-                [::on-query-completed]]}))
+ ::query
+ (fn-traced [_ [_ sleep-secs]]
+   {:dispatch [::re-graph/query
+               (str "query { testing(sleepSecs: " sleep-secs ")}")
+               nil
+               [::on-query-completed]]}))
 
 (reg-event-fx
-  ::on-query-completed
-  (fn-traced [& _] (log "query completed")))
+ ::on-query-completed
+ (fn-traced [& _] (log "query completed")))
 
 (reg-event-fx
-  ::mutation
-  (fn-traced [_ [_ sleep-secs]]
-    {:dispatch [::re-graph/mutate
-                (str "mutation { testing(sleepSecs: " sleep-secs ")}")
-                nil
-                [::on-mutation-completed]]}))
+ ::mutation
+ (fn-traced [_ [_ sleep-secs]]
+   {:dispatch [::re-graph/mutate
+               (str "mutation { testing(sleepSecs: " sleep-secs ")}")
+               nil
+               [::on-mutation-completed]]}))
 
 (reg-event-fx
-  ::on-mutation-completed
-  (fn-traced [& _] (log "mutation completed")))
+ ::on-mutation-completed
+ (fn-traced [& _] (log "mutation completed")))
 
 (defn view []
   (let [running-mutations-ids @(subscribe [::requests/running-mutations-ids])

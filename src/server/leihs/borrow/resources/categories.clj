@@ -20,30 +20,30 @@
 (hugsql/def-sqlvec-fns "sql/category_tree_snip.sql")
 
 (comment
- (->> {:limit nil
-       :with-all-reservable-categories
-       (with-all-reservable-categories-snip
-         {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
-          :and-pool-ids
-          (and-pool-ids-snip {:pool-ids
-                              ["8d3631ee-818b-56d2-9d08-b9369d62d1e1"]})})
-       :category-tree-snip (category-tree-snip)}
-      reservable-root-categories-sqlvec
-      (jdbc-query (ds/get-ds)))
+  (->> {:limit nil
+        :with-all-reservable-categories
+        (with-all-reservable-categories-snip
+          {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
+           :and-pool-ids
+           (and-pool-ids-snip {:pool-ids
+                               ["8d3631ee-818b-56d2-9d08-b9369d62d1e1"]})})
+        :category-tree-snip (category-tree-snip)}
+       reservable-root-categories-sqlvec
+       (jdbc-query (ds/get-ds)))
 
- (->> {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
-       :category-id "94915209-2723-530a-92f8-76c0e8ac7ca4"
-       :category-tree-snip (category-tree-snip)
-       :with-all-reservable-categories
-       (with-all-reservable-categories-snip
-         {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
-          :and-pool-ids
-          (and-pool-ids-snip {:pool-ids
-                              ["8d3631ee-818b-56d2-9d08-b9369d62d1e1"]})})}
-      reservable-child-categories-sqlvec
-      (jdbc-query (ds/get-ds)))
+  (->> {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
+        :category-id "94915209-2723-530a-92f8-76c0e8ac7ca4"
+        :category-tree-snip (category-tree-snip)
+        :with-all-reservable-categories
+        (with-all-reservable-categories-snip
+          {:user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
+           :and-pool-ids
+           (and-pool-ids-snip {:pool-ids
+                               ["8d3631ee-818b-56d2-9d08-b9369d62d1e1"]})})}
+       reservable-child-categories-sqlvec
+       (jdbc-query (ds/get-ds)))
 
- (and-pool-ids-snip {:pool-ids ["foo"]}))
+  (and-pool-ids-snip {:pool-ids ["foo"]}))
 
 (defn get-multiple [{{tx :tx-next} :request user-id ::target-user/id}
                     {:keys [ids pool-ids raise-if-not-all-ids-found]}

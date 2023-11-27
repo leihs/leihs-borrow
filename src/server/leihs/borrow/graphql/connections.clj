@@ -29,9 +29,9 @@
   (-> [[:primary_result sqlmap]
        [:cursored_result
         (-> (sql/select
-              :primary_result.*
-              [(row-cursor :primary_result.id) :row_cursor]
-              [[:raw "row_number(*) over ()"] :row_number])
+             :primary_result.*
+             [(row-cursor :primary_result.id) :row_cursor]
+             [[:raw "row_number(*) over ()"] :row_number])
             (sql/from :primary_result))]]
       (cond-> after
         (conj [:cursor_row
@@ -75,7 +75,7 @@
 (defn assoc-page-info [result-map tx sqlmap first end-cursor]
   (assoc result-map
          :page-info
-         {:end-cursor end-cursor 
+         {:end-cursor end-cursor
           :has-next-page (if (or (not first) (not end-cursor))
                            false
                            (-> sqlmap

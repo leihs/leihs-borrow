@@ -22,7 +22,7 @@
 (reg-event-fx
  ::refresh
  (fn-traced [{:keys [db]} [_ without-quantities]]
-            (let [user-id (current-user/get-current-profile-id db)]
+   (let [user-id (current-user/get-current-profile-id db)]
      {:db (-> db (assoc-in [::data :waiting] true))
       :dispatch [::re-graph/mutate
                  (if without-quantities

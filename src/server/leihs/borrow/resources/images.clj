@@ -53,22 +53,22 @@
 
 (defn set-cache-control-header [response request]
   (-> response
-      (assoc-in 
-        [:headers "Cache-Control"] 
-        (if (get-in request  [:settings :public_image_caching_enabled])
-          "public, max-age=31536000, immutable"
-          "private"))))
+      (assoc-in
+       [:headers "Cache-Control"]
+       (if (get-in request  [:settings :public_image_caching_enabled])
+         "public, max-age=31536000, immutable"
+         "private"))))
 
 (defn handler-one
   [{tx :tx-next, {image-id :image-id} :route-params :as request}]
   (if-let [image (get-one tx image-id)]
     (-> image
-         :content
-         (->> (.decode (Base64/getMimeDecoder))
-              (hash-map :body))
-         (merge {:headers {"Content-Type" (:content_type image),
-                           "Content-Transfer-Encoding" "binary"}})
-         (set-cache-control-header request))
+        :content
+        (->> (.decode (Base64/getMimeDecoder))
+             (hash-map :body))
+        (merge {:headers {"Content-Type" (:content_type image),
+                          "Content-Transfer-Encoding" "binary"}})
+        (set-cache-control-header request))
     {:status 404}))
 
 ;#### debug ###################################################################

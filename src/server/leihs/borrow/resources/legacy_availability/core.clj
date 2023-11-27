@@ -66,8 +66,7 @@
                user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
                start-date (ch/local-date)
                end-date (t/plus (ch/local-date) #_start-date (t/days 30))
-               changes (ch/main tx model-id pool-id nil)
-               ]
+               changes (ch/main tx model-id pool-id nil)]
            (maximum-available-in-pool-and-period-summed-for-groups tx
                                                                    model-id
                                                                    user-id

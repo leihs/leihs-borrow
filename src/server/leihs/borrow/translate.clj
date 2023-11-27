@@ -14,6 +14,6 @@
         (t-base/missing-translation path-keys)))))
 
 (comment
- (let [dict-path :borrow.mail-templates.received.subject]
+  (let [dict-path :borrow.mail-templates.received.subject]
    ; (t-base/dict-path-keys dict-path default-path)
-   (t dict-path :de-CH)))
+    (t dict-path :de-CH)))

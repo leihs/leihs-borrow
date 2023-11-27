@@ -23,11 +23,11 @@
     (if (:authenticated-entity request)
       (handler request)
       (response/redirect
-        (path :sign-in
-              nil
-              {:return-to (cond-> uri
-                            (presence query-string)
-                            (str "?" query-string))})))))
+       (path :sign-in
+             nil
+             {:return-to (cond-> uri
+                           (presence query-string)
+                           (str "?" query-string))})))))
 
 (defn wrap [handler]
   (fn [request]

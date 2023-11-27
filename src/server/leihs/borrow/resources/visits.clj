@@ -22,11 +22,11 @@
       {:fulfilled-quantity fulfilled-quantity
        :to-fulfill-quantity to-fulfill-quantity})))
 
-(def approve-fulfillment 
+(def approve-fulfillment
   #(fulfillment %1 %2 %3 #{"approved" "signed" "closed"}))
 
-(def pickup-fulfillment 
+(def pickup-fulfillment
   #(fulfillment %1 %2 %3 #{"signed" "closed"}))
 
-(def return-fulfillment 
+(def return-fulfillment
   #(fulfillment %1 %2 %3 #{"closed"}))

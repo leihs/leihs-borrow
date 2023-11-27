@@ -28,17 +28,17 @@
 
 (defn init [tx entitlements pool-id]
   (let [entitlements-map
-          (as-> entitlements <>
-            (reduce #(assoc %1 (:entitlement_group_id %2) (initial-group-quantity tx %2 pool-id)) {} <>)
-            (set/rename-keys <> {nil :general})
-            (cond-> <> (nil? (:general <>))
-              (assoc :general 0)))
+        (as-> entitlements <>
+          (reduce #(assoc %1 (:entitlement_group_id %2) (initial-group-quantity tx %2 pool-id)) {} <>)
+          (set/rename-keys <> {nil :general})
+          (cond-> <> (nil? (:general <>))
+                  (assoc :general 0)))
         initial-group-allocations
-          (->> entitlements-map
-               (map (fn [e-map]
-                      [(first e-map) {:in-quantity (second e-map),
-                                      :running-reservations []}]))
-               (into {}))]
+        (->> entitlements-map
+             (map (fn [e-map]
+                    [(first e-map) {:in-quantity (second e-map),
+                                    :running-reservations []}]))
+             (into {}))]
     {(local-date) initial-group-allocations}))
 
 (def replacement-interval (t/months 1))
@@ -99,12 +99,12 @@
       (insert-for-single-date (t/plus date2 (t/days 1)))))
 
 (defn update-allocations [inner-changes allocated-group-id reservation]
-  #_ (let [g-id (uuid)
-           inner-changes
-           {(local-date) {g-id {:in-quantity 2 :running-reservations [:res1 :res2]}
-                            :general {:in-quantity 0 :running-reservations []}}}]
-       (->> inner-changes
-            (s/transform [s/MAP-VALS (s/submap [g-id]) s/MAP-VALS :in-quantity] #(- % 1))))
+  #_(let [g-id (uuid)
+          inner-changes
+          {(local-date) {g-id {:in-quantity 2 :running-reservations [:res1 :res2]}
+                         :general {:in-quantity 0 :running-reservations []}}}]
+      (->> inner-changes
+           (s/transform [s/MAP-VALS (s/submap [g-id]) s/MAP-VALS :in-quantity] #(- % 1))))
   (let [group-alloc-path [s/MAP-VALS (s/submap [allocated-group-id]) s/MAP-VALS]]
     (->> inner-changes
          (s/transform (conj group-alloc-path :in-quantity) #(- % (:quantity reservation)))
@@ -134,7 +134,7 @@
 (defn main
   ([tx model-id pool-id] (main tx model-id pool-id nil))
   ([tx model-id pool-id exclude-res-ids]
-   (let [model (m/get-one-by-id tx model-id) 
+   (let [model (m/get-one-by-id tx model-id)
          running-reservations (q/running-reservations tx
                                                       model-id
                                                       pool-id

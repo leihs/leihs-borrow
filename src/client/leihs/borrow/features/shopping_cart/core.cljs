@@ -51,7 +51,7 @@
  ::on-fetched-data
  (fn-traced [db [_ {:keys [data errors]}]]
    (if errors
-     (-> db 
+     (-> db
          (assoc ::loading nil)
          (assoc ::errors errors))
      (-> db
@@ -525,7 +525,6 @@
                           (filter #(= cart-user-id (:id %)))
                           first
                           :name)])]))
-
 
 (defn countdown []
   (reagent/with-let [now (reagent/atom (js/Date.))

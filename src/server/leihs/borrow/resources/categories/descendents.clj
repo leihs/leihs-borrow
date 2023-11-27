@@ -12,7 +12,7 @@
                 (SELECT parent_id, child_id, ARRAY[parent_id]
                  FROM model_group_links
                  WHERE parent_id = '" parent-id "' "
-                "UNION ALL
+             "UNION ALL
                  SELECT mgl.parent_id,
                         mgl.child_id,
                         path || mgl.parent_id

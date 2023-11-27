@@ -28,7 +28,6 @@
 (def em-space \u2003)
 (def nbsp non-breaking-space)
 
-
 (defn error-view [errors]
   (let [has-401 (some #(= 401 (-> % :extensions :code)) errors)
         has-403 (some #(= 403 (-> % :extensions :code)) errors)]

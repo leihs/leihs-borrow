@@ -37,7 +37,6 @@
        (cond-> errors (assoc-in , [::errors template-id] errors))
        (assoc-in [:ls ::data template-id] (:template data)))))
 
-
 (reg-sub ::data
          (fn [db [_ id]] (get-in db [:ls ::data id])))
 

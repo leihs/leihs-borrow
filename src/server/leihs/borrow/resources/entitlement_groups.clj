@@ -35,7 +35,7 @@
       first))
 
 (comment
- (get-inventory-pool-and-model-group-ids (db/get-ds)
-                                         "804a50c1-2329-5d5b-9884-340f43833514"
-                                         "8bd16d45-056d-5590-bc7f-12849f034351")
- (get-user-group-ids (db/get-ds) "c0777d74-668b-5e01-abb5-f8277baa0ea8"))
+  (get-inventory-pool-and-model-group-ids (db/get-ds)
+                                          "804a50c1-2329-5d5b-9884-340f43833514"
+                                          "8bd16d45-056d-5590-bc7f-12849f034351")
+  (get-user-group-ids (db/get-ds) "c0777d74-668b-5e01-abb5-f8277baa0ea8"))

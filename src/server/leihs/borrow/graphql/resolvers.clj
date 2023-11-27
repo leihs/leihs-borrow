@@ -19,8 +19,8 @@
     (if (and start-date
              end-date
              (before?
-               (local-date DateTimeFormatter/ISO_LOCAL_DATE end-date)
-               (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)))
+              (local-date DateTimeFormatter/ISO_LOCAL_DATE end-date)
+              (local-date DateTimeFormatter/ISO_LOCAL_DATE start-date)))
       (throw (ex-info "End date cannot be before start date." {}))
       (resolver context args value))))
 

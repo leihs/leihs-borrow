@@ -13,8 +13,7 @@
             :delegation {:de-CH "Delegation" :en-GB "Delegation"}
             :delegations {:de-CH "Delegationen" :en-GB "Delegations"}}
 
-
-    ; --- MAIL TEMPLATES ---
+; --- MAIL TEMPLATES ---
     :mail-templates {:received {:subject {:en-GB "[leihs] Order received"
                                           :de-CH "[leihs] Bestellung eingetroffen"}}
                      :submitted {:subject {:en-GB "[leihs] Reservation Submitted"
@@ -421,7 +420,6 @@
                               }"}}
                ;
 
-
               :fulfillment-state
               {:summary-line
                {:IN_APPROVAL
@@ -534,7 +532,6 @@
                                                                           other {# items were added to the cart and can be reviewed/edited there.}}"}
                                                         :confirm {:de-CH "Zum Warenkorb" :en-GB "Go to cart"}}}}
                   ;
-
 
     :shopping-cart {:title {:en-GB "Cart"
                             :de-CH "Warenkorb"}

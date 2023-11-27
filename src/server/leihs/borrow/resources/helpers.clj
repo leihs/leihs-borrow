@@ -13,4 +13,4 @@
                  col** (if table [:. table col*] col*)
                  dir* (-> direction name string/lower-case keyword)]
              [col** dir*]))
-        order-specs)))
+         order-specs)))

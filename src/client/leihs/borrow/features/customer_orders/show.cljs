@@ -116,7 +116,6 @@
          :<- [::current-user/can-change-profile?]
          (fn [can-change-profile? _] can-change-profile?))
 
-
 (defn ui-item-line [reservation]
   (let [model (:model reservation)
         option (:option reservation)

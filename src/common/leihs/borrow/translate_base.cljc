@@ -1,8 +1,7 @@
 (ns leihs.borrow.translate-base
-  (:require 
-    [cuerdas.core :as string]
-    [leihs.borrow.translations :as translations]
-    ))
+  (:require
+   [cuerdas.core :as string]
+   [leihs.borrow.translations :as translations]))
 
 (def path-escape-char \!)
 
@@ -14,7 +13,7 @@
 
 (def remove-first-char #(-> % str rest string/join))
 
-(defn qualify [p default-path] 
+(defn qualify [p default-path]
   (cond (= (first p) path-escape-char)
         (remove-first-char p)
         default-path

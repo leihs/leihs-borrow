@@ -43,7 +43,6 @@
           (hiccup.page/include-js
            (cache-buster/cache-busted-path "/borrow/js/main.js")))})
 
-
 ;#### debug ###################################################################
 ;(debug/debug-ns 'cider-ci.utils.shutdown)
 ;(debug/debug-ns *ns*)

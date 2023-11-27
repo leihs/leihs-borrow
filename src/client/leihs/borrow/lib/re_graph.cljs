@@ -8,7 +8,7 @@
   {constants/ANTI_CSRF_TOKEN_HEADER_NAME csrf/token})
 
 (def config
-  {:ws nil 
+  {:ws nil
    :http {:url "/borrow/graphql"
           :impl {:headers headers}}})
 

@@ -21,10 +21,8 @@
         :set      (s/coll-of  ::cljs-data :kind set?)
         :map      (s/map-of   ::cljs-data ::cljs-data)))
 
-
 ;; atom containing local-storage atoms
 (def storage-atoms (atom {}))
-
 
 (defn register-store [store-key session?]
   (when-not (@storage-atoms store-key)
@@ -35,7 +33,6 @@
   :args (s/cat :store-key keyword?
                :session? boolean?))
 
-
 (defn ->store [store-key data]
   (reset! (@storage-atoms store-key) data))
 
@@ -43,16 +40,12 @@
   :args (s/cat :store-key keyword?
                :data ::cljs-data))
 
-
 (defn <-store [store-key]
   @(@storage-atoms store-key))
 
 (s/fdef <-store
   :args (s/cat :store-key keyword?)
   :ret  ::cljs-data)
-
-
-
 
 (defn reg-co-fx! [store-key {:keys [fx cofx]} session?]
   (register-store store-key session?)
@@ -74,7 +67,6 @@
                :handlers (s/keys :req-un [(or ::fx ::cofx)])
                :session? boolean?))
 
-
 (defn persist-db [store-key db-key session?]
   (register-store store-key session?)
   (->interceptor
@@ -91,7 +83,6 @@
   :args (s/cat :store-key keyword?
                :db-key keyword?
                :session boolean?))
-
 
 (defn persist-db-keys [store-key db-keys session?]
   (register-store store-key session?)

@@ -34,8 +34,8 @@
       first))
 
 (comment
- (let [weekdays [:monday :tuesday :wednesday :thursday :friday :saturday :sunday]]
-   (-> (get scratch/tx scratch/pool-id)
-       (select-keys weekdays)
-       (seq)))
- (base-sqlmap scratch/pool-id))
+  (let [weekdays [:monday :tuesday :wednesday :thursday :friday :saturday :sunday]]
+    (-> (get scratch/tx scratch/pool-id)
+        (select-keys weekdays)
+        (seq)))
+  (base-sqlmap scratch/pool-id))

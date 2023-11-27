@@ -264,7 +264,7 @@
       (cond-> (seq order-by)
         (-> (dissoc :order-by)
             (as-> sqlmap
-              (apply sql/order-by sqlmap (helpers/treat-order-arg order-by)))))
+                  (apply sql/order-by sqlmap (helpers/treat-order-arg order-by)))))
       (cond-> limit
         (sql/limit limit))
       (cond-> offset
