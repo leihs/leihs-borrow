@@ -66,6 +66,30 @@ jobs:
         include: 
           - cider-ci/task-components/storybook-test.yml
 
+  lint:
+    name: "Linting"
+    description: |
+      Code checks: static checks and metrics: complexity, duplication, and format,
+        also other consistency checks.
+    priority: 3
+    run_when:
+      any branch has been updated:
+        type: branch
+        include_match: ^.*$
+    context:
+      task_defaults:
+        git_options:
+          submodules:
+            include_match: ^.*$
+      tasks:
+        cljc-lint:
+          scripts:
+            test:
+              body: |
+                #!/usr/bin/env bash
+                set -euo pipefail
+                ./bin/cljfmt check
+
   all-ok:
     name: 'All Tests OK'
     depends_on: &ALLOK_DEPS
@@ -84,6 +108,10 @@ jobs:
       ui-checks were successful:
         type: job
         job_key: ui-checks
+        states: [passed]
+      lints were successful:
+        type: job
+        job_key: lint
         states: [passed]
       good to merge of the database:
         job_key: good-to-merge

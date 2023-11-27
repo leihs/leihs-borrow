@@ -135,3 +135,8 @@ start it:
 
 - i18n: formatting numbers in translated messages uses browser locale instead of message locale.
 
+### Formatting Code
+
+Use `./bin/cljfmt check` and  `./bin/cljfmt fix`.
+
+From vim you can use `:! ./bin/cljfmt fix %` to format the current file.
