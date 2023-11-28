@@ -23,6 +23,9 @@ import IconDownloadSvg from '../../static/borrow-app-icons/Download Icon.svg'
 import IconStarSvg from '../../static/borrow-app-icons/Star Icon.svg'
 import IconTemplateSvg from '../../static/borrow-app-icons/Template.svg'
 
+import IconPowerOffSvg from '../../static/borrow-app-icons/power-off.svg'
+import IconAppsSvg from '../../static/borrow-app-icons/apps.svg'
+
 export default function Icon({ icon, style, ...restProps }) {
   const styleInner = { display: 'inline', ...style }
   const Svg = icon
@@ -53,6 +56,9 @@ export const iconDownload = props => <IconDownloadSvg {...props} />
 export const iconStar = props => <IconStarSvg {...props} />
 export const iconTemplate = props => <IconTemplateSvg {...props} />
 
+export const iconPowerOff = props => <IconPowerOffSvg {...props} />
+export const iconApps = props => <IconAppsSvg {...props} />
+
 export const allIcons = [
   iconMenu,
   iconMenuClose,
@@ -72,5 +78,7 @@ export const allIcons = [
   iconCirclePlus,
   iconDownload,
   iconStar,
-  iconTemplate
+  iconTemplate,
+  iconPowerOff,
+  iconApps
 ]

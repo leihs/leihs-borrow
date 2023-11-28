@@ -73,7 +73,7 @@ Feature: Templates
     # Switch to delegation (which has access only to Pool B which does not offer templates)
     When I click on "Catalog"
     And I click on the user profile button
-    And I click on "DD"
+    And I select "Delegation D" from "Switch Profile"
 
     Then I see the following categories:
       | caption |
@@ -168,7 +168,7 @@ Feature: Templates
     And I see the page title "Template"
     And the page subtitle is "Recommendation of the day"
     And I click on the user profile button
-    And I click on "DD"
+    And I select "Delegation D" from "Switch Profile"
 
     Then I see the page title "Template"
     And I see "This template is not available for the current profile"

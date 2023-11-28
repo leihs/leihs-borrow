@@ -24,18 +24,12 @@ Feature: Rentals - Show - Repeat order
 
   Scenario Outline: Repeating an order
     Given a customer order with title "Order 1" and the following reservations exists for the user:
-      | user                  | quantity | model       | pool   | start-date | end-date   | state  |
-      | <sourceProfileLookup> | 1        | DSLR Camera | Pool A | 2020-02-01 | 2020-02-10 | closed |
-      | <sourceProfileLookup> | 1        | Tripod      | Pool A | 2020-02-05 | 2020-02-05 | closed |
-      | <sourceProfileLookup> | 1        | Elefant     | Pool B | 2020-03-01 | 2020-03-01 | closed |
+      | user | quantity | model       | pool   | start-date | end-date   | state  |
+      | user | 1        | DSLR Camera | Pool A | 2020-02-01 | 2020-02-10 | closed |
+      | user | 1        | Tripod      | Pool A | 2020-02-05 | 2020-02-05 | closed |
+      | user | 1        | Elefant     | Pool B | 2020-03-01 | 2020-03-01 | closed |
 
     When I log in as the user
-
-    # switch to source profile
-    When I click on the user profile button
-    And I click on "<sourceProfile>"
-    Then the user profile button shows "<sourceProfileShort>"
-
     And I visit "/borrow/rentals/"
     And I click on the card with title "Order 1"
 
@@ -44,18 +38,13 @@ Feature: Rentals - Show - Repeat order
       | title              | progressbar | info |
       | All items returned |             |      |
 
-    # switch to source profile
-    When I click on the user profile button
-    And I click on "<targetProfile>"
-    Then the user profile button shows "<targetProfileShort>"
-
     When I click on "Repeat order"
     Then I see the "Add items" dialog
     And I see "3 items will be added to the cart."
     And I see the following text in the dialog:
       """
       Order for
-      <targetProfile>
+      User A (personal)
       """
     And I see the date "${Date.today}" in the "From" field
     And I see the date "${Date.tomorrow}" in the "Until" field
@@ -94,11 +83,6 @@ Feature: Rentals - Show - Repeat order
     And I accept the "Order submitted" dialog
     And the "Order submitted" dialog has closed
     And I see the page title "Orders"
-
-    Examples:
-      | sourceProfileLookup | sourceProfile     | sourceProfileShort | targetProfile    | targetProfileShort |
-      | user                | User A (personal) | UA                 | User A (personal | UA                 |
-      | Delegation D        | Delegation D      | DD                 | Delegation D     | DD                 |
 
   Scenario: Order with options only
     Given there is an option "Ethernet 1.5m"

@@ -1,26 +1,21 @@
 (ns leihs.borrow.ui.main-nav
-  (:require
-   [clojure.string :refer [join split replace]]
-   [reagent.core :as reagent]
-   ["date-fns" :as datefn]
-   [leihs.borrow.lib.re-frame :refer [subscribe
-                                      dispatch
-                                      reg-event-db
-                                      reg-sub
-                                      reg-event-fx]]
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path] :as translate]
-   [leihs.borrow.csrf :as csrf]
-   [leihs.borrow.lib.helpers :as h :refer [log]]
-   [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.borrow.features.current-user.profile-switch :as profile-switch]
-   [leihs.borrow.features.languages.core :as languages]
-   [leihs.borrow.features.languages.language-switch :as language-switch]
-   [leihs.borrow.features.shopping-cart.core :as cart]
-   [leihs.borrow.components :as ui]
-   ["/borrow-ui" :as UI]))
+  (:require ["/borrow-ui" :as UI]
+            ["date-fns" :as datefn]
+            [clojure.string :refer [join replace split]]
+            [day8.re-frame.tracing :refer-macros [fn-traced]]
+            [leihs.borrow.client.routes :as routes]
+            [leihs.borrow.components :as ui]
+            [leihs.borrow.csrf :as csrf]
+            [leihs.borrow.features.current-user.core :as current-user]
+            [leihs.borrow.features.current-user.profile-switch :as profile-switch]
+            [leihs.borrow.features.languages.core :as languages]
+            [leihs.borrow.features.languages.language-switch :as language-switch]
+            [leihs.borrow.features.shopping-cart.core :as cart]
+            [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db
+                                               reg-event-fx reg-sub subscribe]]
+            [leihs.borrow.lib.routing :as routing]
+            [leihs.borrow.lib.translate :refer [set-default-translate-path t] :as translate]
+            [reagent.core :as reagent]))
 
 (set-default-translate-path :borrow.menu)
 
@@ -127,11 +122,23 @@
       (:procure-url user-nav)
       (seq (:manage-nav-items user-nav))))
 
+(defn- app-menu-data []
+  (let [user-nav @(subscribe [::user-nav])]
+    {:items
+     (remove nil?
+             (concat
+              [#_{:href (routing/path-for ::routes/home) :label (t :borrow/section-title)} ; (don't show link to borrow itself)
+               (when-let [admin-url (:admin-url user-nav)] {:href admin-url :label (t :app-switch/admin)})
+               (when-let [procure-url (:procure-url user-nav)] {:href procure-url :label (t :app-switch/procure)})
+               (when (seq (:manage-nav-items user-nav)) {:isSeparator true})]
+              (for [{:keys [name url]} (:manage-nav-items user-nav)]
+                {:href url :label name})))}))
+
 (defn- app-switch-menu-items []
   (let [user-nav @(subscribe [::user-nav])]
     [:> UI/Components.Design.Menu {:id "app-menu"}
      [:> UI/Components.Design.Menu.Group
-      [menu-link (routing/path-for ::routes/home) (t :borrow/section-title) true]
+      #_[menu-link (routing/path-for ::routes/home) (t :borrow/section-title) true] ; (don't show link to borrow itself)
       (when-let [admin-url (:admin-url user-nav)] [menu-link admin-url (t :app-switch/admin)])
       (when-let [procure-url (:procure-url user-nav)] [menu-link procure-url (t :app-switch/procure)])
       (when (seq (:manage-nav-items user-nav))
@@ -140,6 +147,52 @@
        (for [{:keys [name url]} (:manage-nav-items user-nav)]
          [:<> {:key name}
           [menu-link url name]]))]]))
+
+(defn- user-menu-data []
+  (let [profile-errors @(subscribe [::profile-switch/errors])
+        user @(subscribe [::user])
+        delegations @(subscribe [::delegations])
+        current-profile @(subscribe [::current-profile])
+        changing-to-profile-id @(subscribe [::profile-switch/changing-to-id])
+        languages @(subscribe [::languages/data])
+        locale-to-use @(subscribe [::current-user/locale-to-use])]
+    {:items [{:href (routing/path-for ::routes/current-user-show)
+              :label (reagent/as-element [:<> [:> UI/Components.Design.Icons.UserIcon] (t :user/current-user)])}
+             {:label (reagent/as-element [:<> [:> UI/Components.Design.Icons.PowerOffIcon] (t :user/logout)])
+              :as "button" :type "submit" :form "sign-out-form" :onClick true}]
+     :children (reagent/as-element
+                [:<> {:key "other"}
+                 ; logout form
+                 [:form.visually-hidden {:id "sign-out-form" :action "/sign-out" :method "POST"} [csrf/token-field]]
+
+                 ; profile select
+                 (when (seq delegations)
+                   [:div.mt-4
+                    (when profile-errors
+                      [ui/error-view profile-errors])
+                    [:label.form-label {:for "profile-select"}
+                     (t :!borrow.profile-menu/title)
+                     (when changing-to-profile-id [:> UI/Components.Design.Spinner])]
+                    [:select#profile-select.form-select
+                     {:value (:id current-profile)
+                      :onChange #(dispatch [::profile-switch/change-profile (-> % .-target .-value)])}
+                     [:option {:value (:id user) :key (:id user)} (str #_(:short-name user) (:profile-name user))]
+                     (doall
+                      (for [delegation delegations]
+                        [:option {:value (:id delegation) :key (:id delegation)} (str #_(:short-name delegation) (:profile-name delegation))]))]])
+
+                 ; language select
+                 (when (> (count languages) 1)
+                   [:div.mt-4.mb-3
+                    [:label.form-label {:for "language-select"} (t :language/section-title)]
+                    [:select#language-select.form-select
+                     {:value (name locale-to-use)
+                      :onChange #(dispatch [::switch-language (-> % .-target .-value)])}
+                     (doall
+                      (for [language languages]
+                        (let [locale (:locale language)]
+                          [:<> {:key locale}
+                           [:option {:value locale} (:name language)]])))]])])}))
 
 (defn top []
   (reagent/with-let [now (reagent/atom (js/Date.))
@@ -168,16 +221,16 @@
                             :title (t :cart-item/menu-title)}
         :cartRemainingMinutes cart-remaining-minutes
         :cartExpired (<= cart-remaining-seconds 0)
-        :userMenuIsOpen (= current-menu "user")
+        :mobileUserMenuIsOpen (= current-menu "user")
         :userProfileShort (get-initials (:name current-profile))
-        :userMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "user") "user")])
-                            :aria-controls "user-menu"
-                            :title (t :user/menu-title)}
-        :appMenuIsOpen (= current-menu "app")
-        :appMenuLinkLabel (when (show-app-menu? user-nav) (t :app-switch/button-label))
-        :appMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "app") "app")])
-                           :aria-controls "app-menu"
-                           :title (t :app-switch/menu-title)}}])
+        :mobileUserMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "user") "user")])
+                                  :aria-controls "user-menu"
+                                  :title (t :user/menu-title)}
+        :desktopUserMenuData (user-menu-data)
+        :desktopUserMenuTriggerProps {:title (t :user/menu-title)}
+
+        :appMenuData (when (show-app-menu? user-nav) (app-menu-data))
+        :appMenuTriggerProps {:title (t :app-switch/menu-title)}}])
     (finally (js/clearInterval timer-fn))))
 
 (defn main-nav []
@@ -219,6 +272,7 @@
       [:> UI/Components.Design.Menu.Button {:type "submit" :form "sign-out-form"} (t :user/logout)]
       [:form.visually-hidden {:id "sign-out-form" :action "/sign-out" :method "POST"} [csrf/token-field]]]
 
+     ; profile select
      (when (seq delegations)
        [:> UI/Components.Design.Menu.Group {:title (t :!borrow.profile-menu/title)}
         (when profile-errors
@@ -239,6 +293,7 @@
              :onClick #(dispatch [::profile-switch/change-profile (:id delegation)])
              :key (:id delegation)}]))])
 
+     ; language select
      (when (> (count languages) 1)
        [:> UI/Components.Design.Menu.Group {:title (t :language/section-title)}
         (doall
@@ -252,8 +307,3 @@
                 :value locale
                 :on-click (when-not selected? #(dispatch [::switch-language (-> % .-target .-value)]))}
                (:name language)]])))])]))
-
-(defn app-nav []
-  [:> UI/Components.Design.Menu {:id "app-menu"}
-   [:> UI/Components.Design.Menu.Group {:title (t :app-switch/section-title)}
-    (app-switch-menu-items)]])

@@ -6,18 +6,18 @@ export default {
   component: Topnav
 }
 
-const sampleMenuItems = [
-  { href: '#', label: 'Link 1' },
-  { href: '#', label: 'Link 2' },
-  { href: '#', label: 'Link 3', selected: true }
-]
-
-export const navbar = () => {
+export const topnav = () => {
   return (
     <div>
       <h1>Topnav</h1>
-      <div className="shadow px-2">
-        <Topnav cartItemCount={3} userProfileShort="AB" appMenuLinkLabel="Ausleihen" mainMenuItems={sampleMenuItems} />
+      <div className="border px-2">
+        <Topnav
+          cartItemCount={3}
+          appMenuData={{ children: 'Bereiche...' }}
+          userProfileShort="AB"
+          desktopUserMenuData={{ children: 'Benutzermenu...' }}
+          mainMenuItems={[{ label: 'Nav 1', selected: true }, { label: 'Nav 2' }, { label: 'Nav 3' }]}
+        />
       </div>
       <p></p>
       <p className="text-muted">The navbar has the following 6 elements:</p>
@@ -25,9 +25,9 @@ export const navbar = () => {
         <li>App title (&quot;brand&quot;) with home link (mobile: centered; desktop: left) </li>
         <li>Hamburger menu link (desktop: hidden)</li>
         <li>Main menu inline (mobile: hidden)</li>
-        <li>Cart icon with link to cart</li>
-        <li>User/profile menu button</li>
         <li>App switch button (mobile: hidden)</li>
+        <li>User/profile menu button</li>
+        <li>Cart icon with link to cart</li>
       </ul>
     </div>
   )
@@ -43,7 +43,7 @@ export const counterExamples = () => {
         const navbarProps = {
           cartItemCount,
           userProfileShort: 'AB',
-          appMenuLinkLabel: 'Ausleihen'
+          appMenuTriggerEl: '[ ^ ]'
         }
         return (
           <div key={i} className="mb-3">
@@ -74,14 +74,6 @@ export const moreExamples = () => {
       <p className="text-muted">Props for the a tag surrounding the brand name</p>
       <div className="mb-3">
         <Topnav cartItemCount={3} brandLinkProps={{ className: 'border border-primary' }} />
-      </div>
-      <p className="text-muted">Props for the user menu link button</p>
-      <div className="mb-3">
-        <Topnav cartItemCount={3} userMenuLinkProps={{ className: 'border border-primary' }} />
-      </div>
-      <p className="text-muted">Props for the user app switcher button</p>
-      <div className="mb-3">
-        <Topnav cartItemCount={3} appMenuLinkProps={{ className: 'border border-primary' }} />
       </div>
       <p className="text-muted">With cart conflict</p>
       <div className="mb-3">

@@ -86,7 +86,7 @@ Feature: Shopping Cart - Display of Reservation Lines
     And I log in as the user
 
     When I click on the user profile button
-    And I click on "English (UK)"
+    And I select "English (UK)" from "Language"
     And I navigate to the cart
     And I sleep "0.5"
     Then I see the following lines in the "Items" section:
@@ -95,7 +95,7 @@ Feature: Shopping Cart - Display of Reservation Lines
       | 1× Tripod      | Pool B | 2 days from 13/02/01 |
 
     When I click on the user profile button
-    And I click on "Züritüütsch"
+    And I select "Züritüütsch" from "Language"
     And I navigate to the cart
     And I sleep "0.5"
     Then I see the following lines in the "Gegenstände" section:

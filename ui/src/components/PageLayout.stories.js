@@ -16,8 +16,7 @@ const lorem =
   'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.'
 
 export const zones = () => {
-  const [nav1Shown, setNav1Shown] = useState(false)
-  const [nav2Shown, setNav2Shown] = useState(false)
+  const [navOverlayShown, setNavOverlayShown] = useState(false)
 
   return (
     <PageLayout
@@ -28,17 +27,13 @@ export const zones = () => {
         >
           Top row
           <label className="ms-2">
-            <input type="checkbox" checked={nav1Shown} onChange={x => setNav1Shown(x.target.checked)} /> Show nav1
-          </label>
-          <label className="ms-2">
-            <input type="checkbox" checked={nav2Shown} onChange={x => setNav2Shown(x.target.checked)} /> Show nav2
+            <input type="checkbox" checked={navOverlayShown} onChange={x => setNavOverlayShown(x.target.checked)} />{' '}
+            Show nav overlay <span className="not-for-burger-mode">(reduce window width to show!)</span>
           </label>
         </div>
       }
-      nav1={<div className="bg-light-gray p-2 h-100">Nav 1</div>}
-      nav1Shown={nav1Shown}
-      nav2={<div className="bg-light-gray p-2 h-100">Nav 2</div>}
-      nav2Shown={nav2Shown}
+      navOverlay={<div className="bg-light-gray p-2 h-100">Nav 1</div>}
+      navOverlayShown={navOverlayShown}
     >
       <div style={{ border: '1px green dashed' }}>
         <PageLayout.ContentContainer>
@@ -52,15 +47,12 @@ export const zones = () => {
               <b>Main row</b> (<span style={{ color: 'green' }}>green lines</span>)
               <ul>
                 <li>
-                  <b>Nav 1</b> (xs+sm: full overlay, md+: hidden)
-                </li>
-                <li>
-                  <b>Nav 2</b> (xs+sm: full overlay, md+: offcanvas on the right)
-                </li>
-                <li>
                   <b>Content</b>
                 </li>
               </ul>
+            </li>
+            <li>
+              <b>Nav Overlay</b> (only below "burger breakpoint")
             </li>
           </ul>
           <p className="text-muted">Views can arrange the content using the container and header components:</p>
@@ -80,10 +72,10 @@ export const zones = () => {
 }
 
 export const realisticExample = () => {
-  const [nav1Shown, setNav1Shown] = useState(false)
+  const [navOverlayShown, setNavOverlayShown] = useState(false)
 
   function onMenuItemClick(e) {
-    setNav1Shown(x => !x)
+    setNavOverlayShown(x => !x)
   }
   return (
     <PageLayout
@@ -91,11 +83,13 @@ export const realisticExample = () => {
         <Topnav
           cartItemCount={3}
           mainMenuLinkProps={{ onClick: onMenuItemClick }}
-          mainMenuIsOpen={nav1Shown}
-          appMenuLinkLabel="Ausleihen"
+          mainMenuIsOpen={navOverlayShown}
+          appMenuData={{ children: 'Bereiche...' }}
+          userProfileShort="AB"
+          desktopUserMenuData={{ children: 'Benutzermenu...' }}
         />
       }
-      nav={
+      navOverlay={
         <Menu>
           <Menu.Group title="Group 1">
             <Menu.Link>Link 1</Menu.Link>
@@ -111,7 +105,7 @@ export const realisticExample = () => {
           </Menu.Group>
         </Menu>
       }
-      nav1Shown={nav1Shown}
+      navOverlayShown={navOverlayShown}
     >
       <PageLayout.ContentContainer>
         <PageLayout.Header title="PageLayout - Realistic Example" />

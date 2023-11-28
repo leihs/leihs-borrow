@@ -20,7 +20,7 @@ Feature: Search and order
 
     # switch to delegation profile
     When I click on the user profile button
-    And I click on "<name>"
+    And I select "<name>" from "Switch Profile"
     Then the user profile button shows "<shortname>"
 
     # search for a model

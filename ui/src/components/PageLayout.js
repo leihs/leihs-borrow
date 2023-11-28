@@ -6,10 +6,8 @@ import { ErrorBoundary } from './ErrorBoundary'
 export default function PageLayout({
   children,
   topBar,
-  nav1,
-  nav1Shown,
-  nav2,
-  nav2Shown,
+  navOverlay,
+  navOverlayShown,
   onContentClick,
   className,
   errorBoundaryTxt,
@@ -29,10 +27,10 @@ export default function PageLayout({
         </div>
       </div>
       <div className="page-layout__main-row">
-        {nav1Shown && (
-          <div className="page-layout__nav1">
+        {navOverlayShown && navOverlay && (
+          <div className="page-layout__nav-overlay">
             <div className="page-layout__nav-container">
-              <ErrorBoundary txt={errorBoundaryTxt}>{nav1}</ErrorBoundary>
+              <ErrorBoundary txt={errorBoundaryTxt}>{navOverlay}</ErrorBoundary>
             </div>
           </div>
         )}
@@ -40,14 +38,6 @@ export default function PageLayout({
         <div className="ui-page-content page-layout__content" onClick={onContentClick}>
           <ErrorBoundary txt={errorBoundaryTxt}>{children}</ErrorBoundary>
         </div>
-
-        {nav2Shown && (
-          <div className="page-layout__nav2">
-            <div className="page-layout__nav-container">
-              <ErrorBoundary txt={errorBoundaryTxt}>{nav2}</ErrorBoundary>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
@@ -107,14 +97,10 @@ PageLayout.propTypes = {
   children: PropTypes.node,
   /** Element to show in the top bar zone */
   topBar: PropTypes.node,
-  /** Nav 1 (xs+sm: full overlay, md+: hidden) */
-  nav1: PropTypes.node,
-  /** Show nav 1 */
-  nav1Shown: PropTypes.bool,
-  /** Nav 2 (xs+sm: full overlay, md+: offcanvas on the right) */
-  nav2: PropTypes.node,
-  /** Show nav 2 */
-  nav2Shown: PropTypes.bool,
+  /** Nav overlay (for mobile / small screens) */
+  navOverlay: PropTypes.node,
+  /** Nav overlay shown? */
+  navOverlayShown: PropTypes.bool,
   /** Emitted on click in content zone (so the controlling component can hide the overlay)  */
   onContentClick: PropTypes.func,
   /** CSS class of the wrapping element */

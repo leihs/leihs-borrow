@@ -43,8 +43,7 @@ $burger-breakpoint: 820px; // somewhat more then `md` to have enough space for h
     }
   }
 
-  // nav1 (xs+sm: full overlay, md+: hidden)
-  &__nav1 {
+  &__nav-overlay {
     position: fixed;
     z-index: 100;
     height: calc(100vh - 51px);
@@ -56,31 +55,9 @@ $burger-breakpoint: 820px; // somewhat more then `md` to have enough space for h
     overflow-y: auto;
     overscroll-behavior-y: contain;
     background-color: $light-shade;
-    @media screen and (min-width > $burger-breakpoint) {
+    @media screen and (min-width: $burger-breakpoint) {
       & {
         display: none;
-      }
-    }
-  }
-
-  // nav2 (xs+sm: full overlay, md+: offcanvas on the right)
-  &__nav2 {
-    position: fixed;
-    z-index: 100;
-    height: calc(100vh - 51px);
-    top: 51px;
-    right: 0;
-    width: 100%;
-    padding-top: 50px;
-    padding-bottom: 50px;
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-    background-color: $light-shade;
-    @include media-breakpoint-up(md) {
-      & {
-        padding-top: 50px;
-        width: 440px;
-        border-left: 1px solid $gray;
       }
     }
   }
@@ -116,6 +93,22 @@ $burger-breakpoint: 820px; // somewhat more then `md` to have enough space for h
   @include media-breakpoint-up(md) {
     @if ($md-title-left) {
       text-align: left;
+    }
+  }
+}
+
+.for-burger-mode {
+  @media screen and (min-width: $burger-breakpoint) {
+    & {
+      display: none !important;
+    }
+  }
+}
+
+.not-for-burger-mode {
+  @media screen and (max-width: calc($burger-breakpoint - 1px)) {
+    & {
+      display: none !important;
     }
   }
 }

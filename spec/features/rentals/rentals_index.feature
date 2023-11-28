@@ -30,7 +30,7 @@ Feature: Rentals
       | title   |
       | Order 1 |
     And I click on the user profile button
-    And I click on "Delegation D"
+    And I select "Delegation D" from "Switch Profile"
     Then the user profile button shows "DD"
     And I see the following orders:
       | title   |

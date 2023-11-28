@@ -69,16 +69,15 @@
         current-menu (:current-menu menu-data)]
     [:> UI/Components.Design.PageLayout
      {:topBar (r/as-element [main-nav/top])
-      :nav1 (r/as-element [main-nav/main-nav])
-      :nav1Shown (= current-menu "main")
+      :navOverlay (r/as-element (case current-menu
+                                  "user" [main-nav/user-profile-nav]
+                                  "main" [main-nav/main-nav]
+                                  nil))
+      :navOverlayShown (or (= current-menu "main")
+                           (= current-menu "user"))
       :errorBoundaryTxt {:title (t :borrow.errors.render-error)
                          :reload (t :borrow.errors.reload)
                          :goToStart (t :borrow.errors.go-to-start)}
-      :nav2 (r/as-element (case current-menu
-                            "user" [main-nav/user-profile-nav]
-                            "app" [main-nav/app-nav]
-                            nil))
-      :nav2Shown (or (= current-menu "user") (= current-menu "app"))
       :onContentClick #(dispatch [::main-nav/set-current-menu nil])}
      #_[requests/retry-banner]
      [routing/routed-view views]

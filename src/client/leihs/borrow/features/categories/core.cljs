@@ -76,7 +76,7 @@
                     (conj (into [] category-items)
                           {:id "templates"
                            :href (routing/path-for ::routes/templates-index)
-                           :placeholder (r/as-element [:div {:style {:width "5rem"}} [:> UI/Components.Design.TemplateIcon]])
+                           :placeholder (r/as-element [:div {:style {:width "5rem"}} [:> UI/Components.Design.Icons.TemplateIcon]])
                            :caption (t :templates)})
                     category-items)]
 

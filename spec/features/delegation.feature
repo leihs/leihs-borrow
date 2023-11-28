@@ -14,12 +14,12 @@ Feature: Delegations
     Given I log in as the user
 
     When I click on the user profile button
-    And I click on "DD"
+    And I select "Delegation D" from "Switch Profile"
     And I sleep "0.5"
     Then the user profile button shows "DD"
 
     When I click on the user profile button
-    And I click on "UA"
+    And I select "User A (personal)" from "Switch Profile"
     And I sleep "0.5"
     Then the user profile button shows "UA"
 
@@ -53,7 +53,7 @@ Feature: Delegations
 
     When I click on "Cancel"
     And I click on the user profile button
-    And I click on "DD"
+    And I select "Delegation D" from "Switch Profile"
     And the user profile button shows "DD"
     Then the "Add item" button is disabled
     And I see the text:
@@ -73,7 +73,7 @@ Feature: Delegations
 
     When I click on "Cancel"
     And I click on the user profile button
-    And I click on "UA"
+    And I select "User A (personal)" from "Switch Profile"
     And the user profile button shows "UA"
     Then the "Add item" button is disabled
     And I see the text:
@@ -85,7 +85,7 @@ Feature: Delegations
     Given I log in as the user
 
     When I click on the user profile button
-    And I click on "DD"
+    And I select "Delegation D" from "Switch Profile"
     Then the user profile button shows "DD"
 
     When I switch to a new window
@@ -94,7 +94,7 @@ Feature: Delegations
 
     # Check that changing the profile in window 2 does not change window 1
     When I click on the user profile button
-    And I click on "UA"
+    And I select "User A (personal)" from "Switch Profile"
     And the user profile button shows "UA"
     And I go back to the first window
     And I visit "/borrow/order"
@@ -110,7 +110,7 @@ Feature: Delegations
 
     # Check that changing the profile in window 2 does not change window 1
     When I click on the user profile button
-    And I click on "DD"
+    And I select "Delegation D" from "Switch Profile"
     And the user profile button shows "DD"
     And I go back to the first window
     And I visit "/borrow/order"

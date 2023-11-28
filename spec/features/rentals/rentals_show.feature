@@ -111,7 +111,7 @@ Feature: Rentals - Show
       User A (personal)
       """
     And I click on the user profile button
-    And I click on "DD"
+    And I select "Delegation D" from "Switch Profile"
 
     Then the user profile button shows "DD"
     And I see the page title "Order"
@@ -126,7 +126,7 @@ Feature: Rentals - Show
       Delegation D
       """
     And I click on the user profile button
-    And I click on "UA"
+    And I select "User A (personal)" from "Switch Profile"
 
     Then the user profile button shows "UA"
     And I see the page title "Order"

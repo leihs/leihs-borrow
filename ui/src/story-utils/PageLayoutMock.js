@@ -7,8 +7,9 @@ export default function PageLayoutMock({ children, contained = true, ...override
     topBar: (
       <Topnav
         cartItemCount={3}
+        appMenuData={{ children: 'Bereiche...' }}
         userProfileShort="AB"
-        appMenuLinkLabel="Ausleihen"
+        desktopUserMenuData={{ children: 'Benutzermenu...' }}
         mainMenuItems={[{ label: 'Nav 1', selected: true }, { label: 'Nav 2' }, { label: 'Nav 3' }]}
       />
     ),

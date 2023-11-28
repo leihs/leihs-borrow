@@ -5,25 +5,147 @@ import Menu from '../components/Menu'
 import PageLayout from '../components/PageLayout'
 import ListCard from '../components/ListCard'
 import ActionButtonGroup from '../components/ActionButtonGroup'
+import Icon, { iconPowerOff, iconUser } from '../components/Icons'
 
 export default {
   title: 'Prototypes/Layout And Navigation',
   parameters: { layout: 'fullscreen' }
 }
 
+function mobileMainNav({ onLinkClick }) {
+  return (
+    <Menu id="menu">
+      <Menu.Group title="Ausleihen">
+        <Menu.Link onClick={onLinkClick}>Katalog</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Warenkorb</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Bestellungen</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Favoriten</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Inventarparks</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Hilfe</Menu.Link>
+      </Menu.Group>
+      <Menu.Group title="Bereich wechseln">
+        <Menu.Link onClick={onLinkClick} isSelected>
+          Ausleihen
+        </Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Leihs Admin</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Bedarfsermittlung</Menu.Link>
+        <div className="pt-3">Verleih / Inventar</div>
+        <Menu.Link onClick={onLinkClick}>Ausleihe Toni-Areal</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>AV-Services</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Departement Musik</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Kostüm- und Kleinrequisitenfundus DDK</Menu.Link>
+      </Menu.Group>
+    </Menu>
+  )
+}
+
+function mobileUserNav({ onLinkClick }) {
+  return (
+    <Menu id="user-menu">
+      <Menu.Group title="Anna Beispiel">
+        <Menu.Link onClick={onLinkClick}>Benutzerdaten</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Abmelden</Menu.Link>
+      </Menu.Group>
+      <Menu.Group title="Profil">
+        <Menu.Link onClick={onLinkClick} isSelected>
+          Anna Beispiel (persönlich)
+        </Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Delegation 1</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Delegation 2</Menu.Link>
+      </Menu.Group>
+      <Menu.Group title="Sprache">
+        <Menu.Link onClick={onLinkClick} isSelected>
+          Deutsch
+        </Menu.Link>
+        <Menu.Link onClick={onLinkClick}>English</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>Français</Menu.Link>
+      </Menu.Group>
+    </Menu>
+  )
+}
+
+function mainMenuItems() {
+  return [
+    { href: '#', label: 'Katalog', selected: true },
+    { href: '#', label: 'Bestellungen' },
+    { href: '#', label: 'Favoriten' },
+    { href: '#', label: 'Inventarparks' },
+    { href: '#', label: 'Hilfe' }
+  ]
+}
+
+function desktopUserMenuData() {
+  return {
+    items: [
+      {
+        href: '#user',
+        label: (
+          <>
+            <Icon icon={iconUser} /> Benutzerkonto
+          </>
+        )
+      },
+      {
+        as: 'button',
+        onClick: () => alert('logout'),
+        label: (
+          <>
+            <Icon icon={iconPowerOff} /> Abmelden
+          </>
+        )
+      }
+    ],
+    children: (
+      <>
+        <div className="mt-4">
+          <label htmlFor="profile-select" className="form-label">
+            Profil wechseln
+          </label>
+          <select id="profile-select" className="form-select">
+            <option>Anna Beispiel (persönlich)</option>
+            <option>Delegation 1</option>
+            <option>Delegation 2</option>
+          </select>
+        </div>
+        <div className="mt-4 mb-3">
+          <label htmlFor="language-select" className="form-label">
+            Sprache
+          </label>
+          <select id="language-select" className="form-select">
+            <option>Deutsch</option>
+            <option>English</option>
+            <option>Français</option>
+          </select>
+        </div>
+      </>
+    )
+  }
+}
+
+function appMenuData() {
+  return {
+    items: [
+      { label: 'Admin' },
+      { label: 'Bedarfsermittlung' },
+      { isSeparator: true },
+      { label: 'Ausleihe Toni-Areal' },
+      { label: 'AV-Services' },
+      { label: 'Departement Musik' },
+      { label: 'Kostüm- und Kleinrequisitenfundus DDK' }
+    ]
+  }
+}
+
 export function layoutAndNavigation() {
-  const [overlay, setOverlay] = useState('') // '' | 'main' | 'user' | 'app'
+  // overlay nav
+  const [overlay, setOverlay] = useState('') // '' | 'main' | 'user'
   function onMainMenubuttonClick() {
     setOverlay(x => (x === 'main' ? '' : 'main'))
   }
   function onUserMenuButtonClick() {
     setOverlay(x => (x === 'user' ? '' : 'user'))
   }
-  function onAppButtonClick() {
-    setOverlay(x => (x === 'app' ? '' : 'app'))
-  }
-
-  const dismissOverlay = () => {
+  function dismissOverlay() {
     setOverlay('')
   }
 
@@ -35,76 +157,30 @@ export function layoutAndNavigation() {
           brandLinkProps={{ role: 'button', onClick: dismissOverlay }}
           mainMenuIsOpen={overlay === 'main'}
           mainMenuLinkProps={{ onClick: onMainMenubuttonClick, 'aria-controls': 'menu' }}
-          mainMenuItems={[
-            { href: '#', label: 'Katalog', selected: true },
-            { href: '#', label: 'Bestellungen' },
-            { href: '#', label: 'Favoriten' },
-            { href: '#', label: 'Inventarparks' },
-            { href: '#', label: 'Hilfe' }
-          ]}
+          mainMenuItems={mainMenuItems()}
           cartItemCount={0}
-          cartItemLinkProps={{ onClick: dismissOverlay }}
-          userMenuIsOpen={overlay === 'user'}
+          cartItemLinkProps={{ onClick: dismissOverlay, title: 'Warenkorb' }}
+          // -- user menu --
           userProfileShort="AB"
-          userMenuLinkProps={{
+          mobileUserMenuIsOpen={overlay === 'user'}
+          mobileUserMenuLinkProps={{
             onClick: onUserMenuButtonClick,
-            'aria-controls': 'user-menu'
+            'aria-controls': 'user-menu',
+            title: 'Benutzermenu'
           }}
-          appMenuIsOpen={overlay === 'app'}
-          appMenuLinkLabel="Ausleihen"
-          appMenuLinkProps={{
-            onClick: onAppButtonClick,
-            'aria-controls': 'app-menu'
-          }}
+          desktopUserMenuData={desktopUserMenuData()}
+          desktopUserMenuTriggerProps={{ title: 'Benutzermenu' }}
+          // -- app  menu --
+          appMenuData={appMenuData()}
+          appMenuTriggerProps={{ title: 'Bereich wechseln' }}
         />
       }
-      nav1={
-        <Menu id="menu">
-          <Menu.Group title="Ausleihen">
-            <Menu.Link onClick={dismissOverlay}>Katalog</Menu.Link>
-            <Menu.Link onClick={dismissOverlay}>Warenkorb</Menu.Link>
-            <Menu.Link onClick={dismissOverlay}>Bestellungen</Menu.Link>
-            <Menu.Link onClick={dismissOverlay}>Favoriten</Menu.Link>
-            <Menu.Link onClick={dismissOverlay}>Inventarparks</Menu.Link>
-            <Menu.Link onClick={dismissOverlay}>Hilfe</Menu.Link>
-          </Menu.Group>
-          <Menu.Group title="Weitere Bereiche">
-            <Menu.Link onClick={dismissOverlay}>Leihs Admin</Menu.Link>
-            <Menu.Link onClick={dismissOverlay}>Bedarfsermittlung</Menu.Link>
-            <Menu.Link onClick={dismissOverlay}>Ausleihe Toni-Areal</Menu.Link>
-          </Menu.Group>
-        </Menu>
+      navOverlay={
+        overlay === 'main'
+          ? mobileMainNav({ onLinkClick: dismissOverlay })
+          : mobileUserNav({ onLinkClick: dismissOverlay })
       }
-      nav1Shown={overlay === 'main'}
-      nav2={
-        overlay === 'user' ? (
-          <Menu id="user-menu">
-            <Menu.Group title="Anna Beispiel">
-              <Menu.Link href="">Benutzerdaten</Menu.Link>
-              <Menu.Link href="">Abmelden</Menu.Link>
-            </Menu.Group>
-            <Menu.Group title="Sprache">
-              <Menu.Link href="" isSelected>
-                Deutsch
-              </Menu.Link>
-              <Menu.Link href="">English</Menu.Link>
-              <Menu.Link href="">Français</Menu.Link>
-            </Menu.Group>
-          </Menu>
-        ) : (
-          <Menu id="app-menu">
-            <Menu.Group title="Bereich">
-              <Menu.Link onClick={dismissOverlay} isSelected>
-                Ausleihen
-              </Menu.Link>
-              <Menu.Link onClick={dismissOverlay}>Leihs Admin</Menu.Link>
-              <Menu.Link onClick={dismissOverlay}>Bedarfsermittlung</Menu.Link>
-              <Menu.Link onClick={dismissOverlay}>Ausleihe Toni-Areal</Menu.Link>
-            </Menu.Group>
-          </Menu>
-        )
-      }
-      nav2Shown={overlay === 'user' || overlay === 'app'}
+      navOverlayShown={!!overlay}
       onContentClick={dismissOverlay}
     >
       <PageLayout.ContentContainer>

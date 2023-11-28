@@ -1,7 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Icon, { iconMenu, iconMenuClose, iconBag, iconUser, iconArrow } from './Icons'
+import Icon, { iconMenu, iconMenuClose, iconBag, iconUser, iconArrow, iconApps } from './Icons'
 import cx from 'classnames'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 
 export default function Topnav({
   brandName = 'Leihs',
@@ -20,13 +21,16 @@ export default function Topnav({
   // main menu desktop
   mainMenuItems = [],
 
-  userMenuIsOpen = false,
+  // user menu
   userProfileShort,
-  userMenuLinkProps,
+  mobileUserMenuIsOpen = false,
+  mobileUserMenuLinkProps,
+  desktopUserMenuData = {},
+  desktopUserMenuTriggerProps,
 
-  appMenuIsOpen = false,
-  appMenuLinkLabel,
-  appMenuLinkProps,
+  // app menu (desktop only - for mobile it is integrated in the main menu)
+  appMenuData,
+  appMenuTriggerProps,
 
   className,
   ...restProps
@@ -66,6 +70,56 @@ export default function Topnav({
 
       {/* Buttons on the right hand side */}
       <div className="topnav__right-buttons">
+        {/* App menu (dropdown) */}
+        {appMenuData && (
+          <div className="not-for-burger-mode">
+            <DropdownMenu.Root modal={false} className="topnav__radix-dropdown-root">
+              <DropdownMenu.Trigger
+                className="ui-app-menu-link topnav__radix-dropdown-trigger"
+                {...appMenuTriggerProps}
+              >
+                <Icon icon={iconApps} width="20px" height="20px" style={{ margin: '3px 0 3px 0' }} />
+              </DropdownMenu.Trigger>
+              {renderDropdownContent(appMenuData)}
+            </DropdownMenu.Root>
+          </div>
+        )}
+
+        {/* User and Profile (for mobile screens, shown in an external overlay) */}
+        {userProfileShort && (
+          <a
+            role="button"
+            className={cx('ui-user-profile-button', 'for-burger-mode', 'topnav__user-profile-link user-icon', {
+              'topnav__user-profile-link--open': mobileUserMenuIsOpen
+            })}
+            aria-expanded={mobileUserMenuIsOpen}
+            {...mobileUserMenuLinkProps}
+          >
+            <span className="user-icon">
+              <Icon icon={iconUser} />
+              <div className="user-icon__badge">{userProfileShort}</div>
+            </span>
+          </a>
+        )}
+
+        {/* User and Profile (for lg screens, dropdown) */}
+        {userProfileShort && (
+          <div className="not-for-burger-mode">
+            <DropdownMenu.Root modal={false} className="topnav__radix-dropdown-root">
+              <DropdownMenu.Trigger
+                className="ui-user-profile-button topnav__radix-dropdown-trigger"
+                {...desktopUserMenuTriggerProps}
+              >
+                <span className="user-icon" style={{ margin: '-1px 0 1px 0' }}>
+                  <Icon icon={iconUser} />
+                  <div className="user-icon__badge">{userProfileShort}</div>
+                </span>
+              </DropdownMenu.Trigger>
+              {renderDropdownContent(desktopUserMenuData)}
+            </DropdownMenu.Root>
+          </div>
+        )}
+
         {/* Cart */}
         <a
           role="button"
@@ -92,40 +146,34 @@ export default function Topnav({
             </div>
           )}
         </a>
-
-        {/* User and Profile */}
-        {userProfileShort && (
-          <a
-            role="button"
-            className={cx('ui-user-profile-button', 'topnav__user-profile-link user-icon', {
-              'topnav__user-profile-link--open': userMenuIsOpen
-            })}
-            aria-expanded={userMenuIsOpen}
-            {...userMenuLinkProps}
-          >
-            <Icon icon={iconUser} />
-            <div className="user-icon__badge">{userProfileShort}</div>
-          </a>
-        )}
-
-        {/* Sub App */}
-        {appMenuLinkLabel && (
-          <a
-            role="button"
-            className={cx('ui-app-menu-link', 'topnav__app-menu-link', {
-              'topnav__app-menu-link--open': appMenuIsOpen
-            })}
-            aria-expanded={appMenuIsOpen}
-            {...appMenuLinkProps}
-          >
-            {appMenuLinkLabel}
-            <Icon icon={iconArrow} />
-          </a>
-        )}
       </div>
     </nav>
   )
 }
+
+function renderDropdownItem({ isSeparator, label, onClick, href, as, ...restProps }) {
+  if (isSeparator) return <DropdownMenu.Separator className="topnav__radix-dropdown-separator" {...restProps} />
+  const El = as || 'a'
+  return (
+    <DropdownMenu.Item asChild>
+      <El className="topnav__radix-dropdown-item" onClick={onClick} href={href} {...restProps}>
+        {label}
+      </El>
+    </DropdownMenu.Item>
+  )
+}
+
+function renderDropdownContent({ items = [], children, ...restProps }) {
+  return (
+    <DropdownMenu.Content className="ui-topnav-dropdown topnav__radix-dropdown-content" sideOffset={0} {...restProps}>
+      {items.map((item, i) => (
+        <React.Fragment key={i}>{renderDropdownItem(item)}</React.Fragment>
+      ))}
+      {children}
+    </DropdownMenu.Content>
+  )
+}
+
 Topnav.propTypes = {
   /** Brand (app) name */
   brandName: PropTypes.node,
@@ -157,19 +205,31 @@ Topnav.propTypes = {
     })
   ),
 
-  /** Is the user/profile menu open? */
-  userMenuIsOpen: PropTypes.bool,
-  /** Short name of the current profile */
+  /** Short name of the current profile (when empty: user menu button will not be shown) */
   userProfileShort: PropTypes.node,
-  /** Props for the `a` element around the user/profile button */
-  userMenuLinkProps: PropTypes.object,
+  /** Is the mobile user/profile menu open? */
+  mobileUserMenuIsOpen: PropTypes.bool,
+  /** Props for the `a` element around the mobile user/profile button */
+  mobileUserMenuLinkProps: PropTypes.object,
+  /** Data for desktop user/profile menu */
+  desktopUserMenuData: PropTypes.shape({
+    items: PropTypes.arrayOf(
+      PropTypes.shape({ isSeparator: PropTypes.bool, onClick: PropTypes.func, label: PropTypes.node })
+    ),
+    children: PropTypes.node
+  }),
+  /** Props for the desktop user/profile menu trigger button */
+  desktopUserMenuTriggerProps: PropTypes.shape({}),
 
-  /** Is the app switcher menu open? */
-  appMenuIsOpen: PropTypes.bool,
-  /** Label of the app switcher menu link */
-  appMenuLinkLabel: PropTypes.node,
-  /** Props for the `a` element around the app switch button */
-  appMenuLinkProps: PropTypes.object,
+  /** Data for the app switcher menu */
+  appMenuData: PropTypes.shape({
+    items: PropTypes.arrayOf(
+      PropTypes.shape({ isSeparator: PropTypes.bool, onClick: PropTypes.func, label: PropTypes.node })
+    ),
+    children: PropTypes.node
+  }),
+  /** Props for the app switcher menu trigger button */
+  appMenuTriggerProps: PropTypes.shape({}),
 
   /** CSS class of the wrapping element */
   className: PropTypes.string
