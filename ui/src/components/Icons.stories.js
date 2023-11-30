@@ -31,19 +31,27 @@ export const iconStyling = () => {
   return (
     <div>
       <h1>Icons</h1>
-      <h2 className="text-muted">Color inheritance</h2>
+      <h2 className="text-muted">CSS inheritance</h2>
       <p className="text-primary">
         <Icon icon={iconStar} /> color inherited from this paragraph
+      </p>
+      <p>
+        <div style={{ width: '12px', display: 'inline-block' }}>
+          <Icon icon={iconStar} style={{ width: '100%' }} />
+        </div>{' '}
+        shrink by CSS width
       </p>
       <h2 className="text-muted">Attributes (restProps)</h2>
       <p>
         <Icon icon={iconStar} style={{ color: 'red' }} /> colored by style attribute
       </p>
       <p>
-        <Icon icon={iconStar} height="12px" width="12px" /> resized by width/height attribute
+        <Icon icon={iconStar} height="12px" width="12px" />
+        <Icon icon={iconStar} />
+        <Icon icon={iconStar} height="18px" width="18px" /> shrink/grow by width and/or height attribute
       </p>
       <p className="text-muted">
-        Not: Normally no resizing is necessary since the SVGs have an inherent size as needed by the design.
+        Note: Normally no resizing is necessary since the SVGs have an inherent size as needed by the design.
       </p>
     </div>
   )
