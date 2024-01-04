@@ -5,7 +5,7 @@ import Menu from '../components/Menu'
 import PageLayout from '../components/PageLayout'
 import ListCard from '../components/ListCard'
 import ActionButtonGroup from '../components/ActionButtonGroup'
-import Icon, { iconPowerOff, iconUser } from '../components/Icons'
+import { PowerOffIcon, UserIcon } from '../components/Icons'
 
 export default {
   title: 'Prototypes/Layout And Navigation',
@@ -81,7 +81,7 @@ function desktopUserMenuData() {
         href: '#user',
         label: (
           <>
-            <Icon icon={iconUser} /> Benutzerkonto
+            <UserIcon /> Benutzerkonto
           </>
         )
       },
@@ -90,7 +90,7 @@ function desktopUserMenuData() {
         onClick: () => alert('logout'),
         label: (
           <>
-            <Icon icon={iconPowerOff} /> Abmelden
+            <PowerOffIcon /> Abmelden
           </>
         )
       }

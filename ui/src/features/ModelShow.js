@@ -11,7 +11,7 @@ import ActionButtonGroup from '../components/ActionButtonGroup'
 import SquareImage from '../components/SquareImage'
 import PropertyTable from '../components/PropertyTable'
 import Warning from '../components/Warning'
-import Icon, { iconArrowLeft, iconArrowRight, iconStar } from '../components/Icons'
+import { LargeArrowLeftIcon, LargeArrowRightIcon, StarIcon } from '../components/Icons'
 
 const noop = () => {}
 
@@ -55,7 +55,7 @@ export default function ModelShow({
       <PageLayout.Header
         title={
           <>
-            {model.isFavorited && <Icon icon={iconStar} style={{ marginRight: '8px', marginTop: '-5px' }} />}
+            {model.isFavorited && <StarIcon style={{ marginRight: '8px', marginTop: '-5px' }} />}
             {model.name}
           </>
         }
@@ -68,14 +68,14 @@ export default function ModelShow({
               aria-label={t.previousImage}
               onClick={handleLeftArrowClick}
             >
-              <Icon icon={iconArrowLeft} height="35" width="20" />
+              <LargeArrowLeftIcon height="30" width="20" />
             </button>
             <button
               className="btn btn-secondary slide-button slide-button--next"
               aria-label={t.nextImage}
               onClick={handleRightArrowClick}
             >
-              <Icon icon={iconArrowRight} height="35" width="20" />
+              <LargeArrowRightIcon height="30" width="20" />
             </button>
             <SwipeableViews
               enableMouseEvents={true}

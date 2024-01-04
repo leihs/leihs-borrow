@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Icon, { iconMenu, iconMenuClose, iconBag, iconUser, iconArrow, iconApps } from './Icons'
+import { MenuIcon, MenuCloseIcon, BagIcon, UserIcon, AppsIcon } from './Icons'
 import cx from 'classnames'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 
@@ -41,9 +41,7 @@ export default function Topnav({
     <nav className={cx('ui-main-nav topnav', className)} {...restProps}>
       {/* Burger */}
       <a role="button" aria-expanded={mainMenuIsOpen} {...mainMenuLinkProps} className="topnav__burger-link">
-        <span className="ui-icon ui-menu-icon">
-          <Icon icon={mainMenuIsOpen ? iconMenuClose : iconMenu} />
-        </span>
+        <span className="ui-icon ui-menu-icon">{mainMenuIsOpen ? <MenuCloseIcon /> : <MenuIcon />}</span>
       </a>
 
       {/* Title ("Brand") */}
@@ -77,7 +75,7 @@ export default function Topnav({
                 className="ui-app-menu-link topnav__radix-dropdown-trigger"
                 {...appMenuTriggerProps}
               >
-                <Icon icon={iconApps} width="20px" height="20px" style={{ margin: '3px 0 3px 0' }} />
+                <AppsIcon style={{ margin: '3px 0 3px 0' }} />
               </DropdownMenu.Trigger>
               {renderDropdownContent(appMenuData)}
             </DropdownMenu.Root>
@@ -95,7 +93,7 @@ export default function Topnav({
             {...mobileUserMenuLinkProps}
           >
             <span className="user-icon">
-              <Icon icon={iconUser} />
+              <UserIcon />
               <div className="user-icon__badge">{userProfileShort}</div>
             </span>
           </a>
@@ -110,7 +108,7 @@ export default function Topnav({
                 {...desktopUserMenuTriggerProps}
               >
                 <span className="user-icon" style={{ margin: '-1px 0 1px 0' }}>
-                  <Icon icon={iconUser} />
+                  <UserIcon />
                   <div className="user-icon__badge">{userProfileShort}</div>
                 </span>
               </DropdownMenu.Trigger>
@@ -127,7 +125,7 @@ export default function Topnav({
           })}
           {...cartItemLinkProps}
         >
-          <Icon icon={iconBag} />
+          <BagIcon />
           {showCartCounter && (
             <div
               className={cx('cart-icon__badge', {

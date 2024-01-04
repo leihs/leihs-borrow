@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import cx from 'classnames'
 import { parseISO as parseDate } from 'date-fns'
-import Icon, { iconFilter, iconCircleCross } from '../components/Icons'
+import { SettingsIcon, CircleCrossIcon } from '../components/Icons'
 
 import { translate as t } from '../lib/translate'
 
@@ -105,7 +105,7 @@ function SearchFilterCombinedInput({
           className="btn"
           tabIndex="2"
         >
-          <Icon icon={iconFilter} />
+          <SettingsIcon />
         </button>
         <button type="submit" className="btn btn-primary rounded-0 rounded-end" aria-label={searchLabel} tabIndex="3">
           {searchLabel}
@@ -123,8 +123,7 @@ function FilterItemButton({ children, onFilterClick, onClear, ...restProps }) {
         {children}
       </span>
       <span role="button">
-        <Icon
-          icon={iconCircleCross}
+        <CircleCrossIcon
           style={{ marginLeft: '10px', marginRight: '0px', marginTop: '-3px' }}
           height="14"
           width="14"
@@ -132,7 +131,7 @@ function FilterItemButton({ children, onFilterClick, onClear, ...restProps }) {
             e.stopPropagation()
             onClear()
           }}
-        ></Icon>
+        />
       </span>
     </FilterBubble>
   )

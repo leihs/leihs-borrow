@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import cx from 'classnames'
-import Icon, { iconSectionArrow } from './Icons'
+import { CollapserArrowIcon } from './Icons'
 
 export default function Section({
   title,
@@ -54,8 +54,7 @@ function ControlledSection({ title, children, collapsible, collapsed, onToggleCo
           >
             {title}
             {collapsible && (
-              <Icon
-                icon={iconSectionArrow}
+              <CollapserArrowIcon
                 className={cx('section-title__arrow-icon', {
                   'section-title__arrow-icon--collapsed': collapsed
                 })}

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import cx from 'classnames'
 import PropTypes from 'prop-types'
-import Icon, { iconCircleMinus, iconCirclePlus } from './Icons'
+import { CircleMinusIcon, CirclePlusIcon } from './Icons'
 
 const defaultTxt = { minus: 'Minus', plus: 'Plus' }
 
@@ -88,7 +88,7 @@ export default function MinusPlusControl({
           aria-label="Minus 1"
           title="Minus 1"
         >
-          <Icon icon={iconCircleMinus} />
+          <CircleMinusIcon />
         </button>
       </div>
       <div className="col-6">
@@ -113,7 +113,7 @@ export default function MinusPlusControl({
           title="Plus 1"
           tabIndex="-1"
         >
-          <Icon icon={iconCirclePlus} />
+          <CirclePlusIcon />
         </button>
       </div>
     </div>

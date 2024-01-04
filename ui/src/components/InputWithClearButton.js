@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import cx from 'classnames'
-import Icon, { iconCross } from './Icons'
+import { CrossIcon } from './Icons'
 import PropTypes from 'prop-types'
 
 export default function InputWithClearButton({
@@ -38,7 +38,7 @@ export default function InputWithClearButton({
           tabIndex="-1"
           style={{ top: 0, right: 0 }}
         >
-          <Icon icon={iconCross} />
+          <CrossIcon />
         </button>
       )}
     </div>

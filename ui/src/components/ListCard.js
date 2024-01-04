@@ -1,6 +1,6 @@
 import React from 'react'
 import cx from 'classnames'
-import Icon, { iconItemArrow } from './Icons'
+import { CardArrowIcon } from './Icons'
 import Stack from './Stack'
 
 const BASE_CLASS = 'ui-list-card'
@@ -28,7 +28,7 @@ export default function ListCard({ onClick, href, img, children, className, oneL
             'stretched-link': !!href
           })}
         >
-          <Icon icon={iconItemArrow} />
+          <CardArrowIcon />
         </a>
       )}
     </div>

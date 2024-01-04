@@ -1,6 +1,6 @@
 import React from 'react'
 import cx from 'classnames'
-import Icon, { iconStar } from './Icons'
+import { StarIcon } from './Icons'
 import SquareImage from './SquareImage'
 
 export default function SquareImageGrid({ list = [], className, itemClassName, ...restProps }) {
@@ -14,7 +14,7 @@ export default function SquareImageGrid({ list = [], className, itemClassName, .
           >
             {isFavorited && (
               <div className="position-absolute square-image-grid__favorite-marker" title="Favorit">
-                <Icon icon={iconStar} />
+                <StarIcon />
               </div>
             )}
             <SquareImage href={href} imgSrc={imgSrc} placeholder={placeholder} className="rounded border" />
