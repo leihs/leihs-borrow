@@ -5,5 +5,5 @@
   "rules": {
     "prettier/prettier": ["error"]
   },
-  "ignorePatterns": ["static/**", "dist/**"]
+  "ignorePatterns": ["static/**", "dist/**", "storybook-static/**"]
 }

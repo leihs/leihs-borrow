@@ -15,7 +15,25 @@ export const topnav = () => {
           cartItemCount={3}
           appMenuData={{ children: 'Bereiche...' }}
           userProfileShort="AB"
-          desktopUserMenuData={{ children: 'Benutzermenu...' }}
+          desktopUserMenuData={{
+            items: [
+              { label: 'Menu Item 1 (href)', href: '#m1' },
+              {
+                label: 'Menu Item 2 (onClick)',
+                onClick: () => {
+                  alert('onclick')
+                }
+              },
+              {
+                label: 'Menu Item 3 (submit button)',
+                as: 'button',
+                type: 'submit',
+                form: 'form1',
+                onClick: true
+              }
+            ],
+            children: <form id="form1" className="visually-hidden"></form>
+          }}
           mainMenuItems={[{ label: 'Nav 1', selected: true }, { label: 'Nav 2' }, { label: 'Nav 3' }]}
         />
       </div>
@@ -42,8 +60,7 @@ export const counterExamples = () => {
       {countVariants.map((cartItemCount, i) => {
         const navbarProps = {
           cartItemCount,
-          userProfileShort: 'AB',
-          appMenuTriggerEl: '[ ^ ]'
+          userProfileShort: 'AB'
         }
         return (
           <div key={i} className="mb-3">
@@ -83,9 +100,13 @@ export const moreExamples = () => {
       <div className="mb-3">
         <Topnav cartItemCount={3} cartRemainingMinutes={5} />
       </div>
-      <p className="text-muted">With timeout reached</p>
+      <p className="text-muted">With timeout just reached</p>
       <div className="mb-3">
-        <Topnav cartItemCount={3} cartRemainingMinutes={-1} cartExpired={true} />
+        <Topnav cartItemCount={3} cartRemainingMinutes={0} />
+      </div>
+      <p className="text-muted">With timeout in past</p>
+      <div className="mb-3">
+        <Topnav cartItemCount={3} cartRemainingMinutes={-1} />
       </div>
     </div>
   )

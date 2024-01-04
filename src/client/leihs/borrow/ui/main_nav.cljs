@@ -194,16 +194,19 @@
                           [:<> {:key locale}
                            [:option {:value locale} (:name language)]])))]])])}))
 
+(defn calc-remaining-minutes [cart-valid-until now]
+  (let [cart-remaining-seconds (max 0 (datefn/differenceInSeconds cart-valid-until now))
+        remaining-minutes (-> cart-remaining-seconds (/ 60) (js/Math.ceil))]
+    (when (<= remaining-minutes 5)
+      remaining-minutes)))
+
 (defn top []
   (reagent/with-let [now (reagent/atom (js/Date.))
                      timer-fn  (js/setInterval #(reset! now (js/Date.)) 1000)]
     (let [cart-item-count @(subscribe [::cart-item-count])
           invalid-cart-item-count @(subscribe [::invalid-cart-item-count])
           cart-valid-until @(subscribe [::cart-valid-until])
-          cart-remaining-seconds (max 0 (datefn/differenceInSeconds cart-valid-until @now))
-          cart-remaining-minutes (if (js/Number.isNaN cart-remaining-seconds)
-                                   ##NaN
-                                   (-> cart-remaining-seconds (/ 60) (js/Math.ceil)))
+          cart-remaining-minutes (reagent/reaction (calc-remaining-minutes cart-valid-until @now))
           menu-data @(subscribe [::menu-data])
           current-menu (:current-menu menu-data)
           current-profile @(subscribe [::current-profile])
@@ -219,8 +222,7 @@
         :invalidCartItemCount invalid-cart-item-count
         :cartItemLinkProps {:href (routing/path-for ::routes/shopping-cart)
                             :title (t :cart-item/menu-title)}
-        :cartRemainingMinutes cart-remaining-minutes
-        :cartExpired (<= cart-remaining-seconds 0)
+        :cartRemainingMinutes (or @cart-remaining-minutes js/undefined)
         :mobileUserMenuIsOpen (= current-menu "user")
         :userProfileShort (get-initials (:name current-profile))
         :mobileUserMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "user") "user")])

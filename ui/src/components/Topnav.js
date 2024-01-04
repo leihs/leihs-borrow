@@ -11,7 +11,6 @@ export default function Topnav({
   cartItemCount,
   invalidCartItemCount = 0,
   cartRemainingMinutes,
-  cartExpired,
   cartItemLinkProps = {},
 
   // main menu mobile
@@ -37,7 +36,7 @@ export default function Topnav({
 }) {
   const showCartCounter = !!cartItemCount || cartItemCount === 0
   const cartExpiringSoon = cartRemainingMinutes <= 5
-
+  const cartExpired = cartRemainingMinutes <= 0
   return (
     <nav className={cx('ui-main-nav topnav', className)} {...restProps}>
       {/* Burger */}
@@ -184,10 +183,8 @@ Topnav.propTypes = {
   cartItemCount: PropTypes.node,
   /** When a number greater than zero is given, the cart icon is decorated with a warning symbol */
   invalidCartItemCount: PropTypes.number,
-  /** When a number 5 or lesser is given, the cart icon will flicker and show the minutes left  */
+  /** When a number 5 or lesser is given, the cart icon will flicker and show the minutes left. When 0 or lesser, the icon will get red and "0'" will be shown.   */
   cartRemainingMinutes: PropTypes.number,
-  /** When true, the cart icon will get red */
-  cartExpired: PropTypes.bool,
   /** Props for the `a` element around the cart icon */
   cartItemLinkProps: PropTypes.object,
 
@@ -214,7 +211,13 @@ Topnav.propTypes = {
   /** Data for desktop user/profile menu */
   desktopUserMenuData: PropTypes.shape({
     items: PropTypes.arrayOf(
-      PropTypes.shape({ isSeparator: PropTypes.bool, onClick: PropTypes.func, label: PropTypes.node })
+      PropTypes.shape({
+        isSeparator: PropTypes.bool,
+        onClick: PropTypes.oneOfType([PropTypes.func, PropTypes.bool]),
+        label: PropTypes.node,
+        href: PropTypes.string,
+        as: PropTypes.node
+      })
     ),
     children: PropTypes.node
   }),
