@@ -14,7 +14,7 @@
 
 (defn get-one [tx id]
   (-> attachment-base-query
-      (sql/where [:= :attachments.id id])
+      (sql/where [:= :attachments.id [:cast id :uuid]])
       sql-format
       (->> (jdbc-query tx))
       first))
