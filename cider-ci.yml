@@ -113,10 +113,15 @@ jobs:
         type: job
         job_key: lint
         states: [passed]
-      good to merge of the database:
-        job_key: good-to-merge
+      database merged to master:
+        job_key: merged-to-master
         type: job
         submodule: ['database']
+        states: [passed]
+      shared-clj merged to master:
+        job_key: merged-to-master
+        type: job
+        submodule: [shared-clj]
         states: [passed]
     run_when: *ALLOK_DEPS
     task: 'echo ALL OK'
@@ -133,3 +138,20 @@ jobs:
     run_when: *GOOD_TO_MERGE_DEPENDENCIES
     context: 
       include: cider-ci/jobs/good-to-merge.yml
+
+  merged-to-master:
+    name: "Merged to master"
+    depends_on:
+      master branch matches:
+        type: branch
+        include_match: ^master$
+    run_when:
+      master branch matches:
+        type: branch
+        include_match: ^master$
+    context:
+      tasks:
+        merged-to-master:
+          scripts:
+            test:
+              body: "exit 0"
