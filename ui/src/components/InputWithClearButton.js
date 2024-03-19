@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 export default function InputWithClearButton({
   className,
   onChange,
+  onClear,
   value,
   inputComponent: InputComponent = 'input',
   ...restProps
@@ -13,7 +14,11 @@ export default function InputWithClearButton({
   const inputRef = useRef()
   function clearClick(e) {
     inputRef.current.value = ''
-    onChange && onChange({ ...e, target: inputRef.current })
+    if (onClear) {
+      onClear()
+    } else if (onChange) {
+      onChange({ ...e, target: inputRef.current })
+    }
   }
   function buttonMouseDown(e) {
     e.preventDefault() // (so the button does not get focus)
@@ -30,9 +35,9 @@ export default function InputWithClearButton({
       />
       {!!value && (
         <button
-          className="btn position-absolute"
+          className="btn position-absolute border-0"
           type="button"
-          title="Eingabe löschen"
+          aria-label="Clear input"
           onClick={clearClick}
           onMouseDown={buttonMouseDown}
           tabIndex="-1"
@@ -47,7 +52,10 @@ export default function InputWithClearButton({
 
 InputWithClearButton.propTypes = {
   className: PropTypes.string,
+  value: PropTypes.string,
   onChange: PropTypes.func,
+  /** When given will be fired instead of `onChange` when the clear button is clicked */
+  onClear: PropTypes.func,
   /** component to use instead of the native 'input' component if needed (e.g. for Reagent) */
   inputComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func, PropTypes.string])
 }

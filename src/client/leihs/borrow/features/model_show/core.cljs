@@ -23,7 +23,7 @@
    ["date-fns" :as datefn]
    [leihs.borrow.lib.helpers :as h :refer [spy log]]
    [leihs.borrow.features.favorite-models.events :as favs]
-   [leihs.borrow.features.models.filter-modal :as filter-modal]
+   [leihs.borrow.features.models.model-filter :as filter-modal]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.shopping-cart.core :as cart]
    [leihs.borrow.features.shopping-cart.timeout :as timeout]

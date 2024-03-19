@@ -95,14 +95,20 @@ export const modelListProps = {
 }
 
 export const modelSearchFilterProps = {
+  availableFilters: {
+    pools: [
+      { id: '', label: 'Alle Inventarparks' },
+      { id: 1, label: 'pool A' },
+      { id: 2, label: 'pool B' }
+    ]
+  },
   currentFilters: {},
   locale: 'de-CH',
-  onSubmit: () => {},
-  onChangeSearchTerm: () => {},
-  onOpenPanel: () => {},
+  onSubmitTerm: () => {},
+  onTriggerAvailability: () => {},
   onClearFilter: () => {},
   txt: {
-    'search-input-label': {
+    'search-button-label': {
       'de-CH': 'Suchen',
       'en-GB': 'Search'
     },
@@ -110,7 +116,7 @@ export const modelSearchFilterProps = {
       'de-CH': 'Suchbegriff',
       'en-GB': 'Search term'
     },
-    'search-filter-label': {
+    filter: {
       'de-CH': 'Filter',
       'en-GB': 'Filter'
     },
@@ -118,6 +124,14 @@ export const modelSearchFilterProps = {
       'de-CH': '{quantity} Stück verfügbar {startDate, date, narrow} – {endDate, date, narrow}',
       'en-GB':
         '{quantity} {quantity, plural, =1 {item} other {items}} available {startDate, date, narrow} – {endDate, date, narrow}'
+    },
+    'availability-button-label': {
+      'de-CH': 'Verfügbarkeit von/bis',
+      'en-GB': 'Availability from/until'
+    },
+    'availability-unrestricted': {
+      'de-CH': 'Verfügbarkeit von/bis',
+      'en-GB': 'Availability from/until'
     }
   }
 }

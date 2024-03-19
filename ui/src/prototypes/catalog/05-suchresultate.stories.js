@@ -13,34 +13,31 @@ export default {
   parameters: { layout: 'fullscreen' }
 }
 
-// just 1 case for now
-const FAKE_SEARCH_PROPS = {
-  currentFilters: {
-    term: 'beamer!',
-    poolIds: [{ id: 1, label: 'pool A' }],
-    onlyAvailable: true,
-    quantity: 3,
-    startDate: '2022-04-21',
-    endDate: '2022-04-24'
-  },
-  locale: 'de-CH',
-  onSubmit: action('onSubmit '),
-  onChangeSearchTerm: action('onChangeSearchTerm'),
-  onOpenPanel: action('onOpenPanel'),
-  onClearFilter: filter => action('onClearFilter')(filter)
-}
-
 export const searchResults = () => {
   return (
     <PageLayoutMock>
       <PageLayout.Header title="Suchresultate">
         <ModelSearchFilter
-          currentFilters={FAKE_SEARCH_PROPS.currentFilters}
-          onOpenPanel={FAKE_SEARCH_PROPS.onOpenPanel}
-          onClearFilter={FAKE_SEARCH_PROPS.onClearFilter}
-          onSubmit={FAKE_SEARCH_PROPS.onSubmit}
-          onChangeSearchTerm={FAKE_SEARCH_PROPS.onChangeSearchTerm}
-          locale={FAKE_SEARCH_PROPS.locale}
+          availableFilters={{
+            pools: [
+              { id: '', label: 'Alle Inventarparks' },
+              { id: 1, label: 'pool A' },
+              { id: 2, label: 'pool B' }
+            ]
+          }}
+          currentFilters={{
+            term: 'beamer!',
+            selectedPool: { id: 1, label: 'pool A' },
+            onlyAvailable: true,
+            quantity: 3,
+            startDate: '2022-04-21',
+            endDate: '2022-04-24'
+          }}
+          onTriggerAvailability={action('onTriggerAvailability')}
+          onClearFilter={action('onClearFilter')}
+          onSubmitTerm={action('onSubmitTerm')}
+          onChangePool={action('onChangePool')}
+          locale="de-CH"
           txt={modelSearchFilterProps.txt}
         />
       </PageLayout.Header>

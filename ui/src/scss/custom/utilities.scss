@@ -29,8 +29,8 @@
   }
 }
 
-/* Input with calendar icon (not necessarily type=date).  */
-input.calendar-indicator {
+/* Input or button with calendar icon (not necessarily type=date).  */
+.calendar-indicator {
   $leihs-calendar-icon: url("data:image/svg+xml,<svg width='16' height='16' xmlns='http://www.w3.org/2000/svg'><g fill='none' fill-rule='evenodd' stroke-linecap='round' stroke-linejoin='round' stroke='currentColor' stroke-width='1.6'><rect x='1.5' y='3.5' width='13' height='11' rx='1'/><path d='M1.5 11h13M5 1.5v4M11 1.5v4'/></g></svg>");
 
   background-image: escape-svg($leihs-calendar-icon);

@@ -12,9 +12,8 @@ export default {
   title: 'Prototypes/Page Typology/Index',
   parameters: { layout: 'fullscreen' },
   argTypes: {
-    onOpenPanel: { action: 'open panel' },
+    onTriggerAvailability: { action: 'onTriggerAvailability' },
     onSubmit: { action: 'submit' },
-    onChangeSearchTerm: { action: 'change search term' },
     onItemClick: { action: 'item click' }
   }
 }
@@ -22,15 +21,14 @@ export default {
 const img1 = require('../../../static/example-images/models/62f4cb3c-999d-53ec-9426-298ebacd208a.jpg')
 const img2 = require('../../../static/example-images/categories/286f85ba-e1a1-5c36-b03b-cf443f81d77d.jpg')
 
-export const index = ({ onOpenPanel, onSubmit, onChangeSearchTerm, onItemClick }) => {
+export const index = ({ onTriggerAvailability, onSubmitTerm, onItemClick }) => {
   return (
     <PageLayoutMock>
       <PageLayout.Header preTitle="Context" title="Title">
         <ModelSearchFilter
-          currentFilters={[]}
-          onOpenPanel={onOpenPanel}
-          onSubmit={onSubmit}
-          onChangeSearchTerm={onChangeSearchTerm}
+          currentFilters={{}}
+          onTriggerAvailability={onTriggerAvailability}
+          onSubmitTerm={onSubmitTerm}
           locale="de-CH"
           txt={modelSearchFilterProps.txt}
         />

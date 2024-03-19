@@ -21,7 +21,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
    [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.borrow.features.models.filter-modal :as filter-modal]
+   [leihs.borrow.features.models.model-filter :as filter-modal]
    ["/borrow-ui" :as UI]
    [reagent.core :as r]))
 

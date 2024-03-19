@@ -4,7 +4,7 @@
             [leihs.borrow.client.routes :as routes]
             [leihs.borrow.components :as ui]
             [leihs.borrow.features.current-user.core :as current-user]
-            [leihs.borrow.features.models.filter-modal :as filter-modal :refer [default-dispatch-fn
+            [leihs.borrow.features.models.model-filter :as filter-modal :refer [default-dispatch-fn
                                                                                 filter-comp]]
             [leihs.borrow.lib.pagination :as pagination]
             [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db

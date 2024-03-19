@@ -5,31 +5,21 @@ import Stack from '../../components/Stack'
 import Section from '../../components/Section'
 import ListCard from '../../components/ListCard'
 import ProgressInfo from '../../components/ProgressInfo'
-import ModelSearchFilter from '../../features/ModelSearchFilter'
-import { modelSearchFilterProps } from '../../story-utils/sample-props'
+import FilterButton from '../../components/FilterButton'
 
 export default {
   title: 'Prototypes/Orders/List',
   parameters: { layout: 'fullscreen' },
   argTypes: {
-    onOpenPanel: { action: 'open panel' },
-    onSubmit: { action: 'submit' },
-    onChangeSearchTerm: { action: 'change search term' }
+    onFilterButtonClick: { action: 'onFilterButtonClick' }
   }
 }
 
-export const list = ({ onOpenPanel, onSubmit, onChangeSearchTerm, ordersByBasicState }) => {
+export const list = ({ onFilterButtonClick, ordersByBasicState }) => {
   return (
     <PageLayoutMock>
       <PageLayout.Header title="Bestellungen">
-        <ModelSearchFilter
-          currentFilters={[]}
-          onOpenPanel={onOpenPanel}
-          onSubmit={onSubmit}
-          onChangeSearchTerm={onChangeSearchTerm}
-          locale="de-CH"
-          txt={modelSearchFilterProps.txt}
-        />
+        <FilterButton onClick={onFilterButtonClick}>Suche/Filter</FilterButton>
       </PageLayout.Header>
 
       <Stack space="5">

@@ -2,8 +2,7 @@
                 "src/common"
                 "ui/dist"
                 "shared-clj/src"]
- :dependencies [
-                [alandipert/storage-atom "2.0.1"]
+ :dependencies [[alandipert/storage-atom "2.0.1"]
                 [better-cond "2.1.4"]
                 [binaryage/devtools "1.0.6"]
                 [camel-snake-kebab "0.4.3"]
@@ -32,7 +31,6 @@
 
    :devtools {:preloads [day8.re-frame-10x.preload]
               :http-root "resources/public"}
-
 
    :modules {:main {:init-fn leihs.borrow.app/main}}
 

@@ -21,7 +21,7 @@
    [leihs.borrow.lib.translate :refer [t set-default-translate-path] :as translate]
    [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.borrow.features.models.filter-modal :as filter-modal]
+   [leihs.borrow.features.models.model-filter :as filter-modal]
    [leihs.core.core :refer [dissoc-in presence]]
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.customer-orders.core :as rentals]

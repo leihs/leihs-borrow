@@ -19,8 +19,7 @@ Feature: Search results (and caching)
 
   Scenario: Home page
     # Show all without filtering
-    When I click on "Filter"
-    And I click button "Apply"
+    When I click button "Search"
     Then I see 20 different "Beamer" models
 
     When I click 3 times on "Load more"
@@ -33,8 +32,7 @@ Feature: Search results (and caching)
     Then I see category "Cameras"
     And I see category "Beamers"
 
-    When I click on "Filter"
-    And I click button "Apply"
+    When I click button "Search"
     Then I see 40 different "Beamer" models
     And I see 40 different "Camera" models
     And there is no "Load more" button
@@ -48,26 +46,23 @@ Feature: Search results (and caching)
 
   Scenario: Filter with search term (and caching)
     # Filter with search term
-    When I click on "Filter"
-    And I enter "Camera" in the search field
-    And I click button "Apply"
+    When I enter "Camera" in the "Search term" field
+    And I click button "Search"
     And I click on "Load more"
     Then I see 40 different "Camera" models
     And there is no "Load more" button
 
     # Filter with another search term (without clearing)
-    When I click on "Filter"
-    And I enter "Beamer" in the search field
-    And I click button "Apply"
+    When I enter "Beamer" in the "Search term" field
+    And I click button "Search"
     And I click on "Load more"
     Then I see 40 different "Beamer" models
     And there is no "Load more" button
 
     # Filter with previous search term:
     # All results are already cached and are refreshed accordingly.
-    When I click on "Filter"
-    And I enter "Camera" in the search field
-    And I click button "Apply"
+    When I enter "Camera" in the "Search term" field
+    And I click button "Search"
     Then I see 40 different "Camera" models
     And there is no "Load more" button
 
@@ -78,15 +73,11 @@ Feature: Search results (and caching)
     Then I see 40 different "Camera" models
     And there is no "Load more" button
 
-    When I click on "Filter"
-    And I select pool "Pool B"
-    And I click button "Apply"
+    When I select "Pool B" from "Inventory pools"
     Then there are no results
     And there is no "Load more" button
 
-    When I click on "Filter"
-    And I select all pools
-    And I click button "Apply"
+    When I select "All inventory pools" from "Inventory pools"
     Then I see 40 different "Camera" models
     And there is no "Load more" button
 
@@ -98,9 +89,8 @@ Feature: Search results (and caching)
     And the model "Hasselblad 500C" has 1 borrowable item in "Pool A"
 
     When I click on category "Cameras"
-    And I click on "Filter"
-    And I enter "Hasselblad" in the search field
-    And I click button "Apply"
+    And I enter "Hasselblad" in the "Search term" field
+    And I click button "Search"
     Then I see 1 "Hasselblad 500C" model
 
     When I click on "Analog Cameras"
@@ -122,8 +112,7 @@ Feature: Search results (and caching)
     And there is a model "Model B"
     And there is 1 borrowable item for model "Model B" in pool "Pool A"
 
-    When I click on "Filter"
-    And I choose to filter by availabilty
+    When I click on "availability"
     And I enter the date "${Date.today}" in the "From" field
     And I enter the date "${Date.tomorrow}" in the "Until" field
     And I set the quantity to 2

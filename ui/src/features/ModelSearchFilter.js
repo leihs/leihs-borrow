@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import cx from 'classnames'
 import { parseISO as parseDate } from 'date-fns'
-import { SettingsIcon, CircleCrossIcon } from '../components/Icons'
+import { CrossIcon } from '../components/Icons'
+import InputWithClearButton from '../components/InputWithClearButton'
 
 import { translate as t } from '../lib/translate'
 
@@ -9,23 +10,33 @@ const BASE_CLASS = 'ui-model-search-filter'
 
 export default function ModelSearchFilter({
   className,
-  // eslint-disable-next-line no-unused-vars
   availableFilters = {},
   currentFilters = {},
   locale,
   txt,
-  onChangeSearchTerm,
-  onSubmit,
-  onOpenPanel,
+  onSubmitTerm,
+  onTriggerAvailability,
   onClearFilter,
+  onChangePool = () => {},
   ...restProps
 }) {
-  const { term = '', poolIds = [], onlyAvailable = false, quantity = 1, startDate, endDate } = currentFilters
+  const { term = '', selectedPool, onlyAvailable = false, quantity = 1, startDate, endDate } = currentFilters
+  const { pools: availablePools = [] } = availableFilters
+
   const [searchTerm, setSearchTerm] = useState(term || '')
-  const onChangeTerm = str => {
+  const handleTermChange = str => {
     setSearchTerm(str)
-    onChangeSearchTerm(str)
   }
+  const handleTermClear = () => {
+    onClearFilter({ type: 'term' })
+  }
+
+  const [poolId, setPoolId] = useState(selectedPool?.id || '')
+  const handlePoolChange = e => {
+    setPoolId(e.target.value)
+    onChangePool(e.target.value)
+  }
+
   return (
     <div className={cx(BASE_CLASS, className)} {...restProps}>
       <form
@@ -34,37 +45,95 @@ export default function ModelSearchFilter({
         method="get"
         onSubmit={e => {
           e.preventDefault()
-          onSubmit({ searchTerm })
+          onSubmitTerm(searchTerm)
         }}
       >
         <SearchFilterCombinedInput
-          onFilterClick={onOpenPanel}
           searchTerm={searchTerm}
-          onSearchTermChange={onChangeTerm}
-          searchLabel={t(txt, 'search-input-label', locale)}
+          onSearchTermChange={handleTermChange}
+          onSearchTermClear={handleTermClear}
+          searchLabel={t(txt, 'search-button-label', locale)}
           searchPlaceholder={t(txt, 'search-input-placeholder', locale)}
-          filterLabel={t(txt, 'search-filter-label', locale)}
         />
 
-        {!!poolIds &&
-          poolIds.map(
-            pool =>
-              !!pool && (
-                <FilterItemButton key={pool.id} onFilterClick={onOpenPanel} onClear={() => onClearFilter(pool)}>
-                  {pool.label || pool.id}
-                </FilterItemButton>
-              )
+        <div className="filters">
+          {/* "Filter:" */}
+          <div className="filters--title">{t(txt, 'filter', locale)}:</div>
+
+          {/* Inventory Pools */}
+          {availablePools.length > 0 && (
+            <div className="filters--item input-group">
+              <label className="visually-hidden" htmlFor="pool">
+                {t(txt, 'pool-select-label', locale)}
+              </label>
+              <select
+                className="form-select filter-input"
+                id="pool"
+                name="pool"
+                value={poolId}
+                onChange={handlePoolChange}
+                tabIndex="2"
+              >
+                {availablePools.map(pool => (
+                  <option key={pool.id} value={pool.id}>
+                    {pool.label}
+                  </option>
+                ))}
+              </select>
+              {poolId && (
+                <button
+                  type="button"
+                  className="btn btn-secondary bg-light-shade filter-input filter-input--clear-button"
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={e => {
+                    e.stopPropagation()
+                    onClearFilter({ type: 'pool' })
+                  }}
+                  aria-label="Clear filter"
+                >
+                  <CrossIcon height="14" width="14" />
+                </button>
+              )}
+            </div>
           )}
 
-        {!!onlyAvailable && (
-          <FilterItemButton onFilterClick={onOpenPanel} onClear={() => onClearFilter({ type: 'onlyAvailable' })}>
-            {t(txt, 'availability-label', locale, {
-              startDate: parseDate(startDate),
-              endDate: parseDate(endDate),
-              quantity
-            })}
-          </FilterItemButton>
-        )}
+          {/* Availability */}
+          <div className="filters--item btn-group">
+            <button
+              type="button"
+              id="availability"
+              name="availability"
+              className={cx('btn btn-secondary fw-bold bg-light-shade filter-input text-nowrap', {
+                'calendar-indicator': !onlyAvailable
+              })}
+              onClick={onTriggerAvailability}
+              tabIndex="3"
+              aria-label={t(txt, 'availability-button-label', locale)}
+            >
+              {onlyAvailable
+                ? t(txt, 'availability-label', locale, {
+                    startDate: parseDate(startDate),
+                    endDate: parseDate(endDate),
+                    quantity
+                  })
+                : t(txt, 'availability-unrestricted', locale)}
+            </button>
+            {onlyAvailable && (
+              <button
+                type="button"
+                className="btn btn-secondary bg-light-shade filter-input filter-input--clear-button"
+                onMouseDown={e => e.preventDefault()}
+                onClick={e => {
+                  e.stopPropagation()
+                  onClearFilter({ type: 'onlyAvailable' })
+                }}
+                aria-label="Clear filter"
+              >
+                <CrossIcon height="14" width="14" />
+              </button>
+            )}
+          </div>
+        </div>
       </form>
     </div>
   )
@@ -73,79 +142,33 @@ export default function ModelSearchFilter({
 function SearchFilterCombinedInput({
   searchTerm,
   onSearchTermChange,
-  filterLabel,
+  onSearchTermClear,
   searchLabel,
-  searchPlaceholder,
-  onFilterClick
+  searchPlaceholder
 }) {
   return (
-    <div className="mb-2 position-relative">
-      <input
-        type="text"
-        className="form-control border border-primary"
-        style={{ paddingRight: '150px' }}
-        name="term"
-        title={searchLabel}
-        value={searchTerm}
-        onChange={e => onSearchTermChange(e.target.value)}
-        placeholder={searchPlaceholder}
-        aria-autocomplete="both"
-        autoComplete="off"
-        autoCapitalize="off"
-        autoCorrect="off"
-        autoFocus=""
-        spellCheck="false"
-        tabIndex="1"
-      />
-      <div className="position-absolute" style={{ top: '-2px', right: '-2px' }}>
-        <button
-          type="button"
-          onClick={onFilterClick}
-          aria-label={filterLabel}
-          title={filterLabel}
-          className="btn"
-          tabIndex="2"
-        >
-          <SettingsIcon />
-        </button>
-        <button type="submit" className="btn btn-primary rounded-0 rounded-end" aria-label={searchLabel} tabIndex="3">
-          {searchLabel}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// shows 1 filter item in a bubble with a "clear" button
-function FilterItemButton({ children, onFilterClick, onClear, ...restProps }) {
-  return (
-    <FilterBubble {...restProps} className="ps-3 pe-2" style={{ borderRadius: '1rem' }}>
-      <span role="button" onClick={onFilterClick}>
-        {children}
-      </span>
-      <span role="button">
-        <CircleCrossIcon
-          style={{ marginLeft: '10px', marginRight: '0px', marginTop: '-3px' }}
-          height="14"
-          width="14"
-          onClick={e => {
-            e.stopPropagation()
-            onClear()
-          }}
+    <div className="d-flex">
+      <div style={{ flex: '1 0 auto' }}>
+        <InputWithClearButton
+          className="form-control border border-primary rounded-0 rounded-start"
+          name="term"
+          title={searchLabel}
+          value={searchTerm}
+          onChange={e => onSearchTermChange(e.target.value)}
+          onClear={onSearchTermClear}
+          placeholder={searchPlaceholder}
+          aria-autocomplete="both"
+          autoComplete="off"
+          autoCapitalize="off"
+          autoCorrect="off"
+          autoFocus=""
+          spellCheck="false"
+          tabIndex="1"
         />
-      </span>
-    </FilterBubble>
-  )
-}
-
-function FilterBubble({ children, className, style, as: Elm = 'div', ...restProps }) {
-  return (
-    <Elm
-      className={cx('ui-filter-bubble', 'btn btn-primary btn-sm rounded-pill very-small mb-1 me-1 fw-bold', className)}
-      style={{ paddingTop: '7px', paddingBottom: '6px', ...style }}
-      {...restProps}
-    >
-      {children}
-    </Elm>
+      </div>
+      <button type="submit" className="btn btn-primary rounded-0 rounded-end" aria-label={searchLabel}>
+        {searchLabel}
+      </button>
+    </div>
   )
 }

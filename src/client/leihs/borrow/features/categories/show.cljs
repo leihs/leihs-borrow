@@ -8,7 +8,7 @@
             [leihs.borrow.features.categories.core :as categories]
             [leihs.borrow.features.current-user.core :as current-user]
             [leihs.borrow.features.models.core :as models]
-            [leihs.borrow.features.models.filter-modal :refer [filter-comp] :as filter-modal]
+            [leihs.borrow.features.models.model-filter :refer [filter-comp] :as filter-modal]
             [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db
                                                reg-event-fx reg-sub subscribe]]
             [leihs.borrow.lib.routing :as routing]

@@ -179,51 +179,47 @@
                                      :de-CH "Noch keine Favoriten hinzugefügt"}
                       :go-to-catalog {:en-GB "Go to catalog"
                                       :de-CH "Hier geht's zum Katalog"}}
-    :filter {:show-all-filters {:en-GB "Filter"
-                                :de-CH "Filter"}
-             :search {:title {:en-GB "Search term"
-                              :de-CH "Stichwort"}
-                      :placeholder {:en-GB "Enter search term"
-                                    :de-CH "Suchbegriff eingeben"}}
-             :for {:en-GB "For"
-                   :de-CH "Für"}
-             :time-span {:title {:en-GB "Timespan"
-                                 :de-CH "Zeitraum"}
-                         :undefined {:en-GB "undefined"
-                                     :de-CH "Unbestimmt"}
-                         :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set."
-                                                                :de-CH "Start- und Enddatum müssen gesetzt sein."}
-                                  :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date."
-                                                                        :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
-             :availability {:en-GB "Availability"
-                            :de-CH "Verfügbarkeit"}
-             :show-only-available {:en-GB "Select date (from/until)"
-                                   :de-CH "Datum wählen (von/bis)"}
-             :pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
-                     :all {:en-GB "All" :de-CH "Alle"}
-                     :invalid-option {:en-GB "Invalid selection" :de-CH "Ungültige Auswahl"}
-                     :invalid-option-info {:en-GB "The pre-selected inventory pool is not available for the current profile"
-                                           :de-CH "Der vorher gewählte Inventarpark ist für das aktuelle Profil nicht verfügbar"}
-                     :pool-suspension {:de-CH "Benutzer für diesen Inventarpark gesperrt"
-                                       :en-GB "User suspended for this inventory pool"}}
-             :from {:en-GB "From"
-                    :de-CH "Von"}
-             :until {:en-GB "Until"
-                     :de-CH "Bis"}
-             :quantity {:en-GB "Quantity"
-                        :de-CH "Anzahl"}
+    :filter {:search-input-placeholder {:de-CH "Suchbegriff",
+                                        :en-GB "Search term"}
+             :search-button-label {:de-CH "Suchen",
+                                   :en-GB "Search"}
 
-             :search-input-label {:de-CH "Suchen",
-                                  :en-GB "Search"},
-             :search-input-placeholder {:de-CH "Suchbegriff",
-                                        :en-GB "Search term"},
-             :search-filter-label {:de-CH "Filter",
-                                   :en-GB "Filter"},
+             :filter {:en-GB "Filter"
+                      :de-CH "Filter"}
+
+             :pool-select-label {:en-GB "Inventory pools" :de-CH "Inventarparks"}
+             :all-pools-option-label {:en-GB "All inventory pools" :de-CH "Alle Inventarparks"}
+             :invalid-pool-option-label {:en-GB "Invalid selection" :de-CH "Ungültige Auswahl"}
+             :invalid-pool-message {:en-GB "The pre-selected inventory pool is not available for the current profile"
+                                    :de-CH "Der vorher gewählte Inventarpark ist für das aktuelle Profil nicht verfügbar"}
+             :pool-suspended-message {:de-CH "Benutzer für diesen Inventarpark gesperrt"
+                                      :en-GB "User suspended for this inventory pool"}
+
+             :availability-button-label {:en-GB "Availability"
+                                         :de-CH "Verfügbarkeit"}
+             :availability-unrestricted {:en-GB "Availability from/until"
+                                         :de-CH "Verfügbarkeit von/bis"}
              :availability-label {:de-CH "{quantity} Stück verfügbar {startDate, date, narrow} – {endDate, date, narrow}",
                                   :en-GB "{quantity} {quantity, plural, =1 {item} other {items}} available {startDate, date, narrow} – {endDate, date, narrow}"}
-             :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
-             :apply {:en-GB "Apply" :de-CH "Anwenden"}
-             :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
+
+             :availability-modal {:title {:en-GB "Filter Availability"
+                                          :de-CH "Filter Verfügbarkeit"}
+                                  :time-span {:title {:en-GB "Timespan"
+                                                      :de-CH "Zeitraum"}
+                                              :undefined {:en-GB "undefined"
+                                                          :de-CH "Unbestimmt"}
+                                              :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set."
+                                                                                     :de-CH "Start- und Enddatum müssen gesetzt sein."}
+                                                       :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date."
+                                                                                             :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
+                                  :from {:en-GB "From"
+                                         :de-CH "Von"}
+                                  :until {:en-GB "Until"
+                                          :de-CH "Bis"}
+                                  :quantity {:en-GB "Quantity"
+                                             :de-CH "Anzahl"}
+                                  :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
+                                  :apply {:en-GB "Apply" :de-CH "Anwenden"}}}
 
     :home-page {} ; see catalog
     :logout {:en-GB "Logout"

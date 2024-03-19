@@ -27,10 +27,9 @@ Feature: Search and order
 
     # search for a model
     And I visit "/borrow/"
-    And I click on "Filter"
-    And I enter "Kamera" in the search field
-    And I select "Pool B" from the pools select box
-    And I choose to filter by availabilty
+    And I enter "Kamera" in the "Search term" field
+    And I select "Pool B" from "Inventory pool"
+    And I click on "availability"
     And I enter the date "${Date.tomorrow}" in the "From" field
     And I enter the date "${Date.tomorrow + 1.day}" in the "Until" field
     And I enter quantity "2"

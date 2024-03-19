@@ -16,8 +16,7 @@ Feature: Favorites
     Then I see "No favorites added yet"
 
     When I visit "/borrow/"
-    And I click on "Filter"
-    And I click on "Apply"
+    And I click on "Search"
     And I click on model "Beamer"
     And I click on "Add to favorites"
     When I visit "/borrow/models/favorites"
@@ -25,8 +24,7 @@ Feature: Favorites
     And I see model "Beamer"
 
     When I visit "/borrow/"
-    And I click on "Filter"
-    And I click on "Apply"
+    And I click on "Search"
     And I click on model "Camera"
     And I click on "Add to favorites"
     When I visit "/borrow/models/favorites"
@@ -35,8 +33,7 @@ Feature: Favorites
     And I see model "Camera"
 
     When I visit "/borrow/"
-    And I click on "Filter"
-    And I click on "Apply"
+    And I click on "Search"
     And I click on model "Beamer"
     And I click on "Remove from favorites"
     When I visit "/borrow/models/favorites"
@@ -44,8 +41,7 @@ Feature: Favorites
     And I see model "Camera"
 
     When I visit "/borrow/"
-    And I click on "Filter"
-    And I click on "Apply"
+    And I click on "Search"
     And I click on model "Camera"
     And I click on "Remove from favorites"
     When I visit "/borrow/models/favorites"

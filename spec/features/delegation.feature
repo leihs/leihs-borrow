@@ -42,8 +42,7 @@ Feature: Delegations
     And I log in as the user
     And the user profile button shows "UA"
 
-    When I click on "Filter"
-    And I click button "Apply"
+    When I click on "Search"
     Then I see one model with the title "Kamera"
 
     When I click on "Kamera"
@@ -62,8 +61,7 @@ Feature: Delegations
       """
 
     When I visit "/borrow/"
-    And I click on "Filter"
-    And I click button "Apply"
+    And I click on "Search"
     Then I see one model with the title "Beamer"
 
     When I click on "Beamer"
