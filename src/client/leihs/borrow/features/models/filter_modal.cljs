@@ -1,25 +1,18 @@
 (ns leihs.borrow.features.models.filter-modal
-  (:require
-   [clojure.string :as string]
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [reagent.core :as r]
-   [re-frame.core :as rf]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                      reg-event-db
-                                      reg-sub
-                                      reg-fx
-                                      subscribe
-                                      dispatch]]
-   [leihs.borrow.lib.translate :as translate
-    :refer [t set-default-translate-path with-translate-path]]
-   [leihs.borrow.lib.helpers :as h :refer [log spy]]
-   [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton UiDateRangePicker]]
-   [leihs.borrow.translations :as translations]
-   [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.core.core :refer [remove-blanks presence]]
-   ["date-fns" :as date-fns]
-   ["/borrow-ui" :as UI]))
+  (:require ["/borrow-ui" :as UI]
+            ["date-fns" :as date-fns]
+            [day8.re-frame.tracing :refer-macros [fn-traced]]
+            [leihs.borrow.client.routes :as routes]
+            [leihs.borrow.features.current-user.core :as current-user]
+            [leihs.borrow.lib.form-helpers :refer [UiDateRangePicker
+                                                   UiInputWithClearButton]]
+            [leihs.borrow.lib.helpers :as h]
+            [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db reg-sub
+                                               subscribe]]
+            [leihs.borrow.lib.translate :as translate :refer [t with-translate-path]]
+            [leihs.borrow.translations :as translations]
+            [leihs.core.core :refer [presence remove-blanks]]
+            [reagent.core :as r]))
 
 (defn default-dispatch-fn [query-params]
   (dispatch [:routing/navigate

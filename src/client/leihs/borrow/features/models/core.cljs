@@ -1,28 +1,19 @@
 (ns leihs.borrow.features.models.core
-  (:require
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [reagent.core :as r]
-   [re-frame.core :as rf]
-   [re-frame.db :as db]
-   [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                      reg-event-db
-                                      reg-sub
-                                      reg-fx
-                                      subscribe
-                                      dispatch]]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
-   [leihs.borrow.lib.errors :as errors]
-   [leihs.borrow.lib.helpers :as h]
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.pagination :as pagination]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.components :as ui]
-   ["/borrow-ui" :as UI]
-   [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.borrow.features.models.filter-modal :as filter-modal :refer [filter-comp default-dispatch-fn]]
-   [leihs.core.core :refer [remove-blanks]]))
+  (:require ["/borrow-ui" :as UI]
+            [day8.re-frame.tracing :refer-macros [fn-traced]]
+            [leihs.borrow.client.routes :as routes]
+            [leihs.borrow.components :as ui]
+            [leihs.borrow.features.current-user.core :as current-user]
+            [leihs.borrow.features.models.filter-modal :as filter-modal :refer [default-dispatch-fn
+                                                                                filter-comp]]
+            [leihs.borrow.lib.pagination :as pagination]
+            [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db
+                                               reg-event-fx reg-sub subscribe]]
+            [leihs.borrow.lib.routing :as routing]
+            [leihs.borrow.lib.translate :refer [set-default-translate-path t]]
+            [leihs.core.core :refer [remove-blanks]]
+            [re-graph.core :as re-graph]
+            [shadow.resource :as rc]))
 
 (set-default-translate-path :borrow.models)
 

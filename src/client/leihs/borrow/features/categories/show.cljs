@@ -1,32 +1,22 @@
 (ns leihs.borrow.features.categories.show
-  (:require
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [reagent.core :as r]
-   [re-frame.core :as rf]
-   [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   [re-frame.std-interceptors :refer [path]]
-   [clojure.string :refer [join split #_replace-first]]
-   [cemerick.url]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                      reg-event-db
-                                      reg-sub
-                                      reg-fx
-                                      subscribe
-                                      dispatch]]
-   [leihs.borrow.lib.helpers :refer [spy]]
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.pagination :as pagination]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
-   [leihs.borrow.components :as ui]
-   [leihs.borrow.lib.helpers :as h]
-   ["/borrow-ui" :as UI]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.borrow.features.models.filter-modal :refer [filter-comp] :as filter-modal]
-   [leihs.borrow.features.models.core :as models]
-   [leihs.borrow.features.categories.core :as categories]
-   [leihs.core.core :refer [dissoc-in]]))
+  (:require ["/borrow-ui" :as UI]
+            [cemerick.url]
+            [clojure.string :refer [split]]
+            [day8.re-frame.tracing :refer-macros [fn-traced]]
+            [leihs.borrow.client.routes :as routes]
+            [leihs.borrow.components :as ui]
+            [leihs.borrow.features.categories.core :as categories]
+            [leihs.borrow.features.current-user.core :as current-user]
+            [leihs.borrow.features.models.core :as models]
+            [leihs.borrow.features.models.filter-modal :refer [filter-comp] :as filter-modal]
+            [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db
+                                               reg-event-fx reg-sub subscribe]]
+            [leihs.borrow.lib.routing :as routing]
+            [leihs.borrow.lib.translate :refer [set-default-translate-path t]]
+            [leihs.core.core :refer [dissoc-in]]
+            [re-graph.core :as re-graph]
+            [reagent.core :as r]
+            [shadow.resource :as rc]))
 
 (set-default-translate-path :borrow.categories)
 
