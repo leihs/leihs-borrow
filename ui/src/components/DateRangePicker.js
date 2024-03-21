@@ -19,8 +19,8 @@ export default function DateRangePicker({
   shownDate = selectedRange ? selectedRange.startDate : undefined,
   onCalendarNavigate,
   maxDateLoaded,
-  // date constraints:
   now,
+  // date constraints:
   minDate,
   maxDate,
   disabledDates,
@@ -242,6 +242,8 @@ DateRangePicker.propTypes = {
    * must subscribe to `onCalendarNavigate` to update this date, and also to `onChange` (to handle start date
    * modification via keyboard). */
   maxDateLoaded: PropTypes.instanceOf(Date),
+  /** Now (defaults to `new Date()`) */
+  now: PropTypes.instanceOf(Date),
 
   // date constraints:
 
@@ -265,5 +267,11 @@ DateRangePicker.propTypes = {
   /** class applied to all day buttons */
   dayButtonClass: PropTypes.string,
   /** Overrides the content of the day buttons, e.g. `day => <span>{format(day, 'd')</span>` */
-  dayContentRenderer: PropTypes.func
+  dayContentRenderer: PropTypes.func,
+  /** custom CSS class(es) to add to the component */
+  className: PropTypes.string,
+  /** `date-fns` locale */
+  locale: PropTypes.object,
+  /** Text dictionary */
+  txt: PropTypes.object
 }

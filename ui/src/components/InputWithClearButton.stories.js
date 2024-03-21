@@ -76,6 +76,7 @@ const DummyInput = React.forwardRef((props, ref) => (
     <input ref={ref} {...props} data-dummy-input />
   </div>
 ))
+DummyInput.displayName = 'DummyInput'
 
 export const otherProps = () => {
   const [name, setName] = useState('')

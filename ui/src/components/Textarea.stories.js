@@ -114,6 +114,7 @@ const MyInput = React.forwardRef((props, ref) => (
     <textarea ref={ref} {...props} data-dummy-input />
   </div>
 ))
+MyInput.displayName = 'MyInput'
 
 export const otherProps = ({ minRows, maxRows }) => {
   const [message, setMessage] = useState('')

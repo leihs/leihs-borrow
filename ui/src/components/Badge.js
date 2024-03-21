@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import cx from 'classnames'
 
 export default function Badge({ children, as: Elm = 'div', className, colorClassName, style, ...restProps }) {
@@ -17,4 +18,12 @@ export default function Badge({ children, as: Elm = 'div', className, colorClass
       {children}
     </Elm>
   )
+}
+
+Badge.propTypes = {
+  children: PropTypes.node,
+  as: PropTypes.string,
+  className: PropTypes.string,
+  colorClassName: PropTypes.string,
+  style: PropTypes.object
 }

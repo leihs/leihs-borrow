@@ -260,14 +260,7 @@ const OrderPanel = ({
                   <label htmlFor="quantity" className="visually-hidden">
                     {t(label, 'quantity', locale)}
                   </label>
-                  <MinusPlusControl
-                    name="quantity"
-                    id="quantity"
-                    value={quantity}
-                    onChange={changeQuantity}
-                    min={1}
-                    txt={{ minus: t(label, 'minus', locale), plus: t(label, 'plus', locale) }}
-                  />
+                  <MinusPlusControl name="quantity" id="quantity" value={quantity} onChange={changeQuantity} min={1} />
                 </Section>
                 <Section title={title}>
                   <fieldset>

@@ -52,7 +52,7 @@ export const zones = () => {
               </ul>
             </li>
             <li>
-              <b>Nav Overlay</b> (only below "burger breakpoint")
+              <b>Nav Overlay</b> (only below &quot;burger breakpoint&quot;)
             </li>
           </ul>
           <p className="text-muted">Views can arrange the content using the container and header components:</p>
@@ -74,7 +74,7 @@ export const zones = () => {
 export const realisticExample = () => {
   const [navOverlayShown, setNavOverlayShown] = useState(false)
 
-  function onMenuItemClick(e) {
+  function onMenuItemClick() {
     setNavOverlayShown(x => !x)
   }
   return (

@@ -152,7 +152,7 @@ export default function ModelShow({
         {model.attachments.length > 0 && (
           <Section title={t.documents} collapsible>
             <Stack space="3">
-              {model.attachments.map((attachment, i) => (
+              {model.attachments.map(attachment => (
                 <div key={attachment.id}>
                   <DownloadLink href={attachment.attachmentUrl}>{attachment.filename}</DownloadLink>
                 </div>

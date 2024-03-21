@@ -1,9 +1,15 @@
 {
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
   "parser": "@babel/eslint-parser",
   "plugins": ["prettier"],
-  "extends": ["prettier"],
+  "extends": ["prettier", "eslint:recommended", "plugin:react/recommended"],
   "rules": {
-    "prettier/prettier": ["error"]
+    "prettier/prettier": ["error"],
+    "react/prop-types": "warn"
   },
   "ignorePatterns": ["static/**", "dist/**", "storybook-static/**"]
 }

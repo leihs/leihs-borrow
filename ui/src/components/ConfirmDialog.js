@@ -61,10 +61,18 @@ ConfirmDialog.propTypes = {
   children: PropTypes.node,
   /** title of the dialog */
   title: PropTypes.string.isRequired,
+  /** label of the "confirm" button */
+  confirmLabel: PropTypes.string,
+  /** label of the "cancel" button */
+  cancelLabel: PropTypes.string,
+  /** show a spinner on the "confirm" button */
+  confirmIsLoading: PropTypes.bool,
   /** called when "OK" button is clicked */
   onConfirm: PropTypes.func.isRequired,
   /** optional, called when "Cancel" button is clicked */
   onCancel: PropTypes.func,
+  /** decorate as red error alert */
+  isError: PropTypes.bool,
   /* When true: display a close button in the header, enable backdrop and ESC key to hide the modal (hiding as such must be implemented by the `onDismiss` handler) */
   dismissible: PropTypes.bool,
   /* Handler which closes the modal when user e.g. clicks on backdrop (details see `dismissible` prop) */

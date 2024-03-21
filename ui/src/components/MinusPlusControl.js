@@ -3,8 +3,6 @@ import cx from 'classnames'
 import PropTypes from 'prop-types'
 import { CircleMinusIcon, CirclePlusIcon } from './Icons'
 
-const defaultTxt = { minus: 'Minus', plus: 'Plus' }
-
 export default function MinusPlusControl({
   className,
   value,
@@ -12,7 +10,6 @@ export default function MinusPlusControl({
   min,
   max,
   inputComponent: InputComponent = 'input',
-  txt = defaultTxt,
   ...restProps
 }) {
   const inputRef = useRef()
