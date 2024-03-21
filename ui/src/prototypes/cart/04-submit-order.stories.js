@@ -21,17 +21,12 @@ export default {
       { id: '37372089-450b-49ec-8486-fcc3a9e6ae22', name: 'Delegation 1' },
       { id: '3013ff5a-0203-4ec5-bda5-61871ddd5dc7', name: 'Delegation 2' }
     ],
-    user: {
-      id: 'a06ec573-d8da-4999-81fa-63226a8b00b7',
-      name: 'Anna Beispiel'
-    },
     initialTitle: 'Videomodul',
-    initialPurpose: 'Material für Videomodul im 3. Semester.',
-    initialUserId: 'a06ec573-d8da-4999-81fa-63226a8b00b7'
+    initialPurpose: 'Material für Videomodul im 3. Semester.'
   }
 }
 
-export const submitOrder = ({ user, onSubmit, onCancel, initialTitle, initialPurpose, initialUserId }) => {
+export const submitOrder = ({ onSubmit, onCancel, initialTitle, initialPurpose }) => {
   const [title, setTitle] = useState(initialTitle)
   const [purpose, setPurpose] = useState(initialPurpose)
   const [titlePurposeLinked, setTitlePurposeLinked] = useState(true)

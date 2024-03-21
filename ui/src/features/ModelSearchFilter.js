@@ -9,6 +9,7 @@ const BASE_CLASS = 'ui-model-search-filter'
 
 export default function ModelSearchFilter({
   className,
+  // eslint-disable-next-line no-unused-vars
   availableFilters = {},
   currentFilters = {},
   locale,

@@ -100,7 +100,7 @@ export default function DatePicker({
     setWasValidated(true)
   }
 
-  function openCalendarButtonClick(e) {
+  function openCalendarButtonClick() {
     setCalendarActive(active => !active)
   }
   function openCalendarButtonMouseDown(e) {

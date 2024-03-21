@@ -31,6 +31,7 @@ const DummyInput = React.forwardRef((props, ref) => (
     <input ref={ref} {...props} data-dummy-input />
   </div>
 ))
+DummyInput.displayName = 'DummyInput'
 
 export function otherProps() {
   return (

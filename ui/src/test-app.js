@@ -1,3 +1,4 @@
+import React from 'react'
 import ReactDOM from 'react-dom'
 import './scss/styles.scss'
 import PageLayoutMock from './story-utils/PageLayoutMock'
@@ -19,6 +20,7 @@ function App() {
 
 const container = document.getElementById('root')
 
+// eslint-disable-next-line react/no-deprecated
 ReactDOM.render(<App />, container)
 
 // React 18:
