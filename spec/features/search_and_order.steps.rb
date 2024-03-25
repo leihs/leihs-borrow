@@ -6,6 +6,14 @@ step "I select :name from the pools select box" do |name|
   select(name, from: "Inventory pools")
 end
 
+step "I enter quantity :q" do |q|
+  find("#quantity").set q
+end
+
+step "the quantity has :q" do |q|
+  expect(find("#quantity").value).to eq q
+end
+
 step "the start date has :ruby_code" do |ruby_code|
   d = custom_eval(ruby_code)
   date_string = Locales.format_date(d, @user)
@@ -16,31 +24,6 @@ step "the end date has :ruby_code" do |ruby_code|
   d = custom_eval(ruby_code)
   date_string = Locales.format_date(d, @user)
   expect(find("#endDate").value).to eq date_string
-end
-
-step "I enter quantity :q" do |q|
-  find("#quantity").set q
-end
-
-step "the quantity has :q" do |q|
-  expect(find("#quantity").value).to eq q
-end
-
-step "the pools select box shows :name" do |name|
-  expect(find("#pool-id").value).to eq InventoryPool.find(name: name).id
-end
-
-step "I see one model with the title :name" do |name|
-  expect(all(".ui-models-list-item").count).to eq 1
-  find(".ui-models-list-item", text: name)
-end
-
-step "I click on the model with the title :name" do |name|
-  find(".ui-models-list-item", text: name).click
-end
-
-step "the show page of the model :name was loaded" do |name|
-  find("h1", text: name)
 end
 
 step "the start date chosen on the previous screen is pre-filled" do
@@ -80,10 +63,6 @@ end
 
 step "the reservation for model :name was deleted from the cart" do |name|
   expect(page).not_to have_selector(".flex-row", text: name)
-end
-
-step "I name the order as :title" do |title|
-  fill_in("title", with: title)
 end
 
 step "the cart is empty" do

@@ -1,3 +1,8 @@
+'./spec/features/access_rights.feature[1:1:1]':
+  name: 'Access rights Expired suspension should not have any effect on the customer 1'
+  environment_variables:
+    FEATURE_NAME: 'Access rights Expired suspension should not have any effect on the customer 1'
+    FEATURE: './spec/features/access_rights.feature[1:1:1]'
 './spec/features/audits.feature[1:1:1]':
   name: 'Audits Audited requests 1'
   environment_variables:
