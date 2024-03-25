@@ -24,14 +24,14 @@ describe 'orders' do
 
   let(:inventory_pool_1) do
     FactoryBot.create(
-      :inventory_pool, :with_mail_templates,
+      :inventory_pool,
       id: '8633ce17-37da-4802-a377-66ca78291d0a'
     )
   end
 
   let(:inventory_pool_2) do
     FactoryBot.create(
-      :inventory_pool, :with_mail_templates,
+      :inventory_pool,
       id: '4e2f1362-0891-4df7-b760-16a2a8d3373f',
       is_active: false
     )
@@ -39,7 +39,7 @@ describe 'orders' do
 
   let(:inventory_pool_3) do
     FactoryBot.create(
-      :inventory_pool, :with_mail_templates,
+      :inventory_pool,
       id: 'cf623c28-a322-4830-8d7b-e1de077ec055'
     )
   end

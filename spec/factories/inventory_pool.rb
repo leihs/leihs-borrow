@@ -1,10 +1,5 @@
 class InventoryPool < Sequel::Model
-  def after_create
-    Workday.create(inventory_pool_id: self.id,
-                   saturday: true,
-                   sunday: true)
-    super
-  end
+  one_to_one(:workday)
 end
 
 FactoryBot.define do
@@ -13,16 +8,8 @@ FactoryBot.define do
     shortname { name.split(' ').map { |s| s.slice(0) }.join }
     email { Faker::Internet.email }
 
-    trait :with_mail_templates do
-      after(:create) do |pool|
-        MailTemplate.all.each do |mt|
-          attrs =
-            mt.to_hash
-            .reject { |k, _| [:id, :is_template_template].include?(k) }
-            .merge(inventory_pool_id: pool.id, is_template_template: false)
-          MailTemplate.create(attrs)
-        end
-      end
+    after(:create) do |ip|
+      ip.workday.update(saturday: true, sunday: true)
     end
   end
 end
