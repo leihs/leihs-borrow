@@ -180,3 +180,22 @@ end
 step "there is/are :n audited request(s)" do |n|
   expect(AuditedRequest.count).to eq n.to_i
 end
+
+step "a submitted email has been created for user :full_name" do |full_name|
+  first, last = full_name.split
+  u = User.find(firstname: first, lastname: last)
+  e = Email.find(to_address: u.email,
+                 user_id: u.id,
+                 subject: "[leihs] Reservation Submitted")
+end
+
+step "a received email has been created for pool :name" do |name|
+  ip = InventoryPool.find(name: name)
+  e = Email.find(to_address: ip.email,
+                 inventory_pool_id: ip.id,
+                 subject: "[leihs] Order Received")
+end
+
+step "there have been :n emails created" do |n|
+  expect(Email.count).to eq n.to_i
+end

@@ -12,6 +12,8 @@ Feature: Search and order
     And the delegation "Delegation D" is customer of pool "Pool A"
     And the delegation "Delegation D" is customer of pool "Pool B"
 
+    And the receival of received order emails is activated
+
   Scenario Outline: Order for delegation <name>
     Given there is a model "Kamera"
     And there is 1 borrowable item for model "Kamera" in pool "Pool A"
@@ -66,6 +68,11 @@ Feature: Search and order
     And the "Send order" dialog has closed
     And I accept the "Order submitted" dialog
     And the "Order submitted" dialog has closed
+
+    # emails
+    And there have been 2 emails created
+    And a submitted email has been created for user "User A"
+    And a received email has been created for pool "Pool B"
 
     # approve the order
     Then I approve the order "Order 1"
