@@ -60,12 +60,13 @@ export default function ModelSearchFilter({
           {/* "Filter:" */}
           <div className="filters--title">{t(txt, 'filter', locale)}:</div>
 
+          <label className="visually-hidden" htmlFor="pool">
+            {t(txt, 'pool-select-label', locale)}
+          </label>
+
           {/* Inventory Pools */}
           {availablePools.length > 0 && (
             <div className="filters--item input-group">
-              <label className="visually-hidden" htmlFor="pool">
-                {t(txt, 'pool-select-label', locale)}
-              </label>
               <select
                 className="form-select filter-input"
                 id="pool"
