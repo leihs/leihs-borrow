@@ -91,3 +91,71 @@ Feature: Search and order
       | name              | shortname |
       | Delegation D      | DD        |
       | User A (personal) | UA        |
+
+  Scenario: Overbooking of expired reservation 
+
+    The user has a reservation for a particular model in the cart which is expired.
+    If he adds a new reservation for the same model in the cart intersecting date-wise
+    the expired reservation, then the cart marks both reservations as invalid. If he
+    does the same for the 3rd reservation, then both previous reservations are still
+    marked as invalid but the newest 3rd one is ok.
+
+    Given the cart timeout is set to 1 minute
+    And there is a model "Kamera"
+    And there is 1 borrowable item for model "Kamera" in pool "Pool A"
+    And I log in as the user
+
+    # make the 1st reservation
+    When I visit "/borrow/"
+    And I enter "Kamera" in the "Search term" field
+    And I click on "Search"
+    And I click on the model with the title "Kamera"
+    Then the show page of the model "Kamera" was loaded
+    And I click on "Add item"
+    Then the order panel is shown
+    And the pools select box shows "Pool A"
+    And I set "${Date.today}" as the start date
+    And I set "${Date.today}" as the end date
+    And I click on "Add"
+    And the "Add item" dialog has closed
+    And I accept the "Item added" dialog with the text:
+    """
+    The item was added to the cart
+    """
+    And the "Item added" dialog has closed
+
+    # check the cart
+    When I click on the cart icon
+    Then I see the following lines in the "Items" section:
+      | title     | body   |
+      | 1× Kamera | Pool A |
+
+    And I wait for 61 seconds
+    And the cart is expired
+
+    # make the 2nd reservation
+    When I visit "/borrow/"
+    And I enter "Kamera" in the "Search term" field
+    And I click on "Search"
+    And I click on the model with the title "Kamera"
+    Then the show page of the model "Kamera" was loaded
+    And I click on "Add item"
+    Then the order panel is shown
+    And the pools select box shows "Pool A"
+    And I set "${Date.today}" as the start date
+    And I set "${Date.tomorrow}" as the end date
+    And I click on "Add"
+    And the "Add item" dialog has closed
+    And I accept the "Item added" dialog with the text:
+    """
+    The item was added to the cart
+    """
+    And the "Item added" dialog has closed
+   
+    # check the cart
+    When I click on the cart icon
+    Then I see the following lines in the Items section:
+      | title     | pool   | start_date    | duration | valid | 
+      | 1× Kamera | Pool A | ${Date.today} | 1        | false |
+      | 1× Kamera | Pool A | ${Date.today} | 2        | false |
+    And the "Send order" button is disabled

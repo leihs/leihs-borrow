@@ -7,10 +7,6 @@ step "the order panel is shown" do
   find(".ui-booking-calendar")
 end
 
-step "the :title button is disabled" do |title|
-  expect(find("button", text: title)).to be_disabled
-end
-
 step "I switch to a new window" do
   w = open_new_window()
   switch_to_window(w)

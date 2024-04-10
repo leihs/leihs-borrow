@@ -193,6 +193,11 @@
   environment_variables:
     FEATURE_NAME: 'Search and order Order for delegation <name> 2'
     FEATURE: './spec/features/search_and_order.feature[1:2:1]'
+'./spec/features/search_and_order.feature[1:3:1]':
+  name: 'Search and order Overbooking of expired reservation 1'
+  environment_variables:
+    FEATURE_NAME: 'Search and order Overbooking of expired reservation 1'
+    FEATURE: './spec/features/search_and_order.feature[1:3:1]'
 './spec/features/search_results.feature[1:1:1]':
   name: 'Search results (and caching) Home page 1'
   environment_variables:

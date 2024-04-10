@@ -147,3 +147,11 @@ end
 step "I click on the cart icon" do
   find("a.ui-cart-item-link").click
 end
+
+step "I reload the page" do
+  visit current_path
+end
+
+step "the :title button is disabled" do |title|
+  expect(find("button", text: title)).to be_disabled
+end

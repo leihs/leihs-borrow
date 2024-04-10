@@ -446,6 +446,6 @@
 
 (defn refresh-timeout
   [{{tx :tx-next} :request user-id ::target-user/id :as context} args value]
-  (validate-cart! context)
   (extend-valid-until! tx user-id)
+  (validate-cart! context)
   {:unsubmitted-order (get-cart context args value)})

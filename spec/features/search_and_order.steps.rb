@@ -26,6 +26,18 @@ step "the end date has :ruby_code" do |ruby_code|
   expect(find("#endDate").value).to eq date_string
 end
 
+step "I set :ruby_code as the start date" do |ruby_code|
+  d = custom_eval(ruby_code)
+  date_string = Locales.format_date(d, @user)
+  find("#startDate").set date_string
+end
+
+step "I set :ruby_code as the end date" do |ruby_code|
+  d = custom_eval(ruby_code)
+  date_string = Locales.format_date(d, @user)
+  find("#endDate").set date_string
+end
+
 step "the start date chosen on the previous screen is pre-filled" do
   expect(find("input[name='start-date']").value).to eq Date.today.to_s
 end
@@ -199,3 +211,24 @@ end
 step "there have been :n emails created" do |n|
   expect(Email.count).to eq n.to_i
 end
+
+step "the cart timeout is set to :n minute" do |n|
+  Settings.first.update(timeout_minutes: n.to_i)
+end
+
+step "the cart is expired" do
+  expect(find(".ui-progress-info", text: "Time limit")).to have_content "Expired"
+end
+
+step "I see the following lines in the Items section:" do |table|
+  rs = find("section", text: "Items").all(".list-card")
+  table.hashes.each_with_index do |h, i|
+    expect(rs[i].find("[data-test-id='title']").text).to eq h["title"]
+    expect(rs[i].find("[data-test-id='body']").text).to eq h["pool"]
+    b = rs[i].find("[data-test-id='foot'] .badge#{h['valid'] == 'false' and '.bg-danger'}")
+    days = ( h['duration'].to_i > 1 ? "days" : "day" )
+    date_string = custom_eval(h['start_date']).strftime('%d/%m/%y')
+    expect(b.text).to eq "#{h['duration']} #{days} from #{date_string}"
+  end
+end
+

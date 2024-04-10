@@ -162,7 +162,7 @@
                         {:inventory-pool-ids [pool-id]
                          :start-date start-date
                          :end-date end-date
-                         :exclude-reservation-ids (->> reservations (map :id))}
+                         :exclude-reservation-ids (->> rs (map :id))}
                         {:id model-id})]
                    (cond-> invalid-rs
                      (< available-quantity (clojure.core/count rs))
