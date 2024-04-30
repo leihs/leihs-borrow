@@ -12,7 +12,7 @@
             [leihs.borrow.resources.models.core :as models]))
 
 (defn create
-  [{{tx :tx-next} :request user-id ::target-user/id}
+  [{{tx :tx} :request user-id ::target-user/id}
    {model-id :id}
    _]
   (-> (sql/insert-into :favorite_models)
@@ -24,7 +24,7 @@
   (models/get-one-by-id tx model-id))
 
 (defn delete
-  [{{tx :tx-next} :request user-id ::target-user/id}
+  [{{tx :tx} :request user-id ::target-user/id}
    {model-id :id}
    _]
   (-> (sql/delete-from :favorite_models)

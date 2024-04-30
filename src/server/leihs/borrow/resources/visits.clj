@@ -5,7 +5,7 @@
 
 (def RELEVANT-STATES #{"submitted" "approved" "rejected" "signed" "closed"})
 
-(defn fulfillment [{{tx :tx-next} :request :as context}
+(defn fulfillment [{{tx :tx} :request :as context}
                    _
                    {:keys [reservation-ids]}
                    fulfilled-states]

@@ -45,10 +45,10 @@
     template
     (throw (ex-info "Resource not found or not accessible for profile user id" {:status 403}))))
 
-(defn get-one [{{tx :tx-next} :request user-id ::target-user/id} {:keys [id]} _]
+(defn get-one [{{tx :tx} :request user-id ::target-user/id} {:keys [id]} _]
   (get-one-by-id tx id user-id))
 
-(defn get-multiple [{{tx :tx-next} :request user-id ::target-user/id} _ _]
+(defn get-multiple [{{tx :tx} :request user-id ::target-user/id} _ _]
   (-> base-sqlmap
       (sql/join :inventory_pools
                 [:=
@@ -67,11 +67,11 @@
       sql-format
       (query tx)))
 
-(defn get-lines [{{tx :tx-next} :request} _ {template-id :id}]
+(defn get-lines [{{tx :tx} :request} _ {template-id :id}]
   (lines tx template-id))
 
 (defn apply
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {template-id :id start-date :start-date end-date :end-date
     :as args}
    _]

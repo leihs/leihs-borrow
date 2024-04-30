@@ -27,7 +27,7 @@
     (str <> "/" (:filename attachment))
     (assoc attachment :attachment-url <>)))
 
-(defn get-multiple [{{tx :tx-next} :request} _ value]
+(defn get-multiple [{{tx :tx} :request} _ value]
   (-> attachment-base-query
       (sql/where [:= :attachments.model_id (:id value)])
       sql-format
@@ -35,7 +35,7 @@
       (->> (map merge-attachment-url))))
 
 (defn handler-one
-  [{tx :tx-next, {attachment-id :attachment-id} :route-params}]
+  [{tx :tx, {attachment-id :attachment-id} :route-params}]
   (if-let [attachment (get-one tx attachment-id)]
     (->> attachment
          :content

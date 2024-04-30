@@ -32,13 +32,13 @@
                (get-by-locale tx))
       (default tx)))
 
-(defn one-to-use [{{tx :tx-next} :request} _ {user-id :id}]
+(defn one-to-use [{{tx :tx} :request} _ {user-id :id}]
   (get-the-one-to-use tx user-id))
 
-(defn get-one [{{tx :tx-next} :request} _ {:keys [language-locale]}]
+(defn get-one [{{tx :tx} :request} _ {:keys [language-locale]}]
   (get-by-locale tx language-locale))
 
-(defn get-multiple [{{tx :tx-next} :request} _ _]
+(defn get-multiple [{{tx :tx} :request} _ _]
   (-> base-sqlmap sql-format (->> (jdbc-query tx))))
 
 ;#### debug ###################################################################

@@ -17,7 +17,7 @@
         :start-date (str (ch/local-date))
         :end-date (str (t/plus (ch/local-date) (t/days 30)))}
        booking-calendar-visits-sqlvec
-       (jdbc-query (db/get-ds-next))))
+       (jdbc-query (db/get-ds))))
 
 (defn get-visits-counts [tx start-date end-date pool-id]
   (->> {:inventory-pool-id pool-id, :start-date start-date, :end-date end-date}
@@ -75,7 +75,7 @@
   (mapv #(vector %1 %2) [1 2 3] (drop 1 (cycle [1 2 3])))
   (let [model-id "804a50c1-2329-5d5b-9884-340f43833514"
         pool-id "8bd16d45-056d-5590-bc7f-12849f034351"
-        tx (db/get-ds-next)
+        tx (db/get-ds)
         user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
         start-date (str (ch/local-date))
         end-date (str (t/plus (ch/local-date) (t/days 30)))]

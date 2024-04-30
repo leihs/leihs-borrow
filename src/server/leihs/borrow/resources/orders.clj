@@ -84,7 +84,7 @@
         (->> (refine-rental-state tx)))))
 
 (defn total-rental-quantity
-  [{{tx :tx-next} :request} _ {:keys [reservation-ids]}]
+  [{{tx :tx} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
@@ -94,7 +94,7 @@
            (apply +))))
 
 (defn overdue-rental-quantity
-  [{{tx :tx-next} :request} _ {:keys [reservation-ids]}]
+  [{{tx :tx} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
@@ -106,7 +106,7 @@
            (apply +))))
 
 (defn expired-unapproved-rental-quantity
-  [{{tx :tx-next} :request} _ {:keys [reservation-ids]}]
+  [{{tx :tx} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
@@ -118,7 +118,7 @@
            (apply +))))
 
 (defn expired-rental-quantity
-  [{{tx :tx-next} :request} _ {:keys [reservation-ids]}]
+  [{{tx :tx} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
@@ -130,7 +130,7 @@
            (apply +))))
 
 (defn rejected-rental-quantity
-  [{{tx :tx-next} :request} _ {:keys [reservation-ids]}]
+  [{{tx :tx} :request} _ {:keys [reservation-ids]}]
   (-> (sql/select :*)
       (sql/from :reservations)
       (sql/where [:in :id reservation-ids])
@@ -144,7 +144,7 @@
   (update row :state upper-case))
 
 (defn get-one-by-pool
-  [{{tx :tx-next} :request user-id ::target-user/id}
+  [{{tx :tx} :request user-id ::target-user/id}
    _
    {pool-order-id :id}]
   (-> (sql/select :orders.id
@@ -172,7 +172,7 @@
     (throw (ex-info "Resource not found or not accessible for profile user id" {:status 403}))))
 
 (defn get-one
-  [{{tx :tx-next} :request user-id ::target-user/id}
+  [{{tx :tx} :request user-id ::target-user/id}
    {:keys [id]}
    _]
   (get-one-by-id tx user-id id))
@@ -207,7 +207,7 @@
                   (sql/where [:> [:raw "CURRENT_DATE"] :reservations.end_date]))])))
 
 (defn get-connection-sql-map
-  [{{tx :tx-next} :request user-id ::target-user/id}
+  [{{tx :tx} :request user-id ::target-user/id}
    {:keys [order-by states rental-state from until pool-ids
            search-term with-pickups with-returns refined-rental-state]}
    value]
@@ -255,7 +255,7 @@
         (as-> sqlmap
               (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :unified_customer_orders))))))
 
-(defn get-connection [{{tx :tx-next} :request :as context} args value]
+(defn get-connection [{{tx :tx} :request :as context} args value]
   (connections/wrap get-connection-sql-map
                     context
                     args
@@ -280,25 +280,25 @@
       count))
 
 (defn pool-orders-count
-  [{{tx :tx-next} :request} _ {:keys [id]}]
+  [{{tx :tx} :request} _ {:keys [id]}]
   (count (pool-orders tx id)))
 
 (defn approved-pool-orders-count
-  [{{tx :tx-next} :request} _ {:keys [id origin-table]}]
+  [{{tx :tx} :request} _ {:keys [id origin-table]}]
   (when (= origin-table "customer_orders")
     (pool-orders-for-state-count tx id "approved")))
 
 (defn rejected-pool-orders-count
-  [{{tx :tx-next} :request} _ {:keys [id origin-table]}]
+  [{{tx :tx} :request} _ {:keys [id origin-table]}]
   (when (= origin-table "customer_orders")
     (pool-orders-for-state-count tx id "rejected")))
 
 (defn submitted-pool-orders-count
-  [{{tx :tx-next} :request} _ {:keys [id origin-table]}]
+  [{{tx :tx} :request} _ {:keys [id origin-table]}]
   (when (= origin-table "customer_orders")
     (pool-orders-for-state-count tx id "submitted")))
 
-(defn get-multiple-by-pool [{{tx :tx-next} :request :as context}
+(defn get-multiple-by-pool [{{tx :tx} :request :as context}
                             {:keys [order-by]}
                             value]
   (-> (pool-orders-sqlmap tx (:id value))
@@ -320,7 +320,7 @@
       first
       :updated_at))
 
-(defn validate-cart! [{{tx :tx-next} :request user-id ::target-user/id :as context}]
+(defn validate-cart! [{{tx :tx} :request user-id ::target-user/id :as context}]
   (rs/draft->unsubmitted tx user-id)
   (when-some [broken-rs (not-empty (rs/broken tx user-id))]
     (->> broken-rs (map :id) (rs/unsubmitted->draft tx)))
@@ -328,7 +328,7 @@
     (->> invalid-rs (map :id) (rs/unsubmitted->draft tx))))
 
 (defn get-cart
-  [{{tx :tx-next} :request user-id ::target-user/id :as context} _ _]
+  [{{tx :tx} :request user-id ::target-user/id :as context} _ _]
   (validate-cart! context)
   (let [rs (-> (rs/unsubmitted-and-draft-sqlmap tx user-id)
                sql-format
@@ -342,7 +342,7 @@
        :user-id user-id})))
 
 (defn submit
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [purpose title contact-details lending-terms-accepted]}
    _]
   (let [reservations (rs/unsubmitted tx user-id)]
@@ -391,7 +391,7 @@
       (get-one-by-id tx user-id uuid))))
 
 (defn cancel
-  [{{tx :tx-next} :request user-id ::target-user/id} {:keys [id]} _]
+  [{{tx :tx} :request user-id ::target-user/id} {:keys [id]} _]
   (let [customer-order (get-one-by-id tx user-id id)
         pool-orders (pool-orders tx id)]
     (when-not (:is_customer_order customer-order)
@@ -424,7 +424,7 @@
    :updated_at now})
 
 (defn repeat-order
-  [{{tx :tx-next {auth-user-id :id} :authenticated-entity} :request
+  [{{tx :tx {auth-user-id :id} :authenticated-entity} :request
     user-id ::target-user/id}
    {:keys [id start-date end-date]} _]
   (let [customer-order (get-one-by-id tx user-id id)
@@ -445,7 +445,7 @@
     (->> unsub-rs (map :id) (rs/touch! tx))))
 
 (defn refresh-timeout
-  [{{tx :tx-next} :request user-id ::target-user/id :as context} args value]
+  [{{tx :tx} :request user-id ::target-user/id :as context} args value]
   (extend-valid-until! tx user-id)
   (validate-cart! context)
   {:unsubmitted-order (get-cart context args value)})

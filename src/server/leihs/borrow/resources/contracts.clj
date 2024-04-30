@@ -38,7 +38,7 @@
                 (sql/group-by :contracts.id))
     sqlmap))
 
-(defn get-connection-sql-map [{{tx :tx-next} :request
+(defn get-connection-sql-map [{{tx :tx} :request
                                user-id ::target-user/id
                                container ::lacinia/container-type-name}
                               {:keys [states order-by]}
@@ -55,13 +55,13 @@
         (as-> sqlmap
               (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :contracts))))))
 
-(defn print-url [{{tx :tx-next} :request} _ {:keys [id inventory-pool-id]}]
+(defn print-url [{{tx :tx} :request} _ {:keys [id inventory-pool-id]}]
   (str (:external_base_url (settings! tx))
        "/manage/" inventory-pool-id
        "/contracts/" id))
 
 (defn get-one
-  [{{tx :tx-next} :request user-id ::target-user/id}
+  [{{tx :tx} :request user-id ::target-user/id}
    {:keys [id]}
    {:keys [contract-id]}]
   (-> (base-sqlmap tx user-id)

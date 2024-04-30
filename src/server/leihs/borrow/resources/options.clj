@@ -21,7 +21,7 @@
       (->> (jdbc-query tx))
       first))
 
-(defn get-one [{{tx :tx-next} :request} {:keys [id]} value]
+(defn get-one [{{tx :tx} :request} {:keys [id]} value]
   (-> base-sqlmap
       (sql/where [:= :id (or id (:option-id value))])
       sql-format

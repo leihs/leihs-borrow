@@ -145,7 +145,7 @@
              rs))))
 
 (defn with-invalid-availability
-  [{{tx :tx-next} :request :as context} reservations]
+  [{{tx :tx} :request :as context} reservations]
   (->> reservations
        (map #(spec/assert ::reservation %))
        (group-by #(-> %
@@ -182,7 +182,7 @@
           ")")]]))
 
 (defn unsubmitted-with-invalid-start-date
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}]
+  [{{tx :tx} :request user-id ::target-user/id :as context}]
   (-> (unsubmitted-sqlmap tx user-id)
       (sql/join :inventory_pools
                 [:=
@@ -194,7 +194,7 @@
       (query tx)))
 
 (defn unsubmitted-with-invalid-availability
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}]
+  [{{tx :tx} :request user-id ::target-user/id :as context}]
   (->> user-id
        (unsubmitted tx)
        (with-invalid-availability context)))
@@ -257,7 +257,7 @@
     sqlmap))
 
 (defn get-multiple
-  [{{tx :tx-next} :request
+  [{{tx :tx} :request
     container ::lacinia/container-type-name
     target-user-id ::target-user/id
     :as context}
@@ -271,7 +271,7 @@
       sql-format
       (query tx)))
 
-(defn delete [{{tx :tx-next} :request user-id ::target-user/id}
+(defn delete [{{tx :tx} :request user-id ::target-user/id}
               {:keys [ids]}
               _]
   (-> (sql/delete-from :reservations)
@@ -311,7 +311,7 @@
 
 (defn create-optimistic
   "Creates a reservation without checking availability (as `create` does). However the model must exist and be reservable for the user."
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [model-id start-date end-date quantity inventory-pool-id] :as args}
    _]
   (when-not (models/reservable? context args {:id model-id})
@@ -334,7 +334,7 @@
         (query tx))))
 
 (defn create
-  [{{tx :tx-next {auth-user-id :id} :authenticated-entity} :request
+  [{{tx :tx {auth-user-id :id} :authenticated-entity} :request
     user-id ::target-user/id
     :as context}
    {:keys [model-id start-date end-date quantity]
@@ -380,7 +380,7 @@
     created-rs))
 
 (defn add-to-cart
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [ids]}
    _]
   (let [drafts (get-drafts tx user-id ids)]

@@ -14,7 +14,7 @@
   (:delegator_user_id user))
 
 (defn responsible
-  [{{tx :tx-next} :request} _ {responsible-id :delegator-user-id}]
+  [{{tx :tx} :request} _ {responsible-id :delegator-user-id}]
   (-> (sql/select :users.*)
       (sql/from :users)
       (sql/where [:= :users.id responsible-id])
@@ -23,7 +23,7 @@
       first))
 
 (defn get-members
-  [{{tx :tx-next} :request} _ {:keys [id]}]
+  [{{tx :tx} :request} _ {:keys [id]}]
   (-> (sql/select :users.*)
       (sql/from :users)
       (sql/join [:delegations_users :du]
@@ -56,7 +56,7 @@
       (->> (jdbc-query tx))))
 
 (defn get-one
-  [{{tx :tx-next {auth-user-id :id} :authenticated-entity} :request} {:keys [id]} _]
+  [{{tx :tx {auth-user-id :id} :authenticated-entity} :request} {:keys [id]} _]
   (-> (sql/select [:users.id :id] [:firstname :name] :delegator_user_id)
       (sql/from :users)
       (sql/where [:= :users.id id])
@@ -70,7 +70,7 @@
       first))
 
 (defn get-multiple
-  [{{tx :tx-next} :request user-id ::target-user/id} _ _]
+  [{{tx :tx} :request user-id ::target-user/id} _ _]
   (get-multiple-by-user-id tx user-id))
 
 ;#### debug ###################################################################

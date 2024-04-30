@@ -26,5 +26,5 @@
       (->> (jdbc-query tx))
       first))
 
-(comment (def tx (db/get-ds-next))
+(comment (def tx (db/get-ds))
          (get-by-id tx "c0777d74-668b-5e01-abb5-f8277baa0ea8"))

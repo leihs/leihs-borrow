@@ -95,7 +95,7 @@
   ([sqlmap-fn context args value]
    (wrap sqlmap-fn context args value nil))
   ([sqlmap-fn
-    {{tx :tx-next} :request :as context}
+    {{tx :tx} :request :as context}
     {:keys [after first] :as args}
     value
     post-process]

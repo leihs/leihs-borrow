@@ -50,7 +50,7 @@
       :total_quantity))
 
 (defn total-reservable-quantities
-  [{{tx :tx-next} :request user-id ::target-user/id} _ {model-id :id}]
+  [{{tx :tx} :request user-id ::target-user/id} _ {model-id :id}]
   (let [pools (pools/accessible-to-user tx user-id)]
     (map (fn [pool]
            {:inventory-pool pool
@@ -93,7 +93,7 @@
        (sql/where [:= :items.parent_id nil]))))
 
 (defn reservable?
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    _
    value]
   (-> base-sqlmap
@@ -139,7 +139,7 @@
 (defn available-quantity-in-date-range
   "If the available quantity was already computed through the enclosing
   resolver, then just return it. Otherwise fetch from legacy and compute."
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [inventory-pool-ids
            start-date
            end-date
@@ -175,7 +175,7 @@
 
 (defn merge-available-quantities
   [models
-   {{tx :tx-next} :request user-id ::target-user/id :as context}
+   {{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [start-date end-date inventory-pool-ids] :as args}
    value]
   (let [pool-ids (relevant-pool-ids tx user-id start-date end-date inventory-pool-ids)]
@@ -195,12 +195,12 @@
          models)))
 
 (defn get-availability
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [start-date end-date inventory-pool-ids exclude-reservation-ids]}
    value]
   (let [pools (pools/get-multiple context {:ids inventory-pool-ids} nil)]
     (map (fn [{pool-id :id}]
-           (let [pool (pools/get-by-id (-> context :request :tx-next)
+           (let [pool (pools/get-by-id (-> context :request :tx)
                                        pool-id)
                  avail (cal/get tx
                                 start-date
@@ -230,7 +230,7 @@
       (merge-category-ids-conditions category-ids))))
 
 (defn get-multiple-sqlmap
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [ids
            category-id
            limit
@@ -283,7 +283,7 @@
                  [:= :favorite_models.user_id user-id]])))
 
 (defn favorited?
-  [{{tx :tx-next} :request user-id ::target-user/id}
+  [{{tx :tx} :request user-id ::target-user/id}
    _
    value]
   (-> (sql/select
@@ -316,7 +316,7 @@
   (merge-availability-if-selects-fields models context args value))
 
 (defn get-connection
-  [{{tx :tx-next} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id :as context}
    {:keys [only-available quantity] limit :first :or {quantity 1} :as args}
    value]
   (let [conn-fn (fn [ext-args]
@@ -343,7 +343,7 @@
                     value
                     #(post-process % context args value)))
 
-(defn get-one [{{tx :tx-next} :request} {:keys [id]} value]
+(defn get-one [{{tx :tx} :request} {:keys [id]} value]
   (-> base-sqlmap
       (sql/where [:= :id (or id (:model-id value))])
       sql-format

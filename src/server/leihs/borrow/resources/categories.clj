@@ -45,7 +45,7 @@
 
   (and-pool-ids-snip {:pool-ids ["foo"]}))
 
-(defn get-multiple [{{tx :tx-next} :request user-id ::target-user/id}
+(defn get-multiple [{{tx :tx} :request user-id ::target-user/id}
                     {:keys [ids pool-ids raise-if-not-all-ids-found]}
                     _]
   (let [categories
@@ -70,7 +70,7 @@
         {}))
       categories)))
 
-(defn get-roots [{{tx :tx-next} :request user-id ::target-user/id}
+(defn get-roots [{{tx :tx} :request user-id ::target-user/id}
                  {:keys [limit pool-ids]}
                  _]
   (-> {:limit (cond->> (str limit) limit (str "LIMIT "))
@@ -83,7 +83,7 @@
       reservable-root-categories-sqlvec
       (->> (jdbc-query tx))))
 
-(defn get-children [{{tx :tx-next} :request user-id ::target-user/id}
+(defn get-children [{{tx :tx} :request user-id ::target-user/id}
                     {:keys [pool-ids]}
                     value]
   (-> {:category-id (:id value)
@@ -102,7 +102,7 @@
       (sql/where [:= :model_groups.type "Category"])
       (sql/order-by [:name :asc])))
 
-(defn get-one [{{tx :tx-next} :request} {:keys [id parent-id]} _]
+(defn get-one [{{tx :tx} :request} {:keys [id parent-id]} _]
   (-> base-sqlmap
       (cond-> parent-id
         (-> (sql/select :model_groups.id

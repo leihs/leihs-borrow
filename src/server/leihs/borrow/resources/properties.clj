@@ -8,7 +8,7 @@
   (-> (sql/select :properties.*)
       (sql/from :properties)))
 
-(defn get-multiple [{{tx :tx-next} :request} _ value]
+(defn get-multiple [{{tx :tx} :request} _ value]
   (-> base-sqlmap
       (sql/where [:= :properties.model_id (:id value)])
       sql-format

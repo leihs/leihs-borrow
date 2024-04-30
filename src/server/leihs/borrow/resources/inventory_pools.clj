@@ -40,7 +40,7 @@
        (jdbc-query tx)))
 
 (defn get-multiple
-  [{{tx :tx-next} :request user-id ::target-user/id}
+  [{{tx :tx} :request user-id ::target-user/id}
    {:keys [order-by ids]}
    {value-user-id :id}]
   (-> base-sqlmap
@@ -68,13 +68,13 @@
        (->> (jdbc-query tx))
        first)))
 
-(defn get-one [{{tx :tx-next} :request :as context} {:keys [id]} value]
+(defn get-one [{{tx :tx} :request :as context} {:keys [id]} value]
   (get-by-id tx
              (or id (:inventory-pool-id value))
              (contains? #{:PoolOrder :Contract :Reservation :Suspension}
                         (::lacinia/container-type-name context))))
 
-(defn has-reservable-items? [{{tx :tx-next} :request} _ {:keys [id]}]
+(defn has-reservable-items? [{{tx :tx} :request} _ {:keys [id]}]
   (-> (sql/select
        [[:exists
          (-> (sql/select :*)
@@ -89,11 +89,11 @@
       first
       :exists))
 
-(comment (has-reservable-items? {:request {:tx-next (db/get-ds-next)}}
+(comment (has-reservable-items? {:request {:tx (db/get-ds)}}
                                 nil
                                 {:id #uuid "8bd16d45-056d-5590-bc7f-12849f034351"}))
 
-(defn has-templates? [{{tx :tx-next} :request} _ {:keys [id]}]
+(defn has-templates? [{{tx :tx} :request} _ {:keys [id]}]
   (-> (sql/select :*)
       (sql/from :model_groups)
       (sql/join [:inventory_pools_model_groups :ipmg]
@@ -107,11 +107,11 @@
       count
       (> 0)))
 
-(defn maximum-reservation-time [{{tx :tx-next} :request} _ _]
+(defn maximum-reservation-time [{{tx :tx} :request} _ _]
   (-> (settings! tx [:maximum_reservation_time])
       :maximum_reservation_time))
 
-(defn reservation-advance-days [{{tx :tx-next} :request} _ {:keys [id]}]
+(defn reservation-advance-days [{{tx :tx} :request} _ {:keys [id]}]
   (-> tx (workdays/get id) :reservation_advance_days))
 
 ;#### debug ###################################################################

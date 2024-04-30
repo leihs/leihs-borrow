@@ -28,7 +28,7 @@
       first
       :body))
 
-(defn send-received [{{:keys [settings] tx :tx-next} :request} order]
+(defn send-received [{{:keys [settings] tx :tx} :request} order]
   (when (:deliver_received_order_notifications settings)
     (let [inventory-pool (pools/get-by-id tx (:inventory_pool_id order))
           lang-locale (:locale (lang/default tx))
@@ -67,7 +67,7 @@
                     sql-format
                     (->> (jdbc-execute! tx))))))))
 
-(defn send-submitted [{{:keys [settings] tx :tx-next} :request} order]
+(defn send-submitted [{{:keys [settings] tx :tx} :request} order]
   (let [inventory-pool (pools/get-by-id tx (:inventory_pool_id order))
         user (users/get-by-id tx (:user_id order))
         target-user-id (if (delegation? user)
@@ -110,8 +110,8 @@
                   sql-format
                   (->> (jdbc-execute! tx)))))))
 
-(comment (let [tx (db/get-ds-next)
-               ctx {:request {:settings (settings! tx), :tx-next tx}}
+(comment (let [tx (db/get-ds)
+               ctx {:request {:settings (settings! tx), :tx tx}}
                order (-> (sql/select :*)
                          (sql/from :orders)
                          (sql/where [:= :id #uuid "63b4e83e-e2c3-4924-ae89-3596824b1c95"])

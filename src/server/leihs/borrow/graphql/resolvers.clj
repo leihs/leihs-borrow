@@ -25,7 +25,7 @@
       (resolver context args value))))
 
 (defn wrap-resolver-with-target-user-id [resolver]
-  (fn [{{tx :tx-next
+  (fn [{{tx :tx
          {auth-user-id :id} :authenticated-entity
          :as request} :request
         container ::lacinia/container-type-name

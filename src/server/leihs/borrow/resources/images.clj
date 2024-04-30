@@ -30,7 +30,7 @@
 (defn query [sql tx]
   (->> (jdbc-query tx sql) (map merge-image-url)))
 
-(defn get-cover [{{tx :tx-next} :request} _ {model-id :id}]
+(defn get-cover [{{tx :tx} :request} _ {model-id :id}]
   (-> image-base-query
       (sql/join :models [:= :images.id :models.cover_image_id])
       (sql/where [:= :models.id model-id])
@@ -38,14 +38,14 @@
       (query tx)
       first))
 
-(defn get-multiple [{{tx :tx-next} :request} _ value]
+(defn get-multiple [{{tx :tx} :request} _ value]
   (-> image-base-query
       (sql/where [:= :images.target_id (:id value)])
       (sql/where [:= :images.parent_id nil])
       sql-format
       (query tx)))
 
-(defn get-multiple-thumbnails [{{tx :tx-next} :request} _ value]
+(defn get-multiple-thumbnails [{{tx :tx} :request} _ value]
   (-> image-base-query
       (sql/where [:= :images.parent_id (:id value)])
       sql-format
@@ -60,7 +60,7 @@
          "private"))))
 
 (defn handler-one
-  [{tx :tx-next, {image-id :image-id} :route-params :as request}]
+  [{tx :tx, {image-id :image-id} :route-params :as request}]
   (if-let [image (get-one tx image-id)]
     (-> image
         :content

@@ -16,11 +16,11 @@
             [taoensso.timbre :refer [debug info warn error]]))
 
 (defn get-one
-  [{{tx :tx-next} :request target-user-id ::target-user/id} _ {:keys [user-id]}]
+  [{{tx :tx} :request target-user-id ::target-user/id} _ {:keys [user-id]}]
   (get-by-id tx (or user-id target-user-id)))
 
 (defn get-current
-  [{{tx :tx-next {session-id :user_session_id} :authenticated-entity} :request
+  [{{tx :tx {session-id :user_session_id} :authenticated-entity} :request
     user-id ::target-user/id}
    _
    _]
@@ -28,7 +28,7 @@
    :user (get-by-id tx user-id)
    :session-id session-id})
 
-(defn get-navigation [{{tx :tx-next :keys [authenticated-entity]} :request} _ {user-id :id}]
+(defn get-navigation [{{tx :tx :keys [authenticated-entity]} :request} _ {user-id :id}]
   (let [settings (settings! tx [:external_base_url :documentation_link])
         base-url (:external_base_url settings)
         sub-apps (sub-apps tx authenticated-entity)]
@@ -37,7 +37,7 @@
      :manage-nav-items (map #(assoc % :url (:href %)) (:manage sub-apps))
      :documentation-url (:documentation_link settings)}))
 
-(defn get-settings [{{tx :tx-next} :request} _ {user-id :id}]
+(defn get-settings [{{tx :tx} :request} _ {user-id :id}]
   (let [settings (settings! tx [:lending_terms_acceptance_required_for_order
                                 :lending_terms_url
                                 :show_contact_details_on_customer_order

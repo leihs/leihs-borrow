@@ -9,7 +9,7 @@
             [leihs.borrow.database.helpers :as database]))
 
 (defn get-multiple
-  [{{tx :tx-next} :request user-id ::target-user/id}
+  [{{tx :tx} :request user-id ::target-user/id}
    _
    {value-user-id :id}]
   (-> (sql/select :*)
