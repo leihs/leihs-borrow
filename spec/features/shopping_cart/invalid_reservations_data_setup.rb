@@ -250,7 +250,7 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
   #####################################################################################################
   let(:r1b_invalid_reservation_advance_days) do
     test_advance_days = 3
-    Workday.find(inventory_pool_id: inventory_pool_4_advance_days.id).update(reservation_advance_days: test_advance_days)
+    inventory_pool_4_advance_days.update(reservation_advance_days: test_advance_days)
     FactoryBot.create(:reservation,
                       id: "de021090-cd50-4b1f-9448-5f7ba4367f1f",
                       leihs_model: model_5,

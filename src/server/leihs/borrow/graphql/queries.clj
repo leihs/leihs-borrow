@@ -65,7 +65,6 @@
    :rejected-pool-orders-count orders/rejected-pool-orders-count
    :rejected-rental-quantity orders/rejected-rental-quantity
    :reservations reservations/get-multiple
-   :reservation-advance-days inventory-pools/reservation-advance-days
    :responsible delegations/responsible
    :return-fulfillment visits/return-fulfillment
    :root-categories categories/get-roots

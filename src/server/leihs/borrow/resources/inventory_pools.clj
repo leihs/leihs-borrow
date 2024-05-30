@@ -111,9 +111,6 @@
   (-> (settings! tx [:maximum_reservation_time])
       :maximum_reservation_time))
 
-(defn reservation-advance-days [{{tx :tx} :request} _ {:keys [id]}]
-  (-> tx (workdays/get id) :reservation_advance_days))
-
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
 ; (debug/debug-ns *ns*)

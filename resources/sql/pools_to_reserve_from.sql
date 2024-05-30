@@ -10,7 +10,6 @@ SELECT inventory_pools.*,
        workdays.friday,
        workdays.saturday,
        workdays.sunday,
-       workdays.reservation_advance_days,
        workdays.max_visits
 FROM inventory_pools
 INNER JOIN access_rights ON access_rights.inventory_pool_id = inventory_pools.id
@@ -24,7 +23,7 @@ AND NOT EXISTS (
     AND suspensions.user_id = :user-id
     AND CURRENT_DATE <= suspensions.suspended_until
 )
-AND (CAST(:start-date AS date) - CURRENT_DATE) >= workdays.reservation_advance_days
+AND (CAST(:start-date AS date) - CURRENT_DATE) >= inventory_pools.reservation_advance_days
 -- start_date does not fall on holiday
 AND NOT EXISTS
     (SELECT TRUE

@@ -13,7 +13,6 @@
               :workdays.friday
               :workdays.saturday
               :workdays.sunday
-              :workdays.reservation_advance_days
               :workdays.max_visits])
 
 (defn base-sqlmap [pool-id]
