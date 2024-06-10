@@ -21,7 +21,6 @@
    [leihs.core.routing.back :as core-routing]
    [leihs.core.settings :as settings]
    [leihs.core.status :as status]
-   [leihs.core.user.core :as user]
    [logbug.debug :as debug :refer [I>]]
    [logbug.ring :refer [wrap-handler-with-logging]]
    [ring-graphql-ui.core :refer [wrap-graphiql]]
@@ -38,7 +37,6 @@
           :home html/html-handler,
           ::client-routes/home html/html-handler,
           :image images/handler-one,
-          :my-user user/routes,
           :attachment attachments/handler-one,
           :attachment-with-filename attachments/handler-one,
           :not-found html/not-found-handler}))

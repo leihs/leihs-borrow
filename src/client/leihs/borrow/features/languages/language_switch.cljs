@@ -17,7 +17,7 @@
                 (let [data {:locale locale-id,
                             constants/ANTI_CSRF_TOKEN_FORM_PARAM_NAME csrf/token}]
                   {:http-xhrio {:method :post
-                                :uri (str js/window.location.origin "/my/user/me")
+                                :uri (str js/window.location.origin "/my/language")
                                 :body (body-encode data)
                                 :response-format (json-response-format {:keywords? true})
                                 :on-success [::current-user/set-locale-to-use]
