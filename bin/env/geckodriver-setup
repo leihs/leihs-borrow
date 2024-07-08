@@ -2,9 +2,9 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd ../.. > /dev/null 2>&1 && pwd -P)"
-PROJECT=leihs-borrow
-PLUGIN=geckodriver
-PLUGIN_URL=https://github.com/DrTom/asdf-geckodriver.git
+PROJECT_NAME=leihs-borrow
+ASDF_PLUGIN=geckodriver
+ASDF_PLUGIN_URL=https://github.com/DrTom/asdf-geckodriver.git
 
 source $PROJECT_DIR/shared-clj/bin/env/asdf-helper.bash
 asdf-update-plugin
