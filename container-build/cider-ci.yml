@@ -1,0 +1,20 @@
+jobs:
+  container-build:
+    name: Build from scratch in clean container
+    run_when: &ON_BRANCH_UPDATE
+      any branch has been updated:
+        type: branch
+        include_match: ^.*$
+    context:
+      task_defaults:
+        environment_variables:
+          CI: "true"
+          LXC_BASE_IMAGE: "images:debian/bookworm/amd64"
+          LEIHS_MY_DIR: "{{CIDER_CI_WORKING_DIR}}"
+          LEIHS_DATABASE_DIR: "{{LEIHS_MY_DIR}}/database"
+          CONTAINER_NAME: "leihs-my-build-{{CIDER_CI_TRIAL_ID}}"
+      tasks:
+        container-build:
+          include: container-build/task-components/container-build.yml
+
+

@@ -3,10 +3,15 @@ set -euo pipefail
 
 ### VARIABLES and PWD #########################################################
 
-PROJECT_NAME="leihs-borrow"
 PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
 cd "${PROJECT_DIR}"
-source "shared-clj/bin/helpers/build.sh"
+
+source "${PROJECT_DIR}/bin/env/asdf-helper.bash"
+asdf-load
+
+source "${PROJECT_DIR}/bin/env/project.sh"
+source "${PROJECT_DIR}/shared-clj/bin/helpers/build.sh"
+
 
 # you can override here some of the vars defined in helpers/build.sh, e.g.
 # SHARED_CLJ_DIR="${PROJECT_DIR}/server/shared-clj"

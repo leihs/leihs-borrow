@@ -37,7 +37,6 @@ If there is a problem with the library build while everything is fine in Storybo
 
 - `npm run storybook`: Start storybook (http://localhost:6006)
 - `npm run build-storybook`: Build deployable (goes to `storybook-static` folder)
-- `npm run test-storybook`: Run a smoke test on all stories
 
 ### Lint and format
 

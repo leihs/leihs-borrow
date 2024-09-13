@@ -1,0 +1,82 @@
+traits:
+  LXD: true
+
+git_options:
+  submodules:
+    include_match: ^.*$
+
+scripts:
+
+
+  container-create:
+    body: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      set -x
+
+      # start container
+
+      lxc image list
+      lxc launch --ephemeral ${LXC_BASE_IMAGE} ${CONTAINER_NAME}
+      lxc list
+
+      git repack -a
+      git submodule foreach --recursive 'git repack -a'
+
+      lxc file push --recursive ${CIDER_CI_WORKING_DIR} ${CONTAINER_NAME}/tmp/
+
+      lxc exec ${CONTAINER_NAME} -- mv /tmp/${CIDER_CI_TRIAL_ID} /leihs-my
+      lxc exec ${CONTAINER_NAME} -- chown -R root:root /leihs-my
+      lxc exec ${CONTAINER_NAME} -- touch /leihs-my/test.txt
+      lxc exec ${CONTAINER_NAME} -- ls -l /leihs-my
+      lxc exec ${CONTAINER_NAME} -- rm /leihs-my/test.txt
+
+
+  container-prepare:
+    start_when:
+      container-create done:
+        script_key: container-create
+    body: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      set -x
+
+      lxc exec ${CONTAINER_NAME} -- /leihs-my/container-build/bin/prepare
+      lxc exec ${CONTAINER_NAME} -- /leihs-my/container-build/bin/asdf-install
+
+
+
+  container-build:
+    start_when:
+      container-prepare done:
+        script_key: container-prepare
+    timeout: 60 minutes
+    body: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      set -x
+
+      # odd
+      lxc exec ${CONTAINER_NAME} -- git config --global --add safe.directory /leihs-my
+
+      lxc exec ${CONTAINER_NAME} -- /leihs-my/bin/build
+
+  container-destroy:
+    start_when:
+      build done:
+        script_key: container-build
+        states: [aborted, passed, failed, skipped]
+    ignore_abort: yes
+    timeout: 1 Hour
+    body: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      set -x
+      lxc list
+      lxc info "$CONTAINER_NAME"
+
+      # enable for debugging; keeps the container running for a while
+      # sleep 1000
+
+      until lxc delete --force "$CONTAINER_NAME"; do sleep 10; done
+      lxc list

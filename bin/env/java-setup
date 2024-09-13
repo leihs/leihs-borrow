@@ -2,11 +2,12 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd ../.. > /dev/null 2>&1 && pwd -P)"
-PROJECT_NAME=leihs-borrow
 ASDF_PLUGIN=java
 ASDF_PLUGIN_URL=https://github.com/halcyon/asdf-java.git
 
-source $PROJECT_DIR/shared-clj/bin/env/asdf-helper.bash
+source $PROJECT_DIR/bin/env/project.sh
+source $PROJECT_DIR/bin/env/asdf-helper.bash
+
 asdf-update-plugin
 
 # vi: ft=sh

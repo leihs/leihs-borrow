@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# set -x
 
 PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd ../.. > /dev/null 2>&1 && pwd -P)"
 cd $PROJECT_DIR
 echo $PROJECT_DIR
-source shared-clj/bin/helpers/clj.sh
-debug_setup
+source $PROJECT_DIR/bin/env/asdf-helper.bash
+asdf-load
+# source shared-clj/bin/helpers/clj.sh
+
+$PROJECT_DIR/bin/env/clojure-setup
 $PROJECT_DIR/bin/env/nodejs-setup
 
 cd ui

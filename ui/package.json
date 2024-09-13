@@ -6,7 +6,6 @@
   "scripts": {
     "storybook": "storybook dev -p 6006 --no-open",
     "build-storybook": "storybook build",
-    "test-storybook": "test-storybook",
     "start": "webpack serve --mode=development",
     "watch": "webpack watch --mode=development",
     "build": "rm -rf dist/* && webpack --mode=production",
@@ -31,8 +30,6 @@
     "@storybook/blocks": "^7.0.27",
     "@storybook/react": "^7.0.27",
     "@storybook/react-webpack5": "^7.0.27",
-    "@storybook/test-runner": "^0.11.0",
-    "@storybook/testing-library": "^0.0.14-next.2",
     "@svgr/webpack": "^8.0.1",
     "autoprefixer": "^10.4.14",
     "babel-loader": "^9.1.3",

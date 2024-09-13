@@ -1,3 +1,5 @@
+include: container-build/cider-ci.yml
+
 jobs:
 
   borrow-build-uberjar:
@@ -62,10 +64,7 @@ jobs:
           test:
             body: |
               ./ui/bin/lint
-      ui-test:
-        include: 
-          - cider-ci/task-components/storybook-test.yml
-
+              
   lint:
     name: "Linting"
     description: |
