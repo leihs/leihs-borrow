@@ -22,7 +22,7 @@ Feature: Rentals - Show - Repeat order
     And the user is customer of pool "Pool A"
     And the delegation is customer of pool "Pool A"
 
-  Scenario Outline: Repeating an order
+  Scenario: Repeating an order
     Given a customer order with title "Order 1" and the following reservations exists for the user:
       | user | quantity | model       | pool   | start-date | end-date   | state  |
       | user | 1        | DSLR Camera | Pool A | 2020-02-01 | 2020-02-10 | closed |

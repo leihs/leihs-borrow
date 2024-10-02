@@ -184,14 +184,14 @@
     FEATURE_NAME: 'Request framework Login and retry after having been logged out 1'
     FEATURE: './spec/features/request_framework.feature[1:1:1]'
 './spec/features/search_and_order.feature[1:1:1]':
-  name: 'Search and order Order for delegation <name> 1'
+  name: 'Search and order Order for delegation Delegation D 1'
   environment_variables:
-    FEATURE_NAME: 'Search and order Order for delegation <name> 1'
+    FEATURE_NAME: 'Search and order Order for delegation Delegation D 1'
     FEATURE: './spec/features/search_and_order.feature[1:1:1]'
 './spec/features/search_and_order.feature[1:2:1]':
-  name: 'Search and order Order for delegation <name> 2'
+  name: 'Search and order Order for delegation User A (personal) 1'
   environment_variables:
-    FEATURE_NAME: 'Search and order Order for delegation <name> 2'
+    FEATURE_NAME: 'Search and order Order for delegation User A (personal) 1'
     FEATURE: './spec/features/search_and_order.feature[1:2:1]'
 './spec/features/search_and_order.feature[1:3:1]':
   name: 'Search and order Overbooking of expired reservation 1'
