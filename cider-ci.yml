@@ -8,6 +8,7 @@ jobs:
       any branch has been updated:
         type: branch
         include_match: ^.*$
+        exclude_match: '^.*(no-ci|hotspot).*$'
     include: cider-ci/jobs/uberjar.yml
 
   backend-specs:
@@ -75,6 +76,7 @@ jobs:
       any branch has been updated:
         type: branch
         include_match: ^.*$
+        exclude_match: '^.*(no-ci|hotspot).*$'
     context:
       task_defaults:
         git_options:
