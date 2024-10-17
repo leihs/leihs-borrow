@@ -17,7 +17,7 @@ export const cartConstraints = () => {
     name: 'Zoo Zürich',
     totalReservableQuantity: 3,
     reservationAdvanceDays: 1,
-    maximumReservationTime: 10
+    maximumReservationDuration: 10
   }
   const pool2 = { id: 'Pool002', name: 'Zoo Basel', totalReservableQuantity: 1 }
 

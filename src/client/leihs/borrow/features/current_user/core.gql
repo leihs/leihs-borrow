@@ -12,7 +12,7 @@ query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID, $includeL
       inventoryPools(orderBy: [{ attribute: NAME, direction: ASC }]) {
         id
         name
-        maximumReservationTime
+        maximumReservationDuration
         hasReservableItems
       }
       suspensions {
@@ -67,7 +67,7 @@ query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID, $includeL
     inventoryPools(orderBy: [{ attribute: NAME, direction: ASC }]) {
       id
       name
-      maximumReservationTime
+      maximumReservationDuration
       hasReservableItems
     }
     suspensions {

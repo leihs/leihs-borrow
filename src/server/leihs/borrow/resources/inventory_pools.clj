@@ -10,15 +10,35 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.workdays :as workdays]
             [leihs.core.db :as db]
-            [leihs.core.settings :refer [settings!]]
             [taoensso.timbre :refer [debug info warn error spy]]))
 
 (hugsql/def-sqlvec-fns "sql/pools_to_reserve_from.sql")
 
+(def select-fields
+  [:inventory_pools.id
+   :inventory_pools.name
+   :inventory_pools.description
+   :inventory_pools.default_contract_note
+   :inventory_pools.shortname
+   :inventory_pools.email
+   :inventory_pools.print_contracts
+   :inventory_pools.automatic_suspension
+   :inventory_pools.automatic_suspension_reason
+   :inventory_pools.required_purpose
+   :inventory_pools.is_active
+   :inventory_pools.reservation_advance_days
+   :inventory_pools.borrow_maximum_reservation_duration
+   [:inventory_pools.borrow_maximum_reservation_duration
+    :maximum_reservation_duration]])
+
 (def base-sqlmap
-  (-> (sql/select :inventory_pools.*)
+  (-> (apply sql/select select-fields)
       (sql/from :inventory_pools)
       (sql/where [:= :inventory_pools.is_active true])))
+
+(comment
+  (sql-format (apply sql/select select-fields))
+  (sql-format base-sqlmap))
 
 (defn accessible-to-user-condition [sqlmap user-id]
   (-> sqlmap
@@ -106,10 +126,6 @@
       (->> (jdbc-query tx))
       count
       (> 0)))
-
-(defn maximum-reservation-time [{{tx :tx} :request} _ _]
-  (-> (settings! tx [:maximum_reservation_time])
-      :maximum_reservation_time))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)

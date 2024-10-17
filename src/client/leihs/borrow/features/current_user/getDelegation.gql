@@ -5,7 +5,7 @@ query getDelegation($id: UUID!) {
     inventoryPools(orderBy: [{ attribute: NAME, direction: ASC }]) {
       id
       name
-      maximumReservationTime
+      maximumReservationDuration
       hasReservableItems
     }
     suspensions {

@@ -15,7 +15,7 @@ const modelDataPropType = PropTypes.shape({
       inventoryPool: PropTypes.shape({
         id: PropTypes.string.isRequired,
         reservationAdvanceDays: PropTypes.number,
-        maximumReservationTime: PropTypes.number
+        maximumReservationDuration: PropTypes.number
       }).isRequired,
       dates: PropTypes.arrayOf(dateInfoPropType).isRequired
     })

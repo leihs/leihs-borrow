@@ -203,7 +203,7 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
     end
 
     let(:model_10) do
-      model = FactoryBot.create(:leihs_model, product: "Maximum Reservation Time",
+      model = FactoryBot.create(:leihs_model, product: "Maximum Reservation Duration",
                                               id: "0ec34a40-f528-411a-ad9c-7a6a7642df6c")
       2.times do
         model.add_item(FactoryBot.create(:item,
@@ -375,9 +375,9 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
   end
 
   #####################################################################################################
-  # maximum reservation time
+  # maximum reservation duration
   let(:r1g_max_reservation_time) do
-    Settings.first.update(maximum_reservation_time: 7)
+    inventory_pool.update(borrow_maximum_reservation_duration: 7)
     FactoryBot.create(:reservation,
                       id: "206bfb67-5997-4318-965a-689db5990c70",
                       leihs_model: model_10,

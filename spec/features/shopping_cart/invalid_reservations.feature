@@ -14,20 +14,20 @@ Feature: Invalid reservations
     And I click on "Reset time limit"
     And I see "30 minutes left"
     Then I see the following lines in the "Items" section:
-      | title                       |
-      | 1× Start Date In Past       |
-      | 1× User is Suspended        |
-      | 1× No Access To Pool        |
-      | 1× Maximum Reservation Time |
-      | 1× Model With No Items      |
-      | 1× OK and Not Timed Out     |
-      | 1× OK and Timed Out         |
-      | 2× Quantity Too High        |
-      | 1× Not A Workday            |
-      | 1× Reservation Advance Days |
-      | 1× Max Visits Count Pickup  |
-      | 1× Holiday on End Date      |
-      | 1× Max Visits Count Return  |
+      | title                           |
+      | 1× Start Date In Past           |
+      | 1× User is Suspended            |
+      | 1× No Access To Pool            |
+      | 1× Maximum Reservation Duration |
+      | 1× Model With No Items          |
+      | 1× OK and Not Timed Out         |
+      | 1× OK and Timed Out             |
+      | 2× Quantity Too High            |
+      | 1× Not A Workday                |
+      | 1× Reservation Advance Days     |
+      | 1× Max Visits Count Pickup      |
+      | 1× Holiday on End Date          |
+      | 1× Max Visits Count Return      |
 
     And I see the text:
       """
@@ -133,11 +133,11 @@ Feature: Invalid reservations
     Then the "Edit reservation" dialog has closed
 
 
-    When I click on the card with title "1× Maximum Reservation Time"
+    When I click on the card with title "1× Maximum Reservation Duration"
     Then I see the "Edit reservation" dialog
     But I see the following warnings in the "Time span" section:
-      | text                                             |
-      | Maximum reservation time is restricted to 7 days |
+      | text                                                 |
+      | Maximum reservation duration is restricted to 7 days |
     And I click on "Confirm"
     But the "Edit reservation" dialog did not close
 
@@ -195,16 +195,16 @@ Feature: Invalid reservations
 
 
     Then I see the following lines in the "Items" section:
-      | title                       |
-      | 1× Maximum Reservation Time |
-      | 1× OK and Not Timed Out     |
-      | 1× OK and Timed Out         |
-      | 1× Quantity Too High        |
-      | 1× Start Date In Past       |
-      | 1× Reservation Advance Days |
-      | 1× Max Visits Count Pickup  |
-      | 1× Holiday on End Date      |
-      | 1× Max Visits Count Return  |
+      | title                           |
+      | 1× Maximum Reservation Duration |
+      | 1× OK and Not Timed Out         |
+      | 1× OK and Timed Out             |
+      | 1× Quantity Too High            |
+      | 1× Start Date In Past           |
+      | 1× Reservation Advance Days     |
+      | 1× Max Visits Count Pickup      |
+      | 1× Holiday on End Date          |
+      | 1× Max Visits Count Return      |
 
     When I click on "Send order"
     Then I see the "Send order" dialog

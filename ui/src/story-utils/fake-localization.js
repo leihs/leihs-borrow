@@ -39,7 +39,7 @@ export const orderPanelTexts = {
     'pool-closed-at-start-and-end-date': { 'de-CH': 'Abholung/Rückgabe am {startDate, date, small} nicht möglich' },
     'pool-closed-max-visits': { 'de-CH': ' (maximale Besucherzahl erreicht)' },
 
-    'maximum-reservation-time': { 'de-CH': 'Maximale Reservationsdauer ist beschränkt auf {days} Tage' },
+    'maximum-reservation-duration': { 'de-CH': 'Maximale Reservationsdauer ist beschränkt auf {days} Tage' },
 
     'no-pool-access': { 'de-CH': 'Keine Berechtigung für diesen Inventarpark' },
     'pool-suspension': { 'de-CH': 'Sperre für diesen Inventarpark' },

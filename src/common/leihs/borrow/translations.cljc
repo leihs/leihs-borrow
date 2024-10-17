@@ -105,9 +105,9 @@
                 {:de-CH " (maximale Besucherzahl erreicht)"
                  :en-GB " (maximum visitor capacity reached)"}
 
-                :maximum-reservation-time
+                :maximum-reservation-duration
                 {:de-CH "Maximale Reservationsdauer ist beschränkt auf {days} Tage"
-                 :en-GB "Maximum reservation time is restricted to {days} days"}
+                 :en-GB "Maximum reservation duration is restricted to {days} days"}
 
                 :no-pool-access
                 {:de-CH "Keine Berechtigung für diesen Inventarpark"
@@ -304,8 +304,8 @@
                                :de-CH "Zugang gesperrt"}
             :no-reservable-models {:en-GB "No reservable items"
                                    :de-CH "Keine reservierbaren Gegenstände"}
-            :maximum-reservation-time {:en-GB "Maximum reservation time {days} days"
-                                       :de-CH "Maximale Reservationsdauer {days} Tage"}}
+            :maximum-reservation-duration {:en-GB "Maximum reservation duration {days} days"
+                                           :de-CH "Maximale Reservationsdauer von {days} Tagen"}}
     :pool-show {:email {:en-GB "E-mail"
                         :de-CH "E-Mail"}
                 :description {:en-GB "Description"

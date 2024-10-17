@@ -6,6 +6,6 @@ query getPool($id: UUID!) {
     name
     shortname
     hasReservableItems
-    maximumReservationTime
+    maximumReservationDuration
   }
 }

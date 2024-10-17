@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Thu Sep 14 2023 13:12:01 GMT+0200 (Central European Summer Time)
+# timestamp: Fri Oct 18 2024 11:49:08 GMT+0200 (Central European Summer Time)
 
 schema {
   query: QueryRoot
@@ -141,7 +141,7 @@ type InventoryPool {
   hasTemplates: Boolean
   id: UUID!
   isActive: Boolean!
-  maximumReservationTime: Int
+  maximumOrderDurationInDays: Int
   name: String!
   reservationAdvanceDays: Int
   shortname: String!
@@ -280,7 +280,8 @@ type PoolOrder {
   createdAt: DateTime!
   id: UUID!
   inventoryPool: InventoryPool!
-  order: Rental
+  order: PoolOrder
+  purpose: NonEmptyText!
   rejectedReason: String
   reservations(orderBy: [ReservationsOrderByInput]): [Reservation!]
   state: PoolOrderStateEnum!

@@ -55,8 +55,7 @@
                                     :shortname {:type (non-null String)}
                                     :hasReservableItems {:type (non-null Boolean)
                                                          :resolve :has-reservable-items}
-                                    :maximumReservationTime {:type Int
-                                                             :resolve :maximum-reservation-time}
+                                    :maximumReservationDuration {:type Int}
                                     :reservationAdvanceDays {:type Int}
                                     :hasTemplates {:type Boolean
                                                    :resolve :inventory-pool-has-templates}}}

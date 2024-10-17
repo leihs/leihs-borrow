@@ -363,7 +363,7 @@ function validatePool(inventoryPool, locale, txt) {
 function validateDateRange(selectedRange, today, maxDate, poolAvailability, wantedQuantity, locale, txt) {
   const { startDate, endDate } = selectedRange
   const { dates, inventoryPool } = poolAvailability
-  const { reservationAdvanceDays, maximumReservationTime } = inventoryPool
+  const { reservationAdvanceDays, maximumReservationDuration } = inventoryPool
 
   const basicValidityMessage = (() => {
     // Ensure that a valid quantity is given (the quantity field also has its own validator, so this is an exceptional case)
@@ -462,14 +462,16 @@ function validateDateRange(selectedRange, today, maxDate, poolAvailability, want
   })()
 
   // Max reservation time
-  const maximumReservationTimeMessage = (() => {
-    if (maximumReservationTime) {
-      const maxEndDate = addDays(startDate, maximumReservationTime - 1)
+  const maximumReservationDurationMessage = (() => {
+    if (maximumReservationDuration) {
+      const maxEndDate = addDays(startDate, maximumReservationDuration - 1)
       if (endDate > maxEndDate) {
-        return t(txt, 'maximum-reservation-time', locale, { days: maximumReservationTime })
+        return t(txt, 'maximum-reservation-duration', locale, { days: maximumReservationDuration })
       }
     }
   })()
 
-  return [...[startDateMessage, endDateMessage, availabilityMessage, maximumReservationTimeMessage].filter(x => !!x)]
+  return [
+    ...[startDateMessage, endDateMessage, availabilityMessage, maximumReservationDurationMessage].filter(x => !!x)
+  ]
 }

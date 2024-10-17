@@ -230,7 +230,7 @@ describe "rental details" do
           name
           # shortname
           # hasReservableItems
-          # maximumReservationTime
+          # maximumReservationDuration
         }
 
         fragment reservationProps on Reservation {
