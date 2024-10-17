@@ -48,8 +48,8 @@
       (cond
         (-> pool :has-reservable-items not)
         [:div  (t :no-reservable-models)]
-        (-> pool :maximum-reservation-time)
-        [:div  (t :maximum-reservation-time {:days (-> pool :maximum-reservation-time)})])]
+        (-> pool :maximum-order-duration-in-days)
+        [:div  (t :maximum-order-duration-in-days {:days (-> pool :maximum-order-duration-in-days)})])]
 
      (when (some #(= (get-in % [:inventory-pool :id]) (:id pool)) suspensions)
        [:> UI/Components.Design.ListCard.Foot

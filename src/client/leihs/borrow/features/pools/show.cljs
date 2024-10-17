@@ -75,8 +75,8 @@
         (cond
           (-> pool :has-reservable-items not)
           [:div.fw-bold  (t :!borrow.pools.no-reservable-models)]
-          (-> pool :maximum-reservation-time)
-          [:div.fw-bold  (t :!borrow.pools.maximum-reservation-time {:days (-> pool :maximum-reservation-time)})])
+          (-> pool :maximum-order-duration-in-days)
+          [:div.fw-bold  (t :!borrow.pools.maximum-order-duration-in-days {:days (-> pool :maximum-order-duration-in-days)})])
 
         (when-let [email (:email pool)]
           [:> UI/Components.Design.Section {:collapsible false :title (t :email) :class "fw-bold"}

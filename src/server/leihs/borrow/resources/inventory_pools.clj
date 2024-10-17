@@ -10,7 +10,6 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.workdays :as workdays]
             [leihs.core.db :as db]
-            [leihs.core.settings :refer [settings!]]
             [taoensso.timbre :refer [debug info warn error spy]]))
 
 (hugsql/def-sqlvec-fns "sql/pools_to_reserve_from.sql")
@@ -106,10 +105,6 @@
       (->> (jdbc-query tx))
       count
       (> 0)))
-
-(defn maximum-reservation-time [{{tx :tx} :request} _ _]
-  (-> (settings! tx [:maximum_reservation_time])
-      :maximum_reservation_time))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)

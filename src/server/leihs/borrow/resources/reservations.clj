@@ -109,13 +109,14 @@
 (defn complies-with-max-reservation-time? [tx r]
   (-> (sql/select
        [[:raw (format "CASE
-                      WHEN maximum_reservation_time IS NOT NULL
-                      THEN '%s'::date - '%s'::date <= maximum_reservation_time
-                      ELSE TRUE
-                      END"
+                         WHEN maximum_order_duration_in_days IS NOT NULL
+                         THEN '%s'::date - '%s'::date <= maximum_order_duration_in_days
+                         ELSE TRUE
+                       END"
                       (:end_date r) (:start_date r))]
         :result])
-      (sql/from :settings)
+      (sql/from :inventory_pools)
+      (sql/where [:= :inventory_pools.id (:inventory_pool_id r)])
       sql-format
       (->> (jdbc-query tx))
       first

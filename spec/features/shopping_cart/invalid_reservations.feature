@@ -18,7 +18,7 @@ Feature: Invalid reservations
       | 1× Start Date In Past       |
       | 1× User is Suspended        |
       | 1× No Access To Pool        |
-      | 1× Maximum Reservation Time |
+      | 1× Maximum Order Duration   |
       | 1× Model With No Items      |
       | 1× OK and Not Timed Out     |
       | 1× OK and Timed Out         |
@@ -133,11 +133,11 @@ Feature: Invalid reservations
     Then the "Edit reservation" dialog has closed
 
 
-    When I click on the card with title "1× Maximum Reservation Time"
+    When I click on the card with title "1× Maximum Order Duration"
     Then I see the "Edit reservation" dialog
     But I see the following warnings in the "Time span" section:
-      | text                                             |
-      | Maximum reservation time is restricted to 7 days |
+      | text                                           |
+      | Maximum order duration is restricted to 7 days |
     And I click on "Confirm"
     But the "Edit reservation" dialog did not close
 
@@ -196,7 +196,7 @@ Feature: Invalid reservations
 
     Then I see the following lines in the "Items" section:
       | title                       |
-      | 1× Maximum Reservation Time |
+      | 1× Maximum Order Duration   |
       | 1× OK and Not Timed Out     |
       | 1× OK and Timed Out         |
       | 1× Quantity Too High        |

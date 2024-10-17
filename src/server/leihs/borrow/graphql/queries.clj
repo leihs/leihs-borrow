@@ -47,7 +47,6 @@
    :language languages/get-one
    :languages languages/get-multiple
    :language-to-use languages/one-to-use
-   :maximum-reservation-time inventory-pools/maximum-reservation-time
    :members delegations/get-members
    :model models/get-one
    :model-availability models/get-availability
