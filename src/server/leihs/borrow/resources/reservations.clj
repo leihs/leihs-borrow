@@ -179,7 +179,7 @@
      (str "CURRENT_DATE"
           " + "
           "MAKE_INTERVAL("
-          "days => COALESCE(inventory_pools.reservation_advance_days, 0)"
+          "days => COALESCE(inventory_pools.borrow_reservation_advance_days, 0)"
           ")")]]))
 
 (defn unsubmitted-with-invalid-start-date

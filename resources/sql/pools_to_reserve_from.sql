@@ -23,7 +23,7 @@ AND NOT EXISTS (
     AND suspensions.user_id = :user-id
     AND CURRENT_DATE <= suspensions.suspended_until
 )
-AND (CAST(:start-date AS date) - CURRENT_DATE) >= inventory_pools.reservation_advance_days
+AND (CAST(:start-date AS date) - CURRENT_DATE) >= inventory_pools.borrow_reservation_advance_days
 -- start_date does not fall on holiday
 AND NOT EXISTS
     (SELECT TRUE

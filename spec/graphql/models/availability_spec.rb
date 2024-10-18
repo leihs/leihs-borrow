@@ -202,7 +202,7 @@ describe 'models connection' do
                         end_date: Date.tomorrow,
                         status: "approved")
 
-      @inventory_pool.update(reservation_advance_days: 1)
+      @inventory_pool.update(borrow_reservation_advance_days: 1)
       Workday.find(inventory_pool_id: @inventory_pool.id)
         .update(max_visits: {"1": "1",
                              "2": "1",
@@ -244,7 +244,7 @@ describe 'models connection' do
                             endDateRestriction: "VISITS_CAPACITY_REACHED" } ] } ] } } ] }
       })
 
-      @inventory_pool.update(reservation_advance_days: 0)
+      @inventory_pool.update(borrow_reservation_advance_days: 0)
 
       result = query(q, @user.id)
 

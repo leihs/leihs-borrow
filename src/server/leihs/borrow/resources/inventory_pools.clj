@@ -26,7 +26,9 @@
    :inventory_pools.automatic_suspension_reason
    :inventory_pools.required_purpose
    :inventory_pools.is_active
-   :inventory_pools.reservation_advance_days
+   :inventory_pools.borrow_reservation_advance_days
+   [:inventory_pools.borrow_reservation_advance_days
+    :reservation_advance_days]
    :inventory_pools.borrow_maximum_reservation_duration
    [:inventory_pools.borrow_maximum_reservation_duration
     :maximum_reservation_duration]])
