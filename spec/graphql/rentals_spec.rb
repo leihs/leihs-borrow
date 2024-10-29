@@ -3,7 +3,6 @@ require_relative 'graphql_helper'
 
 describe 'rentals' do
   before :example do
-    Settings.first.update(deliver_received_order_notifications: true)
     SystemAndSecuritySettings.first.update(external_base_url: LEIHS_BORROW_HTTP_BASE_URL)
   end
 
@@ -17,7 +16,8 @@ describe 'rentals' do
   let(:inventory_pool_1) do
     FactoryBot.create(
       :inventory_pool,
-      id: 'ef2eec3e-54ce-44ec-887f-5032f3df63f3'
+      id: 'ef2eec3e-54ce-44ec-887f-5032f3df63f3',
+      deliver_received_order_emails: true
     )
   end
 
@@ -25,7 +25,8 @@ describe 'rentals' do
     FactoryBot.create(
       :inventory_pool,
       id: 'c4106f5f-e063-4793-a60f-e94f87cac89a',
-      is_active: false
+      is_active: false,
+      deliver_received_order_emails: true
     )
   end
 
@@ -52,6 +53,10 @@ describe 'rentals' do
     FactoryBot.create(:direct_access_right,
                       inventory_pool: inventory_pool_2,
                       user: user)
+
+    InventoryPool.all.each do |pool|
+      pool.update(deliver_received_order_emails: true)
+    end
   end
 
   def create_orderless_contract

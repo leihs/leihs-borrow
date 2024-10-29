@@ -28,44 +28,44 @@
       first
       :body))
 
-(defn send-received [{{:keys [settings] tx :tx} :request} order]
-  (when (:deliver_received_order_notifications settings)
-    (let [inventory-pool (pools/get-by-id tx (:inventory_pool_id order))
-          lang-locale (:locale (lang/default tx))
-          tmpl (get-tmpl tx "received" (:id inventory-pool) lang-locale)]
-      (cond
-        (not inventory-pool) (warn "Pool for sending email not found or it is inactive.")
-        (not tmpl) (warn (format "No 'received' mail template found for pool '%s'." (:id inventory-pool)))
-        :else (let [email-signature (:email_signature settings)
-                    user (users/get-by-id tx (:user_id order))
-                    reservations (-> (sql/select :r.quantity, :r.start_date, :r.end_date
-                                                 [[:concat_ws " " :m.product :m.version] :model_name])
-                                     (sql/from [:reservations :r])
-                                     (sql/join [:models :m] [:= :r.model_id :m.id])
-                                     (sql/where [:= :r.order_id (:id order)])
-                                     sql-format
-                                     (->> (jdbc-query tx)))
-                    purpose (:purpose order)
-                    order-url (str (:external_base_url settings) "/manage/" (:id inventory-pool) "/orders/" (:id order) "/edit")
-                    email-body (wet/render (wet/parse tmpl)
-                                           {:params {:user user
-                                                     :inventory_pool inventory-pool
-                                                     :email_signature email-signature
-                                                     :reservations reservations
-                                                     :comment nil
-                                                     :purpose purpose
-                                                     :order_url order-url}
-                                            :filters {}})
-                    address (or (:email inventory-pool) (:smtp_default_from_address settings))]
-                (debug email-body)
-                (-> (sql/insert-into :emails)
-                    (sql/values [{:inventory_pool_id (:id inventory-pool)
-                                  :from_address address
-                                  :to_address address
-                                  :subject (t :borrow.mail-templates.received.subject lang-locale)
-                                  :body email-body}])
-                    sql-format
-                    (->> (jdbc-execute! tx))))))))
+(defn send-received [{{:keys [settings tx]} :request} order]
+  (let [inventory-pool (pools/get-by-id tx (:inventory_pool_id order))]
+    (when (:deliver_received_order_emails inventory-pool)
+      (let [lang-locale (:locale (lang/default tx))
+            tmpl (get-tmpl tx "received" (:id inventory-pool) lang-locale)]
+        (cond
+          (not inventory-pool) (warn "Pool for sending email not found or it is inactive.")
+          (not tmpl) (warn (format "No 'received' mail template found for pool '%s'." (:id inventory-pool)))
+          :else (let [email-signature (:email_signature settings)
+                      user (users/get-by-id tx (:user_id order))
+                      reservations (-> (sql/select :r.quantity, :r.start_date, :r.end_date
+                                                   [[:concat_ws " " :m.product :m.version] :model_name])
+                                       (sql/from [:reservations :r])
+                                       (sql/join [:models :m] [:= :r.model_id :m.id])
+                                       (sql/where [:= :r.order_id (:id order)])
+                                       sql-format
+                                       (->> (jdbc-query tx)))
+                      purpose (:purpose order)
+                      order-url (str (:external_base_url settings) "/manage/" (:id inventory-pool) "/orders/" (:id order) "/edit")
+                      email-body (wet/render (wet/parse tmpl)
+                                             {:params {:user user
+                                                       :inventory_pool inventory-pool
+                                                       :email_signature email-signature
+                                                       :reservations reservations
+                                                       :comment nil
+                                                       :purpose purpose
+                                                       :order_url order-url}
+                                              :filters {}})
+                      address (or (:email inventory-pool) (:smtp_default_from_address settings))]
+                  (debug email-body)
+                  (-> (sql/insert-into :emails)
+                      (sql/values [{:inventory_pool_id (:id inventory-pool)
+                                    :from_address address
+                                    :to_address address
+                                    :subject (t :borrow.mail-templates.received.subject lang-locale)
+                                    :body email-body}])
+                      sql-format
+                      (->> (jdbc-execute! tx)))))))))
 
 (defn send-submitted [{{:keys [settings] tx :tx} :request} order]
   (let [inventory-pool (pools/get-by-id tx (:inventory_pool_id order))

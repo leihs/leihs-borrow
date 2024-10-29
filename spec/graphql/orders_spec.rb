@@ -3,7 +3,6 @@ require_relative 'graphql_helper'
 
 describe 'orders' do
   before :example do
-    Settings.first.update(deliver_received_order_notifications: true)
     SystemAndSecuritySettings.first.update(external_base_url: LEIHS_BORROW_HTTP_BASE_URL)
   end
 
@@ -25,7 +24,8 @@ describe 'orders' do
   let(:inventory_pool_1) do
     FactoryBot.create(
       :inventory_pool,
-      id: '8633ce17-37da-4802-a377-66ca78291d0a'
+      id: '8633ce17-37da-4802-a377-66ca78291d0a',
+      deliver_received_order_emails: true
     )
   end
 
@@ -33,14 +33,16 @@ describe 'orders' do
     FactoryBot.create(
       :inventory_pool,
       id: '4e2f1362-0891-4df7-b760-16a2a8d3373f',
-      is_active: false
+      is_active: false,
+      deliver_received_order_emails: true
     )
   end
 
   let(:inventory_pool_3) do
     FactoryBot.create(
       :inventory_pool,
-      id: 'cf623c28-a322-4830-8d7b-e1de077ec055'
+      id: 'cf623c28-a322-4830-8d7b-e1de077ec055',
+      deliver_received_order_emails: true
     )
   end
 

@@ -12,7 +12,6 @@ require_relative "graphql_helper"
 
 describe "rental details" do
   before :example do
-    Settings.first.update(deliver_received_order_notifications: true)
     SystemAndSecuritySettings.first.update(external_base_url: LEIHS_BORROW_HTTP_BASE_URL)
   end
 
@@ -27,6 +26,7 @@ describe "rental details" do
     FactoryBot.create(
       :inventory_pool,
       id: "96eb135e-4597-4e3f-be4d-bb7292ebf0ef",
+      deliver_received_order_emails: true
     )
   end
 
@@ -34,6 +34,7 @@ describe "rental details" do
     FactoryBot.create(
       :inventory_pool,
       id: "605c464b-23b9-42ff-a8b5-97abf7e8cf9b",
+      deliver_received_order_emails: true
     )
   end
 
@@ -41,6 +42,7 @@ describe "rental details" do
     FactoryBot.create(
       :inventory_pool,
       id: "4c8a8edf-b7ca-4d61-873a-72a756ab084e",
+      deliver_received_order_emails: true
     )
   end
 
@@ -48,6 +50,7 @@ describe "rental details" do
     FactoryBot.create(
       :inventory_pool,
       id: "ca214a4f-b63a-4b76-b89c-df73efbe5e4d",
+      deliver_received_order_emails: true
     )
   end
 
@@ -55,6 +58,7 @@ describe "rental details" do
     FactoryBot.create(
       :inventory_pool,
       id: "1b8cfaca-aaf6-4087-8113-e4c0ffd7ff88",
+      deliver_received_order_emails: true
     )
   end
 
@@ -62,6 +66,7 @@ describe "rental details" do
     FactoryBot.create(
       :inventory_pool,
       id: "add29ab5-702f-4bb1-979d-795ae360fdff",
+      deliver_received_order_emails: true
     )
   end
 
@@ -69,6 +74,7 @@ describe "rental details" do
     FactoryBot.create(
       :inventory_pool,
       id: "45df6bf0-c585-48e2-9c6b-04ffbd871b6b",
+      deliver_received_order_emails: true
     )
   end
 
@@ -76,6 +82,7 @@ describe "rental details" do
     FactoryBot.create(
       :inventory_pool,
       id: "ca611668-f79e-4b39-a7c1-63f0305ebe17",
+      deliver_received_order_emails: true
     )
   end
 
@@ -155,6 +162,10 @@ describe "rental details" do
                             is_borrowable: true)
         end
       end
+
+    InventoryPool.all.each do |pool|
+      pool.update(deliver_received_order_emails: true)
+    end
   end
 
   context "complex rental" do

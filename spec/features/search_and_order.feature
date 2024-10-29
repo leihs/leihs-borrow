@@ -12,7 +12,7 @@ Feature: Search and order
     And the delegation "Delegation D" is customer of pool "Pool A"
     And the delegation "Delegation D" is customer of pool "Pool B"
 
-    And the receival of received order emails is activated
+    And the receival of received order emails is activated for all pools
 
   Scenario Outline: Order for delegation <name>
     Given there is a model "Kamera"

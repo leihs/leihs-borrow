@@ -26,6 +26,7 @@
    :inventory_pools.automatic_suspension_reason
    :inventory_pools.required_purpose
    :inventory_pools.is_active
+   :inventory_pools.deliver_received_order_emails
    :inventory_pools.borrow_reservation_advance_days
    [:inventory_pools.borrow_reservation_advance_days
     :reservation_advance_days]
