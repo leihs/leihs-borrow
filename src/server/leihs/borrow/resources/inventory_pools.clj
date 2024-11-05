@@ -21,6 +21,7 @@
    :inventory_pools.default_contract_note
    :inventory_pools.shortname
    :inventory_pools.email
+   :inventory_pools.email_signature
    :inventory_pools.print_contracts
    :inventory_pools.automatic_suspension
    :inventory_pools.automatic_suspension_reason
