@@ -350,7 +350,11 @@ describe 'models connection' do
       @result = query(q, @user.id).deep_symbolize_keys
       ec = @result.delete_in!(:data, :models, :pageInfo, :endCursor)
 
-      @model_1.items.each { |i| i.delete }
+      db_with_disabled_triggers do
+        database.run <<~SQL
+          DELETE FROM items WHERE model_id = '#{@model_1.id}';
+        SQL
+      end
       @model_1.delete
 
       q = <<-GRAPHQL
@@ -414,7 +418,11 @@ describe 'models connection' do
       @result = query(q, @user.id).deep_symbolize_keys
       ec = @result.delete_in!(:data, :models, :pageInfo, :endCursor)
 
-      @model_2.items.each { |i| i.delete }
+      db_with_disabled_triggers do
+        database.run <<~SQL
+          DELETE FROM items WHERE model_id = '#{@model_2.id}';
+        SQL
+      end
       @model_2.delete
 
       q = <<-GRAPHQL
@@ -478,7 +486,11 @@ describe 'models connection' do
       @result = query(q, @user.id).deep_symbolize_keys
       ec = @result.delete_in!(:data, :models, :pageInfo, :endCursor)
 
-      @model_1.items.each { |i| i.delete }
+      db_with_disabled_triggers do
+        database.run <<~SQL
+          DELETE FROM items WHERE model_id = '#{@model_1.id}';
+        SQL
+      end
       @model_1.delete
 
       q = <<-GRAPHQL
