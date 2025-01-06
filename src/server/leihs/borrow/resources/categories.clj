@@ -16,50 +16,23 @@
 (hugsql/def-sqlvec-fns "sql/reservable_root_categories.sql")
 (hugsql/def-sqlvec-fns "sql/reservable_child_categories.sql")
 (hugsql/def-sqlvec-fns "sql/reservable_categories.sql")
-(hugsql/def-sqlvec-fns "sql/with_all_reservable_categories_snip.sql")
+(hugsql/def-sqlvec-fns "sql/all_reservable_categories_snip.sql")
 (hugsql/def-sqlvec-fns "sql/category_tree_snip.sql")
-
-(comment
-  (->> {:limit nil
-        :with-all-reservable-categories
-        (with-all-reservable-categories-snip
-          {:user-id #uuid "c0777d74-668b-5e01-abb5-f8277baa0ea8"
-           :and-pool-ids
-           (and-pool-ids-snip {:pool-ids
-                               [#uuid "8bd16d45-056d-5590-bc7f-12849f034351"]})})
-        :category-tree-snip (category-tree-snip-2)}
-       reservable-root-categories-sqlvec
-       (jdbc-query (ds/get-ds)))
-
-  (->> {:user-id #uuid "c0777d74-668b-5e01-abb5-f8277baa0ea8"
-        :category-id #uuid "94915209-2723-530a-92f8-76c0e8ac7ca4"
-        :category-tree-snip (category-tree-snip)
-        :with-all-reservable-categories
-        (with-all-reservable-categories-snip
-          {:user-id #uuid "c0777d74-668b-5e01-abb5-f8277baa0ea8"
-           :and-pool-ids
-           (and-pool-ids-snip {:pool-ids
-                               [#uuid "8d3631ee-818b-56d2-9d08-b9369d62d1e1"]})})}
-       reservable-child-categories-sqlvec
-       (jdbc-query (ds/get-ds)))
-
-  (and-pool-ids-snip {:pool-ids ["foo"]}))
 
 (defn get-multiple [{{tx :tx} :request user-id ::target-user/id}
                     {:keys [ids pool-ids raise-if-not-all-ids-found]}
                     _]
-  (let [categories
-        (-> (cond-> {:with-all-reservable-categories
-                     (with-all-reservable-categories-snip
-                       (cond-> {:user-id user-id}
-                         (seq pool-ids)
-                         (assoc :and-pool-ids
-                                (and-pool-ids-snip {:pool-ids pool-ids}))))
-                     :category-tree-snip (category-tree-snip)}
-              (seq ids)
-              (assoc :where-ids (where-ids-snip {:ids ids})))
-            reservable-categories-sqlvec
-            (->> (jdbc-query tx)))]
+  (let [snips {:all-reservable-categories-snip
+               (all-reservable-categories-snip
+                (cond-> {:user-id user-id}
+                  (seq pool-ids)
+                  (assoc :and-pool-ids
+                         (and-pool-ids-snip {:pool-ids pool-ids}))))
+               :category-tree-snip (category-tree-snip)}
+        categories (-> (cond-> snips (seq ids)
+                               (assoc :where-ids (where-ids-snip {:ids ids})))
+                       reservable-categories-sqlvec
+                       (->> (jdbc-query tx)))]
     (if (and (seq ids)
              raise-if-not-all-ids-found
              (not-every? #(some (set [%]) (map :id categories))
@@ -74,11 +47,11 @@
                  {:keys [limit pool-ids]}
                  _]
   (-> {:limit (cond->> (str limit) limit (str "LIMIT "))
-       :with-all-reservable-categories
-       (with-all-reservable-categories-snip
-         (cond-> {:user-id user-id}
-           (seq pool-ids)
-           (assoc :and-pool-ids (and-pool-ids-snip {:pool-ids pool-ids}))))
+       :all-reservable-categories-snip
+       (all-reservable-categories-snip
+        (cond-> {:user-id user-id}
+          (seq pool-ids)
+          (assoc :and-pool-ids (and-pool-ids-snip {:pool-ids pool-ids}))))
        :category-tree-snip (category-tree-snip)}
       reservable-root-categories-sqlvec
       (->> (jdbc-query tx))))
@@ -87,11 +60,11 @@
                     {:keys [pool-ids]}
                     value]
   (-> {:category-id (:id value)
-       :with-all-reservable-categories
-       (with-all-reservable-categories-snip
-         (cond-> {:user-id user-id}
-           (seq pool-ids)
-           (assoc :and-pool-ids (and-pool-ids-snip {:pool-ids pool-ids}))))
+       :all-reservable-categories-snip
+       (all-reservable-categories-snip
+        (cond-> {:user-id user-id}
+          (seq pool-ids)
+          (assoc :and-pool-ids (and-pool-ids-snip {:pool-ids pool-ids}))))
        :category-tree-snip (category-tree-snip)}
       reservable-child-categories-sqlvec
       (->> (jdbc-query tx))))
