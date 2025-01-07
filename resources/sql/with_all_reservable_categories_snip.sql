@@ -1,8 +1,8 @@
 -- :snip and-pool-ids-snip
 AND inventory_pools.id IN (:v*:pool-ids)
 
--- :snip all-reservable-categories-snip
-all_reservable_categories AS (
+-- :snip with-all-reservable-categories-snip
+WITH all_reservable_categories AS (
   SELECT DISTINCT model_groups.id, model_groups.name
   FROM model_groups
   INNER JOIN model_links ON model_groups.id = model_links.model_group_id
