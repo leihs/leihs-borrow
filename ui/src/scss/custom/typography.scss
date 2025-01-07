@@ -23,3 +23,9 @@ input.form-control::placeholder {
   font-weight: $font-weight-bold;
 }
 */
+
+@include media-breakpoint-up(sm) {
+  h1 {
+    font-size: 1.25rem;
+  }
+}

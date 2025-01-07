@@ -59,6 +59,7 @@ export default function ModelShow({
             {model.name}
           </>
         }
+        subTitle={model.manufacturer}
       />
       {model.images.length > 1 && (
         <div className="slide-button-visibility-controller">
