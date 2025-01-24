@@ -7,5 +7,15 @@ query getPool($id: UUID!) {
     shortname
     hasReservableItems
     maximumReservationDuration
+    holidays {
+      startDate
+      endDate
+      name
+    }
+    workdays {
+      day
+      open
+      info
+    }
   }
 }

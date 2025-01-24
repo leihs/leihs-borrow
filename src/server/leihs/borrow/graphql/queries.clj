@@ -4,6 +4,7 @@
    [leihs.borrow.resources.categories :as categories]
    [leihs.borrow.resources.contracts :as contracts]
    [leihs.borrow.resources.delegations :as delegations]
+   [leihs.borrow.resources.holidays :as holidays]
    [leihs.borrow.resources.images :as images]
    [leihs.borrow.resources.inventory-pools :as inventory-pools]
    [leihs.borrow.resources.items :as items]
@@ -17,6 +18,7 @@
    [leihs.borrow.resources.users :as users]
    [leihs.borrow.resources.visits :as visits]
    [leihs.borrow.resources.templates :as templates]
+   [leihs.borrow.resources.workdays :as workdays]
    [leihs.borrow.testing :as testing]))
 
 (def resolvers
@@ -37,6 +39,7 @@
    :expired-rental-quantity orders/expired-rental-quantity
    :favorite-models-connection models/get-favorites-connection
    :has-reservable-items inventory-pools/has-reservable-items?
+   :holidays holidays/get-multiple
    :images images/get-multiple
    :inventory-pool inventory-pools/get-one
    :inventory-pool-has-templates inventory-pools/has-templates?
@@ -79,4 +82,5 @@
    :template-lines templates/get-lines
    :testing-query testing/query
    :total-reservable-quantities models/total-reservable-quantities
-   :total-rental-quantity orders/total-rental-quantity})
+   :total-rental-quantity orders/total-rental-quantity
+   :workdays workdays/get-multiple})

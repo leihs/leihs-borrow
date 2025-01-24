@@ -309,7 +309,15 @@
     :pool-show {:email {:en-GB "E-mail"
                         :de-CH "E-Mail"}
                 :description {:en-GB "Description"
-                              :de-CH "Beschreibung"}}
+                              :de-CH "Beschreibung"}
+                :opening-times {:title {:en-GB "Opening times"
+                                        :de-CH "Öffnungszeiten"}}
+                :reservation-constraint {:title {:en-GB "Reservation constraint"
+                                                 :de-CH "Reservationseinschränkung"}}
+                :holidays {:title {:en-GB "Holidays"
+                                   :de-CH "Feiertage"}}
+                :closed {:en-GB "Closed"
+                         :de-CH "Geschlossen"}}
 
     :profile-menu {:title {:en-GB "Switch Profile"
                            :de-CH "Profil wechseln"}}

@@ -4,15 +4,25 @@
             [honey.sql.helpers :as sql]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
+            [clojure.string :as string]
             [clojure.tools.logging :as log]))
 
+(def DAYS [:MONDAY :TUESDAY :WEDNESDAY :THURSDAY :FRIDAY :SATURDAY :SUNDAY])
+
 (def columns [:workdays.monday
+              :workdays.monday_info
               :workdays.tuesday
+              :workdays.tuesday_info
               :workdays.wednesday
+              :workdays.wednesday_info
               :workdays.thursday
+              :workdays.thursday_info
               :workdays.friday
+              :workdays.friday_info
               :workdays.saturday
+              :workdays.saturday_info
               :workdays.sunday
+              :workdays.sunday_info
               :workdays.max_visits])
 
 (defn base-sqlmap [pool-id]
@@ -25,16 +35,24 @@
       (as-> sqlmap (apply sql/select sqlmap columns))
       (sql/join :workdays [:= :workdays.inventory_pool_id :inventory_pools.id])))
 
-(defn get [tx pool-id]
+(defn transform [w]
+  (map (fn [day]
+         (let [day-lc (-> day name string/lower-case)]
+           (hash-map :day (string/upper-case day-lc)
+                     :open ((keyword day-lc) w)
+                     :info ((keyword (str day-lc "_info")) w))))
+       DAYS))
+
+(defn get-multiple [{{tx :tx} :request} _ {pool-id :id}]
   (-> pool-id
       base-sqlmap
       sql-format
       (->> (jdbc-query tx))
-      first))
+      first
+      transform))
 
 (comment
-  (let [weekdays [:monday :tuesday :wednesday :thursday :friday :saturday :sunday]]
-    (-> (get scratch/tx scratch/pool-id)
-        (select-keys weekdays)
-        (seq)))
-  (base-sqlmap scratch/pool-id))
+  (require '[leihs.core.db :as db])
+  (let [pool-id #uuid "8bd16d45-056d-5590-bc7f-12849f034351"
+        tx (db/get-ds)]
+    (get-multiple {:tx tx} nil {:id pool-id})))

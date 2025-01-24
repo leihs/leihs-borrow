@@ -18,6 +18,7 @@
          :RentalStateEnum {:values [:OPEN :CLOSED]}
          :RefinedRentalStateEnum {:values [:IN_APPROVAL :TO_PICKUP :TO_RETURN :TBD :OVERDUE :REJECTED :CANCELED :RETURNED :EXPIRED]}
          :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED :CANCELED]}
+         :WorkdayEnum {:values [:MONDAY :TUESDAY :WEDNESDAY :THURSDAY :FRIDAY :SATURDAY :SUNDAY]}
          :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
          :endDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED]}}
 
@@ -58,7 +59,17 @@
                                     :maximumReservationDuration {:type Int}
                                     :reservationAdvanceDays {:type Int}
                                     :hasTemplates {:type Boolean
-                                                   :resolve :inventory-pool-has-templates}}}
+                                                   :resolve :inventory-pool-has-templates}
+                                    :holidays {:type (list :Holiday)
+                                               :resolve :holidays}
+                                    :workdays {:type (list :Workday)
+                                               :resolve :workdays}}}
+           :Holiday {:fields {:startDate {:type :Date}
+                              :endDate {:type :Date}
+                              :name {:type (non-null String)}}}
+           :Workday {:fields {:day {:type (non-null :WorkdayEnum)}
+                              :open {:type (non-null Boolean)}
+                              :info {:type String}}}
            :Suspension {:fields {:id {:type (non-null :UUID)}
                                  :inventoryPool {:type (non-null :InventoryPool)
                                                  :resolve :inventory-pool}

@@ -1,5 +1,7 @@
 (ns leihs.borrow.features.pools.show
   (:require ["autolinker" :as autolinker]
+            ["date-fns" :as df]
+            [clojure.string :as string]
             [reagent.core :as r]
             [re-frame.core :as rf]
             [day8.re-frame.tracing :refer-macros [fn-traced]]
@@ -14,7 +16,7 @@
                                                subscribe
                                                dispatch]]
             [leihs.borrow.lib.routing :as routing]
-            [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
+            [leihs.borrow.lib.translate :refer [t set-default-translate-path] :as translate]
             [leihs.borrow.client.routes :as routes]
             ["/borrow-ui" :as UI]))
 
@@ -60,6 +62,7 @@
         pool @(subscribe [::pool pool-id])
         suspensions (filter #(= (get-in % [:inventory-pool :id]) (:id pool)) @(subscribe [::suspensions]))
         errors @(subscribe [::errors pool-id])
+        locale @(subscribe [::translate/date-locale])
         is-loading? (not (or pool errors))]
     [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header
@@ -72,11 +75,36 @@
        :else
        [:> UI/Components.Design.Stack {:space 5}
 
-        (cond
-          (-> pool :has-reservable-items not)
-          [:div.fw-bold  (t :!borrow.pools.no-reservable-models)]
-          (-> pool :maximum-reservation-duration)
-          [:div.fw-bold  (t :!borrow.pools.maximum-reservation-duration {:days (-> pool :maximum-reservation-duration)})])
+        [:> UI/Components.Design.Section {:collapsible false :title (t :reservation-constraint.title) :class "fw-bold"}
+         (cond
+           (-> pool :has-reservable-items not)
+           [:div.fw-bold (t :!borrow.pools.no-reservable-models)]
+           (-> pool :maximum-reservation-duration)
+           [:div.fw-bold (t :!borrow.pools.maximum-reservation-duration {:days (-> pool :maximum-reservation-duration)})])]
+
+        [:div.row
+         [:div.col
+          [:> UI/Components.Design.Section {:id "opening-times"
+                                            :collapsible false
+                                            :title (t :opening-times.title)
+                                            :class "fw-bold"}
+           (doall (for [wday (:workdays pool)]
+                    [:div.row
+                     [:div.col (-> wday :day string/lower-case string/capitalize)]
+                     [:div.col (if (:open wday) (:info wday) (t :closed))]]))]]
+
+         [:div.col
+          [:> UI/Components.Design.Section {:id "holidays"
+                                            :collapsible false
+                                            :title (t :holidays.title)
+                                            :class "fw-bold"}
+           (doall (for [holiday (:holidays pool)]
+                    [:div.row
+                     [:div.col (:name holiday)]
+                     [:div.col
+                      (-> holiday :start-date df/parseISO (df/format "P" #js {:locale locale}))
+                      " - "
+                      (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))]]))]]]
 
         (when-let [email (:email pool)]
           [:> UI/Components.Design.Section {:collapsible false :title (t :email) :class "fw-bold"}
