@@ -73,9 +73,8 @@
        is-loading? [ui/loading]
        errors [ui/error-view errors]
        :else
-       [:> UI/Components.Design.Stack {:space 5}
-
-        [:> UI/Components.Design.Section {:collapsible false :title (t :reservation-constraint.title) :class "fw-bold"}
+       [:<>
+        [:> UI/Components.Design.Section {:collapsible false :title (t :reservation-constraint.title) :class "fw-bold mb-5"}
          (cond
            (-> pool :has-reservable-items not)
            [:div.fw-bold (t :!borrow.pools.no-reservable-models)]
@@ -83,7 +82,7 @@
            [:div.fw-bold (t :!borrow.pools.maximum-reservation-duration {:days (-> pool :maximum-reservation-duration)})])]
 
         [:div.row
-         [:div.col
+         [:div.col-12.col-md.mb-5
           [:> UI/Components.Design.Section {:id "opening-times"
                                             :collapsible false
                                             :title (t :opening-times.title)
@@ -93,7 +92,7 @@
                      [:div.col (-> wday :day string/lower-case string/capitalize)]
                      [:div.col (if (:open wday) (:info wday) (t :closed))]]))]]
 
-         [:div.col
+         [:div.col-12.col-md.mb-5
           [:> UI/Components.Design.Section {:id "holidays"
                                             :collapsible false
                                             :title (t :holidays.title)
@@ -106,11 +105,12 @@
                       " - "
                       (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))]]))]]]
 
-        (when-let [email (:email pool)]
-          [:> UI/Components.Design.Section {:collapsible false :title (t :email) :class "fw-bold"}
-           [:a.decorate-links {:href (str "mailto:" email)}
-            email]])
+        [:> UI/Components.Design.Stack {:space 5}
+         (when-let [email (:email pool)]
+           [:> UI/Components.Design.Section {:collapsible false :title (t :email) :class "fw-bold"}
+            [:a.decorate-links {:href (str "mailto:" email)}
+             email]])
 
-        (when-let [description (some-> pool :description autolinker/link)]
-          [:> UI/Components.Design.Section {:collapsible false :title (t :description)}
-           [:div {:class "preserve-linebreaks text-break fw-bold decorate-links" :dangerouslySetInnerHTML {:__html description}}]])])]))
+         (when-let [description (some-> pool :description autolinker/link)]
+           [:> UI/Components.Design.Section {:collapsible false :title (t :description)}
+            [:div {:class "preserve-linebreaks text-break fw-bold decorate-links" :dangerouslySetInnerHTML {:__html description}}]])]])]))
