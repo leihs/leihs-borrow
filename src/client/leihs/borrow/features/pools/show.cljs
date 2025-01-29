@@ -88,8 +88,10 @@
                                             :title (t :opening-times.title)
                                             :class "fw-bold"}
            (doall (for [wday (:workdays pool)]
+                    ^{:key (:day wday)}
                     [:div.row
-                     [:div.col (-> wday :day string/lower-case string/capitalize)]
+                     [:div.col
+                      (t (keyword (str "!borrow.terms.weekdays." (-> wday :day string/lower-case))))]
                      [:div.col (if (:open wday) (:info wday) (t :closed))]]))]]
 
          [:div.col-12.col-md.mb-5
@@ -97,8 +99,9 @@
                                             :collapsible false
                                             :title (t :holidays.title)
                                             :class "fw-bold"}
-           (doall (for [holiday (:holidays pool)]
-                    [:div.row
+           (doall (for [[index holiday] (map-indexed (fn [index item] [index item]) (:holidays pool))]
+                    ^{:key index}
+                    [:div.row {:key index}
                      [:div.col (:name holiday)]
                      [:div.col
                       (-> holiday :start-date df/parseISO (df/format "P" #js {:locale locale}))

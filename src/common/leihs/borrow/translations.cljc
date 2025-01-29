@@ -11,7 +11,15 @@
             :contracts {:de-CH "Verträge" :en-GB "Contracts"}
 
             :delegation {:de-CH "Delegation" :en-GB "Delegation"}
-            :delegations {:de-CH "Delegationen" :en-GB "Delegations"}}
+            :delegations {:de-CH "Delegationen" :en-GB "Delegations"}
+
+            :weekdays {:monday {:de-CH "Montag" :en-GB "Monday"}
+                       :tuesday {:de-CH "Dienstag" :en-GB "Tuesday"}
+                       :wednesday {:de-CH "Mittwoch" :en-GB "Wednesday"}
+                       :thursday {:de-CH "Donnerstag" :en-GB "Thursday"}
+                       :friday {:de-CH "Freitag" :en-GB "Friday"}
+                       :saturday {:de-CH "Samstag" :en-GB "Saturday"}
+                       :sunday {:de-CH "Sonntag" :en-GB "Sunday"}}}
 
 ; --- MAIL TEMPLATES ---
     :mail-templates {:received {:subject {:en-GB "[leihs] Order received"
