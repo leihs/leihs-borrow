@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import cx from 'classnames'
-
 import PageLayout from '../components/PageLayout'
 import Stack from '../components/Stack'
 import Section from '../components/Section'
@@ -51,7 +50,7 @@ function UserProfilePage({ txt, user, delegations, contracts, onLogoutClick, ...
         </Section>
         {!!delegations.length && (
           <Section title={sectionDelegations} collapsible>
-            <ListCard.Stack>
+            <Stack>
               {delegations.map(({ id, name, responsibleName, responsibleEmail, href }) => (
                 <ListCard key={id} href={href}>
                   <ListCard.Title>
@@ -73,7 +72,7 @@ function UserProfilePage({ txt, user, delegations, contracts, onLogoutClick, ...
                   </ListCard.Body>
                 </ListCard>
               ))}
-            </ListCard.Stack>
+            </Stack>
           </Section>
         )}
         <Section title={sectionContracts} collapsible>

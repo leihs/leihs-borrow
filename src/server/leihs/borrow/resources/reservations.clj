@@ -6,6 +6,7 @@
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [clojure.set :as set]
             [clojure.spec.alpha :as spec]
+            [clojure.string :as string]
             [com.walmartlabs.lacinia :as lacinia]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.delegations :as delegations]
@@ -14,7 +15,7 @@
             [leihs.borrow.resources.models :as models]
             [leihs.borrow.resources.workdays :as workdays]
             [leihs.borrow.time :as time]
-            [leihs.core.core :refer [raise]]
+            [leihs.core.core :refer [raise presence]]
             [leihs.core.db :as db]
             [leihs.borrow.database.helpers :as database]
             [leihs.core.settings :refer [settings!]]
@@ -32,7 +33,7 @@
                       ::end_date]))
 
 (def columns
-  [:* [[:coalesce :returned_date :end_date] :actual_end_date]])
+  [:reservations.* [[:coalesce :returned_date :end_date] :actual_end_date]])
 
 (defn get-by-ids [tx ids]
   (-> (apply sql/select columns)
@@ -257,20 +258,71 @@
     (sql/where sqlmap [:= :reservations.status "draft"])
     sqlmap))
 
+(defn merge-search-term [sqlmap search-term]
+  (let [terms (-> search-term
+                  (string/split #"\s+")
+                  (->> (map presence)
+                       (filter identity)
+                       (map #(str "%" % "%"))))
+        field [:concat_ws
+               " "
+               :items.id :items.inventory_code :items.serial_number
+               :models.id :models.product :models.version :models.manufacturer
+               :options.id :options.product :options.version :options.manufacturer :options.inventory_code
+               :customer_orders.title :customer_orders.purpose
+               :contracts.purpose :contracts.note :contracts.compact_id]
+        where-clauses (map #(vector (keyword "~~*") field %) terms)]
+    (sql/where sqlmap (cons :and where-clauses))))
+
 (defn get-multiple
   [{{tx :tx} :request
     container ::lacinia/container-type-name
     target-user-id ::target-user/id
     :as context}
-   {:keys [order-by]}
+   {:keys [meta-state from until pool-ids search-term order-by]}
    {:keys [user-id] :as value}]
   (-> (base-sqlmap tx (or user-id target-user-id))
+      (cond-> search-term
+        (->
+         (sql/left-join :items [:= :reservations.item_id :items.id])
+         (sql/left-join :models [:= :reservations.model_id :models.id])
+         (sql/left-join :options [:= :reservations.option_id :options.id])
+         (sql/left-join :orders [:= :reservations.order_id :orders.id])
+         (sql/left-join :customer_orders [:= :orders.customer_order_id :customer_orders.id])
+         (sql/left-join :contracts [:= :reservations.contract_id :contracts.id])))
       (merge-where-according-to-container container value)
-      (cond-> (seq order-by)
+      (cond->
+       (= meta-state :CURRENT_LENDING)
+        (sql/where [:or
+                    [:= :reservations.status "signed"]
+                    [:and [:= :reservations.status "approved"] [:<= [:raw "CURRENT_DATE"] :reservations.end_date]]])
+
+        (or from until)
+        (sql/where
+         [:raw
+          (format
+           "(reservations.start_date, reservations.end_date) OVERLAPS (%s, %s)"
+           (or (some->> from (format "'%s'")) "'1900-01-01'::date")
+           (or (some->> until (format "'%s'")) "'9999-12-31'::date"))])
+
+        (seq pool-ids)
+        (sql/where [:in :reservations.inventory_pool_id pool-ids])
+
+        search-term
+        (merge-search-term search-term)
+
+        (seq order-by)
         (as-> sqlmap
               (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :reservations))))
       sql-format
       (query tx)))
+
+(comment
+  (let [context {:request {:tx (leihs.core.db/get-ds)}
+                 ::target-user/id #uuid "23a3d006-581e-4dee-a717-4ac7d0fd7ab7"}
+        args {:search-term "beamer"}
+        container nil]
+    (->> (get-multiple context args container))))
 
 (defn delete [{{tx :tx} :request user-id ::target-user/id}
               {:keys [ids]}

@@ -6,6 +6,7 @@ import PageLayout from '../components/PageLayout'
 import ListCard from '../components/ListCard'
 import ActionButtonGroup from '../components/ActionButtonGroup'
 import { PowerOffIcon, UserIcon } from '../components/Icons'
+import Stack from '../components/Stack'
 
 export default {
   title: 'Prototypes/Layout And Navigation',
@@ -203,11 +204,11 @@ export function layoutAndNavigation() {
           placeat, inventore dolorum nemo molestias repellat consequuntur error iure architecto necessitatibus tenetur
           voluptas fugiat, totam maiores odio illo?
         </p>
-        <ListCard.Stack className="mb-4">
+        <Stack divided className="mb-4">
           <ListCard>
             <ListCard.Title>List card</ListCard.Title>
           </ListCard>
-        </ListCard.Stack>
+        </Stack>
         <ActionButtonGroup className="mb-4">
           <button className="btn btn-primary">Button</button>
           <button className="btn btn-secondary">Button</button>

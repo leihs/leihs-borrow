@@ -72,7 +72,7 @@
 
         [:> UI/Components.Design.Section {:title (t :available-pools) :collapsible false}
          (if (seq pools)
-           [:> UI/Components.Design.ListCard.Stack
+           [:> UI/Components.Design.Stack {:divided true}
             (doall
              (for [pool pools]
                [:<> {:key (:id pool)}

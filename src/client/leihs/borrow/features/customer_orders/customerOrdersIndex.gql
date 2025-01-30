@@ -1,7 +1,6 @@
-query myRentals(
+query customerOrdersIndex(
   $userId: UUID
   $searchTerm: NonEmptyText
-  $refinedRentalState: RefinedRentalStateEnum
   $poolIds: [UUID!]
   $from: Date
   $until: Date
@@ -9,7 +8,6 @@ query myRentals(
   openRentals: rentals(
     userId: $userId
     rentalState: OPEN
-    refinedRentalState: $refinedRentalState
     searchTerm: $searchTerm
     poolIds: $poolIds
     from: $from
@@ -21,7 +19,6 @@ query myRentals(
   closedRentals: rentals(
     userId: $userId
     rentalState: CLOSED
-    refinedRentalState: $refinedRentalState
     searchTerm: $searchTerm
     poolIds: $poolIds
     from: $from
@@ -29,6 +26,16 @@ query myRentals(
     orderBy: [{ attribute: CREATED_AT, direction: DESC }]
   ) {
     ...rentalConProps
+  }
+  currentLendings: reservations(
+    userId: $userId
+    metaState: CURRENT_LENDING
+    searchTerm: $searchTerm
+    poolIds: $poolIds
+    from: $from
+    until: $until
+  ) {
+    ...reservationProps
   }
 }
 
@@ -80,4 +87,39 @@ fragment rentalProps on Rental {
   createdAt
   updatedAt
 
+  reservations {
+    id
+  }
+}
+
+fragment reservationProps on Reservation {
+  id
+  status
+  startDate
+  endDate
+  actualEndDate
+  model {
+    id
+    name
+    images {
+      id
+      imageUrl
+    }
+    coverImage {
+      id
+      imageUrl
+    }
+  }
+  option {
+    id
+    name
+  }
+  quantity
+  inventoryPool {
+    id
+    name
+  }
+  item {
+    inventoryCode
+  }
 }

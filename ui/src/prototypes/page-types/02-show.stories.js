@@ -47,7 +47,7 @@ export const show = ({ onItemClick }) => {
         </Section>
 
         <Section title="Nested list" collapsible>
-          <ListCard.Stack>
+          <Stack divided>
             <ListCard onClick={onItemClick}>
               <ListCard.Title>Item 1</ListCard.Title>
               <ListCard.Body>Where when and what</ListCard.Body>
@@ -62,7 +62,7 @@ export const show = ({ onItemClick }) => {
                 <Badge>Status normal</Badge>
               </ListCard.Foot>
             </ListCard>
-          </ListCard.Stack>
+          </Stack>
         </Section>
 
         <ActionButtonGroup>

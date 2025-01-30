@@ -70,6 +70,9 @@ $primary: $blue;
 $red: #ed0909;
 $danger: $red;
 
+$orange: #ee8f02;
+$warning: $orange;
+
 // override Bootstrap grays (no blue tone)
 $gray-100: rgb(249, 249, 249);
 $gray-200: rgb(236, 236, 236);
@@ -153,3 +156,7 @@ $modal-header-padding-y: 15px;
 $modal-header-padding-x: 15px;
 // simplify animation:
 $modal-fade-transform: none;
+
+// Tabs
+$hr-border-color: $border-color;
+$hr-opacity: 1;
