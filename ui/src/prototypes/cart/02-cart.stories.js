@@ -118,7 +118,7 @@ export const cart = ({ order, onResetTimeLimitClick, onItemClick, onConfirmClick
         </Section>
 
         <Section title="Gegenstände" collapsible className="position-relative">
-          <ListCard.Stack>
+          <Stack divided>
             {order.models.map(({ reservation, model, pool }, i) => (
               <ListCard key={i} onClick={() => onItemClick(reservation.id)}>
                 <ListCard.Title>
@@ -133,7 +133,7 @@ export const cart = ({ order, onResetTimeLimitClick, onItemClick, onConfirmClick
                 </ListCard.Foot>
               </ListCard>
             ))}
-          </ListCard.Stack>
+          </Stack>
         </Section>
 
         <Section>

@@ -8,6 +8,7 @@ export const Components = {
   ModelSearchFilter: require('./features/ModelSearchFilter').default,
   ModelList: require('./features/ModelList').default,
   ModelShow: require('./features/ModelShow').default,
+  OrderSearchFilter: require('./features/OrderSearchFilter').default,
   UserProfilePage: require('./features/UserProfilePage').default,
 
   // Design components
@@ -41,6 +42,12 @@ export const Components = {
     Textarea: require('./components/Textarea').default,
     Topnav: require('./components/Topnav').default,
     Warning: require('./components/Warning').default
+  },
+
+  // react-bootstrap
+  ReactBootstrap: {
+    Tab: require('react-bootstrap/Tab').default,
+    Tabs: require('react-bootstrap/Tabs').default
   }
 }
 

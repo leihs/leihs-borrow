@@ -47,9 +47,45 @@ export const divided = () => {
       <h1>Stack</h1>
       <p className="text-muted">Example with divider and space 0 (typically used with list items):</p>
       <Stack space="0" divided>
-        <div>{lorem}</div>
-        <div>{lorem}</div>
-        <div>{lorem}</div>
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>divided=all|true</code>
+      </p>
+      <Stack space="1" divided="all">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>divided=top</code>
+      </p>
+      <Stack space="1" divided="top">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>divided=bottom</code>
+      </p>
+      <Stack space="1" divided="bottom">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>divided=between</code>
+      </p>
+      <Stack space="1" divided="between">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
       </Stack>
     </div>
   )

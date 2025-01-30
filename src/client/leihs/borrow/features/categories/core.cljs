@@ -105,7 +105,7 @@
                     :query-params model-filters))
 
 (defn sub-categories-list [ancestor-ids current-cat categories model-filters]
-  [:> UI/Components.Design.ListCard.Stack
+  [:> UI/Components.Design.Stack {:divided true}
    (doall
     (for [cat categories]
       (let [id-path (concat ancestor-ids [(:id current-cat) (:id cat)])]

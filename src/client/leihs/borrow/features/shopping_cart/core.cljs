@@ -749,7 +749,7 @@
                       (when (or is-loading? refreshing-timeout?)
                         [:div.position-absolute {:style {:right "0" :top "3px"}} [:> UI/Components.Design.Spinner]])])
              :collapsible true}
-            [:> UI/Components.Design.ListCard.Stack
+            [:> UI/Components.Design.Stack {:divided true}
              (doall
               (for [[grouped-key res-lines] grouped-reservations]
                 [:<> {:key grouped-key}
