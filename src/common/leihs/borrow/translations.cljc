@@ -212,14 +212,14 @@
 
              :availability-modal {:title {:en-GB "Filter Availability"
                                           :de-CH "Filter Verfügbarkeit"}
-                                  :time-span {:title {:en-GB "Timespan"
-                                                      :de-CH "Zeitraum"}
-                                              :undefined {:en-GB "undefined"
-                                                          :de-CH "Unbestimmt"}
-                                              :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set."
-                                                                                     :de-CH "Start- und Enddatum müssen gesetzt sein."}
-                                                       :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date."
-                                                                                             :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
+                                  :timespan {:title {:en-GB "Timespan"
+                                                     :de-CH "Zeitraum"}
+                                             :undefined {:en-GB "undefined"
+                                                         :de-CH "Unbestimmt"}
+                                             :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set."
+                                                                                    :de-CH "Start- und Enddatum müssen gesetzt sein."}
+                                                      :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date."
+                                                                                            :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
                                   :from {:en-GB "From"
                                          :de-CH "Von"}
                                   :until {:en-GB "Until"
@@ -338,36 +338,22 @@
 
     :rentals {:title {:en-GB "Orders"
                       :de-CH "Bestellungen"}
-              :section-title-open-rentals {:en-GB "Open"
-                                           :de-CH "Offen"}
-              :section-title-closed-rentals {:en-GB "Closed"
-                                             :de-CH "Abgeschlossen"}
+              :section-title-open-rentals {:en-GB "Active orders"
+                                           :de-CH "Aktive Bestellungen"}
+              :section-title-closed-rentals {:en-GB "Closed orders"
+                                             :de-CH "Abgeschlossene Bestellungen"}
               :no-orders-found {:en-GB "No orders found"
                                 :de-CH "Keine Bestellungen gefunden"}
               :no-orders-yet {:en-GB "No orders yet"
                               :de-CH "Noch keine Bestellungen vorhanden"}
-              :filter  {:show-filters {:en-GB "Show search/filter"
-                                       :de-CH "Zeige Suche/Filter"}
-                        :search {:title {:en-GB "Search term"
-                                         :de-CH "Stichwort"}
-                                 :placeholder {:en-GB "Enter search term"
-                                               :de-CH "Suchbegriff eingeben"}}
-                        :for {:en-GB "For"
-                              :de-CH "Für"}
-                        :time-span {:title {:en-GB "Timespan"
-                                            :de-CH "Zeitraum"}
-                                    :undefined {:en-GB "undefined"
-                                                :de-CH "unbestimmt"}
-                                    :errors {:start-date-equal-or-before-end-date
-                                             {:en-GB "Start date must be equal to or before end date."
-                                              :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
-                        :pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
-                                :all {:en-GB "All" :de-CH "Alle"}
+              :filter  {:pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
+                                :all {:en-GB "All inventory pools" :de-CH "Alle Inventarparks"}
                                 :invalid-option {:en-GB "Invalid selection" :de-CH "Ungültige Auswahl"}
                                 :invalid-option-info {:en-GB "The pre-selected inventory pool is not available for the current profile"
                                                       :de-CH "Der vorher gewählte Inventarpark ist für das aktuelle Profil nicht verfügbar"}}
-                        :states {:title {:en-GB "Status" :de-CH "Status"}
-                                 :all {:en-GB "All" :de-CH "Alle"}
+
+                        :status {:title {:en-GB "Status" :de-CH "Status"}
+                                 :all {:en-GB "Any status" :de-CH "Beliebiger Status"}
                                  :state-filter-label {:IN_APPROVAL {:de-CH "In Genehmigung" :en-GB "In approval"}
                                                       :TO_PICKUP {:de-CH "Abholung" :en-GB "Pickup"}
                                                       :TO_RETURN {:de-CH "Rückgabe" :en-GB "Return"}
@@ -376,13 +362,28 @@
                                                       :CANCELED {:de-CH "Storniert" :en-GB "Canceled"}
                                                       :EXPIRED {:de-CH "Abgelaufen" :en-GB "Expired"}
                                                       :OVERDUE {:de-CH "Rückgabe überfällig" :en-GB "Overdue"}}}
-                        :from {:en-GB "From"
-                               :de-CH "Von"}
-                        :until {:en-GB "Until"
-                                :de-CH "Bis"}
-                        :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
-                        :apply {:en-GB "Apply" :de-CH "Anwenden"}
-                        :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
+
+                        :timespan-modal {:title {:en-GB "Timespan" :de-CH "Zeitraum"}
+                                         :from {:en-GB "From" :de-CH "Von"}
+                                         :until {:en-GB "Until" :de-CH "Bis"}
+                                         :undefined {:en-GB "undefined" :de-CH "unbestimmt"}
+                                         :errors {:start-date-equal-or-before-end-date
+                                                  {:en-GB "Start date must be equal to or before end date."
+                                                   :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}
+                                         :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
+                                         :apply {:en-GB "Apply" :de-CH "Anwenden"}}
+
+                        ;; Note: the JS text resolver does not support nesting
+                        :js-component {:search-button-label {:en-GB "Search" :de-CH "Suchen"}
+                                       :search-input-placeholder {:en-GB "Search term" :de-CH "Suchbegriff"}
+                                       :filter {:en-GB "Filter" :de-CH "Filter"}
+                                       :status-select-label {:en-GB "Status" :de-CH "Status"}
+                                       :pool-select-label {:en-GB "Inventory pools" :de-CH "Inventarparks"}
+                                       :timespan-button-label {:en-GB "Timespan from/until" :de-CH "Zeitraum von/bis"}
+                                       :timespan-label {:en-GB "{startDate, date, narrow} – {endDate, date, narrow}" :de-CH "{startDate, date, narrow} – {endDate, date, narrow}"}
+                                       :timespan-label-from {:en-GB "{startDate, date, narrow} – " :de-CH "{startDate, date, narrow} – "}
+                                       :timespan-label-until {:en-GB " – {endDate, date, narrow}" :de-CH " – {endDate, date, narrow}"}
+                                       :timespan-unrestricted {:en-GB "Timespan from/until" :de-CH "Zeitraum von/bis"}}}
 
               :fulfillment-state-label {; states flowchart: <https://flowchart.fun/c#AoexBsHkCcBMFNoCgAEKCWBnFmCuAjAW3QBcT5YV8BPFAY10xJEMQC4UAKASQDkB9AILBgAJUgA1QQBkAlEiQARdNHh0So+JkQA3AIYl0IAHaoM2OqoMUqtQnuN6A5uy4AVSP2DcAwgGl+AFVgeQBtPiERcSlpAF0UCOExSRkzFxJsPQAHLOgQHQoOTg8vXwDg+TQsFFUAKzVyWCLRAFEAKRafNxbFSvN6Bzp4cEKuH0FeHxbpHrCS738g4Hj5sqWzaqz0OgBrG1wsooAhSFFxAHVZpFCTs8hLxXjbi56N7FUSXGhjUc5Wt0Col4V1C-0BwMeKDBQNeoPanW6kNaHS6sPGk2mPXi6KmM0UQA>
                                         :IN_APPROVAL {:de-CH "Genehmigung" :en-GB "Approval"}
@@ -528,7 +529,7 @@
                                                                  :en-GB "{count, plural,
                                                          =1 {Please note: One option can only be added by the lending desk.}
                                                          other {Please note: # options can only be added by the lending desk.}}"}
-                                          :time-span {:de-CH "Zeitraum" :en-GB "Time span"}
+                                          :timespan {:de-CH "Zeitraum" :en-GB "Time span"}
                                           :undefined {:de-CH "Unbestimmt" :en-GB "undefined"}
                                           :from {:de-CH "Von" :en-GB "From"}
                                           :until {:de-CH "Bis" :en-GB "Until"}
@@ -675,7 +676,7 @@
                                                          other {# items will be added to the cart.}}"}
                                  :error-no-items {:de-CH "Keine Gegenstände gefunden"
                                                   :en-GB "No items found"}
-                                 :time-span {:de-CH "Zeitraum" :en-GB "Time span"}
+                                 :timespan {:de-CH "Zeitraum" :en-GB "Time span"}
                                  :undefined {:de-CH "Unbestimmt" :en-GB "undefined"}
                                  :from {:de-CH "Von" :en-GB "From"}
                                  :until {:de-CH "Bis" :en-GB "Until"}

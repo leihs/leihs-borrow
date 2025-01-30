@@ -1,7 +1,6 @@
 import React from 'react'
 import cx from 'classnames'
 import { CardArrowIcon } from './Icons'
-import Stack from './Stack'
 
 const BASE_CLASS = 'ui-list-card'
 
@@ -32,14 +31,6 @@ export default function ListCard({ onClick, href, img, children, className, oneL
         </a>
       )}
     </div>
-  )
-}
-
-ListCard.Stack = function ListCardStack({ children, className, ...restProps }) {
-  return (
-    <Stack divided space="0" className={className} {...restProps}>
-      {children}
-    </Stack>
   )
 }
 

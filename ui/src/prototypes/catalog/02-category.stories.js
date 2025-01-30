@@ -22,13 +22,13 @@ export const category = () => {
       <Stack space="4">
         <Section title="Unterkategorien" collapsible initialCollapsed>
           <div className="mb-5">
-            <ListCard.Stack>
+            <Stack divided>
               {subCategoryListProps.list.map(({ id, href, caption }) => (
                 <ListCard key={id} href={href} oneLine>
                   <ListCard.Title>{caption}</ListCard.Title>
                 </ListCard>
               ))}
-            </ListCard.Stack>
+            </Stack>
           </div>
         </Section>
         <Section title="Gegenstände" collapsible>

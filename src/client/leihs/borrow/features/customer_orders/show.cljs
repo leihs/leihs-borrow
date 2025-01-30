@@ -19,7 +19,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.translate :as translate :refer [t set-default-translate-path]]
    [leihs.borrow.features.customer-orders.core :as rentals]
-   [leihs.borrow.features.customer-orders.index :refer [status-summary]]
+   [leihs.borrow.features.customer-orders.status-summary :refer [status-summary]]
    [leihs.borrow.features.customer-orders.repeat-order :as repeat-order]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.core.core :refer [dissoc-in]]
@@ -155,7 +155,7 @@
         (t (str :reservation-status-label "/" refined-status) {:endDate actual-end-date})]]]]))
 
 (defn ui-items-list [reservations]
-  [:> UI/Components.Design.ListCard.Stack
+  [:> UI/Components.Design.Stack {:divided true}
    (doall
     (for [item reservations]
       [:<> {:key (:id item)}

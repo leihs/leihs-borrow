@@ -55,7 +55,7 @@
 
    [:> UI/Components.Design.Stack {:space 4}
     [:> UI/Components.Design.Section {:title "Dev nav"}
-     [:> UI/Components.Design.ListCard.Stack
+     [:> UI/Components.Design.Stack {:divided true}
       [:> UI/Components.Design.ListCard {:class "fw-bold"
                                          :href (routing/path-for ::routes/categories-show
                                                                  :categories-path "09ac0343-0d83-5c7f-b112-d5921e9479fd")

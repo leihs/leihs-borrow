@@ -44,7 +44,7 @@ export const index = ({ onTriggerAvailability, onSubmitTerm, onItemClick }) => {
           />
         </Section>
         <Section title="Section with list results" collapsible>
-          <ListCard.Stack>
+          <Stack divided>
             <ListCard onClick={onItemClick}>
               <ListCard.Title>Audio</ListCard.Title>
               <ListCard.Body>20 articles</ListCard.Body>
@@ -53,7 +53,7 @@ export const index = ({ onTriggerAvailability, onSubmitTerm, onItemClick }) => {
               <ListCard.Title>Foto</ListCard.Title>
               <ListCard.Body>16 articles</ListCard.Body>
             </ListCard>
-          </ListCard.Stack>
+          </Stack>
         </Section>
       </Stack>
     </PageLayoutMock>

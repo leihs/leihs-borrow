@@ -1,24 +1,15 @@
 (ns leihs.borrow.features.customer-orders.filter-modal
   (:require
-   [clojure.string :as string]
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [reagent.core :as r]
-   [re-frame.core :as rf]
-   [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                      reg-event-db
-                                      reg-sub
-                                      reg-fx
-                                      subscribe
-                                      dispatch]]
-   [leihs.borrow.lib.translate :as translate
-    :refer [t set-default-translate-path with-translate-path]]
-   [leihs.borrow.lib.helpers :refer [log spy]]
-   [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton]]
-   [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.core.core :refer [remove-nils presence]]
+   ["/borrow-ui" :as UI]
    ["date-fns" :as date-fns]
-   ["/borrow-ui" :as UI]))
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.borrow.lib.form-helpers :refer [UiInputWithClearButton]]
+   [leihs.borrow.lib.re-frame :refer [reg-event-db reg-sub subscribe]]
+   [leihs.borrow.lib.translate :as translate
+    :refer [t with-translate-path]]
+   [leihs.core.core :refer [presence remove-nils]]
+   [reagent.core :as r]))
 
 (reg-event-db ::save-filter-options
               (fn-traced [db [_ query-params]]
@@ -109,9 +100,9 @@
                          [:option {:value state-name :key state-name} (t (str :states.state-filter-label "/" state-name))]))]]
 
               [:> UI/Components.Design.Stack {:space 4}
-               [:> UI/Components.Design.Section {:title (t :time-span.title)}
+               [:> UI/Components.Design.Section {:title (t :timespan.title)}
                 [:fieldset
-                 [:legend.visually-hidden (t :time-span.title)]
+                 [:legend.visually-hidden (t :timespan.title)]
                  [:div.d-flex.flex-column.gap-3
                   [:> UI/Components.Design.DatePicker
                    {:locale date-locale
@@ -119,7 +110,7 @@
                     :id "start-date"
                     :value @start-date
                     :on-change (fn [e] (reset! start-date (-> e .-target .-value)))
-                    :placeholder (t :time-span.undefined)
+                    :placeholder (t :timespan.undefined)
                     :label (r/as-element [:label {:html-for "start-date"} (t :from)])}]
                   [:> UI/Components.Design.DatePicker
                    {:locale date-locale
@@ -127,11 +118,11 @@
                     :id "end-date"
                     :value @end-date
                     :on-change (fn [e] (reset! end-date (-> e .-target .-value)))
-                    :placeholder (t :time-span.undefined)
+                    :placeholder (t :timespan.undefined)
                     :label (r/as-element [:label {:html-for "end-date"} (t :until)])}]
                   (when-not (start-date-equal-or-before-end-date?)
                     [:> UI/Components.Design.Warning
-                     (t :time-span.errors.start-date-equal-or-before-end-date)])]]]]
+                     (t :timespan.errors.start-date-equal-or-before-end-date)])]]]]
 
               [:> UI/Components.Design.Section {:title (t :pools.title)}
                [:label.visually-hidden {:html-for "pool-id"} (t :pools.title)]

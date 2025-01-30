@@ -120,6 +120,10 @@ export const modelSearchFilterProps = {
       'de-CH': 'Filter',
       'en-GB': 'Filter'
     },
+    'pool-select-label': {
+      'de-CH': 'Inventarparks',
+      'en-GB': 'Inventory pools'
+    },
     'availability-label': {
       'de-CH': '{quantity} Stück verfügbar {startDate, date, narrow} – {endDate, date, narrow}',
       'en-GB':
@@ -134,6 +138,76 @@ export const modelSearchFilterProps = {
       'en-GB': 'Availability from/until'
     }
   }
+}
+
+export const orderSearchFilterProps = {
+  availableFilters: {
+    pools: [
+      { id: '', label: 'Alle Inventarparks' },
+      { id: 1, label: 'Pool A' },
+      { id: 2, label: 'Pool B' }
+    ],
+    status: [
+      { id: '', label: 'Beliebiger Status' },
+      { id: 'IN_APPROVAL', label: 'In Genehmigung' },
+      { id: 'REJECTED', label: 'Abgelehnt' },
+      { id: 'CANCELED', label: 'Storniert' },
+      { id: 'EXPIRED', label: 'Abgelaufen' },
+      { id: 'TO_PICKUP', label: 'Abholung' },
+      { id: 'TO_RETURN', label: 'Rückgabe' },
+      { id: 'OVERDUE', label: 'Rückgabe überfällig' },
+      { id: 'RETURNED', label: 'Zurückgebracht' }
+    ]
+  },
+  currentFilters: {},
+  locale: 'de-CH',
+  txt: {
+    'search-button-label': {
+      'de-CH': 'Suchen',
+      'en-GB': 'Search'
+    },
+    'search-input-placeholder': {
+      'de-CH': 'Suchbegriff',
+      'en-GB': 'Search term'
+    },
+    filter: {
+      'de-CH': 'Filter',
+      'en-GB': 'Filter'
+    },
+    'pool-select-label': {
+      'de-CH': 'Inventarparks',
+      'en-GB': 'Inventory pools'
+    },
+    'status-select-label': {
+      'de-CH': 'Status',
+      'en-GB': 'Status'
+    },
+    'timespan-button-label': {
+      'de-CH': 'Zeitraum von/bis',
+      'en-GB': 'Timespan from/until'
+    },
+    'timespan-label': {
+      'de-CH': '{startDate, date, narrow} – {endDate, date, narrow}',
+      'en-GB': '{startDate, date, narrow} – {endDate, date, narrow}'
+    },
+    'timespan-label-from': {
+      'de-CH': '{startDate, date, narrow} – ',
+      'en-GB': '{startDate, date, narrow} – '
+    },
+    'timespan-label-until': {
+      'de-CH': ' – {endDate, date, narrow}',
+      'en-GB': ' – {endDate, date, narrow}'
+    },
+    'timespan-unrestricted': {
+      'de-CH': 'Zeitraum von/bis',
+      'en-GB': 'Timespan from/until'
+    }
+  },
+  onSubmitTerm: () => {},
+  onTriggerTimespan: () => {},
+  onClearFilter: () => {},
+  onChangePool: () => {},
+  onChangeStatus: () => {}
 }
 
 export function getOrderPanelMockData() {

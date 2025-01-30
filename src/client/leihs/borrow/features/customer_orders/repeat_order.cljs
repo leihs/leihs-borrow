@@ -141,9 +141,9 @@
                     (t :dialog.warning-some-options {:count options-quantity})])]
                 [:> UI/Components.Design.Section {:title (t :dialog.order-for)}
                  [:div.fw-bold current-profile-name]]
-                [:> UI/Components.Design.Section {:title (t :dialog.time-span)}
+                [:> UI/Components.Design.Section {:title (t :dialog.timespan)}
                  [:fieldset
-                  [:legend.visually-hidden (t :dialog.time-span)]
+                  [:legend.visually-hidden (t :dialog.timespan)]
                   [:div.d-flex.flex-column.gap-3
                    [UiDateRangePicker
                     {:locale date-locale
