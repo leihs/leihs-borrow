@@ -49,6 +49,7 @@
                                            :resolve :model}
                                    :quantity {:type (non-null Int)}}}
            :InventoryPool {:fields {:id {:type (non-null :UUID)}
+                                    :contact {:type String}
                                     :description {:type String}
                                     :isActive {:type (non-null Boolean)}
                                     :email {:type (non-null String)}

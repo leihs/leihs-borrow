@@ -1,6 +1,7 @@
 query getPool($id: UUID!) {
   inventoryPool(id: $id) {
     id
+    contact
     description
     email
     name

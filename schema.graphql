@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Fri Oct 18 2024 11:49:08 GMT+0200 (Central European Summer Time)
+# timestamp: Thu Jan 30 2025 12:47:57 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -125,6 +125,12 @@ interface Fulfillment {
   toFulfillQuantity: Int!
 }
 
+type Holiday {
+  endDate: Date
+  name: String!
+  startDate: Date
+}
+
 type Image {
   contentType: String!
   filename: String!
@@ -135,16 +141,19 @@ type Image {
 }
 
 type InventoryPool {
+  contact: String
   description: String
   email: String!
   hasReservableItems: Boolean!
   hasTemplates: Boolean
+  holidays: [Holiday]
   id: UUID!
   isActive: Boolean!
-  maximumOrderDurationInDays: Int
+  maximumReservationDuration: Int
   name: String!
   reservationAdvanceDays: Int
   shortname: String!
+  workdays: [Workday]
 }
 
 enum InventoryPoolsOrderByAttributeEnum {
@@ -598,4 +607,20 @@ enum VisitsOrderByAttributeEnum {
 input VisitsOrderByInput {
   attribute: VisitsOrderByAttributeEnum!
   direction: OrderByDirectionEnum!
+}
+
+type Workday {
+  day: WorkdayEnum!
+  info: String
+  open: Boolean!
+}
+
+enum WorkdayEnum {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
 }

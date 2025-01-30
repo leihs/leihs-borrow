@@ -318,6 +318,8 @@
                         :de-CH "E-Mail"}
                 :description {:en-GB "Description"
                               :de-CH "Beschreibung"}
+                :contact {:title {:en-GB "Contact"
+                                  :de-CH "Kontakt"}}
                 :opening-times {:title {:en-GB "Opening times"
                                         :de-CH "Öffnungszeiten"}}
                 :reservation-constraint {:title {:en-GB "Reservation constraint"

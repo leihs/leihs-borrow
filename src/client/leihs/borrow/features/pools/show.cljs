@@ -74,12 +74,22 @@
        errors [ui/error-view errors]
        :else
        [:<>
-        [:> UI/Components.Design.Section {:collapsible false :title (t :reservation-constraint.title) :class "fw-bold mb-5"}
-         (cond
-           (-> pool :has-reservable-items not)
-           [:div.fw-bold (t :!borrow.pools.no-reservable-models)]
-           (-> pool :maximum-reservation-duration)
-           [:div.fw-bold (t :!borrow.pools.maximum-reservation-duration {:days (-> pool :maximum-reservation-duration)})])]
+        [:div.row
+         [:div.col-12.col-md.mb-5
+          [:> UI/Components.Design.Section {:collapsible false
+                                            :title (t :contact.title)
+                                            :class "preserve-linebreaks text-break fw-bold decorate-links"}
+           (:contact pool)]]
+         [:div.col-12.col-md.mb-5
+          [:> UI/Components.Design.Section {:collapsible false
+                                            :title (t :reservation-constraint.title)
+                                            :class "fw-bold"}
+           (cond
+             (-> pool :has-reservable-items not)
+             [:div.fw-bold (t :!borrow.pools.no-reservable-models)]
+             (-> pool :maximum-reservation-duration)
+             [:div.fw-bold (t :!borrow.pools.maximum-reservation-duration
+                              {:days (-> pool :maximum-reservation-duration)})])]]]
 
         [:div.row
          [:div.col-12.col-md.mb-5

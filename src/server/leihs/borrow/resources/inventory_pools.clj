@@ -17,6 +17,7 @@
 (def select-fields
   [:inventory_pools.id
    :inventory_pools.name
+   :inventory_pools.contact
    :inventory_pools.description
    :inventory_pools.default_contract_note
    :inventory_pools.shortname
