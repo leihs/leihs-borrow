@@ -1,7 +1,6 @@
 import React from 'react'
 import { action } from '@storybook/addon-actions'
 import DownloadLink from './DownloadLink'
-import Stack from './Stack'
 
 export default {
   title: 'Design Components/Content/DownloadLink',
@@ -25,13 +24,13 @@ export const downloadLink = ({ onClick }) => {
       <p className="text-muted">To ensure spacing between multiple of them</p>
       <ul className="text-muted">
         <li>
-          ...wrap a <code>{'<Stack space=3>'}</code> around all
+          ...wrap a <code>{'<div className="d-grid gap-3">'}</code> around all
         </li>
         <li>
           ...or a <code>{'<p>'}</code> around each
         </li>
       </ul>
-      <Stack space="3">
+      <div className="d-grid gap-3">
         <DownloadLink onClick={handleClick} href="some/route">
           QX1204USB_Q1204USB_QSG.pdf
         </DownloadLink>
@@ -41,7 +40,7 @@ export const downloadLink = ({ onClick }) => {
         <DownloadLink onClick={handleClick} href="some/route">
           QX1204USB_Q1204USB_Specs.pdf
         </DownloadLink>
-      </Stack>
+      </div>
     </div>
   )
 }
@@ -61,14 +60,14 @@ export const wrap = ({ onClick }) => {
       <h1>DownloadLink</h1>
       <p className="text-muted">Indented wrapping when the link text is too large:</p>
       <div className="p-3 shadow" style={{ width: '14rem' }}>
-        <Stack space="3">
+        <div className="d-grid gap-3">
           <DownloadLink onClick={handleClick} href="some/route">
             <span className="text-break">QX1204USB_Q1204USB_QSG.pdf</span>
           </DownloadLink>
           <DownloadLink onClick={handleClick} href="some/route">
             <span className="text-break">Download the specification</span>
           </DownloadLink>
-        </Stack>
+        </div>
       </div>
     </div>
   )

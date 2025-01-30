@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import cx from 'classnames'
 import ModalDialog from '../../components/ModalDialog'
-import Stack from '../../components/Stack'
 import Section from '../../components/Section'
 import LabelInside from '../../components/LabelInside'
 import InputWithClearButton from '../../components/InputWithClearButton'
@@ -38,7 +37,7 @@ export const form = ({ onSubmit }) => {
           autoComplete="off"
           id="the-form"
         >
-          <Stack space="4">
+          <div className="d-grid gap-4">
             <Section title="Search term">
               <label htmlFor="field-1" className="visually-hidden">
                 Search term
@@ -94,7 +93,7 @@ export const form = ({ onSubmit }) => {
                 </div>
               </fieldset>
             </Section>
-          </Stack>
+          </div>
         </form>
       </ModalDialog.Body>
       <ModalDialog.Footer>

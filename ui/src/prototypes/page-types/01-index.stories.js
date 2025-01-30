@@ -1,6 +1,5 @@
 import React from 'react'
 import PageLayout from '../../components/PageLayout'
-import Stack from '../../components/Stack'
 import Section from '../../components/Section'
 import SquareImageGrid from '../../components/SquareImageGrid'
 import ListCard from '../../components/ListCard'
@@ -34,7 +33,7 @@ export const index = ({ onTriggerAvailability, onSubmitTerm, onItemClick }) => {
         />
       </PageLayout.Header>
 
-      <Stack space="5">
+      <div className="d-grid gap-5">
         <Section title="Section with image results" collapsible>
           <SquareImageGrid
             list={[
@@ -55,7 +54,7 @@ export const index = ({ onTriggerAvailability, onSubmitTerm, onItemClick }) => {
             </ListCard>
           </ListCard.Stack>
         </Section>
-      </Stack>
+      </div>
     </PageLayoutMock>
   )
 }

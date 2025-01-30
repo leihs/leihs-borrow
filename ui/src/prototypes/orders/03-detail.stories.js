@@ -1,13 +1,13 @@
 import React from 'react'
 import { action } from '@storybook/addon-actions'
-import Stack from '../../components/Stack'
-import Section from '../../components/Section'
 import ListCard from '../../components/ListCard'
+import Section from '../../components/Section'
 import PageLayout from '../../components/PageLayout'
 import ActionButtonGroup from '../../components/ActionButtonGroup'
-import Badge from '../../components/Badge'
 import ProgressInfo from '../../components/ProgressInfo'
 import PageLayoutMock from '../../story-utils/PageLayoutMock'
+import ReservationCard from './ReservationCard'
+import SquareImage from '../../components/SquareImage'
 
 export default {
   title: 'Prototypes/Orders/Detail',
@@ -19,9 +19,9 @@ export const detail = ({ order, onOrderCancelClick, onItemClick }) => {
     <PageLayoutMock>
       <PageLayout.Header title={order.title} subTitle="24 Tage ab 6.5.2020, 11 Gegenstände"></PageLayout.Header>
 
-      <Stack space="5">
+      <div className="d-grid gap-5">
         <Section title="Status" collapsible>
-          <Stack space="3">
+          <div className="d-grid gap-3">
             <div>
               {order.stateGroups.map((stateGroup, i) => (
                 <ProgressInfo key={i} {...stateGroup} />
@@ -34,7 +34,7 @@ export const detail = ({ order, onOrderCancelClick, onItemClick }) => {
                 </button>
               </ActionButtonGroup>
             )}
-          </Stack>
+          </div>
         </Section>
 
         <Section title="Bestellung für" collapsible>
@@ -51,24 +51,24 @@ export const detail = ({ order, onOrderCancelClick, onItemClick }) => {
         <Section title="Gegenstände" collapsible className="position-relative">
           <ListCard.Stack>
             {order.models.map(({ reservation, model, pool }, i) => (
-              <ListCard key={i} onClick={() => onItemClick(reservation.id)}>
-                <ListCard.Title>
-                  {reservation.quantity}x {model.name}
-                </ListCard.Title>
-                <ListCard.Body>{pool.name}</ListCard.Body>
-                <ListCard.Foot>
-                  <Badge>
-                    {reservation.durationDays} Tage{' '}
-                    {reservation.isCompleted ? `bis ${reservation.endDate}` : `ab ${reservation.startDate}`}
-                  </Badge>
-                </ListCard.Foot>
-              </ListCard>
+              <ReservationCard
+                key={i}
+                img={<SquareImage />}
+                quantity={reservation.quantity}
+                modelName={model.name}
+                poolName={pool.name}
+                startDate={reservation.startDate}
+                endDate={reservation.endDate}
+                durationDays={reservation.durationDays}
+                statusInfo={
+                  pool.name === 'Werkstattausleihe' ? <span>Abholung in 3 Tagen</span> : <span>In Genehmigung</span>
+                }
+                onClick={() => onItemClick(reservation.id)}
+              />
             ))}
           </ListCard.Stack>
         </Section>
-      </Stack>
-
-      <PageLayout.Metadata>ID {order.id}</PageLayout.Metadata>
+      </div>
     </PageLayoutMock>
   )
 }

@@ -5,7 +5,6 @@ import { addYears, isAfter, startOfToday, startOfTomorrow } from 'date-fns'
 
 import Section from '../../components/Section'
 import ModalDialog from '../../components/ModalDialog'
-import Stack from '../../components/Stack'
 import Warning from '../../components/Warning'
 import DateRangePicker from '../../components/DateRangePicker'
 import MinusPlusControl from '../../components/MinusPlusControl'
@@ -51,7 +50,7 @@ export const availabilityFilter = ({ onSubmit, onDismiss }) => {
     <ModalDialog title="Filter Verfügbarkeit" shown dismissible onDismiss={onDismiss}>
       <ModalDialog.Body>
         <form onSubmit={submit} noValidate autoComplete="off" id="model-filter-form">
-          <Stack space="4">
+          <div className="d-grid gap-4">
             <Section title="Verfügbarkeit">
               <div className="form-check form-switch mb-3">
                 <input
@@ -69,7 +68,7 @@ export const availabilityFilter = ({ onSubmit, onDismiss }) => {
               {onlyAvailable && (
                 <fieldset>
                   <legend className="visually-hidden">Zeitraum</legend>
-                  <Stack space="3">
+                  <div className="d-grid gap-3">
                     <DateRangePicker
                       locale={locale}
                       selectedRange={selectedRange}
@@ -78,7 +77,7 @@ export const availabilityFilter = ({ onSubmit, onDismiss }) => {
                       maxDate={addYears(startOfToday(), 1)}
                     />
                     {isEndDateBeforeStartDate && <Warning>Bis-Datum ist vor Von-Datum</Warning>}
-                  </Stack>
+                  </div>
                 </fieldset>
               )}
             </Section>
@@ -93,7 +92,7 @@ export const availabilityFilter = ({ onSubmit, onDismiss }) => {
                 />
               </Section>
             )}
-          </Stack>
+          </div>
         </form>
       </ModalDialog.Body>
       <ModalDialog.Footer>

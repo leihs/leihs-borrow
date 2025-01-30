@@ -1,26 +1,26 @@
 import React, { useState } from 'react'
+import PropTypes from 'prop-types'
 import cx from 'classnames'
 import { parseISO as parseDate } from 'date-fns'
 import { CrossIcon } from '../components/Icons'
 import SearchFilterCombinedInput from '../components/SearchFilterCombinedInput'
-
 import { translate as t } from '../lib/translate'
 
-const BASE_CLASS = 'ui-model-search-filter'
+const BASE_CLASS = 'ui-order-search-filter'
 
-export default function ModelSearchFilter({
+export default function OrderSearchFilter({
   className,
   availableFilters = {},
   currentFilters = {},
   locale,
   txt,
   onSubmitTerm,
-  onTriggerAvailability,
+  onTriggerTimespan,
   onClearFilter,
-  onChangePool = () => {},
+  onChangePool,
   ...restProps
 }) {
-  const { term = '', selectedPool, onlyAvailable = false, quantity = 1, startDate, endDate } = currentFilters
+  const { term = '', selectedPool, from, until } = currentFilters
   const { pools: availablePools = [] } = availableFilters
 
   const [searchTerm, setSearchTerm] = useState(term || '')
@@ -36,6 +36,27 @@ export default function ModelSearchFilter({
     setPoolId(e.target.value)
     onChangePool(e.target.value)
   }
+
+  const timespanLabel = (function foo() {
+    if (from) {
+      if (until) {
+        return t(txt, 'timespan-label', locale, {
+          startDate: parseDate(from),
+          endDate: parseDate(until)
+        })
+      }
+      return t(txt, 'timespan-label-from', locale, {
+        startDate: parseDate(from)
+      })
+    } else {
+      if (until) {
+        return t(txt, 'timespan-label-until', locale, {
+          endDate: parseDate(until)
+        })
+      }
+      return t(txt, 'timespan-unrestricted', locale)
+    }
+  })()
 
   return (
     <div className={cx(BASE_CLASS, className)} {...restProps}>
@@ -57,11 +78,10 @@ export default function ModelSearchFilter({
         />
 
         <div className="filters">
+          {/* Inventory Pools */}
           <label className="visually-hidden" htmlFor="pool">
             {t(txt, 'pool-select-label', locale)}
           </label>
-
-          {/* Inventory Pools */}
           {availablePools.length > 0 && (
             <div className="filters--item input-group">
               <select
@@ -95,35 +115,29 @@ export default function ModelSearchFilter({
             </div>
           )}
 
-          {/* Availability */}
+          {/* Timespan */}
           <div className="filters--item btn-group">
             <button
               type="button"
-              id="availability"
-              name="availability"
+              id="timespan"
+              name="timespan"
               className={cx('btn btn-secondary fw-bold bg-light-shade filter-input text-nowrap', {
-                'calendar-indicator': !onlyAvailable
+                'calendar-indicator': !from && !until
               })}
-              onClick={onTriggerAvailability}
+              onClick={onTriggerTimespan}
               tabIndex="3"
-              aria-label={t(txt, 'availability-button-label', locale)}
+              aria-label={t(txt, 'timespan-button-label', locale)}
             >
-              {onlyAvailable
-                ? t(txt, 'availability-label', locale, {
-                    startDate: parseDate(startDate),
-                    endDate: parseDate(endDate),
-                    quantity
-                  })
-                : t(txt, 'availability-unrestricted', locale)}
+              {timespanLabel}
             </button>
-            {onlyAvailable && (
+            {(from || until) && (
               <button
                 type="button"
                 className="btn btn-secondary bg-light-shade filter-input filter-input--clear-button"
                 onMouseDown={e => e.preventDefault()}
                 onClick={e => {
                   e.stopPropagation()
-                  onClearFilter({ type: 'onlyAvailable' })
+                  onClearFilter({ type: 'timespan' })
                 }}
                 aria-label="Clear filter"
               >
@@ -135,4 +149,16 @@ export default function ModelSearchFilter({
       </form>
     </div>
   )
+}
+
+OrderSearchFilter.propTypes = {
+  className: PropTypes.string,
+  availableFilters: PropTypes.object,
+  currentFilters: PropTypes.object,
+  locale: PropTypes.string,
+  txt: PropTypes.object,
+  onSubmitTerm: PropTypes.func.isRequired,
+  onTriggerTimespan: PropTypes.func.isRequired,
+  onClearFilter: PropTypes.func.isRequired,
+  onChangePool: PropTypes.func.isRequired
 }

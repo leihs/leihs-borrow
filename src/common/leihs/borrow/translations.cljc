@@ -21,7 +21,7 @@
                        :saturday {:de-CH "Samstag" :en-GB "Saturday"}
                        :sunday {:de-CH "Sonntag" :en-GB "Sunday"}}}
 
-; --- MAIL TEMPLATES ---
+    ; --- MAIL TEMPLATES ---
     :mail-templates {:received {:subject {:en-GB "[leihs] Order received"
                                           :de-CH "[leihs] Bestellung eingetroffen"}}
                      :submitted {:subject {:en-GB "[leihs] Reservation Submitted"
@@ -212,14 +212,14 @@
 
              :availability-modal {:title {:en-GB "Filter Availability"
                                           :de-CH "Filter Verfügbarkeit"}
-                                  :time-span {:title {:en-GB "Timespan"
-                                                      :de-CH "Zeitraum"}
-                                              :undefined {:en-GB "undefined"
-                                                          :de-CH "Unbestimmt"}
-                                              :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set."
-                                                                                     :de-CH "Start- und Enddatum müssen gesetzt sein."}
-                                                       :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date."
-                                                                                             :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
+                                  :timespan {:title {:en-GB "Timespan"
+                                                     :de-CH "Zeitraum"}
+                                             :undefined {:en-GB "undefined"
+                                                         :de-CH "Unbestimmt"}
+                                             :errors {:start-date-and-end-date-set {:en-GB "Start and end date must be set."
+                                                                                    :de-CH "Start- und Enddatum müssen gesetzt sein."}
+                                                      :start-date-equal-or-before-end-date {:en-GB "Start date must be equal to or before end date."
+                                                                                            :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
                                   :from {:en-GB "From"
                                          :de-CH "Von"}
                                   :until {:en-GB "Until"
@@ -338,51 +338,43 @@
 
     :rentals {:title {:en-GB "Orders"
                       :de-CH "Bestellungen"}
-              :section-title-open-rentals {:en-GB "Open"
-                                           :de-CH "Offen"}
-              :section-title-closed-rentals {:en-GB "Closed"
-                                             :de-CH "Abgeschlossen"}
-              :no-orders-found {:en-GB "No orders found"
-                                :de-CH "Keine Bestellungen gefunden"}
+              :section-title-current-lendings {:en-GB "Current lendings"
+                                               :de-CH "Aktuelle Ausleihen"}
+              :section-title-open-rentals {:en-GB "Active orders"
+                                           :de-CH "Aktive Bestellungen"}
+              :section-title-closed-rentals {:en-GB "Closed orders"
+                                             :de-CH "Abgeschlossene Bestellungen"}
+              :no-orders-found {:en-GB "No results found for the current search filter"
+                                :de-CH "Keine Treffer zum aktuellen Suchfilter gefunden"}
               :no-orders-yet {:en-GB "No orders yet"
                               :de-CH "Noch keine Bestellungen vorhanden"}
-              :filter  {:show-filters {:en-GB "Show search/filter"
-                                       :de-CH "Zeige Suche/Filter"}
-                        :search {:title {:en-GB "Search term"
-                                         :de-CH "Stichwort"}
-                                 :placeholder {:en-GB "Enter search term"
-                                               :de-CH "Suchbegriff eingeben"}}
-                        :for {:en-GB "For"
-                              :de-CH "Für"}
-                        :time-span {:title {:en-GB "Timespan"
-                                            :de-CH "Zeitraum"}
-                                    :undefined {:en-GB "undefined"
-                                                :de-CH "unbestimmt"}
-                                    :errors {:start-date-equal-or-before-end-date
-                                             {:en-GB "Start date must be equal to or before end date."
-                                              :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}}
-                        :pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
-                                :all {:en-GB "All" :de-CH "Alle"}
+              :filter  {:pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
+                                :all {:en-GB "All inventory pools" :de-CH "Alle Inventarparks"}
                                 :invalid-option {:en-GB "Invalid selection" :de-CH "Ungültige Auswahl"}
                                 :invalid-option-info {:en-GB "The pre-selected inventory pool is not available for the current profile"
                                                       :de-CH "Der vorher gewählte Inventarpark ist für das aktuelle Profil nicht verfügbar"}}
-                        :states {:title {:en-GB "Status" :de-CH "Status"}
-                                 :all {:en-GB "All" :de-CH "Alle"}
-                                 :state-filter-label {:IN_APPROVAL {:de-CH "In Genehmigung" :en-GB "In approval"}
-                                                      :TO_PICKUP {:de-CH "Abholung" :en-GB "Pickup"}
-                                                      :TO_RETURN {:de-CH "Rückgabe" :en-GB "Return"}
-                                                      :RETURNED {:de-CH "Zurückgebracht" :en-GB "Returned"}
-                                                      :REJECTED {:de-CH "Abgelehnt" :en-GB "Rejected"}
-                                                      :CANCELED {:de-CH "Storniert" :en-GB "Canceled"}
-                                                      :EXPIRED {:de-CH "Abgelaufen" :en-GB "Expired"}
-                                                      :OVERDUE {:de-CH "Rückgabe überfällig" :en-GB "Overdue"}}}
-                        :from {:en-GB "From"
-                               :de-CH "Von"}
-                        :until {:en-GB "Until"
-                                :de-CH "Bis"}
-                        :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
-                        :apply {:en-GB "Apply" :de-CH "Anwenden"}
-                        :reset {:en-GB "Reset" :de-CH "Zurücksetzen"}}
+
+                        :timespan-modal {:title {:en-GB "Timespan" :de-CH "Zeitraum"}
+                                         :from {:en-GB "From" :de-CH "Von"}
+                                         :until {:en-GB "Until" :de-CH "Bis"}
+                                         :undefined {:en-GB "undefined" :de-CH "unbestimmt"}
+                                         :errors {:start-date-equal-or-before-end-date
+                                                  {:en-GB "Start date must be equal to or before end date."
+                                                   :de-CH "Startdatum muss entweder gleich oder vor dem Enddatum sein."}}
+                                         :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
+                                         :apply {:en-GB "Apply" :de-CH "Anwenden"}}
+
+                        ;; Note: the JS text resolver does not support nesting
+                        :js-component {:search-button-label {:en-GB "Search" :de-CH "Suchen"}
+                                       :search-input-placeholder {:en-GB "Search term" :de-CH "Suchbegriff"}
+                                       :filter {:en-GB "Filter" :de-CH "Filter"}
+                                       :status-select-label {:en-GB "Status" :de-CH "Status"}
+                                       :pool-select-label {:en-GB "Inventory pools" :de-CH "Inventarparks"}
+                                       :timespan-button-label {:en-GB "Timespan from/until" :de-CH "Zeitraum von/bis"}
+                                       :timespan-label {:en-GB "{startDate, date, narrow} – {endDate, date, narrow}" :de-CH "{startDate, date, narrow} – {endDate, date, narrow}"}
+                                       :timespan-label-from {:en-GB "{startDate, date, narrow} – " :de-CH "{startDate, date, narrow} – "}
+                                       :timespan-label-until {:en-GB " – {endDate, date, narrow}" :de-CH " – {endDate, date, narrow}"}
+                                       :timespan-unrestricted {:en-GB "Timespan from/until" :de-CH "Zeitraum von/bis"}}}
 
               :fulfillment-state-label {; states flowchart: <https://flowchart.fun/c#AoexBsHkCcBMFNoCgAEKCWBnFmCuAjAW3QBcT5YV8BPFAY10xJEMQC4UAKASQDkB9AILBgAJUgA1QQBkAlEiQARdNHh0So+JkQA3AIYl0IAHaoM2OqoMUqtQnuN6A5uy4AVSP2DcAwgGl+AFVgeQBtPiERcSlpAF0UCOExSRkzFxJsPQAHLOgQHQoOTg8vXwDg+TQsFFUAKzVyWCLRAFEAKRafNxbFSvN6Bzp4cEKuH0FeHxbpHrCS738g4Hj5sqWzaqz0OgBrG1wsooAhSFFxAHVZpFCTs8hLxXjbi56N7FUSXGhjUc5Wt0Col4V1C-0BwMeKDBQNeoPanW6kNaHS6sPGk2mPXi6KmM0UQA>
                                         :IN_APPROVAL {:de-CH "Genehmigung" :en-GB "Approval"}
@@ -394,6 +386,9 @@
                                         :CANCELED {:de-CH "Bestellung wurde storniert" :en-GB "Order was canceled"}
                                         :EXPIRED {:de-CH "Abgelaufen (nicht abgeholt)" :en-GB "Expired (not picked up)"}
                                         :OVERDUE {:de-CH "Rückgabe überfällig" :en-GB "Overdue"}}
+
+              :x-items {:en-GB "{itemCount, plural, =1 {{itemCount} Gegenstand} other {{itemCount} Gegenstände}}"
+                        :de-CH "{itemCount, plural, =1 {{itemCount} Gegenstand} other {{itemCount} Gegenstände}}"}
 
               :summary-line
               {:open {:de-CH "{totalDays, plural,
@@ -484,32 +479,41 @@
                   :items-section-title {:de-CH "Gegenstände" :en-GB "Items"}
                   :documents-section-title {:de-CH "Dokumente" :en-GB "Documents"}
                   :user-or-delegation-section-title {:de-CH "Bestellung für" :en-GB "Order for"}
+
                   :reservation-line
-                  {:title
-                   {:de-CH "{itemCount}× {itemName}"
-                    :en-GB "{itemCount}× {itemName}"}
-                   :duration {:de-CH "{totalDays, plural,
-                                  =1 {# Tag ab {fromDate, date, short}}
-                                  other {# Tage ab {fromDate, date, short}}
-                                }"
-                              :en-GB "{totalDays, plural,
-                                  =1 {# day from {fromDate, date, short}}
-                                  other {# days from {fromDate, date, short}}
-                                }"}
-                   :option
-                   {:de-CH "Option"
-                    :en-GB "Option"}}
+                  {:title {:de-CH "{itemCount}× {itemName}" :en-GB "{itemCount}× {itemName}"}
+                   :duration-days {:de-CH "{totalDays, plural,
+                                             =1 {# Tag}
+                                             other {# Tage}
+                                           }"
+                                   :en-GB "{totalDays, plural,
+                                             =1 {# day}
+                                             other {# days}
+                                           }"}
+                   :overdue {:de-CH "überfällig" :en-GB "overdue"}
+                   :option {:de-CH "Option" :en-GB "Option"}}
+
                   :reservation-status-label {:DRAFT {:de-CH "DRAFT" :en-GB "DRAFT"} ; (will never appear in this view)
                                              :UNSUBMITTED {:de-CH "UNSUBMITTED" :en-GB "UNSUBMITTED"} ; (will never appear in this view)
                                              :SUBMITTED {:de-CH "In Genehmigung" :en-GB "In approval"}
-                                             :APPROVED {:de-CH "Abholung" :en-GB "To pick up"}
+                                             :APPROVED {:de-CH "Abholung" :en-GB "Pick up"}
                                              :REJECTED {:de-CH "Abgelehnt" :en-GB "Rejected"}
-                                             :SIGNED {:de-CH "Rückgabe bis {endDate, date, short}" :en-GB "To return until {endDate, date, short}"}
+                                             :SIGNED {:de-CH "Rückgabe" :en-GB "Return"}
                                              :CLOSED {:de-CH "Zurückgebracht" :en-GB "Returned"}
                                              :CANCELED {:de-CH "Storniert" :en-GB "Canceled"}
                                              ; Temporal statusses:
-                                             :EXPIRED-UNAPPROVED {:de-CH "Nicht genehmigt bis {endDate, date, short}" :en-GB "Not approved until {endDate, date, short}"}
-                                             :EXPIRED {:de-CH "Nicht abgeholt bis {endDate, date, short}" :en-GB "Not picked up until {endDate, date, short}"}}
+                                             :EXPIRED-UNAPPROVED {:de-CH "Abgelaufen (nicht genehmigt)" :en-GB "Expired (not approved)"}
+                                             :EXPIRED {:de-CH "Abgelaufen (nicht abgeholt)" :en-GB "Expired (not picked up)"}}
+                  :in-x-days {:de-CH "{days, plural,
+                                      =0 {heute}
+                                      =1 {morgen}
+                                      other {in # Tagen}
+                                      }"
+                              :en-GB "{days, plural,
+                                      =0 {today}
+                                      =1 {tomorrow}
+                                      other {in # days}
+                                      }"}
                   :cancellation-dialog {:title {:de-CH "Bestellung stornieren" :en-GB "Cancel order"}
                                         :confirm {:de-CH "Stornieren" :en-GB "Cancel order"}
                                         :cancel {:de-CH "Abbrechen" :en-GB "Abort"}}
@@ -528,7 +532,7 @@
                                                                  :en-GB "{count, plural,
                                                          =1 {Please note: One option can only be added by the lending desk.}
                                                          other {Please note: # options can only be added by the lending desk.}}"}
-                                          :time-span {:de-CH "Zeitraum" :en-GB "Time span"}
+                                          :timespan {:de-CH "Zeitraum" :en-GB "Time span"}
                                           :undefined {:de-CH "Unbestimmt" :en-GB "undefined"}
                                           :from {:de-CH "Von" :en-GB "From"}
                                           :until {:de-CH "Bis" :en-GB "Until"}
@@ -606,14 +610,14 @@
                                                            =1 {# Gegenstand ungültig}
                                                            other {# Gegenstände ungültig}
                                                            }"}
-                           :duration {:de-CH "{totalDays, plural,
-                                              =1 {# Tag ab {fromDate, date, short}}
-                                              other {# Tage ab {fromDate, date, short}}
-                                              }"
-                                      :en-GB "{totalDays, plural,
-                                              =1 {# day from {fromDate, date, short}}
-                                              other {# days from {fromDate, date, short}}
-                                              }"}}
+                           :duration-days {:de-CH "{totalDays, plural,
+                                                                        =1 {# Tag}
+                                                                        other {# Tage}
+                                                                      }"
+                                           :en-GB "{totalDays, plural,
+                                                                        =1 {# day}
+                                                                        other {# days}
+                                                                      }"}}
                     :edit-dialog {:dialog-title {:en-GB "Edit reservation" :de-CH "Reservation bearbeiten"}
                                   :delete-reservation {:en-GB "Remove reservation" :de-CH "Reservation entfernen"}
                                   :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
@@ -675,7 +679,7 @@
                                                          other {# items will be added to the cart.}}"}
                                  :error-no-items {:de-CH "Keine Gegenstände gefunden"
                                                   :en-GB "No items found"}
-                                 :time-span {:de-CH "Zeitraum" :en-GB "Time span"}
+                                 :timespan {:de-CH "Zeitraum" :en-GB "Time span"}
                                  :undefined {:de-CH "Unbestimmt" :en-GB "undefined"}
                                  :from {:de-CH "Von" :en-GB "From"}
                                  :until {:de-CH "Bis" :en-GB "Until"}

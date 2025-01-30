@@ -27,9 +27,9 @@ Feature: Shopping Cart - Editing Reservations
     When I navigate to the cart
     And I sleep "0.5"
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                      |
-      | 1× DSLR Camera | Pool A | 3 days from ${Date.today} |
-      | 1× Tripod      | Pool A | 2 days from ${Date.today} |
+      | title          | body                                                                     |
+      | 1× DSLR Camera | Pool A\n${format_date_range_short(Date.today, 2.days.from_now)} (3 days) |
+      | 1× Tripod      | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)   |
 
     When I click on the card with title "1× DSLR Camera"
     And I see the "Edit reservation" dialog
@@ -59,9 +59,9 @@ Feature: Shopping Cart - Editing Reservations
     And the "Edit reservation" dialog has closed
     And I sleep "0.5"
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                      |
-      | 3× DSLR Camera | Pool A | 3 days from ${Date.today} |
-      | 1× Tripod      | Pool A | 2 days from ${Date.today} |
+      | title          | body                                                                     |
+      | 3× DSLR Camera | Pool A\n${format_date_range_short(Date.today, 2.days.from_now)} (3 days) |
+      | 1× Tripod      | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)   |
 
     When I click on "Send order"
     And I enter "My Movie" in the "Title" field
@@ -88,9 +88,9 @@ Feature: Shopping Cart - Editing Reservations
     When I navigate to the cart
     And I sleep "0.5"
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                      |
-      | 1× DSLR Camera | Pool A | 3 days from ${Date.today} |
-      | 1× Tripod      | Pool A | 2 days from ${Date.today} |
+      | title          | body                                                                     |
+      | 1× DSLR Camera | Pool A\n${format_date_range_short(Date.today, 2.days.from_now)} (3 days) |
+      | 1× Tripod      | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)   |
 
     When I click on the card with title "1× DSLR Camera"
     And I see the "Edit reservation" dialog
@@ -98,5 +98,5 @@ Feature: Shopping Cart - Editing Reservations
     And the "Edit reservation" dialog has closed
     And I sleep "0.5"
     Then I see the following lines in the "Items" section:
-      | title     | body   | foot                      |
-      | 1× Tripod | Pool A | 2 days from ${Date.today} |
+      | title     | body                                                                   |
+      | 1× Tripod | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |

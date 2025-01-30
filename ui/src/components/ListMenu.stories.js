@@ -2,7 +2,7 @@ import React from 'react'
 import ListMenu from './ListMenu'
 
 export default {
-  title: 'Design Components/Layout/ListMenu',
+  title: 'Design Components/Navigation/ListMenu',
   component: ListMenu
 }
 

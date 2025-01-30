@@ -91,10 +91,11 @@ step "I approve the order :title" do |title|
   end
 end
 
-step "I see the order :purpose under open orders" do |purpose|
-  within find("section", text: "Open") do
-    expect(current_scope).to have_content purpose
+step "I see the following orders:" do |table|
+  table.hashes.each do |h|
+    find(".ui-list-card", text: h["title"])
   end
+  expect(all(".ui-list-card").count).to eq table.hashes.count
 end
 
 step "the maximum quantity shows :n" do |n|
@@ -218,17 +219,5 @@ end
 
 step "the cart is expired" do
   expect(find(".ui-progress-info", text: "Time limit")).to have_content "Expired"
-end
-
-step "I see the following lines in the Items section:" do |table|
-  rs = find("section", text: "Items").all(".list-card")
-  table.hashes.each_with_index do |h, i|
-    expect(rs[i].find("[data-test-id='title']").text).to eq h["title"]
-    expect(rs[i].find("[data-test-id='body']").text).to eq h["pool"]
-    b = rs[i].find("[data-test-id='foot'] .badge#{h['valid'] == 'false' and '.bg-danger'}")
-    days = ( h['duration'].to_i > 1 ? "days" : "day" )
-    date_string = custom_eval(h['start_date']).strftime('%d/%m/%y')
-    expect(b.text).to eq "#{h['duration']} #{days} from #{date_string}"
-  end
 end
 

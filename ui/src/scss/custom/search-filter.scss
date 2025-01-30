@@ -29,7 +29,7 @@ button.filter-input {
 
 .filter-input--clear-button {
   padding-inline: 15px;
-  flex-grow: 0;
+  flex-grow: 0 !important;
 }
 
 @media screen and (min-width: 650px) {
@@ -37,6 +37,7 @@ button.filter-input {
     margin-inline: 20px;
     flex-direction: row;
     align-items: center;
+    flex-wrap: wrap;
 
     &--item {
       flex: 1 1 45%;
@@ -45,15 +46,5 @@ button.filter-input {
 
   .filter-input {
     max-width: 350px;
-  }
-}
-
-@media screen and (min-width: 750px) {
-  .filters {
-    &--title {
-      display: block;
-      flex: 0 0 auto;
-      padding-right: 5px;
-    }
   }
 }

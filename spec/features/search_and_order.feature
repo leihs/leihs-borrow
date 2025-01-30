@@ -57,8 +57,8 @@ Feature: Search and order
     # check the cart
     When I click on the cart icon
     Then I see the following lines in the "Items" section:
-      | title     | body   |
-      | 1× Kamera | Pool B |
+      | title     |
+      | 1× Kamera |
 
     # submit the order
     When I click on "Send order"
@@ -78,10 +78,11 @@ Feature: Search and order
 
     # check the new status of the order
     When I visit "/borrow/"
-    # FIXME: wait for menu open
-    And I sleep 1
     And I click on "Orders"
-    Then I see the order "Order 1" under open orders
+    And I click on "Active orders"
+    Then I see the following orders:
+      | title   |
+      | Order 1 |
 
     # check the content of the order
     When I click on the card with title "Order 1"
@@ -92,7 +93,7 @@ Feature: Search and order
       | Delegation D      | DD        |
       | User A (personal) | UA        |
 
-  Scenario: Overbooking of expired reservation 
+  Scenario: Overbooking of expired reservation
 
     The user has a reservation for a particular model in the cart which is expired.
     If he adds a new reservation for the same model in the cart intersecting date-wise
@@ -119,16 +120,16 @@ Feature: Search and order
     And I click on "Add"
     And the "Add item" dialog has closed
     And I accept the "Item added" dialog with the text:
-    """
-    The item was added to the cart
-    """
+      """
+      The item was added to the cart
+      """
     And the "Item added" dialog has closed
 
     # check the cart
     When I click on the cart icon
     Then I see the following lines in the "Items" section:
-      | title     | body   |
-      | 1× Kamera | Pool A |
+      | title     |
+      | 1× Kamera |
 
     And I wait for 61 seconds
     And the cart is expired
@@ -147,15 +148,15 @@ Feature: Search and order
     And I click on "Add"
     And the "Add item" dialog has closed
     And I accept the "Item added" dialog with the text:
-    """
-    The item was added to the cart
-    """
+      """
+      The item was added to the cart
+      """
     And the "Item added" dialog has closed
-   
+
     # check the cart
     When I click on the cart icon
     Then I see the following lines in the Items section:
-      | title     | pool   | start_date    | duration | valid | 
-      | 1× Kamera | Pool A | ${Date.today} | 1        | false |
-      | 1× Kamera | Pool A | ${Date.today} | 2        | false |
+      | title     | body                                                                   |
+      | 1× Kamera | Pool A\n${format_date_range_short(Date.today, Date.today)} (1 day)     |
+      | 1× Kamera | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
     And the "Send order" button is disabled

@@ -28,7 +28,7 @@ Feature: Rentals - Show
       | user | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | approved |
 
     When I log in as the user
-    And I visit "/borrow/rentals/"
+    And I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Order 1"
     And I sleep 1
 
@@ -39,9 +39,9 @@ Feature: Rentals - Show
       | Pickup | [0 of 2]    | 0 of 2 items picked up |
     And I see the "Purpose" section
     And I see the following lines in the "Items" section:
-      | title          | body   | foot                                 |
-      | 1× DSLR Camera | Pool A | 2 days from ${Date.today} To pick up |
-      | 1× Tripod      | Pool B | 2 days from ${Date.today} To pick up |
+      | title                         | body                                                                   |
+      | 1× DSLR Camera\nPick up today | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | 1× Tripod\nPick up today      | Pool B\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
     And I see the "Order for" section
 
 
@@ -60,19 +60,18 @@ Feature: Rentals - Show
       | user | 2        | Tripod      | Pool B | ${Date.today}       | ${Date.tomorrow}    | approved |
 
     When I log in as the user
-    And I visit "/borrow/rentals/"
+    And I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Order 1"
 
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                                       |
-      | 1× DSLR Camera | Pool A | 2 days from ${Date.today} To pick up       |
-      | 1× DSLR Camera | Pool B | 2 days from ${Date.today} To pick up       |
-      | 1× Tripod      | Pool B | 2 days from ${Date.today} To pick up       |
-      | 1× Tripod      | Pool B | 2 days from ${Date.today} To pick up       |
-      | 1× DSLR Camera | Pool B | 2 days from ${30.days.from_now} To pick up |
-      | 1× Xylophone   | Pool B | 2 days from ${30.days.from_now} To pick up |
-      | 1× DSLR Camera | Pool A | 2 days from ${60.days.from_now} To pick up |
-
+      | title                              | body                                                                            |
+      | 1× DSLR Camera\nPick up today      | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)          |
+      | 1× DSLR Camera\nPick up today      | Pool B\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)          |
+      | 1× Tripod\nPick up today           | Pool B\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)          |
+      | 1× Tripod\nPick up today           | Pool B\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)          |
+      | 1× DSLR Camera\nPick up in 30 days | Pool B\n${format_date_range_short(30.days.from_now, 31.days.from_now)} (2 days) |
+      | 1× Xylophone\nPick up in 30 days   | Pool B\n${format_date_range_short(30.days.from_now, 31.days.from_now)} (2 days) |
+      | 1× DSLR Camera\nPick up in 60 days | Pool A\n${format_date_range_short(60.days.from_now, 61.days.from_now)} (2 days) |
 
   Scenario: Status: 2 picked up items
     Given a customer order with title "Order 1" and the following reservations exists for the user:
@@ -81,7 +80,7 @@ Feature: Rentals - Show
       | user | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | signed |
 
     When I log in as the user
-    And I visit "/borrow/rentals/"
+    And I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Order 1"
     Then I see the page title "Order 1"
     And the page subtitle is "Between ${Date.today} and ${Date.tomorrow}, 2 items"
@@ -89,9 +88,9 @@ Feature: Rentals - Show
       | title  | progressbar | info                  |
       | Return | [0 of 2]    | 0 of 2 items returned |
     And I see the following lines in the "Items" section:
-      | title          | body   | foot                                                       |
-      | 1× DSLR Camera | Pool A | 2 days from ${Date.today} To return until ${Date.tomorrow} |
-      | 1× Tripod      | Pool B | 2 days from ${Date.today} To return until ${Date.tomorrow} |
+      | title                           | body                                                                   |
+      | 1× DSLR Camera\nReturn tomorrow | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | 1× Tripod\nReturn tomorrow      | Pool B\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
 
   Scenario: Switching profile
     Given a customer order with title "Order 1" and the following reservations exists for the user:
@@ -102,7 +101,7 @@ Feature: Rentals - Show
       | Delegation D | 1        | DSLR Camera | Pool A | ${30.days.from_now} | ${31.days.from_now} | approved |
 
     When I log in as the user
-    And I visit "/borrow/rentals/"
+    And I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Order 1"
     And I see the page title "Order 1"
     And I see the text:
@@ -117,7 +116,7 @@ Feature: Rentals - Show
     And I see the page title "Order"
     And I see "This order is not visible for the current profile"
 
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Order 2"
     And I see the page title "Order 2"
     And I see the text:

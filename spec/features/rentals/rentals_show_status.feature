@@ -48,7 +48,7 @@ Feature: Rentals - Show - Status
     And I log in as the user
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "New order"
     And I see the page title "New order"
 
@@ -56,13 +56,13 @@ Feature: Rentals - Show - Status
       | title    | progressbar | info                  |
       | Approval | [0 of 3]    | 0 of 3 items approved |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                     |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} In approval |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} In approval |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} In approval |
+      | title                   | body                                                                       |
+      | 1× Elefant\nIn approval | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nIn approval | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nIn approval | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Approved order"
     And I see the page title "Approved order"
 
@@ -70,13 +70,13 @@ Feature: Rentals - Show - Status
       | title  | progressbar | info                   |
       | Pickup | [0 of 3]    | 0 of 3 items picked up |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                    |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To pick up |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To pick up |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To pick up |
+      | title                        | body                                                                       |
+      | 1× Elefant\nPick up tomorrow | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nPick up tomorrow | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nPick up tomorrow | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Some picked up"
     And I see the page title "Some picked up"
 
@@ -85,13 +85,13 @@ Feature: Rentals - Show - Status
       | Pickup | [1 of 3]    | 1 of 3 items picked up |
       | Return | [0 of 3]    | 0 of 3 items returned  |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                                       |
-      | 1× Elefant | Pool A | 2 days from ${Date.today} To pick up                       |
-      | 1× Elefant | Pool A | 2 days from ${Date.today} To pick up                       |
-      | 1× Elefant | Pool A | 2 days from ${Date.today} To return until ${Date.tomorrow} |
+      | title                       | body                                                                   |
+      | 1× Elefant\nPick up today   | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | 1× Elefant\nPick up today   | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | 1× Elefant\nReturn tomorrow | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Some picked up, some returned"
     And I see the page title "Some picked up, some returned"
 
@@ -100,13 +100,13 @@ Feature: Rentals - Show - Status
       | Pickup | [2 of 3]    | 2 of 3 items picked up |
       | Return | [1 of 3]    | 1 of 3 items returned  |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                                       |
-      | 1× Elefant | Pool A | 2 days from ${Date.today} To pick up                       |
-      | 1× Elefant | Pool A | 2 days from ${Date.today} To return until ${Date.tomorrow} |
-      | 1× Elefant | Pool A | 2 days from ${Date.today} Returned                         |
+      | title                       | body                                                                   |
+      | 1× Elefant\nPick up today   | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | 1× Elefant\nReturn tomorrow | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | 1× Elefant\nReturned        | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "All picked up, some returned"
     And I see the page title "All picked up, some returned"
 
@@ -114,13 +114,13 @@ Feature: Rentals - Show - Status
       | title  | progressbar | info                  |
       | Return | [2 of 3]    | 2 of 3 items returned |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                                       |
-      | 1× Elefant | Pool A | 2 days from ${Date.today} To return until ${Date.tomorrow} |
-      | 1× Elefant | Pool A | 2 days from ${Date.today} Returned                         |
-      | 1× Elefant | Pool A | 2 days from ${Date.today} Returned                         |
+      | title                       | body                                                                   |
+      | 1× Elefant\nReturn tomorrow | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | 1× Elefant\nReturned        | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | 1× Elefant\nReturned        | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=closed-orders"
     And I click on the card with title "All returned"
     And I see the page title "All returned"
 
@@ -128,10 +128,10 @@ Feature: Rentals - Show - Status
       | title              | progressbar | info |
       | All items returned |             |      |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                   |
-      | 1× Elefant | Pool A | 2 days from ${Date.yesterday} Returned |
-      | 1× Elefant | Pool A | 2 days from ${Date.yesterday} Returned |
-      | 1× Elefant | Pool A | 2 days from ${Date.yesterday} Returned |
+      | title                | body                                                                    |
+      | 1× Elefant\nReturned | Pool A\n${format_date_range_short(Date.yesterday, Date.today)} (2 days) |
+      | 1× Elefant\nReturned | Pool A\n${format_date_range_short(Date.yesterday, Date.today)} (2 days) |
+      | 1× Elefant\nReturned | Pool A\n${format_date_range_short(Date.yesterday, Date.today)} (2 days) |
 
   Scenario: Story: Details approval
 
@@ -167,7 +167,7 @@ Feature: Rentals - Show - Status
     When I log in as the user
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=closed-orders"
     And I click on the card with title "Canceled order"
     And I see the page title "Canceled order"
 
@@ -175,13 +175,13 @@ Feature: Rentals - Show - Status
       | title              | progressbar | info |
       | Order was canceled |             |      |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                  |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} Canceled |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} Canceled |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} Canceled |
+      | title                | body                                                                       |
+      | 1× Elefant\nCanceled | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nCanceled | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nCanceled | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=closed-orders"
     And I click on the card with title "Rejected order"
     Then I see the page title "Rejected order"
 
@@ -189,13 +189,13 @@ Feature: Rentals - Show - Status
       | title              | progressbar | info |
       | Order was rejected |             |      |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                  |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} Rejected |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} Rejected |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} Rejected |
+      | title                | body                                                                       |
+      | 1× Elefant\nRejected | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nRejected | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nRejected | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Partially approved order"
     And I see the page title "Partially approved order"
 
@@ -204,13 +204,13 @@ Feature: Rentals - Show - Status
       | Approval | [1 of 3]    | 1 of 3 items approved  |
       | Pickup   | [0 of 3]    | 0 of 3 items picked up |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                     |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To pick up  |
-      | 1× Elefant | Pool B | 2 days from ${Date.tomorrow} In approval |
-      | 1× Elefant | Pool C | 2 days from ${Date.tomorrow} In approval |
+      | title                        | body                                                                       |
+      | 1× Elefant\nPick up tomorrow | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nIn approval      | Pool B\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nIn approval      | Pool C\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Some approved, some rejected, some unapproved"
     And I see the page title "Some approved, some rejected, some unapproved"
 
@@ -219,13 +219,13 @@ Feature: Rentals - Show - Status
       | Approval | [2 of 3]    | 1 of 3 items approved (1 rejected) |
       | Pickup   | [0 of 2]    | 0 of 2 items picked up             |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                     |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To pick up  |
-      | 1× Elefant | Pool B | 2 days from ${Date.tomorrow} In approval |
-      | 1× Elefant | Pool C | 2 days from ${Date.tomorrow} Rejected    |
+      | title                        | body                                                                       |
+      | 1× Elefant\nPick up tomorrow | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nIn approval      | Pool B\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nRejected         | Pool C\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Some approved, some rejected"
     And I see the page title "Some approved, some rejected"
 
@@ -234,13 +234,13 @@ Feature: Rentals - Show - Status
       | Approval |             | 2 of 3 items approved (1 rejected) |
       | Pickup   | [0 of 2]    | 0 of 2 items picked up             |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                    |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To pick up |
-      | 1× Elefant | Pool B | 2 days from ${Date.tomorrow} To pick up |
-      | 1× Elefant | Pool C | 2 days from ${Date.tomorrow} Rejected   |
+      | title                        | body                                                                       |
+      | 1× Elefant\nPick up tomorrow | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nPick up tomorrow | Pool B\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nRejected         | Pool C\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Some expired unapproved"
     And I see the page title "Some expired unapproved"
 
@@ -248,12 +248,12 @@ Feature: Rentals - Show - Status
       | title    | progressbar | info                              |
       | Approval | [1 of 2]    | 0 of 2 items approved (1 expired) |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                                              |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} Not approved until ${Date.yesterday} |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} In approval                          |
+      | title                              | body                                                                       |
+      | 1× Elefant\nExpired (not approved) | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
+      | 1× Elefant\nIn approval            | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=closed-orders"
     And I click on the card with title "All expired unapproved"
     And I see the page title "All expired unapproved"
 
@@ -261,9 +261,9 @@ Feature: Rentals - Show - Status
       | title                  | progressbar | info |
       | Expired (not approved) |             |      |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                                              |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} Not approved until ${Date.yesterday} |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} Not approved until ${Date.yesterday} |
+      | title                              | body                                                                       |
+      | 1× Elefant\nExpired (not approved) | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
+      | 1× Elefant\nExpired (not approved) | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
 
   Scenario: Story: Details pickup
 
@@ -283,7 +283,7 @@ Feature: Rentals - Show - Status
     And I log in as the user
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=closed-orders"
     And I click on the card with title "Expired order"
     And I see the page title "Expired order"
 
@@ -291,13 +291,13 @@ Feature: Rentals - Show - Status
       | title                   | progressbar | info |
       | Expired (not picked up) |             |      |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                                               |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} Not picked up until ${Date.yesterday} |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} Not picked up until ${Date.yesterday} |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} Not picked up until ${Date.yesterday} |
+      | title                               | body                                                                       |
+      | 1× Elefant\nExpired (not picked up) | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
+      | 1× Elefant\nExpired (not picked up) | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
+      | 1× Elefant\nExpired (not picked up) | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Some expired, some picked-up"
     And I see the page title "Some expired, some picked-up"
 
@@ -306,13 +306,13 @@ Feature: Rentals - Show - Status
       | Pickup | [2 of 3]    | 1 of 3 items picked up (1 expired) |
       | Return | [0 of 2]    | 0 of 2 items returned              |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                                               |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} Not picked up until ${Date.yesterday} |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To pick up                            |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To return until ${2.days.from_now}    |
+      | title                               | body                                                                       |
+      | 1× Elefant\nExpired (not picked up) | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
+      | 1× Elefant\nPick up tomorrow        | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nReturn in 2 days        | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Some expired, all others picked-up"
     And I see the page title "Some expired, all others picked-up"
 
@@ -321,10 +321,10 @@ Feature: Rentals - Show - Status
       | Pickup |             | 2 of 3 items picked up (1 expired) |
       | Return | [0 of 2]    | 0 of 2 items returned              |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                                               |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} Not picked up until ${Date.yesterday} |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To return until ${2.days.from_now}    |
-      | 1× Elefant | Pool A | 2 days from ${Date.tomorrow} To return until ${2.days.from_now}    |
+      | title                               | body                                                                       |
+      | 1× Elefant\nExpired (not picked up) | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
+      | 1× Elefant\nReturn in 2 days        | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
+      | 1× Elefant\nReturn in 2 days        | Pool A\n${format_date_range_short(Date.tomorrow, 2.day.from_now)} (2 days) |
 
   Scenario: Story: Details return
 
@@ -340,7 +340,7 @@ Feature: Rentals - Show - Status
     And I log in as the user
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "All overdue"
     And I see the page title "All overdue"
 
@@ -348,13 +348,13 @@ Feature: Rentals - Show - Status
       | title   | progressbar | info                              |
       | Overdue | [0 of 3]    | 0 of 3 items returned (3 overdue) |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                                           |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} To return until ${Date.yesterday} |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} To return until ${Date.yesterday} |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} To return until ${Date.yesterday} |
+      | title                      | body                                                                       |
+      | 1× Elefant\nReturn overdue | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
+      | 1× Elefant\nReturn overdue | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
+      | 1× Elefant\nReturn overdue | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
 
     # -----------------------------------
-    When I visit "/borrow/rentals/"
+    When I visit "/borrow/rentals/?tab=open-orders"
     And I click on the card with title "Some overdue, some returned"
     And I see the page title "Some overdue, some returned"
 
@@ -362,7 +362,7 @@ Feature: Rentals - Show - Status
       | title   | progressbar | info                              |
       | Overdue | [1 of 3]    | 1 of 3 items returned (1 overdue) |
     And I see the following lines in the "Items" section:
-      | title      | body   | foot                                                           |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} To return until ${Date.yesterday} |
-      | 1× Elefant | Pool A | 1 day from ${Date.yesterday} Returned                          |
-      | 1× Elefant | Pool A | 3 days from ${Date.yesterday} To return until ${Date.tomorrow} |
+      | title                       | body                                                                       |
+      | 1× Elefant\nReturn overdue  | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
+      | 1× Elefant\nReturned        | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
+      | 1× Elefant\nReturn tomorrow | Pool A\n${format_date_range_short(Date.yesterday, Date.tomorrow)} (3 days) |

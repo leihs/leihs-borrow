@@ -20,7 +20,7 @@ export const listCard = () => {
       <h1>ListCard</h1>
       <p className="text-muted">Presents a list entry, often linked to an action (href or onClick).</p>
       <p className="text-muted">
-        A <code>ListCard.Stack</code> can be used to wrap multiple cards with dividers and space.
+        A <code>ListCard.Stack</code> is typically used to wrap multiple cards with separators (see next story).
       </p>
       <p className="text-muted">The card can be assembled with three sub-components:</p>
       <ul className="text-muted">
@@ -68,6 +68,75 @@ export const listCard = () => {
   )
 }
 listCard.storyName = 'ListCard'
+
+export const listCardStack = () => {
+  return (
+    <div>
+      <h1>ListCard</h1>
+      <p className="text-muted">
+        A <code>ListCard.Stack</code> regulates the horizontal separator lines. It is meant for <code>ListCard</code>,
+        but also works with any type of elements. Note: It does not render a container.
+      </p>
+      <p className="text-muted">
+        <code>separators=all|true (default)</code>
+      </p>
+      <ListCard.Stack>
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </ListCard.Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>separators=top</code>
+      </p>
+      <ListCard.Stack separators="top">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </ListCard.Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>separators=bottom</code>
+      </p>
+      <ListCard.Stack separators="bottom">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </ListCard.Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>separators=between</code>
+      </p>
+      <ListCard.Stack separators="between">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </ListCard.Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>separators=none|false</code>
+      </p>
+      <ListCard.Stack separators="none">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </ListCard.Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        Usage with <code>PageLayout</code> / <code>.page-inset-x</code>. The separators will extend to the padge edges
+        when the page layout is edge-to-edge (on smaller screens).
+      </p>
+      <div className="shadow page-inset-x">
+        <ListCard.Stack>
+          <div>Elefant</div>
+          <div>Tiger</div>
+          <div>Cow</div>
+        </ListCard.Stack>
+      </div>
+    </div>
+  )
+}
+listCardStack.storyName = 'ListCard.Stack'
 
 export const minimalExample = () => {
   return (

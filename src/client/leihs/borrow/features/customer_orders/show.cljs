@@ -1,29 +1,23 @@
 (ns leihs.borrow.features.customer-orders.show
   (:require
-   ["date-fns" :as date-fns]
+   ["/borrow-ui" :as UI]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [reagent.core :as reagent]
-   [re-frame.core :as rf]
-   [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   [leihs.borrow.components :as ui]
-   [leihs.borrow.lib.helpers :as h]
-   [leihs.borrow.lib.errors :as errors]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                      reg-event-db
-                                      reg-sub
-                                      reg-fx
-                                      subscribe
-                                      dispatch]]
-   [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.translate :as translate :refer [t set-default-translate-path]]
-   [leihs.borrow.features.customer-orders.core :as rentals]
-   [leihs.borrow.features.customer-orders.index :refer [status-summary]]
-   [leihs.borrow.features.customer-orders.repeat-order :as repeat-order]
+   [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.borrow.features.customer-orders.core :as rentals]
+   [leihs.borrow.features.customer-orders.repeat-order :as repeat-order]
+   [leihs.borrow.features.customer-orders.reservation-card :refer [reservation-card]]
+   [leihs.borrow.features.customer-orders.status-summary :refer [status-summary]]
+   [leihs.borrow.lib.errors :as errors]
+   [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db reg-event-fx
+                                      reg-sub subscribe]]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.lib.translate :as translate :refer [set-default-translate-path
+                                                     t]]
    [leihs.core.core :refer [dissoc-in]]
-   ["/borrow-ui" :as UI]))
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]))
 
 (set-default-translate-path :borrow.rental-show)
 
@@ -116,51 +110,6 @@
          :<- [::current-user/can-change-profile?]
          (fn [can-change-profile? _] can-change-profile?))
 
-(defn ui-item-line [reservation]
-  (let [model (:model reservation)
-        option (:option reservation)
-        name (:name (or model option))
-        quantity (:quantity reservation)
-        start-date (js/Date. (:start-date reservation))
-        actual-end-date (js/Date. (:actual-end-date reservation))
-        ;; NOTE: should be in API
-        total-days (+ 1 (date-fns/differenceInCalendarDays actual-end-date start-date))
-        title (t :reservation-line.title {:itemCount quantity, :itemName name})
-        inventory-code (-> reservation :item :inventory-code)
-        duration (t :reservation-line.duration {:totalDays total-days, :fromDate start-date})
-        sub-title (get-in reservation [:inventory-pool :name])
-        href (when model (routing/path-for ::routes/models-show :model-id (:id (:model reservation))))
-        status (:status reservation)
-        is-over? (date-fns/isAfter (js/Date.) (date-fns/addDays actual-end-date 1))
-        overdue? (and (= status "SIGNED") is-over?)
-        expired-unapproved? (and (= status "SUBMITTED") is-over?)
-        expired? (and (= status "APPROVED") is-over?)
-        refined-status (cond expired-unapproved? "EXPIRED-UNAPPROVED" expired? "EXPIRED" :else status)
-        imgSrc (or (get-in model [:cover-image :image-url])
-                   (get-in model [:images 0 :image-url]))]
-    [:<>
-     [:> UI/Components.Design.ListCard
-      {:href href
-       :img (reagent/as-element [:> UI/Components.Design.SquareImage {:imgSrc imgSrc :paddingClassName "p-0"}])}
-      [:> UI/Components.Design.ListCard.Title
-       title (when inventory-code [:span " (" inventory-code ")"])
-       (when option [:span " (" (t :reservation-line.option) ")"])]
-
-      [:> UI/Components.Design.ListCard.Body
-       sub-title]
-
-      [:> UI/Components.Design.ListCard.Foot
-       [:> UI/Components.Design.Badge duration] " "
-       [:> UI/Components.Design.Badge {:colorClassName (when overdue? " bg-danger")}
-        (t (str :reservation-status-label "/" refined-status) {:endDate actual-end-date})]]]]))
-
-(defn ui-items-list [reservations]
-  [:> UI/Components.Design.ListCard.Stack
-   (doall
-    (for [item reservations]
-      [:<> {:key (:id item)}
-       [ui-item-line item]]))])
-
 (defn cancellation-dialog []
   (fn [rental]
     (let [dialog-data @(subscribe [::cancellation-dialog-data])
@@ -183,7 +132,8 @@
         [:p.small (rentals/rental-summary-text rental)]]])))
 
 (defn view []
-  (let [routing @(subscribe [:routing/routing])
+  (let [now (js/Date.)
+        routing @(subscribe [:routing/routing])
         rental-id (get-in routing [:bidi-match :route-params :rental-id])
         rental @(subscribe [::data rental-id])
         reservations @(subscribe [::reservations rental-id])
@@ -230,12 +180,12 @@
         [repeat-order/repeat-dialog rental reservations current-profile-id date-locale]
         [repeat-order/repeat-success-notification]
 
-        [:> UI/Components.Design.Stack {:space 5}
+        [:div.d-grid.gap-5
 
          [:> UI/Components.Design.Section
           {:title (t :state) :collapsible false}
 
-          [:> UI/Components.Design.Stack {:space 3}
+          [:div.d-grid.gap-3
 
            [status-summary rental false]
 
@@ -267,13 +217,21 @@
 
          [:> UI/Components.Design.Section
           {:title (t :items-section-title) :collapsible true}
-          (ui-items-list reservations-sorted)]
+          [:> UI/Components.Design.ListCard.Stack
+           (doall
+            (for [reservation reservations-sorted]
+              [:<> {:key (:id reservation)}
+               [reservation-card reservation
+                now
+                (some->> (:model reservation) :id
+                         (routing/path-for ::routes/models-show :model-id))
+                date-locale]]))]]
 
          (when (seq contracts)
            [:> UI/Components.Design.Section
             {:title (t :documents-section-title) :collapsible true}
 
-            [:> UI/Components.Design.Stack {:space 3}
+            [:div.d-grid.gap-3
              (doall
               (for [contract contracts]
                 ^{:key (:id contract)}

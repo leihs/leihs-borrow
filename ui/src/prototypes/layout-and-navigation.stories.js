@@ -3,9 +3,9 @@ import React, { useState } from 'react'
 import Topnav from '../components/Topnav'
 import Menu from '../components/Menu'
 import PageLayout from '../components/PageLayout'
-import ListCard from '../components/ListCard'
-import ActionButtonGroup from '../components/ActionButtonGroup'
 import { PowerOffIcon, UserIcon } from '../components/Icons'
+import ListCard from '../components/ListCard'
+import Section from '../components/Section'
 
 export default {
   title: 'Prototypes/Layout And Navigation',
@@ -189,38 +189,33 @@ export function layoutAndNavigation() {
         <p className="text-muted d-none d-lg-block">
           Click the button &quot;Bereich&quot; to open the app switcher menu.
         </p>
-        <p className="text-muted">
+        <p className="text-muted mb-4">
           Click the button with the user&apos;s initials (&quot;AB&quot;) to open the user menu.
         </p>
-        <h1 className="d-sm-none">xs</h1>
-        <h1 className="d-none d-sm-block d-md-none">sm</h1>
-        <h1 className="d-none d-md-block d-lg-none">md</h1>
-        <h1 className="d-none d-lg-block">lg, xl, xxl</h1>
-        <p className="fw-bold">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Excepturi nostrum ducimus perspiciatis voluptatibus
-          molestiae deserunt suscipit nobis temporibus saepe quos. Quos id amet a nam dicta distinctio unde minima
-          obcaecati? Laboriosam velit in dicta dignissimos ullam, suscipit dolore? Facilis corrupti amet, facere
-          placeat, inventore dolorum nemo molestias repellat consequuntur error iure architecto necessitatibus tenetur
-          voluptas fugiat, totam maiores odio illo?
+        <p className="text-muted mb-4">
+          Current breakpoint: <span className="d-sm-none text-primary">xs</span>
+          <span className="d-none d-sm-inline d-md-none text-primary">sm</span>
+          <span className="d-none d-md-inline d-lg-none text-primary">md</span>
+          <span className="d-none d-lg-inline text-primary">lg, xl, xxl</span>
         </p>
-        <ListCard.Stack className="mb-4">
-          <ListCard>
-            <ListCard.Title>List card</ListCard.Title>
-          </ListCard>
-        </ListCard.Stack>
-        <ActionButtonGroup className="mb-4">
-          <button className="btn btn-primary">Button</button>
-          <button className="btn btn-secondary">Button</button>
-        </ActionButtonGroup>
-        <p className="fw-bold">
-          Ut animi nostrum explicabo, exercitationem cupiditate quia perferendis labore ex blanditiis architecto!
-          Architecto cum repellat laudantium impedit quo? Quo velit facilis qui fugiat eos dicta dolores cum fugit
-          voluptatum quaerat! Unde optio voluptatem sed laboriosam dolorum doloribus itaque vel cum harum animi,
-          possimus illo magni cupiditate non minus quos soluta quasi excepturi accusantium sit deleniti provident dicta
-          eos quas? Voluptas? Velit voluptatum labore consectetur expedita corporis perferendis fugit non doloremque
-          tempore nisi corrupti, beatae voluptates soluta, nemo omnis reiciendis pariatur magnam quasi veritatis
-          sapiente eveniet! Odio neque officia at praesentium.
-        </p>
+        <div className="d-grid gap-4">
+          <Section title="Section with text" collapsible>
+            <p className="fw-bold">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Excepturi nostrum ducimus perspiciatis
+              voluptatibus molestiae deserunt suscipit nobis temporibus saepe quos. Quos id amet a nam dicta distinctio
+              unde minima obcaecati? Laboriosam velit in dicta dignissimos ullam, suscipit dolore? Facilis corrupti
+              amet, facere placeat, inventore dolorum nemo molestias repellat consequuntur error iure architecto
+              necessitatibus tenetur voluptas fugiat, totam maiores odio illo?
+            </p>
+          </Section>
+          <Section title="Section with a list" collapsible>
+            <ListCard.Stack>
+              <ListCard>List Card 1</ListCard>
+              <ListCard>List Card 2</ListCard>
+              <ListCard>List Card 3</ListCard>
+            </ListCard.Stack>
+          </Section>
+        </div>
       </PageLayout.ContentContainer>
     </PageLayout>
   )

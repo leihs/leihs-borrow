@@ -35,11 +35,11 @@ Feature: Shopping Cart - Display of Reservation Lines
     And I navigate to the cart
     And I sleep "0.5"
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                            |
-      | 2× DSLR Camera | Pool A | 2 days from ${Date.today}       |
-      | 1× DSLR Camera | Pool B | 2 days from ${Date.today}       |
-      | 1× Tripod      | Pool B | 2 days from ${Date.today}       |
-      | 1× DSLR Camera | Pool A | 2 days from ${30.days.from_now} |
+      | title          | body                                                                            |
+      | 2× DSLR Camera | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)          |
+      | 1× DSLR Camera | Pool B\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)          |
+      | 1× Tripod      | Pool B\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)          |
+      | 1× DSLR Camera | Pool A\n${format_date_range_short(30.days.from_now, 31.days.from_now)} (2 days) |
 
 
   Scenario: Sort order of the Reservation Lines
@@ -63,13 +63,13 @@ Feature: Shopping Cart - Display of Reservation Lines
     And I navigate to the cart
     And I sleep "0.5"
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                            |
-      | 1× DSLR Camera | Pool A | 2 days from ${Date.today}       |
-      | 1× DSLR Camera | Pool B | 2 days from ${Date.today}       |
-      | 1× Tripod      | Pool B | 2 days from ${Date.today}       |
-      | 1× DSLR Camera | Pool B | 2 days from ${30.days.from_now} |
-      | 1× Xylophone   | Pool B | 2 days from ${30.days.from_now} |
-      | 1× DSLR Camera | Pool A | 2 days from ${60.days.from_now} |
+      | title          | body                                                                            |
+      | 1× DSLR Camera | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)          |
+      | 1× DSLR Camera | Pool B\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)          |
+      | 1× Tripod      | Pool B\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)          |
+      | 1× DSLR Camera | Pool B\n${format_date_range_short(30.days.from_now, 31.days.from_now)} (2 days) |
+      | 1× Xylophone   | Pool B\n${format_date_range_short(30.days.from_now, 31.days.from_now)} (2 days) |
+      | 1× DSLR Camera | Pool A\n${format_date_range_short(60.days.from_now, 61.days.from_now)} (2 days) |
 
   Scenario: Locale-/Language-based Formatting
 
@@ -90,15 +90,15 @@ Feature: Shopping Cart - Display of Reservation Lines
     And I navigate to the cart
     And I sleep "0.5"
     Then I see the following lines in the "Items" section:
-      | title          | body   | foot                 |
-      | 1× DSLR Camera | Pool A | 1 day from 13/02/01  |
-      | 1× Tripod      | Pool B | 2 days from 13/02/01 |
+      | title          | body                                |
+      | 1× DSLR Camera | Pool A\n13/02/2101 (1 day)          |
+      | 1× Tripod      | Pool B\n13/02 – 14/02/2101 (2 days) |
 
     When I click on the user profile button
     And I select "Züritüütsch" from "Language"
     And I navigate to the cart
     And I sleep "0.5"
     Then I see the following lines in the "Gegenstände" section:
-      | title          | body   | foot              |
-      | 1× DSLR Camera | Pool A | 1 Tag ab 13.2.01  |
-      | 1× Tripod      | Pool B | 2 Tage ab 13.2.01 |
+      | title          | body                                 |
+      | 1× DSLR Camera | Pool A\n13.02.2101 (1 Tag)           |
+      | 1× Tripod      | Pool B\n13.02. – 14.02.2101 (2 Tage) |

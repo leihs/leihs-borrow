@@ -37,7 +37,7 @@
       (cond
         (not (or models errors)) [ui/loading]
         errors [ui/error-view errors]
-        (empty? models) [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
+        (empty? models) [:div.d-grid.gap-4.text-center
                          (t :no-favorites)
                          [:a.decorate-links {:href (routing/path-for ::routes/home)}
                           (t :go-to-catalog)]]

@@ -53,7 +53,7 @@
    [:> UI/Components.Design.PageLayout.Header
     {:title (t :borrow.debug-page/title)}]
 
-   [:> UI/Components.Design.Stack {:space 4}
+   [:div.d-grid.gap-4
     [:> UI/Components.Design.Section {:title "Dev nav"}
      [:> UI/Components.Design.ListCard.Stack
       [:> UI/Components.Design.ListCard {:class "fw-bold"
@@ -82,7 +82,7 @@
      [:button.btn.btn-secondary.me-2 {:type :button :on-click #(dispatch [::browser-storage/clear-local-storage])} "Clear :ls2"]]
 
     [:> UI/Components.Design.Section {:title "Error views"}
-     [:> UI/Components.Design.Stack {:space 4}
+     [:div.d-grid.gap-4
       [:p.text-muted "Same as \"Errors\" story in Storybook, but with the live implementation."]
 
       [:div

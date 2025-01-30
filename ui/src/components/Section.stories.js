@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import Section from './Section'
 
 export default {
-  title: 'Design Components/Content/Section',
+  title: 'Design Components/Layout/Section',
   component: Section
 }
 

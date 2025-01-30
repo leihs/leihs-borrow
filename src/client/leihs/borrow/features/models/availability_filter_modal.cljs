@@ -45,28 +45,28 @@
                            :start-date (format-date (:startDate @selected-range))
                            :end-date (format-date (:endDate @selected-range))
                            :quantity @quantity}))}
-             [:> UI/Components.Design.Stack {:space 4}
+             [:div.d-grid.gap-4
 
               [:> UI/Components.Design.Section
 
                [:fieldset
-                [:legend.visually-hidden (t :time-span.title)]
+                [:legend.visually-hidden (t :timespan.title)]
                 [:div.d-flex.flex-column.gap-3
                  [UiDateRangePicker
                   {:locale date-locale
                    :txt {:from (t :from)
                          :until (t :until)
-                         :placeholderFrom (t :time-span.undefined)
-                         :placeholderUntil (t :time-span.undefined)}
+                         :placeholderFrom (t :timespan.undefined)
+                         :placeholderUntil (t :timespan.undefined)}
                    :selected-range @selected-range
                    :onChange change-selected-range
                    :min-date today
                    :max-date max-date}]
                  (cond
                    (not (start-date-and-end-date-set?))
-                   [:> UI/Components.Design.Warning (t :time-span.errors.start-date-and-end-date-set)]
+                   [:> UI/Components.Design.Warning (t :timespan.errors.start-date-and-end-date-set)]
                    (not (start-date-equal-or-before-end-date?))
-                   [:> UI/Components.Design.Warning  (t :time-span.errors.start-date-equal-or-before-end-date)])]]]
+                   [:> UI/Components.Design.Warning  (t :timespan.errors.start-date-equal-or-before-end-date)])]]]
 
               [:> UI/Components.Design.Section {:title (t :quantity)}
                [:label.visually-hidden {:html-for "quantity"} (t :quantity)]

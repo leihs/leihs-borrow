@@ -30,7 +30,7 @@ Feature: Rentals - Show - Repeat order
       | user | 1        | Elefant     | Pool B | 2020-03-01 | 2020-03-01 | closed |
 
     When I log in as the user
-    And I visit "/borrow/rentals/"
+    And I visit "/borrow/rentals/?tab=closed-orders"
     And I click on the card with title "Order 1"
 
     Then I see the page title "Order 1"
@@ -62,10 +62,10 @@ Feature: Rentals - Show - Repeat order
     Then the "Items added" dialog has closed
     And I see the page title "Cart"
     And I see the following lines in the "Items" section:
-      | title          | body   | foot                          |
-      | 1× DSLR Camera | Pool A | 2 days from ${3.day.from_now} |
-      | 1× Tripod      | Pool A | 2 days from ${3.day.from_now} |
-      | 1× Elefant     | Pool B | 2 days from ${3.day.from_now} |
+      | title          | body                                                                        |
+      | 1× DSLR Camera | Pool A\n${format_date_range_short(3.day.from_now, 4.day.from_now)} (2 days) |
+      | 1× Tripod      | Pool A\n${format_date_range_short(3.day.from_now, 4.day.from_now)} (2 days) |
+      | 1× Elefant     | Pool B\n${format_date_range_short(3.day.from_now, 4.day.from_now)} (2 days) |
     And I see the text:
       """
       1 invalid item
@@ -93,7 +93,7 @@ Feature: Rentals - Show - Repeat order
       | user | 1        | USB Adapter   | Pool A | 2020-02-05 | 2020-02-05 | closed |
 
     When I log in as the user
-    And I visit "/borrow/rentals/"
+    And I visit "/borrow/rentals/?tab=closed-orders"
     And I click on the card with title "Order 1"
     And I see the page title "Order 1"
     And I click on "Repeat order"
@@ -114,7 +114,7 @@ Feature: Rentals - Show - Repeat order
       | user | 1        |             | USB Adapter | Pool A | 2020-02-05 | 2020-02-05 | closed |
 
     When I log in as the user
-    And I visit "/borrow/rentals/"
+    And I visit "/borrow/rentals/?tab=closed-orders"
     And I click on the card with title "Order 1"
     And I see the page title "Order 1"
     And I click on "Repeat order"
@@ -139,6 +139,6 @@ Feature: Rentals - Show - Repeat order
 
     Then I see the page title "Cart"
     And I see the following lines in the "Items" section:
-      | title          | body   | foot                      |
-      | 1× DSLR Camera | Pool A | 2 days from ${Date.today} |
-      | 1× Tripod      | Pool A | 2 days from ${Date.today} |
+      | title          | body                                                                   |
+      | 1× DSLR Camera | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | 1× Tripod      | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |

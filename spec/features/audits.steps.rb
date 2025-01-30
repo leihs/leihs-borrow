@@ -94,12 +94,6 @@ step "I approve the order of the user/delegation" do
   find("[data-order-approve]").click
 end
 
-step "I see the order :purpose under open orders" do |purpose|
-  within find("section", text: "Open") do
-    expect(current_scope).to have_content purpose
-  end
-end
-
 step "the maximum quantity shows :n" do |n|
   expect(page).to have_content /#{n}.max/
 end

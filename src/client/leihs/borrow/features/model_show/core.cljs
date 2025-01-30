@@ -18,7 +18,6 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.errors :as errors]
-   [leihs.borrow.ui.icons :as icons]
    ["/borrow-ui" :as UI]
    ["date-fns" :as datefn]
    [leihs.borrow.lib.helpers :as h :refer [spy log]]

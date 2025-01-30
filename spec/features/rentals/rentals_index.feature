@@ -24,47 +24,27 @@ Feature: Rentals
     And a customer order with title "Order 2" and the following reservations exists for the user:
       | user         | quantity | model       | pool   | relative-start-date | relative-end-date   | state    |
       | Delegation D | 1        | DSLR Camera | Pool A | ${30.days.from_now} | ${31.days.from_now} | approved |
+
     When I log in as the user
     And I visit "/borrow/rentals/"
-    Then I see the following orders:
+    Then I see the following lines in the page content:
+      | title                         |
+      | 1× DSLR Camera\nPick up today |
+    When I click on "Active orders"
+    Then I see the following lines in the page content:
       | title   |
       | Order 1 |
-    And I click on the user profile button
+
+    When I click on the user profile button
     And I select "Delegation D" from "Switch Profile"
     Then the user profile button shows "DD"
-    And I see the following orders:
+    And I see the following lines in the page content:
       | title   |
       | Order 2 |
-
-  Scenario: Filtering according state
-    Given a customer order with title "Order 1" and the following reservations exists for the user:
-      | quantity | model       | pool   | relative-start-date | relative-end-date | state    |
-      | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | approved |
-    And a customer order with title "Order 2" and the following reservations exists for the user:
-      | quantity | model       | pool   | relative-start-date | relative-end-date   | state     |
-      | 1        | DSLR Camera | Pool A | ${30.days.from_now} | ${31.days.from_now} | approved  |
-      | 1        | Tripod      | Pool B | ${30.days.from_now} | ${31.days.from_now} | submitted |
-    When I log in as the user
-    And I visit "/borrow/rentals/"
-    Then I see the following orders:
-      | title   |
-      | Order 1 |
-      | Order 2 |
-    When I click on "Show search/filter"
-    And I select "In approval" from "Status"
-    And I click on "Apply"
-    Then I see the following orders:
-      | title   |
-      | Order 2 |
-    When I click on "Show search/filter"
-    And I select "Pickup" from "Status"
-    And I click on "Apply"
-    Then I see the following orders:
-      | title   |
-      | Order 1 |
-      | Order 2 |
-    When I click on "Show search/filter"
-    Then the "Status" select field contains value "Pickup"
+    When I click on "Current lendings"
+    Then I see the following lines in the page content:
+      | title                              |
+      | 1× DSLR Camera\nPick up in 30 days |
 
   Scenario: Filtering according date (until date only)
 
@@ -82,34 +62,44 @@ Feature: Rentals
       | quantity | model       | pool   | start-date | relative-end-date  | state  | pickup-date |
       | 1        | DSLR Camera | Pool A | 1900-01-01 | ${7.days.from_now} | signed | today       |
     And a customer order with title "Order 4" and the following reservations exists for the user:
-      | quantity | model       | pool   | start-date | end-date   | state    | pickup-date |
-      | 1        | DSLR Camera | Pool A | 9999-12-30 | 9999-12-31 | approved |             |
+      | quantity | model       | pool   | relative-start-date   | relative-end-date      | state    | pickup-date |
+      | 1        | DSLR Camera | Pool A | ${9999.days.from_now} | ${10000.days.from_now} | approved |             |
+
     When I log in as the user
     And I visit "/borrow/rentals/"
-    Then I see the following orders:
+    Then I see the following lines in the page content:
+      | title                                 |
+      | 1× DSLR Camera\nReturn tomorrow       |
+      | 1× DSLR Camera\nReturn in 7 days      |
+      | 1× DSLR Camera\nPick up in 9,999 days |
+    When I click on "Active orders"
+    Then I see the following lines in the page content:
+      | title   |
+      | Order 4 |
+      | Order 3 |
+      | Order 2 |
+    When I click on "Closed orders"
+    Then I see the following lines in the page content:
       | title   |
       | Order 1 |
-      | Order 2 |
-      | Order 3 |
-      | Order 4 |
-    When I click on "Show search/filter"
+
+    When I click on "Current lendings"
+    And I click on "Timespan from/until"
     And I enter "day after tomorrow" in the "Until" field
     And I click on "Apply"
-    Then I see the following orders:
+    Then I see the following lines in the page content:
+      | title                            |
+      | 1× DSLR Camera\nReturn tomorrow  |
+      | 1× DSLR Camera\nReturn in 7 days |
+    When I click on "Active orders"
+    Then I see the following lines in the page content:
+      | title   |
+      | Order 3 |
+      | Order 2 |
+    When I click on "Closed orders"
+    Then I see the following lines in the page content:
       | title   |
       | Order 1 |
-      | Order 2 |
-      | Order 3 |
-  # TODO: fix problem with capybara and input element!!!
-  # When I click on "Show search/filter"
-  # And I enter "yesterday" in the "Until" field
-  # And I click on "Apply"
-  # Then I see the following orders:
-  #   | title   |
-  #   | Order 1 |
-  #   | Order 2 |
-  # When I click on "Show search/filter"
-  # Then the "Until" input field has value "yesterday"
 
   Scenario: Filtering according to inventory pool
     Given a customer order with title "Order 1" and the following reservations exists for the user:
@@ -121,45 +111,68 @@ Feature: Rentals
       | 1        | Tripod      | Pool B | ${30.day.from_now}  | ${31.day.from_now} | submitted |
     When I log in as the user
     And I visit "/borrow/rentals/"
-    Then I see the following orders:
+    Then I see the following lines in the page content:
+      | title                              |
+      | 1× DSLR Camera\nPick up today      |
+      | 1× DSLR Camera\nPick up in 30 days |
+    When I click on "Active orders"
+    Then I see the following lines in the page content:
       | title   |
-      | Order 1 |
       | Order 2 |
-    When I click on "Show search/filter"
+      | Order 1 |
+
+    When I click on "Current lendings"
     And I select "Pool A" from "Inventory pools"
-    And I click on "Apply"
-    Then I see the following orders:
+    Then the "Inventory pools" select field contains value "Pool A"
+    And I see the following lines in the page content:
+      | title                              |
+      | 1× DSLR Camera\nPick up today      |
+      | 1× DSLR Camera\nPick up in 30 days |
+    When I click on "Active orders"
+    Then I see the following lines in the page content:
       | title   |
+      | Order 2 |
       | Order 1 |
-      | Order 2 |
-    When I click on "Show search/filter"
+
+    When I click on "Current lendings"
     And I select "Pool B" from "Inventory pools"
-    And I click on "Apply"
-    Then I see the following orders:
+    Then the "Inventory pools" select field contains value "Pool B"
+    And I see the text:
+      """
+      No results found for the current search filter
+      """
+    When I click on "Active orders"
+    Then I see the following lines in the page content:
       | title   |
       | Order 2 |
-    When I click on "Show search/filter"
-    Then the "Inventory pools" select field contains value "Pool B"
 
   Scenario: Filtering according to search term
-    Given a customer order with title "Order 1" and the following reservations exists for the user:
+    Given a customer order with title "Boogie" and the following reservations exists for the user:
       | quantity | model       | pool   | relative-start-date | relative-end-date | state    |
       | 1        | DSLR Camera | Pool A | ${Date.today}       | ${Date.tomorrow}  | approved |
-    And a customer order with title "Order 2" and the following reservations exists for the user:
+    And a customer order with title "Woogie" and the following reservations exists for the user:
       | quantity | model       | pool   | relative-start-date | relative-end-date  | state     |
       | 1        | DSLR Camera | Pool A | ${30.day.from_now}  | ${31.day.from_now} | approved  |
       | 1        | Tripod      | Pool B | ${30.day.from_now}  | ${31.day.from_now} | submitted |
     When I log in as the user
     And I visit "/borrow/rentals/"
-    Then I see the following orders:
-      | title   |
-      | Order 1 |
-      | Order 2 |
-    When I click on "Show search/filter"
-    And I enter "Order 1" in the "Search term" field
-    And I click on "Apply"
-    Then I see the following orders:
-      | title   |
-      | Order 1 |
-    When I click on "Show search/filter"
-    Then the "Search term" input field has value "Order 1"
+    Then I see the following lines in the page content:
+      | title                              |
+      | 1× DSLR Camera\nPick up today      |
+      | 1× DSLR Camera\nPick up in 30 days |
+    When I click on "Active orders"
+    Then I see the following lines in the page content:
+      | title  |
+      | Woogie |
+      | Boogie |
+
+    When I click on "Current lendings"
+    And I enter "Boogie" in the "Search term" field
+    And I click on "Search"
+    Then I see the following lines in the page content:
+      | title                         |
+      | 1× DSLR Camera\nPick up today |
+    When I click on "Active orders"
+    Then I see the following lines in the page content:
+      | title  |
+      | Boogie |

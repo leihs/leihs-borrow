@@ -57,8 +57,8 @@ Feature: Audits
     # check the cart
     When I click on the cart icon
     Then I see the following lines in the "Items" section:
-      | title     | body   |
-      | 1× Kamera | Pool B |
+      | title     | body                                                                              |
+      | 1× Kamera | Pool B\n${format_date_range_short(Date.tomorrow, Date.tomorrow + 1.day)} (2 days) |
 
     # submit the order
     When I click on "Send order"

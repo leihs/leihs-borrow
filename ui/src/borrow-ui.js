@@ -8,6 +8,7 @@ export const Components = {
   ModelSearchFilter: require('./features/ModelSearchFilter').default,
   ModelList: require('./features/ModelList').default,
   ModelShow: require('./features/ModelShow').default,
+  OrderSearchFilter: require('./features/OrderSearchFilter').default,
   UserProfilePage: require('./features/UserProfilePage').default,
 
   // Design components
@@ -36,12 +37,17 @@ export const Components = {
     Spinner: require('./components/Spinner').default,
     SquareImage: require('./components/SquareImage').default,
     SquareImageGrid: require('./components/SquareImageGrid').default,
-    Stack: require('./components/Stack').default,
     TruncateText: require('./components/TruncateText').default,
     Icons: require('./components/Icons'),
     Textarea: require('./components/Textarea').default,
     Topnav: require('./components/Topnav').default,
     Warning: require('./components/Warning').default
+  },
+
+  // react-bootstrap
+  ReactBootstrap: {
+    Tab: require('react-bootstrap/Tab').default,
+    Tabs: require('react-bootstrap/Tabs').default
   }
 }
 

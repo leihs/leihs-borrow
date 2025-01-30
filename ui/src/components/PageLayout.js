@@ -70,28 +70,6 @@ PageLayout.ContentContainer = function PageLayoutContentContainer({ children, cl
   )
 }
 
-PageLayout.Metadata = function PageLayoutMetadata({ children, className, ...restProps }) {
-  return (
-    <div className={cx('text-center-if-layout-allows text-black-50 mt-5 pt-3', className)} {...restProps}>
-      {children}
-    </div>
-  )
-}
-PageLayout.Metadata.displayName = 'PageLayout.Metadata'
-
-PageLayout.MetadataWithDetails = function PageLayoutMetadata({ summary, details }) {
-  const dataInspect = typeof details === 'string' ? details : JSON.stringify(details, 0, 2)
-  return (
-    <PageLayout.Metadata>
-      <details open={false} className="list-unstyled">
-        <summary style={{ display: 'block' }}>{summary}</summary>
-        <pre className="fs-5 text-start mt-3">{dataInspect}</pre>
-      </details>
-    </PageLayout.Metadata>
-  )
-}
-PageLayout.MetadataWithDetails.displayName = 'PageLayout.MetadataWithDetails'
-
 PageLayout.propTypes = {
   /** Element to show in content zone */
   children: PropTypes.node,

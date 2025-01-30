@@ -131,17 +131,17 @@
                     :auto-complete :off
                     :id :the-form}
              (if (= models-quantity 0)
-               [:> UI/Components.Design.Stack {:space 4}
+               [:div.d-grid.gap-4
                 [:> UI/Components.Design.Warning {:class "fs-2"}
                  (t :dialog.error-no-items)]]
-               [:> UI/Components.Design.Stack {:space 4}
+               [:div.d-grid.gap-4
                 [:> UI/Components.Design.Section
                  [:p.fw-bold (t :dialog.info {:count models-quantity})]]
                 [:> UI/Components.Design.Section {:title (t :dialog.order-for)}
                  [:div.fw-bold current-profile-name]]
-                [:> UI/Components.Design.Section {:title (t :dialog.time-span)}
+                [:> UI/Components.Design.Section {:title (t :dialog.timespan)}
                  [:fieldset
-                  [:legend.visually-hidden (t :dialog.time-span)]
+                  [:legend.visually-hidden (t :dialog.timespan)]
                   [:div.d-flex.flex-column.gap-3
                    [UiDateRangePicker
                     {:locale date-locale

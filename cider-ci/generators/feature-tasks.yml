@@ -94,25 +94,20 @@
     FEATURE_NAME: 'Rentals Switching profile 1'
     FEATURE: './spec/features/rentals/rentals_index.feature[1:1:1]'
 './spec/features/rentals/rentals_index.feature[1:2:1]':
-  name: 'Rentals Filtering according state 1'
-  environment_variables:
-    FEATURE_NAME: 'Rentals Filtering according state 1'
-    FEATURE: './spec/features/rentals/rentals_index.feature[1:2:1]'
-'./spec/features/rentals/rentals_index.feature[1:3:1]':
   name: 'Rentals Filtering according date (until date only) 1'
   environment_variables:
     FEATURE_NAME: 'Rentals Filtering according date (until date only) 1'
-    FEATURE: './spec/features/rentals/rentals_index.feature[1:3:1]'
-'./spec/features/rentals/rentals_index.feature[1:4:1]':
+    FEATURE: './spec/features/rentals/rentals_index.feature[1:2:1]'
+'./spec/features/rentals/rentals_index.feature[1:3:1]':
   name: 'Rentals Filtering according to inventory pool 1'
   environment_variables:
     FEATURE_NAME: 'Rentals Filtering according to inventory pool 1'
-    FEATURE: './spec/features/rentals/rentals_index.feature[1:4:1]'
-'./spec/features/rentals/rentals_index.feature[1:5:1]':
+    FEATURE: './spec/features/rentals/rentals_index.feature[1:3:1]'
+'./spec/features/rentals/rentals_index.feature[1:4:1]':
   name: 'Rentals Filtering according to search term 1'
   environment_variables:
     FEATURE_NAME: 'Rentals Filtering according to search term 1'
-    FEATURE: './spec/features/rentals/rentals_index.feature[1:5:1]'
+    FEATURE: './spec/features/rentals/rentals_index.feature[1:4:1]'
 './spec/features/rentals/rentals_show.feature[1:1:1]':
   name: 'Rentals - Show General example (2 approved items) 1'
   environment_variables:

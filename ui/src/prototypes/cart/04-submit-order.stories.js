@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import cx from 'classnames'
 
 import ModalDialog from '../../components/ModalDialog'
-import Stack from '../../components/Stack'
 import Section from '../../components/Section'
 import Textarea from '../../components/Textarea'
 import InfoMessage from '../../components/InfoMessage'
@@ -70,7 +69,7 @@ export const submitOrder = ({ onSubmit, onCancel, initialTitle, initialPurpose }
           className={cx({ 'was-validated': formValidated })}
           id="the-form"
         >
-          <Stack space="4">
+          <div className="d-grid gap-4">
             <Section title="Titel" className={cx({ 'was-validated': titleValidated })}>
               <label htmlFor="title" className="visually-hidden">
                 Titel
@@ -104,7 +103,7 @@ export const submitOrder = ({ onSubmit, onCancel, initialTitle, initialPurpose }
               />
               <InfoMessage className="mt-2">Für den Inventarpark</InfoMessage>
             </Section>
-          </Stack>
+          </div>
         </form>
       </ModalDialog.Body>
       <ModalDialog.Footer>

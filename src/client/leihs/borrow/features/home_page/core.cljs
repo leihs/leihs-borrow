@@ -31,13 +31,13 @@
          [:<>
           [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
            [:div.pt-2 [filter-comp default-dispatch-fn]]]
-          [:> UI/Components.Design.Stack
+          [:div
            [:> UI/Components.Design.Section {:title (t :categories)}
             (categories/categories-list {})]]]
         ; else
          [:<>
           [:> UI/Components.Design.PageLayout.Header {:title (t :title)}]
-          [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
+          [:div.d-grid.gap-4.text-center
            [:> UI/Components.Design.Warning {:class "fs-2"} (t :no-reservable-items)]
            [:a.decorate-links {:href (routing/path-for ::routes/inventory-pools-index)}
             (t :check-available-pools)]]])])))

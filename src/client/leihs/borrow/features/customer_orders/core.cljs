@@ -1,8 +1,6 @@
 (ns leihs.borrow.features.customer-orders.core
   (:require
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]
-   #_[leihs.borrow.features.customer-orders.orders-index :as index]
-   #_[leihs.borrow.features.customer-orders.orders-show :as show]))
+   [leihs.borrow.lib.translate :refer [t set-default-translate-path]]))
 
 ; NOTE: re-exporting confuses hot-reloading (we want `alias` but does not exist in cljs)
 ; (def index-view index/view)

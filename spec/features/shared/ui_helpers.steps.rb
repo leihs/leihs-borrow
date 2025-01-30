@@ -54,8 +54,8 @@ def expect_equal_card_data(card_data, table)
   # ignore keys that are not present in the expectations table by removing them:
   actual_data = card_data.map { |l| l.slice(*table.headers.map(&:to_sym)) }
 
-  # interpolate dates in expected foot
-  expected_lines = table.hashes.map { |h| h["foot"].nil? ? h : h.merge({ "foot" => interpolate_dates_short(h["foot"]) }) }
+  # apply interpolation
+  expected_lines = table.hashes.map { |h| h.transform_values { |v| custom_interpolation(v) } }
 
   expect(actual_data).to eq symbolize_hash_keys(expected_lines)
 end

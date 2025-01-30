@@ -1,6 +1,5 @@
 import React from 'react'
 import PageLayout from '../../components/PageLayout'
-import Stack from '../../components/Stack'
 import Section from '../../components/Section'
 import ActionButtonGroup from '../../components/ActionButtonGroup'
 import PropertyTable from '../../components/PropertyTable'
@@ -25,16 +24,16 @@ export const show = ({ onItemClick }) => {
     <PageLayoutMock>
       <PageLayout.Header title="Show something"></PageLayout.Header>
 
-      <Stack space="5">
+      <div className="d-grid gap-5">
         <Section title="Some info" collapsible>
-          <Stack space="3">
+          <div className="d-grid gap-3">
             <div className="fw-bold">{lorem}</div>
             <ActionButtonGroup>
               <button type="button" className="btn btn-secondary">
                 Some action
               </button>
             </ActionButtonGroup>
-          </Stack>
+          </div>
         </Section>
 
         <Section title="Some properties" collapsible>
@@ -73,9 +72,7 @@ export const show = ({ onItemClick }) => {
             Another action
           </button>
         </ActionButtonGroup>
-      </Stack>
-
-      <PageLayout.Metadata>ID: 12345</PageLayout.Metadata>
+      </div>
     </PageLayoutMock>
   )
 }

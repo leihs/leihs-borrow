@@ -112,9 +112,9 @@ Feature: Templates
     Then the "Items added" dialog has closed
     And I see the page title "Cart"
     And I see the following lines in the "Items" section:
-      | title           | body   | foot                          |
-      | 1× Gecko        | Pool A | 2 days from ${3.day.from_now} |
-      | 1× Video Camera | Pool A | 2 days from ${3.day.from_now} |
+      | title           | body                                                                         |
+      | 1× Gecko        | Pool A\n${format_date_range_short(3.days.from_now, 4.day.from_now)} (2 days) |
+      | 1× Video Camera | Pool A\n${format_date_range_short(3.days.from_now, 4.day.from_now)} (2 days) |
 
 
   Scenario: Template with an unreservable model
@@ -145,8 +145,8 @@ Feature: Templates
     Then the "Items added" dialog has closed
     And I see the page title "Cart"
     And I see the following lines in the "Items" section:
-      | title           | body   | foot                           |
-      | 1× Video Camera | Pool A | 2 days from ${0.days.from_now} |
+      | title           | body                                                                   |
+      | 1× Video Camera | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
 
   Scenario: Template no reservable models
     When I log in as the user

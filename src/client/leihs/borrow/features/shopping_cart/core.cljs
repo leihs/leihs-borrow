@@ -1,34 +1,28 @@
 (ns leihs.borrow.features.shopping-cart.core
   (:require
-   ["date-fns" :as datefn]
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   ["/borrow-ui" :as UI]
+   ["date-fns" :as date-fns]
    [clojure.string :as string]
-   [reagent.core :as reagent]
-   [reagent.impl.template :as rtpl]
-   [re-graph.core :as re-graph]
-   [re-frame.std-interceptors :refer [path]]
-   [shadow.resource :as rc]
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
    [leihs.borrow.client.routes :as routes]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                      reg-event-db
-                                      reg-sub
-                                      subscribe
-                                      dispatch]]
-   [leihs.borrow.lib.helpers :as h]
-   [leihs.borrow.lib.errors :as errors]
-   [leihs.borrow.lib.form-helpers :refer [UiTextarea]]
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.translate :refer [t set-default-translate-path] :as translate]
    [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.borrow.features.models.model-filter :as filter-modal]
-   [leihs.core.core :refer [dissoc-in presence]]
-   [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.customer-orders.core :as rentals]
    [leihs.borrow.features.model-show.availability :as availability]
-   [leihs.borrow.translations :as translations]
+   [leihs.borrow.features.shopping-cart.timeout :as timeout]
+   [leihs.borrow.lib.errors :as errors]
+   [leihs.borrow.lib.form-helpers :refer [UiTextarea]]
+   [leihs.borrow.lib.helpers :as h]
    [leihs.borrow.lib.prefs :as prefs]
-   ["/borrow-ui" :as UI]))
+   [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db reg-event-fx
+                                      reg-sub subscribe]]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.lib.translate :refer [set-default-translate-path t] :as translate]
+   [leihs.borrow.translations :as translations]
+   [leihs.core.core :refer [dissoc-in]]
+   [re-graph.core :as re-graph]
+   [reagent.core :as reagent]
+   [shadow.resource :as rc]))
 
 (set-default-translate-path :borrow.shopping-cart)
 
@@ -144,9 +138,9 @@
  (fn-traced [{:keys [db]} [_ requested-date]]
    (let [edit-mode (get-in db [::edit-mode])
          max-fetched-or-fetching (js/Date. (or (:fetching-until-date edit-mode) (:fetched-until-date edit-mode)))
-         range-start (datefn/addDays max-fetched-or-fetching 1)
+         range-start (date-fns/addDays max-fetched-or-fetching 1)
          range-end (availability/with-future-buffer requested-date)]
-     (when (datefn/isAfter requested-date max-fetched-or-fetching)
+     (when (date-fns/isAfter requested-date max-fetched-or-fetching)
        {:dispatch [::fetch-availability
                    (-> range-start h/date-format-day)
                    (-> range-end h/date-format-day)]}))))
@@ -210,8 +204,8 @@
            start-date (:start-date res-line)
            end-date (:end-date res-line)
            quantity (count res-lines)
-           start-of-current-month (datefn/startOfMonth now)
-           fetch-until-date (-> (datefn/parseISO end-date)
+           start-of-current-month (date-fns/startOfMonth now)
+           fetch-until-date (-> (date-fns/parseISO end-date)
                                 availability/with-future-buffer)]
        {:db (assoc-in db [::edit-mode]
                       {:res-lines res-lines
@@ -271,7 +265,7 @@
  ::order-success-notification-confirm
  (fn-traced [_ _]
    {:fx [[:dispatch [::close-order-success-notification]]
-         [:dispatch [:routing/navigate [::routes/rentals-index]]]]}))
+         [:dispatch [:routing/navigate [::routes/rentals-index {:query-params {:tab "open-orders"}}]]]]}))
 
 (reg-event-fx
  ::update-reservations
@@ -392,8 +386,8 @@
             model (:model edit-mode-data)
             loading? (nil? (:availability edit-mode-data))
             availability (or (:availability edit-mode-data) [])
-            start-date (datefn/parseISO (:start-date edit-mode-data))
-            end-date (datefn/parseISO (:end-date edit-mode-data))
+            start-date (date-fns/parseISO (:start-date edit-mode-data))
+            end-date (date-fns/parseISO (:end-date edit-mode-data))
             quantity (:quantity edit-mode-data)
             suspensions (:suspensions current-profile)
 
@@ -425,7 +419,7 @@
             fetched-until-date (-> edit-mode-data
                                    :fetched-until-date
                                    js/Date.
-                                   datefn/endOfDay)
+                                   date-fns/endOfDay)
             is-saving? (:is-saving? edit-mode-data)
             show-day-quants @(subscribe [::prefs/show-day-quants])
             on-show-day-quants-change #(dispatch [::prefs/set-show-day-quants %])]
@@ -436,7 +430,7 @@
                                               :title (t :edit-dialog/dialog-title)
                                               :class "ui-booking-calendar"}
          [:> UI/Components.Design.ModalDialog.Body
-          [:> UI/Components.Design.Stack {:space 4}
+          [:div.d-grid.gap-4
            [:> UI/Components.OrderPanel
             {:initialQuantity quantity
              :initialStartDate start-date
@@ -481,7 +475,7 @@
           [:button.btn.btn-secondary {:on-click #(dispatch [::cancel-edit])}
            (t :edit-dialog/cancel)]]]))))
 
-(defn reservation [res-lines invalid-res-ids]
+(defn reservation [res-lines invalid-res-ids date-locale]
   (let [exemplar (first res-lines)
         model (:model exemplar)
         quantity (count res-lines)
@@ -492,9 +486,7 @@
         invalid? (every? invalid-res-ids (map :id res-lines))
         start-date (js/Date. (:start-date exemplar))
         end-date (js/Date. (:end-date exemplar))
-        ;; NOTE: should be in API
-        total-days (+ 1 (datefn/differenceInCalendarDays end-date start-date))
-        duration (t :line.duration {:totalDays total-days :fromDate start-date})
+        total-days (+ 1 (date-fns/differenceInCalendarDays end-date start-date))
         imgSrc (or (get-in model [:cover-image :image-url])
                    (get-in model [:images 0 :image-url]))]
     [:div
@@ -506,12 +498,10 @@
        (:name model)]
 
       [:> UI/Components.Design.ListCard.Body
-       pool-names]
-
-      [:> UI/Components.Design.ListCard.Foot
-       [:> UI/Components.Design.Badge
-        {:colorClassName (when invalid? " bg-danger")}
-        duration]]]]))
+       [:div pool-names]
+       [:div {:class (when invalid? "text-danger")}
+        (h/format-date-range start-date end-date date-locale)
+        " (" (t :line.duration-days {:totalDays total-days}) ")"]]]]))
 
 (defn delegation-section []
   (let [user-data @(subscribe [::current-user/user-data])
@@ -531,13 +521,13 @@
                      timer-fn  (js/setInterval #(reset! now (js/Date.)) 1000)]
     (let [data @(subscribe [::data])
           settings @(subscribe [::settings])
-          valid-until (-> data :valid-until datefn/parseISO)
+          valid-until (-> data :valid-until date-fns/parseISO)
           total-minutes (-> settings :timeout-minutes)
-          remaining-seconds  (max 0 (datefn/differenceInSeconds valid-until @now))
+          remaining-seconds  (max 0 (date-fns/differenceInSeconds valid-until @now))
           remaining-minutes (-> remaining-seconds (/ 60) (js/Math.ceil))
           waiting? @(subscribe [::timeout/waiting])]
       [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible false}
-       [:> UI/Components.Design.Stack {:space 3}
+       [:div.d-grid.gap-3
         [:> UI/Components.Design.ProgressInfo {:title (t :countdown/time-limit)
                                                :info (cond (<= remaining-seconds 0)
                                                            (reagent/as-element [:> UI/Components.Design.Warning (t :countdown/expired)])
@@ -588,7 +578,7 @@
             :auto-complete :off
             :id :the-form
             :class (when @form-validated? "was-validated")}
-           [:> UI/Components.Design.Stack {:space "4"}
+           [:div.d-grid.gap-4
 
             [:> UI/Components.Design.Section
              {:title (t :confirm-dialog/title)
@@ -704,7 +694,8 @@
           total-reservable-quantities (-> edit-mode-data :model :total-reservable-quantities)
           is-initial-loading? (not (or data errors))
           is-loading? @(subscribe [::loading])
-          refreshing-timeout? @(subscribe [::timeout/waiting])]
+          refreshing-timeout? @(subscribe [::timeout/waiting])
+          date-locale @(subscribe [::translate/date-locale])]
 
       [:> UI/Components.Design.PageLayout.ContentContainer
        (cond
@@ -715,7 +706,7 @@
          (empty? grouped-reservations)
          [:<>
           [:> UI/Components.Design.PageLayout.Header {:title  (t :order-overview)}]
-          [:> UI/Components.Design.Stack {:space 4 :class "text-center decorate-links"}
+          [:div.d-grid.gap-4.text-center.decorate-links
            (t :empty-order)
            [:a.fw-bold {:href (routing/path-for ::routes/home)}
             (t :borrow-items)]]]
@@ -732,7 +723,7 @@
 
           [delete-dialog reservations]
 
-          [:> UI/Components.Design.Stack {:space 5}
+          [:div.d-grid.gap-5
 
            (if (:valid-until data)
              [countdown]
@@ -744,6 +735,7 @@
            [:> UI/Components.Design.Section
             {:class :position-relative
              :title (reagent/as-element
+                     ^{:key "title"}
                      [:<>
                       (t :line/section-title)
                       (when (or is-loading? refreshing-timeout?)
@@ -752,8 +744,9 @@
             [:> UI/Components.Design.ListCard.Stack
              (doall
               (for [[grouped-key res-lines] grouped-reservations]
-                [:<> {:key grouped-key}
-                 [reservation res-lines invalid-res-ids]]))]]
+                ^{:key grouped-key}
+                [:<>
+                 [reservation res-lines invalid-res-ids date-locale]]))]]
 
            [:> UI/Components.Design.Section
             [:> UI/Components.Design.ActionButtonGroup

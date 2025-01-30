@@ -1,68 +1,131 @@
 import React from 'react'
 import PageLayoutMock from '../../story-utils/PageLayoutMock'
 import PageLayout from '../../components/PageLayout'
-import Stack from '../../components/Stack'
-import Section from '../../components/Section'
 import ListCard from '../../components/ListCard'
-import ProgressInfo from '../../components/ProgressInfo'
-import FilterButton from '../../components/FilterButton'
+import OrderSearchFilter from '../../features/OrderSearchFilter'
+import { orderSearchFilterProps } from '../../story-utils/sample-props'
+import Tabs from 'react-bootstrap/Tabs'
+import Tab from 'react-bootstrap/Tab'
+import OrderCard from './OrderCard'
+import ReservationCard from './ReservationCard'
+import SquareImage from '../../components/SquareImage'
 
 export default {
   title: 'Prototypes/Orders/List',
   parameters: { layout: 'fullscreen' },
-  argTypes: {
-    onFilterButtonClick: { action: 'onFilterButtonClick' }
-  }
+  argTypes: {}
 }
 
-export const list = ({ onFilterButtonClick, ordersByBasicState }) => {
+export const list = ({ ordersByBasicState }) => {
+  const openOrders = ordersByBasicState.find(x => x.basicState.key === 'open').orders
+  const closedOrders = ordersByBasicState.find(x => x.basicState.key === 'closed').orders
   return (
     <PageLayoutMock>
-      <PageLayout.Header title="Bestellungen">
-        <FilterButton onClick={onFilterButtonClick}>Suche/Filter</FilterButton>
-      </PageLayout.Header>
+      <PageLayout.Header title="Bestellungen"></PageLayout.Header>
 
-      <Stack space="5">
-        {ordersByBasicState.map(({ orders, basicState }) => {
-          const { label, key } = basicState
-          return (
-            <Section key={key} title={label} collapsible>
+      <div className="d-grid gap-4">
+        <OrderSearchFilter {...orderSearchFilterProps} />
+
+        <div className="responsive-tab-combo">
+          <div>
+            <select className="form-select tab-select">
+              <option>(Responsive Tab Selector - not implemented here)</option>
+            </select>
+          </div>
+          <Tabs defaultActiveKey="current-lendings">
+            <Tab
+              eventKey="current-lendings"
+              title={
+                <span>
+                  Aktuelle Ausleihen <span className="badge rounded-pill bg-light-gray text-body">{4}</span>
+                </span>
+              }
+            >
               <ListCard.Stack>
-                {orders.map(order => {
-                  const orderLink = `/rentals/${order.id}`
-                  return (
-                    <div key={order.id}>
-                      <ListCard href={orderLink}>
-                        <div className="d-md-flex">
-                          <div style={{ flex: '1 1 53%' }} className="pe-4">
-                            <ListCard.Title>
-                              <a href={orderLink}>{order.title}</a>
-                            </ListCard.Title>
-                            <ListCard.Body>
-                              {order.durationDays} Tage{' '}
-                              {order.isCompleted ? `bis ${order.endDate}` : `ab ${order.startDate}`}, {order.modelCount}{' '}
-                              {order.modelCount === 1 ? 'Gegenstand' : 'Gegenstände'}
-                            </ListCard.Body>
-                          </div>
-                          <div style={{ flex: '1 1 47%' }}>
-                            <ListCard.Foot className="p-md-0 pe-md-3">
-                              <Stack space="2">
-                                {order.stateGroups.map((stateGroup, i) => (
-                                  <ProgressInfo key={i} {...stateGroup} small={true} />
-                                ))}
-                              </Stack>
-                            </ListCard.Foot>
-                          </div>
-                        </div>
-                      </ListCard>
-                    </div>
-                  )
-                })}
+                <ReservationCard
+                  img={<SquareImage />}
+                  quantity="1"
+                  modelName="4K-Videokamera Sony PXW-Z90"
+                  inventoryCode="P-AUS476488"
+                  poolName="Ausleihe Toni-Areal"
+                  startDate="15.10."
+                  endDate="20.1.2024"
+                  durationDays="6"
+                  statusInfo={<span className="text-danger">Rückgabe überfällig</span>}
+                  onClick={() => {}}
+                />
+                <ReservationCard
+                  img={<SquareImage />}
+                  quantity="1"
+                  modelName="4K-Videokamera Sony PXW-Z90"
+                  inventoryCode="P-AUS476488"
+                  poolName="Ausleihe Toni-Areal"
+                  startDate="15.10."
+                  endDate="20.1.2024"
+                  durationDays="6"
+                  delegationName="Delegation TZ-DDE-Cast/Audioviselle Medien"
+                  statusInfo={<span className="text-warning">Rückgabe morgen</span>}
+                  onClick={() => {}}
+                />
+                <ReservationCard
+                  img={<SquareImage />}
+                  quantity="1"
+                  modelName="Arri HMI 400w Pocket Par mit Softbox Chimera XS Video Pro 40x55cm (Arri HMI 400w Pocket Par)"
+                  inventoryCode="INV61969"
+                  poolName="Ausleihe Toni-Areal"
+                  startDate="21.10."
+                  endDate="23.1.2024"
+                  durationDays="3"
+                  statusInfo={<span className="text-primary">Abholung morgen</span>}
+                  onClick={() => {}}
+                />
+                <ReservationCard
+                  img={<SquareImage />}
+                  quantity="1"
+                  modelName="Stativ Manfrotto 298 B"
+                  inventoryCode="INV39722"
+                  poolName="Ausleihe Toni-Areal"
+                  startDate="26.10."
+                  endDate="29.11.2024"
+                  durationDays="3"
+                  statusInfo={<span className="">Abholung in 5 Tagen</span>}
+                  onClick={() => {}}
+                />
               </ListCard.Stack>
-            </Section>
-          )
-        })}
-      </Stack>
+            </Tab>
+            <Tab
+              eventKey="open-orders"
+              title={
+                <span>
+                  Aktive Bestellungen{' '}
+                  <span className="badge rounded-pill bg-light-gray text-body">{openOrders.length}</span>
+                </span>
+              }
+            >
+              <ListCard.Stack>
+                {openOrders.map(order => (
+                  <OrderCard key={order.id} order={order} orderLink={`/rentals/${order.id}`} />
+                ))}
+              </ListCard.Stack>
+            </Tab>
+            <Tab
+              eventKey="closed-orders"
+              title={
+                <span>
+                  Abgeschlossene Bestellungen{' '}
+                  <span className="badge rounded-pill bg-light-gray text-body">{closedOrders.length}</span>
+                </span>
+              }
+            >
+              <ListCard.Stack>
+                {closedOrders.map(order => (
+                  <OrderCard key={order.id} order={order} orderLink={`/rentals/${order.id}`} />
+                ))}
+              </ListCard.Stack>
+            </Tab>
+          </Tabs>
+        </div>
+      </div>
     </PageLayoutMock>
   )
 }

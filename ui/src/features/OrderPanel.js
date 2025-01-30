@@ -17,7 +17,6 @@ import Let from '../lib/Let'
 import Section from '../components/Section'
 import MinusPlusControl from '../components/MinusPlusControl'
 import DateRangePicker from '../components/DateRangePicker'
-import Stack from '../components/Stack'
 import Warning from '../components/Warning'
 import InfoMessage from '../components/InfoMessage'
 import orderPanelPropTypes from './OrderPanelPropTypes'
@@ -213,7 +212,7 @@ const OrderPanel = ({
 
   return (
     <form onSubmit={submit} noValidate className="was-validated" autoComplete="off" id="order-dialog-form">
-      <Stack space="4">
+      <div className="d-grid gap-4">
         <Section>
           <div className="fw-bold">{modelData.name}</div>
         </Section>
@@ -253,7 +252,7 @@ const OrderPanel = ({
         {!validationResult.poolError && (
           <Let title={t(label, 'timespan', locale)}>
             {({ title }) => (
-              <Stack space="4">
+              <div className="d-grid gap-4">
                 <Section title={t(label, 'quantity', locale)}>
                   <label htmlFor="quantity" className="visually-hidden">
                     {t(label, 'quantity', locale)}
@@ -307,11 +306,11 @@ const OrderPanel = ({
                     </div>
                   </div>
                 </Section>
-              </Stack>
+              </div>
             )}
           </Let>
         )}
-      </Stack>
+      </div>
     </form>
   )
 }

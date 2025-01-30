@@ -129,7 +129,7 @@
                             "–"
                             (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))])])]))]]]]
 
-        [:> UI/Components.Design.Stack {:space 5}
+        [:div.d-grid.gap-5
          (when-let [description (some-> pool :description autolinker/link)]
            [:> UI/Components.Design.Section {:collapsible false :title (t :description)}
             [:div {:class "preserve-linebreaks text-break fw-bold decorate-links"

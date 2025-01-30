@@ -2,7 +2,7 @@ import React from 'react'
 import Menu from './Menu'
 
 export default {
-  title: 'Design Components/Layout/Menu',
+  title: 'Design Components/Navigation/Menu',
   component: Menu
 }
 

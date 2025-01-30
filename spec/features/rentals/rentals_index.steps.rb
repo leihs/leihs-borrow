@@ -1,10 +1,3 @@
-step "I see the following orders:" do |table|
-  table.hashes.each do |h|
-    find(".ui-list-card", text: h["title"])
-  end
-  expect(all(".ui-list-card").count).to eq table.hashes.count
-end
-
 step "I enter :value in the :field field" do |value, field|
   value2 = case value
     when "day after tomorrow"

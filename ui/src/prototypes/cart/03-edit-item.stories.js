@@ -1,7 +1,6 @@
 import React from 'react'
 
 import ModalDialog from '../../components/ModalDialog'
-import Stack from '../../components/Stack'
 import ActionButtonGroup from '../../components/ActionButtonGroup'
 import OrderPanel from '../../features/OrderPanel'
 import { getOrderPanelMockData } from '../../story-utils/sample-props'
@@ -25,7 +24,7 @@ export const editItem = ({ onSubmit, onCancel, onRemoveClick }) => {
   return (
     <ModalDialog title="Gegenstand bearbeiten" shown>
       <ModalDialog.Body>
-        <Stack space="4">
+        <div className="d-grid gap-4">
           <OrderPanel
             modelData={modelData}
             maxDateLoaded={maxDateLoaded}
@@ -40,7 +39,7 @@ export const editItem = ({ onSubmit, onCancel, onRemoveClick }) => {
               Gegenstand entfernen
             </button>
           </ActionButtonGroup>
-        </Stack>
+        </div>
       </ModalDialog.Body>
       <ModalDialog.Footer>
         <button type="submit" className="btn btn-primary" form="order-dialog-form">

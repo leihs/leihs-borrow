@@ -3,7 +3,6 @@ import SquareImageGrid from '../../components/SquareImageGrid'
 import Section from '../../components/Section'
 import PageLayoutMock from '../../story-utils/PageLayoutMock'
 import PageLayout from '../../components/PageLayout'
-import Stack from '../../components/Stack'
 import ListCard from '../../components/ListCard'
 import { modelListProps, modelSearchFilterProps, subCategoryListProps } from '../../story-utils/sample-props'
 import ModelSearchFilter from '../../features/ModelSearchFilter'
@@ -19,7 +18,7 @@ export const category = () => {
       <PageLayout.Header title="Audio">
         <ModelSearchFilter {...modelSearchFilterProps} />
       </PageLayout.Header>
-      <Stack space="4">
+      <div className="d-grid gap-4">
         <Section title="Unterkategorien" collapsible initialCollapsed>
           <div className="mb-5">
             <ListCard.Stack>
@@ -34,7 +33,7 @@ export const category = () => {
         <Section title="Gegenstände" collapsible>
           <SquareImageGrid {...modelListProps} />
         </Section>
-      </Stack>
+      </div>
     </PageLayoutMock>
   )
 }

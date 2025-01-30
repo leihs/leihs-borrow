@@ -14,3 +14,12 @@
     display: inline;
   }
 }
+
+// override Bootstrap's `.text-muted` (setting `$text-muted` does not seem to work)
+.text-muted {
+  color: #888888 !important;
+}
+
+.tab-content {
+  margin-top: -1px;
+}

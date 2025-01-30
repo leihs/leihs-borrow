@@ -109,7 +109,7 @@
           [apply-template/dialog template models current-profile-id date-locale]
           [apply-template/success-notification]
 
-          [:> UI/Components.Design.Stack {:space 4}
+          [:div.d-grid.gap-4
 
            (cond none-reservable?
                  [:> UI/Components.Design.Warning

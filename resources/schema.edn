@@ -17,6 +17,7 @@
          :PoolOrderStateEnum {:values [:SUBMITTED :APPROVED :REJECTED :CANCELED]}
          :RentalStateEnum {:values [:OPEN :CLOSED]}
          :RefinedRentalStateEnum {:values [:IN_APPROVAL :TO_PICKUP :TO_RETURN :TBD :OVERDUE :REJECTED :CANCELED :RETURNED :EXPIRED]}
+         :ReservationMetaStateEnum {:values [:CURRENT_LENDING]}
          :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED :CANCELED]}
          :WorkdayEnum {:values [:MONDAY :TUESDAY :WEDNESDAY :THURSDAY :FRIDAY :SATURDAY :SUNDAY]}
          :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
@@ -408,6 +409,16 @@
                             :userId {:type :UUID}
                             :orderBy {:type (list :RentalsOrderByInput)}}
                      :type :RentalsConnection}
+           :reservations {:resolve :reservations
+                          :args {:userId {:type :UUID}
+                                 :metaState {:type ReservationMetaStateEnum}
+                                 :from {:type :Date
+                                        :description "The `from` and `until` args select rentals based on time interval intersection."}
+                                 :until {:type :Date
+                                         :description "The `from` and `until` args select rentals based on time interval intersection."}
+                                 :poolIds {:type (list (non-null :UUID))}
+                                 :searchTerm {:type :NonEmptyText}}
+                          :type (list :Reservation)}
            :model {:args {:id {:type (non-null :UUID)}
                           :userId {:type :UUID}}
                    :resolve :model

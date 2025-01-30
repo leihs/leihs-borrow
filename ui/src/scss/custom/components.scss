@@ -275,6 +275,7 @@ ul.category-breadcrumbs {
 
   &__content {
     flex: 1 1 auto;
+    line-height: 1.5;
   }
 
   &__arrow {
@@ -349,5 +350,26 @@ $arrow-icon: url("data:image/svg+xml,<svg width='12px' height='7px' viewBox='0 0
     width: 9px;
     height: 2.5px;
     background-color: black;
+  }
+}
+
+/* Responsive tabs (SELECT element as substitute) */
+.tab-select {
+  border-color: $border-color;
+  background-color: $body-bg !important;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.responsive-tab-combo {
+  .nav-tabs {
+    display: none;
+  }
+  @media screen and (min-width: 700px) {
+    .nav-tabs {
+      display: flex;
+    }
+    .tab-select {
+      display: none;
+    }
   }
 }
