@@ -334,6 +334,8 @@
 
     :rentals {:title {:en-GB "Orders"
                       :de-CH "Bestellungen"}
+              :section-title-current-lendings {:en-GB "Current lendings"
+                                               :de-CH "Aktuelle Ausleihen"}
               :section-title-open-rentals {:en-GB "Active orders"
                                            :de-CH "Aktive Bestellungen"}
               :section-title-closed-rentals {:en-GB "Closed orders"
@@ -481,10 +483,9 @@
                   :items-section-title {:de-CH "Gegenstände" :en-GB "Items"}
                   :documents-section-title {:de-CH "Dokumente" :en-GB "Documents"}
                   :user-or-delegation-section-title {:de-CH "Bestellung für" :en-GB "Order for"}
+
                   :reservation-line
-                  {:title
-                   {:de-CH "{itemCount}× {itemName}"
-                    :en-GB "{itemCount}× {itemName}"}
+                  {:title {:de-CH "{itemCount}× {itemName}" :en-GB "{itemCount}× {itemName}"}
                    :duration {:de-CH "{totalDays, plural,
                                   =1 {# Tag ab {fromDate, date, short}}
                                   other {# Tage ab {fromDate, date, short}}
@@ -493,20 +494,40 @@
                                   =1 {# day from {fromDate, date, short}}
                                   other {# days from {fromDate, date, short}}
                                 }"}
-                   :option
-                   {:de-CH "Option"
-                    :en-GB "Option"}}
+                   :duration-from-until {:de-CH "{fromDate, date, short} – {untilDate, date, short}"
+                                         :en-GB "{fromDate, date, short} – {untilDate, date, short}"}
+                   :duration-days {:de-CH "{totalDays, plural,
+                                             =1 {# Tag}
+                                             other {# Tage}
+                                           }"
+                                   :en-GB "{totalDays, plural,
+                                             =1 {# day}
+                                             other {# days}
+                                           }"}
+                   :overdue {:de-CH "überfällig" :en-GB "overdue"}
+                   :option {:de-CH "Option" :en-GB "Option"}}
+
                   :reservation-status-label {:DRAFT {:de-CH "DRAFT" :en-GB "DRAFT"} ; (will never appear in this view)
                                              :UNSUBMITTED {:de-CH "UNSUBMITTED" :en-GB "UNSUBMITTED"} ; (will never appear in this view)
                                              :SUBMITTED {:de-CH "In Genehmigung" :en-GB "In approval"}
                                              :APPROVED {:de-CH "Abholung" :en-GB "To pick up"}
                                              :REJECTED {:de-CH "Abgelehnt" :en-GB "Rejected"}
-                                             :SIGNED {:de-CH "Rückgabe bis {endDate, date, short}" :en-GB "To return until {endDate, date, short}"}
+                                             :SIGNED {:de-CH "Rückgabe" :en-GB "To return"}
                                              :CLOSED {:de-CH "Zurückgebracht" :en-GB "Returned"}
                                              :CANCELED {:de-CH "Storniert" :en-GB "Canceled"}
                                              ; Temporal statusses:
-                                             :EXPIRED-UNAPPROVED {:de-CH "Nicht genehmigt bis {endDate, date, short}" :en-GB "Not approved until {endDate, date, short}"}
-                                             :EXPIRED {:de-CH "Nicht abgeholt bis {endDate, date, short}" :en-GB "Not picked up until {endDate, date, short}"}}
+                                             :EXPIRED-UNAPPROVED {:de-CH "Abgelaufen (nicht genehmigt)" :en-GB "Expired (not approved)"}
+                                             :EXPIRED {:de-CH "Abgelaufen (nicht abgeholt)" :en-GB "Expired (not picked up)"}}
+                  :in-x-days {:de-CH "{days, plural,
+                                      =0 {heute}
+                                      =1 {morgen}
+                                      other {in # Tagen}
+                                      }"
+                              :en-GB "{days, plural,
+                                      =0 {today}
+                                      =1 {tomorrow}
+                                      other {in # days}
+                                      }"}
                   :cancellation-dialog {:title {:de-CH "Bestellung stornieren" :en-GB "Cancel order"}
                                         :confirm {:de-CH "Stornieren" :en-GB "Cancel order"}
                                         :cancel {:de-CH "Abbrechen" :en-GB "Abort"}}
