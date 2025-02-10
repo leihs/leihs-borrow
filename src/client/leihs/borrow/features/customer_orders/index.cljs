@@ -7,13 +7,15 @@
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.customer-orders.core :as rentals]
    [leihs.borrow.features.customer-orders.order-filter :as order-filter]
+   [leihs.borrow.features.customer-orders.reservation-card :refer [reservation-card]]
    [leihs.borrow.features.customer-orders.status-summary :refer [status-summary]]
    [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db reg-event-fx
                                       reg-sub subscribe]]
    [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.translate :refer [set-default-translate-path t]]
    [re-graph.core :as re-graph]
-   [shadow.resource :as rc]))
+   [shadow.resource :as rc]
+   [reagent.core :as r]))
 
 (set-default-translate-path :borrow.rentals)
 
@@ -92,7 +94,7 @@
 
 ;; UI
 
-(defn order-line [rental]
+(defn rental-line [rental]
   (let
    [title (or (:title rental) (:purpose rental))
     href (routing/path-for ::routes/rentals-show :rental-id (:id rental))
@@ -113,19 +115,41 @@
         [:> UI/Components.Design.ListCard.Foot {:class "p-md-0 pe-md-3"}
          [status-summary rental true]]]]]]))
 
-(defn orders-list [orders]
+(defn rentals-list [rentals]
   [:> UI/Components.Design.Stack {:divided "bottom"}
    (doall
-    (for [order orders]
-      [:<> {:key (:id order)}
-       [order-line order]]))])
+    (for [rental rentals]
+      [:<> {:key (:id rental)}
+       [rental-line rental]]))])
+
+(defn reservations-list [reservations]
+  [:> UI/Components.Design.Stack {:divided "bottom"}
+   (doall
+    (for [[reservation href] reservations]
+      [:<> {:key (:id reservation)}
+       [reservation-card reservation (js/Date.) href]]))])
+
+(defn is-open-reservation? [reservation]
+  (#{"SUBMITTED" "APPROVED" "REJECTED" "SIGNED"} (:status reservation)))
 
 (defn view []
   (let [errors @(subscribe [::errors])
         loading? @(subscribe [::loading?])
         open-rentals @(subscribe [::open-rentals])
         closed-rentals @(subscribe [::closed-rentals])
-        filters @(subscribe [::query-params])]
+        filters @(subscribe [::query-params])
+
+        rental-path-by-reservation-id (into {} (mapcat
+                                                (fn [r] (map
+                                                         #(vector
+                                                           (:id %)
+                                                           (routing/path-for ::routes/rentals-show :rental-id (:id r)))
+                                                         (:reservations r)))
+                                                open-rentals))
+        current-reservations (->> (mapcat :reservations open-rentals)
+                                  (filter is-open-reservation?)
+                                  (sort-by (juxt :start-date :end-date))
+                                  (map #(vector % (-> % :id rental-path-by-reservation-id))))]
     [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}
@@ -145,16 +169,32 @@
        :else
        [:<>
         [:> UI/Components.ReactBootstrap.Tabs
-         {:class "mb-2"
+         {:class "mb-1"
           :active-key (or (:tab filters) "reservations")
           :on-select #(dispatch [:routing/navigate
                                  [::routes/rentals-index {:query-params (assoc filters :tab %)}]])}
-         [:> UI/Components.ReactBootstrap.Tab {:event-key "reservations" :title "Aktuelle Ausleihen"}
-          "TODO"]
-         [:> UI/Components.ReactBootstrap.Tab {:event-key "open-orders" :title (t :section-title-open-rentals)}
+         [:> UI/Components.ReactBootstrap.Tab
+          {:event-key "reservations"
+           :title (r/as-element
+                   [:span
+                    (t :section-title-current-lendings) " "
+                    [:span.badge.rounded-pill.bg-light-gray.text-body (count current-reservations)]])}
           (when-not (empty? open-rentals)
-            [orders-list open-rentals])]
-         [:> UI/Components.ReactBootstrap.Tab {:event-key "closed-orders" :title (t :section-title-closed-rentals)}
+            [reservations-list current-reservations])]
+         [:> UI/Components.ReactBootstrap.Tab
+          {:event-key "open-orders"
+           :title (r/as-element
+                   [:span
+                    (t :section-title-open-rentals) " "
+                    [:span.badge.rounded-pill.bg-light-gray.text-body (count open-rentals)]])}
+          (when-not (empty? current-reservations)
+            [rentals-list open-rentals])]
+         [:> UI/Components.ReactBootstrap.Tab
+          {:event-key "closed-orders"
+           :title (r/as-element
+                   [:span
+                    (t :section-title-closed-rentals) " "
+                    [:span.badge.rounded-pill.bg-light-gray.text-body (count closed-rentals)]])}
           (when-not (empty? closed-rentals)
-            [orders-list closed-rentals])]]
+            [rentals-list closed-rentals])]]
         [:> UI/Components.Design.Stack {:space 5}]])]))

@@ -1,4 +1,4 @@
-query myRentals(
+query customerOrdersIndex(
   $userId: UUID
   $searchTerm: NonEmptyText
   $refinedRentalState: RefinedRentalStateEnum
@@ -80,4 +80,44 @@ fragment rentalProps on Rental {
   createdAt
   updatedAt
 
+  reservations(
+    orderBy: [
+      { attribute: CREATED_AT, direction: ASC }
+      { attribute: ID, direction: ASC }
+    ]
+  ) {
+    ...reservationProps
+  }
+}
+
+fragment reservationProps on Reservation {
+  id
+  status
+  startDate
+  endDate
+  actualEndDate
+  model {
+    id
+    name
+    images {
+      id
+      imageUrl
+    }
+    coverImage {
+      id
+      imageUrl
+    }
+  }
+  option {
+    id
+    name
+  }
+  quantity
+  inventoryPool {
+    id
+    name
+  }
+  item {
+    inventoryCode
+  }
 }
