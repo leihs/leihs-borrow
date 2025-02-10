@@ -37,6 +37,7 @@ export const Components = {
     SquareImage: require('./components/SquareImage').default,
     SquareImageGrid: require('./components/SquareImageGrid').default,
     Stack: require('./components/Stack').default,
+    TruncateText: require('./components/TruncateText').default,
     Icons: require('./components/Icons'),
     Textarea: require('./components/Textarea').default,
     Topnav: require('./components/Topnav').default,

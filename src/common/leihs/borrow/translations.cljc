@@ -326,6 +326,10 @@
                                                  :de-CH "Reservationseinschränkung"}}
                 :holidays {:title {:en-GB "Holidays"
                                    :de-CH "Feiertage"}}
+                :show-remaining-holidays {:more {:en-GB "Show remaining"
+                                                 :de-CH "Restliche Feiertage anzeigen"}
+                                          :hide {:en-GB "Hide"
+                                                 :de-CH "Verbergen"}}
                 :closed {:en-GB "Closed"
                          :de-CH "Geschlossen"}}
 
