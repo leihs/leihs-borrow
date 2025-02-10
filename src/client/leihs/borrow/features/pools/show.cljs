@@ -1,24 +1,19 @@
 (ns leihs.borrow.features.pools.show
-  (:require ["autolinker" :as autolinker]
-            ["date-fns" :as df]
-            [clojure.string :as string]
-            [reagent.core :as r]
-            [re-frame.core :as rf]
-            [day8.re-frame.tracing :refer-macros [fn-traced]]
-            [re-graph.core :as re-graph]
-            [shadow.resource :as rc]
-            [leihs.borrow.components :as ui]
-            [leihs.borrow.features.current-user.core :as current-user]
-            [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                               reg-event-db
-                                               reg-sub
-                                               reg-fx
-                                               subscribe
-                                               dispatch]]
-            [leihs.borrow.lib.routing :as routing]
-            [leihs.borrow.lib.translate :refer [t set-default-translate-path] :as translate]
-            [leihs.borrow.client.routes :as routes]
-            ["/borrow-ui" :as UI]))
+  (:require
+   ["/borrow-ui" :as UI]
+   ["autolinker" :as autolinker]
+   ["date-fns" :as df]
+   [clojure.string :as string]
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.components :as ui]
+   [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.borrow.lib.re-frame :refer [reg-event-db reg-event-fx reg-sub
+                                      subscribe]]
+   [leihs.borrow.lib.translate :refer [set-default-translate-path t] :as translate]
+   [re-graph.core :as re-graph]
+   [reagent.core :as r]
+   [shadow.resource :as rc]))
 
 (set-default-translate-path :borrow.pool-show)
 
@@ -76,10 +71,17 @@
        [:<>
         [:div.row
          [:div.col-12.col-md.mb-5
+
           [:> UI/Components.Design.Section {:collapsible false
                                             :title (t :contact.title)
                                             :class "preserve-linebreaks text-break fw-bold decorate-links"}
-           (:contact pool)]]
+           [:<>
+            (when-let [email (:email pool)]
+              [:a.decorate-links {:href (str "mailto:" email)}
+               email])
+            [:div
+             (:contact pool)]]]]
+
          [:div.col-12.col-md.mb-5
           [:> UI/Components.Design.Section {:collapsible false
                                             :title (t :reservation-constraint.title)
@@ -109,21 +111,26 @@
                                             :collapsible false
                                             :title (t :holidays.title)
                                             :class "fw-bold"}
-           (doall (for [[index holiday] (map-indexed (fn [index item] [index item]) (:holidays pool))]
-                    ^{:key index}
-                    [:div.row {:key index}
-                     [:div.col (:name holiday)]
-                     [:div.col
-                      (-> holiday :start-date df/parseISO (df/format "P" #js {:locale locale}))
-                      " - "
-                      (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))]]))]]]
+
+           [:> UI/Components.Design.TruncateText {:max-height "150px"
+                                                  :translations {:more (t :show-remaining-holidays.more)
+                                                                 :hide (t :show-remaining-holidays.hide)}}
+            (doall (for [[index holiday] (map-indexed (fn [index item] [index item])
+                                                      (sort-by :start-date (:holidays pool)))]
+                     ^{:key index}
+                     [:div.row {:key index}
+                      [:div.col (:name holiday)]
+                      (let [start-date (-> holiday :start-date df/parseISO (df/format "P" #js {:locale locale}))
+                            end-date (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))]
+                        [:div.col
+                         (-> holiday :start-date df/parseISO (df/format "P" #js {:locale locale}))
+                         (when (not= start-date end-date)
+                           [:<>
+                            "–"
+                            (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))])])]))]]]]
 
         [:> UI/Components.Design.Stack {:space 5}
-         (when-let [email (:email pool)]
-           [:> UI/Components.Design.Section {:collapsible false :title (t :email) :class "fw-bold"}
-            [:a.decorate-links {:href (str "mailto:" email)}
-             email]])
-
          (when-let [description (some-> pool :description autolinker/link)]
            [:> UI/Components.Design.Section {:collapsible false :title (t :description)}
-            [:div {:class "preserve-linebreaks text-break fw-bold decorate-links" :dangerouslySetInnerHTML {:__html description}}]])]])]))
+            [:div {:class "preserve-linebreaks text-break fw-bold decorate-links"
+                   :dangerouslySetInnerHTML {:__html description}}]])]])]))

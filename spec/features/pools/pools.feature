@@ -25,7 +25,6 @@ Feature: Pools
 
     When I click on the card with title "Pool A"
     Then I see the page title "Pool A"
-    And I see the "E-mail" section
 
     When I visit "/borrow/inventory-pools"
     And I see the page title "Inventory Pools"
@@ -35,7 +34,6 @@ Feature: Pools
       """
       No reservable items
       """
-    And I see the "E-mail" section
 
   Scenario: User has no pools
     When I log in as the user

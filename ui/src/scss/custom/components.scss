@@ -27,6 +27,42 @@
   }
 }
 
+/* CSS Component: TruncateText */
+
+.truncate-text {
+  &__arrow-right {
+    margin-right: 0.5em;
+    transform: rotate(-90deg);
+  }
+
+  &__arrow-up {
+    margin-right: 0.5em;
+    transform: rotate(180deg);
+  }
+
+  &--expanded {
+    height: 100%;
+  }
+
+  &--collapsed {
+    overflow: hidden;
+  }
+
+  &__gradient-overlay {
+    height: 5em;
+    background: linear-gradient(to top, white 20%, transparent);
+    position: absolute;
+    bottom: -10px;
+    width: 100%;
+  }
+
+  &__button {
+    position: absolute;
+    bottom: 0;
+    z-index: 9999;
+  }
+}
+
 /* CSS Component: .gallery-button */
 
 .gallery-button {
