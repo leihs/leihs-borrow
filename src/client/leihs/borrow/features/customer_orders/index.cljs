@@ -1,6 +1,7 @@
 (ns leihs.borrow.features.customer-orders.index
   (:require
    ["/borrow-ui" :as UI]
+   ["date-fns" :as date-fns]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.components :as ui]
@@ -12,10 +13,10 @@
    [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db reg-event-fx
                                       reg-sub subscribe]]
    [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.translate :refer [set-default-translate-path t]]
+   [leihs.borrow.lib.translate :as translate :refer [set-default-translate-path t]]
    [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   [reagent.core :as r]))
+   [reagent.core :as r]
+   [shadow.resource :as rc]))
 
 (set-default-translate-path :borrow.rentals)
 
@@ -122,15 +123,12 @@
       [:<> {:key (:id rental)}
        [rental-line rental]]))])
 
-(defn reservations-list [reservations]
+(defn reservations-list [reservations now date-locale]
   [:> UI/Components.Design.Stack {:divided "bottom"}
    (doall
     (for [[reservation href] reservations]
       [:<> {:key (:id reservation)}
-       [reservation-card reservation (js/Date.) href]]))])
-
-(defn is-open-reservation? [reservation]
-  (#{"SUBMITTED" "APPROVED" "REJECTED" "SIGNED"} (:status reservation)))
+       [reservation-card reservation now href date-locale]]))])
 
 (defn view []
   (let [errors @(subscribe [::errors])
@@ -138,7 +136,9 @@
         open-rentals @(subscribe [::open-rentals])
         closed-rentals @(subscribe [::closed-rentals])
         filters @(subscribe [::query-params])
+        date-locale @(subscribe [::translate/date-locale])
 
+        now (js/Date.)
         rental-path-by-reservation-id (into {} (mapcat
                                                 (fn [r] (map
                                                          #(vector
@@ -147,8 +147,16 @@
                                                          (:reservations r)))
                                                 open-rentals))
         current-reservations (->> (mapcat :reservations open-rentals)
-                                  (filter is-open-reservation?)
-                                  (sort-by (juxt :start-date :end-date))
+                                  (filter #(#{"APPROVED" "SIGNED"} (:status %)))
+                                  (sort-by (fn [r] [(date-fns/differenceInCalendarDays
+                                                     (if (= "SIGNED" (:status r))
+                                                       (js/Date. (:end-date r))
+                                                       (js/Date. (:start-date r)))
+                                                     now)
+                                                    (js/Date. (:start-date r))
+                                                    (js/Date. (:end-date r))
+                                                    (-> r :inventory-pool :name)
+                                                    (-> r :model :name)]))
                                   (map #(vector % (-> % :id rental-path-by-reservation-id))))]
     [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header
@@ -180,7 +188,7 @@
                     (t :section-title-current-lendings) " "
                     [:span.badge.rounded-pill.bg-light-gray.text-body (count current-reservations)]])}
           (when-not (empty? open-rentals)
-            [reservations-list current-reservations])]
+            [reservations-list current-reservations now date-locale])]
          [:> UI/Components.ReactBootstrap.Tab
           {:event-key "open-orders"
            :title (r/as-element

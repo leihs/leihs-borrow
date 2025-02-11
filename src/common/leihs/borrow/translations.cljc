@@ -486,16 +486,6 @@
 
                   :reservation-line
                   {:title {:de-CH "{itemCount}× {itemName}" :en-GB "{itemCount}× {itemName}"}
-                   :duration {:de-CH "{totalDays, plural,
-                                  =1 {# Tag ab {fromDate, date, short}}
-                                  other {# Tage ab {fromDate, date, short}}
-                                }"
-                              :en-GB "{totalDays, plural,
-                                  =1 {# day from {fromDate, date, short}}
-                                  other {# days from {fromDate, date, short}}
-                                }"}
-                   :duration-from-until {:de-CH "{fromDate, date, short} – {untilDate, date, short}"
-                                         :en-GB "{fromDate, date, short} – {untilDate, date, short}"}
                    :duration-days {:de-CH "{totalDays, plural,
                                              =1 {# Tag}
                                              other {# Tage}
@@ -624,14 +614,14 @@
                                                            =1 {# Gegenstand ungültig}
                                                            other {# Gegenstände ungültig}
                                                            }"}
-                           :duration {:de-CH "{totalDays, plural,
-                                              =1 {# Tag ab {fromDate, date, short}}
-                                              other {# Tage ab {fromDate, date, short}}
-                                              }"
-                                      :en-GB "{totalDays, plural,
-                                              =1 {# day from {fromDate, date, short}}
-                                              other {# days from {fromDate, date, short}}
-                                              }"}}
+                           :duration-days {:de-CH "{totalDays, plural,
+                                                                        =1 {# Tag}
+                                                                        other {# Tage}
+                                                                      }"
+                                           :en-GB "{totalDays, plural,
+                                                                        =1 {# day}
+                                                                        other {# days}
+                                                                      }"}}
                     :edit-dialog {:dialog-title {:en-GB "Edit reservation" :de-CH "Reservation bearbeiten"}
                                   :delete-reservation {:en-GB "Remove reservation" :de-CH "Reservation entfernen"}
                                   :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
