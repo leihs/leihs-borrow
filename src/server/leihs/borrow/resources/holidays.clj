@@ -17,11 +17,14 @@
       (sql/where [:= :inventory_pool_id pool-id])
       (sql/where [:>= :holidays.end_date [:now]]))) ; only future holidays
 
-(defn get-multiple [{{tx :tx} :request} _ {pool-id :id}]
+(defn get-by-pool-id [tx pool-id]
   (-> pool-id
       base-sqlmap
       sql-format
       (->> (jdbc-query tx))))
+
+(defn get-multiple [{{tx :tx} :request} _ {pool-id :id}]
+  (get-by-pool-id tx pool-id))
 
 (comment
   (require '[leihs.core.db :as db])

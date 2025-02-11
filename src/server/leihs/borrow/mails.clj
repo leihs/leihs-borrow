@@ -12,6 +12,7 @@
    [leihs.borrow.resources.delegations :refer [delegation?]]
    [leihs.borrow.resources.languages :as lang]
    [leihs.borrow.resources.inventory-pools :as pools]
+   [leihs.borrow.resources.inventory-pools.email-variables :as email-vars]
    [leihs.borrow.resources.orders.shared :as orders]
    [leihs.borrow.resources.users.shared :as users]
    [leihs.borrow.translate :refer [t]]
@@ -29,15 +30,20 @@
       :body))
 
 (defn send-received [{{:keys [settings tx]} :request} order]
-  (let [inventory-pool (pools/get-by-id tx (:inventory_pool_id order))]
+  (let [inventory-pool (->> order
+                            :inventory_pool_id
+                            (pools/get-by-id tx))]
     (when (:deliver_received_order_emails inventory-pool)
-      (let [lang-locale (:locale (lang/default tx))
-            tmpl (get-tmpl tx "received" (:id inventory-pool) lang-locale)]
+      (let [lang-locale (-> (lang/default tx) :locale keyword)
+            tmpl (get-tmpl tx "received" (:id inventory-pool) (name lang-locale))]
         (cond
           (not inventory-pool) (warn "Pool for sending email not found or it is inactive.")
           (not tmpl) (warn (format "No 'received' mail template found for pool '%s'." (:id inventory-pool)))
           :else (let [email-signature (:email_signature settings)
                       user (users/get-by-id tx (:user_id order))
+                      pool (->> inventory-pool
+                                (email-vars/merge-workdays tx lang-locale)
+                                (email-vars/merge-holidays tx lang-locale))
                       reservations (-> (sql/select :r.quantity, :r.start_date, :r.end_date
                                                    [[:concat_ws " " :m.product :m.version] :model_name])
                                        (sql/from [:reservations :r])
@@ -46,20 +52,20 @@
                                        sql-format
                                        (->> (jdbc-query tx)))
                       purpose (:purpose order)
-                      order-url (str (:external_base_url settings) "/manage/" (:id inventory-pool) "/orders/" (:id order) "/edit")
+                      order-url (str (:external_base_url settings) "/manage/" (:id pool) "/orders/" (:id order) "/edit")
                       email-body (wet/render (wet/parse tmpl)
                                              {:params {:user user
-                                                       :inventory_pool inventory-pool
+                                                       :inventory_pool pool
                                                        :email_signature email-signature
                                                        :reservations reservations
                                                        :comment nil
                                                        :purpose purpose
                                                        :order_url order-url}
                                               :filters {}})
-                      address (or (:email inventory-pool) (:smtp_default_from_address settings))]
+                      address (or (:email pool) (:smtp_default_from_address settings))]
                   (debug email-body)
                   (-> (sql/insert-into :emails)
-                      (sql/values [{:inventory_pool_id (:id inventory-pool)
+                      (sql/values [{:inventory_pool_id (:id pool)
                                     :from_address address
                                     :to_address address
                                     :subject (t :borrow.mail-templates.received.subject lang-locale)
@@ -68,14 +74,20 @@
                       (->> (jdbc-execute! tx)))))))))
 
 (defn send-submitted [{{:keys [settings] tx :tx} :request} order]
-  (let [inventory-pool (pools/get-by-id tx (:inventory_pool_id order))
-        user (users/get-by-id tx (:user_id order))
+  (let [user (users/get-by-id tx (:user_id order))
         target-user-id (if (delegation? user)
                          (orders/delegated-user-id tx (:id order))
                          (:id user))
         target-user (users/get-by-id tx target-user-id)
-        lang-locale (:locale (lang/get-the-one-to-use tx target-user-id))
-        tmpl (get-tmpl tx "submitted" (:id inventory-pool) lang-locale)]
+        lang-locale (-> (lang/get-the-one-to-use tx target-user-id)
+                        :locale
+                        keyword)
+        inventory-pool (->> order
+                            :inventory_pool_id
+                            (pools/get-by-id tx)
+                            (email-vars/merge-workdays tx lang-locale)
+                            (email-vars/merge-holidays tx lang-locale))
+        tmpl (get-tmpl tx "submitted" (:id inventory-pool) (name lang-locale))]
     (cond
       (not inventory-pool) (warn "Pool for sending email not found or it is inactive.")
       (not tmpl) (warn (format "No 'submitted' mail template found for pool '%s'." (:id inventory-pool)))

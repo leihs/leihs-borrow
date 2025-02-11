@@ -30,6 +30,13 @@
       (sql/from :workdays)
       (sql/where [:= :inventory_pool_id pool-id])))
 
+(defn get-by-pool-id [tx pool-id]
+  (-> pool-id
+      base-sqlmap
+      sql-format
+      (->> (jdbc-query tx))
+      first))
+
 (defn with-workdays-sqlmap [sqlmap]
   (-> sqlmap
       (as-> sqlmap (apply sql/select sqlmap columns))
