@@ -12,6 +12,7 @@
    [leihs.borrow.lib.errors :as errors]
    [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db reg-event-fx
                                       reg-sub subscribe]]
+   [leihs.borrow.lib.routing :as routing]
    [leihs.borrow.lib.translate :as translate :refer [set-default-translate-path
                                                      t]]
    [leihs.core.core :refer [dissoc-in]]
@@ -109,13 +110,6 @@
          :<- [::current-user/can-change-profile?]
          (fn [can-change-profile? _] can-change-profile?))
 
-(defn reservations-list [reservations]
-  [:> UI/Components.Design.Stack {:divided true}
-   (doall
-    (for [reservation reservations]
-      [:<> {:key (:id reservation)}
-       [reservation-card reservation]]))])
-
 (defn cancellation-dialog []
   (fn [rental]
     (let [dialog-data @(subscribe [::cancellation-dialog-data])
@@ -138,7 +132,8 @@
         [:p.small (rentals/rental-summary-text rental)]]])))
 
 (defn view []
-  (let [routing @(subscribe [:routing/routing])
+  (let [now (js/Date.)
+        routing @(subscribe [:routing/routing])
         rental-id (get-in routing [:bidi-match :route-params :rental-id])
         rental @(subscribe [::data rental-id])
         reservations @(subscribe [::reservations rental-id])
@@ -222,7 +217,15 @@
 
          [:> UI/Components.Design.Section
           {:title (t :items-section-title) :collapsible true}
-          (reservations-list reservations-sorted)]
+          [:> UI/Components.Design.Stack {:divided true}
+           (doall
+            (for [reservation reservations-sorted]
+              [:<> {:key (:id reservation)}
+               [reservation-card reservation
+                now
+                (some->> (:model reservation) :id
+                         (routing/path-for ::routes/models-show :model-id))
+                date-locale]]))]]
 
          (when (seq contracts)
            [:> UI/Components.Design.Section

@@ -27,6 +27,14 @@
 (defn date-format-day [date]
   (datefn/format date "yyyy-MM-dd"))
 
+(defn format-date-range [d1 d2 date-locale]
+  (let [locale #js {:locale date-locale}
+        d1-formatted (datefn/format d1 "P" locale)
+        d2-formatted (datefn/format d2 "P" locale)]
+    (if (datefn/isSameYear d1 d2)
+      (str (string/replace (datefn/format d1 "P" locale) #"/?2025" "") " – " d2-formatted)
+      (str d1-formatted " – " d2-formatted))))
+
 (def log js/console.log)
 
 (defn pp-js [x]
