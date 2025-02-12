@@ -265,7 +265,7 @@
  ::order-success-notification-confirm
  (fn-traced [_ _]
    {:fx [[:dispatch [::close-order-success-notification]]
-         [:dispatch [:routing/navigate [::routes/rentals-index]]]]}))
+         [:dispatch [:routing/navigate [::routes/rentals-index {:query-params {:tab "open-orders"}}]]]]}))
 
 (reg-event-fx
  ::update-reservations
