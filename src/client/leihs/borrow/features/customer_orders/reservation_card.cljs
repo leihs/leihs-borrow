@@ -25,9 +25,9 @@
                         (cond (= "SIGNED" status) actual-end-date
                               (= "APPROVED" status) start-date)
                         (date-fns/differenceInCalendarDays now))
-        is-over? (date-fns/isAfter (js/Date.) (date-fns/addDays actual-end-date 1))
-        expired-unapproved? (and (= status "SUBMITTED") is-over?)
-        expired? (and (= status "APPROVED") is-over?)
+        is-end-date-past? (date-fns/isAfter (js/Date.) (date-fns/addDays actual-end-date 1))
+        expired-unapproved? (and (= status "SUBMITTED") is-end-date-past?)
+        expired? (and (= status "APPROVED") is-end-date-past?)
         refined-status (cond expired-unapproved? "EXPIRED-UNAPPROVED" expired? "EXPIRED" :else status)
         imgSrc (or (get-in model [:cover-image :image-url])
                    (get-in model [:images 0 :image-url]))]
@@ -46,8 +46,10 @@
                                     (<= days-to-action 1) "text-warning"
                                     (<= days-to-action 5) "text-primary")}
          (t (str :reservation-status-label "/" refined-status)) " "
-         (when days-to-action
-           (if (< days-to-action 0) (t :reservation-line/overdue)  (t :in-x-days {:days days-to-action})))]]]
+         (when (and days-to-action (not expired-unapproved?) (not expired?))
+           (if (< days-to-action 0)
+             (t :reservation-line/overdue)
+             (t :in-x-days {:days days-to-action})))]]]
 
       [:> UI/Components.Design.ListCard.Body
        [:div pool-name]
