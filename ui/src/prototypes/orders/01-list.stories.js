@@ -23,10 +23,10 @@ export const list = ({ ordersByBasicState }) => {
     <PageLayoutMock>
       <PageLayout.Header title="Bestellungen"></PageLayout.Header>
 
-      <Stack space="2">
+      <Stack space="4">
         <OrderSearchFilter {...orderSearchFilterProps} />
 
-        <Tabs defaultActiveKey="reservations" className="mb-1">
+        <Tabs defaultActiveKey="reservations" className="mb-1 page-inset-x-inverse">
           <Tab
             eventKey="reservations"
             title={

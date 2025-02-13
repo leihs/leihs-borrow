@@ -21,7 +21,7 @@
                        :saturday {:de-CH "Samstag" :en-GB "Saturday"}
                        :sunday {:de-CH "Sonntag" :en-GB "Sunday"}}}
 
-; --- MAIL TEMPLATES ---
+    ; --- MAIL TEMPLATES ---
     :mail-templates {:received {:subject {:en-GB "[leihs] Order received"
                                           :de-CH "[leihs] Bestellung eingetroffen"}}
                      :submitted {:subject {:en-GB "[leihs] Reservation Submitted"
@@ -386,6 +386,9 @@
                                         :CANCELED {:de-CH "Bestellung wurde storniert" :en-GB "Order was canceled"}
                                         :EXPIRED {:de-CH "Abgelaufen (nicht abgeholt)" :en-GB "Expired (not picked up)"}
                                         :OVERDUE {:de-CH "Rückgabe überfällig" :en-GB "Overdue"}}
+
+              :x-items {:en-GB "{itemCount, plural, =1 {{itemCount} Gegenstand} other {{itemCount} Gegenstände}}"
+                        :de-CH "{itemCount, plural, =1 {{itemCount} Gegenstand} other {{itemCount} Gegenstände}}"}
 
               :summary-line
               {:open {:de-CH "{totalDays, plural,

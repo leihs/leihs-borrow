@@ -21,7 +21,7 @@ export default function ReservationCard({
         <div className="d-md-flex gap-5 justify-content-between">
           {quantity}x {modelName} {inventoryCode && ` (${inventoryCode})`}
           {statusInfo && (
-            <div className="text-nowrap" style={{}}>
+            <div className="text-nowrap d-none d-md-block" style={{}}>
               {statusInfo}
             </div>
           )}
@@ -34,6 +34,7 @@ export default function ReservationCard({
         </div>
         {delegationName && <div>{delegationName}</div>}
       </ListCard.Body>
+      {statusInfo && <ListCard.Foot className="fw-bold d-md-none">{statusInfo}</ListCard.Foot>}
     </ListCard>
   )
 }

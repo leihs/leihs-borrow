@@ -6,7 +6,6 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
-   [leihs.borrow.features.customer-orders.core :as rentals]
    [leihs.borrow.features.customer-orders.order-filter :as order-filter]
    [leihs.borrow.features.customer-orders.reservation-card :refer [reservation-card]]
    [leihs.borrow.features.customer-orders.status-summary :refer [status-summary]]
@@ -16,7 +15,8 @@
    [leihs.borrow.lib.translate :as translate :refer [set-default-translate-path t]]
    [re-graph.core :as re-graph]
    [reagent.core :as r]
-   [shadow.resource :as rc]))
+   [shadow.resource :as rc]
+   [leihs.borrow.lib.helpers :as h]))
 
 (set-default-translate-path :borrow.rentals)
 
@@ -92,11 +92,10 @@
 
 ;; UI
 
-(defn rental-line [rental]
+(defn rental-line [rental date-locale]
   (let
    [title (or (:title rental) (:purpose rental))
-    href (routing/path-for ::routes/rentals-show :rental-id (:id rental))
-    summary-text (rentals/rental-summary-text rental)]
+    href (routing/path-for ::routes/rentals-show :rental-id (:id rental))]
 
     [:<>
      [:> UI/Components.Design.ListCard {:href href}
@@ -107,18 +106,23 @@
           title]]
 
         [:> UI/Components.Design.ListCard.Body
-         summary-text]]
+         (h/format-date-range
+          (js/Date. (:from-date rental))
+          (js/Date. (:until-date rental))
+          date-locale)
+         ", "
+         (t :x-items {:itemCount (:total-quantity rental)})]]
 
        [:div {:style {:flex "1 1 47%"}}
         [:> UI/Components.Design.ListCard.Foot {:class "p-md-0 pe-md-3"}
          [status-summary rental true]]]]]]))
 
-(defn rentals-list [rentals]
+(defn rentals-list [rentals date-locale]
   [:> UI/Components.Design.Stack {:divided "bottom"}
    (doall
     (for [rental rentals]
       [:<> {:key (:id rental)}
-       [rental-line rental]]))])
+       [rental-line rental date-locale]]))])
 
 (defn reservations-list [reservations now date-locale]
   [:> UI/Components.Design.Stack {:divided "bottom"}
@@ -174,7 +178,7 @@
        :else
        [:<>
         [:> UI/Components.ReactBootstrap.Tabs
-         {:class "mb-1"
+         {:class "mb-1 page-inset-x-inverse"
           :active-key (or (:tab filters) "reservations")
           :on-select #(dispatch [:routing/navigate
                                  [::routes/rentals-index {:query-params (assoc filters :tab %)}]])}
@@ -193,7 +197,7 @@
                     (t :section-title-open-rentals) " "
                     [:span.badge.rounded-pill.bg-light-gray.text-body (count open-rentals)]])}
           (when-not (empty? current-reservations)
-            [rentals-list open-rentals])]
+            [rentals-list open-rentals date-locale])]
          [:> UI/Components.ReactBootstrap.Tab
           {:event-key "closed-orders"
            :title (r/as-element
@@ -201,5 +205,4 @@
                     (t :section-title-closed-rentals) " "
                     [:span.badge.rounded-pill.bg-light-gray.text-body (count closed-rentals)]])}
           (when-not (empty? closed-rentals)
-            [rentals-list closed-rentals])]]
-        [:> UI/Components.Design.Stack {:space 5}]])]))
+            [rentals-list closed-rentals date-locale])]]])]))
