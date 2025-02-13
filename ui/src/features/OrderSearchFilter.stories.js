@@ -19,7 +19,6 @@ export const empty = () => (
         onTriggerTimespan={action('onTriggerTimespan')}
         onClearFilter={action('onClearFilter')}
         onChangePool={action('onChangePool')}
-        onChangeStatus={action('onChangeStatus')}
       />
     </PageLayout.Header>
   </PageLayoutMock>
@@ -41,7 +40,6 @@ export const filled = () => (
         onTriggerTimespan={action('onTriggerTimespan')}
         onClearFilter={action('onClearFilter')}
         onChangePool={action('onChangePool')}
-        onChangeStatus={action('onChangeStatus')}
       />
     </PageLayout.Header>
   </PageLayoutMock>

@@ -354,17 +354,6 @@
                                 :invalid-option-info {:en-GB "The pre-selected inventory pool is not available for the current profile"
                                                       :de-CH "Der vorher gewählte Inventarpark ist für das aktuelle Profil nicht verfügbar"}}
 
-                        :status {:title {:en-GB "Status" :de-CH "Status"}
-                                 :all {:en-GB "Any status" :de-CH "Beliebiger Status"}
-                                 :state-filter-label {:IN_APPROVAL {:de-CH "In Genehmigung" :en-GB "In approval"}
-                                                      :TO_PICKUP {:de-CH "Abholung" :en-GB "Pickup"}
-                                                      :TO_RETURN {:de-CH "Rückgabe" :en-GB "Return"}
-                                                      :RETURNED {:de-CH "Zurückgebracht" :en-GB "Returned"}
-                                                      :REJECTED {:de-CH "Abgelehnt" :en-GB "Rejected"}
-                                                      :CANCELED {:de-CH "Storniert" :en-GB "Canceled"}
-                                                      :EXPIRED {:de-CH "Abgelaufen" :en-GB "Expired"}
-                                                      :OVERDUE {:de-CH "Rückgabe überfällig" :en-GB "Overdue"}}}
-
                         :timespan-modal {:title {:en-GB "Timespan" :de-CH "Zeitraum"}
                                          :from {:en-GB "From" :de-CH "Von"}
                                          :until {:en-GB "Until" :de-CH "Bis"}

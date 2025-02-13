@@ -18,11 +18,10 @@ export default function OrderSearchFilter({
   onTriggerTimespan,
   onClearFilter,
   onChangePool,
-  onChangeStatus,
   ...restProps
 }) {
-  const { term = '', selectedPool, status: currentStatus, from, until } = currentFilters
-  const { pools: availablePools = [], status: availableStatus = [] } = availableFilters
+  const { term = '', selectedPool, from, until } = currentFilters
+  const { pools: availablePools = [] } = availableFilters
 
   const [searchTerm, setSearchTerm] = useState(term || '')
   const handleTermChange = str => {
@@ -36,12 +35,6 @@ export default function OrderSearchFilter({
   const handlePoolChange = e => {
     setPoolId(e.target.value)
     onChangePool(e.target.value)
-  }
-
-  const [status, setStatus] = useState(currentStatus || '')
-  const handleStatusChange = e => {
-    setStatus(e.target.value)
-    onChangeStatus(e.target.value)
   }
 
   const timespanLabel = (function foo() {
@@ -152,44 +145,7 @@ export default function OrderSearchFilter({
               </button>
             )}
           </div>
-
-          {/* Status */}
-          <label className="visually-hidden" htmlFor="status">
-            {t(txt, 'status-select-label', locale)}
-          </label>
-          <div className="filters--item input-group">
-            <select
-              className="form-select filter-input"
-              id="status"
-              name="status"
-              value={status}
-              onChange={handleStatusChange}
-              tabIndex={3}
-            >
-              {availableStatus.map(status => (
-                <option key={status.id} value={status.id}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
-            {status && (
-              <button
-                type="button"
-                className="btn btn-secondary bg-light-shade filter-input filter-input--clear-button"
-                onMouseDown={e => e.preventDefault()}
-                onClick={e => {
-                  e.stopPropagation()
-                  onClearFilter({ type: 'status' })
-                }}
-                aria-label="Clear filter"
-                tabIndex="4"
-              >
-                <CrossIcon height="14" width="14" />
-              </button>
-            )}
-          </div>
         </div>
-        <div className="filters"></div>
       </form>
     </div>
   )
@@ -204,6 +160,5 @@ OrderSearchFilter.propTypes = {
   onSubmitTerm: PropTypes.func.isRequired,
   onTriggerTimespan: PropTypes.func.isRequired,
   onClearFilter: PropTypes.func.isRequired,
-  onChangePool: PropTypes.func.isRequired,
-  onChangeStatus: PropTypes.func.isRequired
+  onChangePool: PropTypes.func.isRequired
 }

@@ -146,17 +146,6 @@ export const orderSearchFilterProps = {
       { id: '', label: 'Alle Inventarparks' },
       { id: 1, label: 'Pool A' },
       { id: 2, label: 'Pool B' }
-    ],
-    status: [
-      { id: '', label: 'Beliebiger Status' },
-      { id: 'IN_APPROVAL', label: 'In Genehmigung' },
-      { id: 'REJECTED', label: 'Abgelehnt' },
-      { id: 'CANCELED', label: 'Storniert' },
-      { id: 'EXPIRED', label: 'Abgelaufen' },
-      { id: 'TO_PICKUP', label: 'Abholung' },
-      { id: 'TO_RETURN', label: 'Rückgabe' },
-      { id: 'OVERDUE', label: 'Rückgabe überfällig' },
-      { id: 'RETURNED', label: 'Zurückgebracht' }
     ]
   },
   currentFilters: {},
@@ -177,10 +166,6 @@ export const orderSearchFilterProps = {
     'pool-select-label': {
       'de-CH': 'Inventarparks',
       'en-GB': 'Inventory pools'
-    },
-    'status-select-label': {
-      'de-CH': 'Status',
-      'en-GB': 'Status'
     },
     'timespan-button-label': {
       'de-CH': 'Zeitraum von/bis',
@@ -206,8 +191,7 @@ export const orderSearchFilterProps = {
   onSubmitTerm: () => {},
   onTriggerTimespan: () => {},
   onClearFilter: () => {},
-  onChangePool: () => {},
-  onChangeStatus: () => {}
+  onChangePool: () => {}
 }
 
 export function getOrderPanelMockData() {

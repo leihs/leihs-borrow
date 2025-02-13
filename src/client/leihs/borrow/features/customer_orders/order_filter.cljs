@@ -14,20 +14,6 @@
          :<- [::current-user/current-profile]
          (fn [current-profile _]
            (:inventory-pools current-profile)))
-
-(defn status-list []
-  (concat
-   [{:id "" :label (t :status.all)}]
-   (map (fn [state-name] {:id state-name :label (t (str :borrow.rentals.filter.status.state-filter-label "." state-name))})
-        ["IN_APPROVAL"
-         "REJECTED"
-         "CANCELED"
-         "EXPIRED"
-         "TO_PICKUP"
-         "TO_RETURN"
-         "OVERDUE"
-         "RETURNED"])))
-
 (defn filter-comp [filters dispatch-fn]
   (let [timespan-modal-shown? (r/atom false)]
     (fn [filters dispatch-fn]
@@ -47,8 +33,7 @@
               available-filters {:pools (concat
                                          [{:id "" :label (t :pools.all)}]
                                          (when is-unselectable-pool [{:id selected-pool-id :label (t :pools.invalid-option)}])
-                                         (map (fn [{:keys [id name]}] {:type :pool :id id :label name}) inventory-pools))
-                                 :status (status-list)}
+                                         (map (fn [{:keys [id name]}] {:type :pool :id id :label name}) inventory-pools))}
               selected-pool (first (filter #(= (:id %) selected-pool-id) (:pools available-filters)))
               current-filters (-> filters
                                   (assoc :selected-pool selected-pool)
@@ -64,16 +49,12 @@
               on-change-pool #(apply-filter (if-let [pool-id (presence %)]
                                               (assoc filters :pool-id pool-id)
                                               (dissoc filters :pool-id)))
-              on-change-status #(apply-filter (if-let [status (presence %)]
-                                                (assoc filters :status status)
-                                                (dissoc filters :status)))
               on-apply-timespan #(apply-filter (remove-blanks (merge filters %)))
               on-clear-filter (fn [filter-to-clear]
                                 (apply-filter
                                  (case (.-type filter-to-clear)
                                    "term" (dissoc filters :term)
                                    "pool" (dissoc filters :pool-id)
-                                   "status" (dissoc filters :status)
                                    "timespan" (-> filters (dissoc :from) (dissoc :until)))))]
 
           [:<>
@@ -91,7 +72,6 @@
              :onTriggerTimespan show!
              :onClearFilter on-clear-filter
              :onSubmitTerm on-submit-term
-             :onChangeStatus on-change-status
              :onChangePool on-change-pool
              :locale text-locale
              :txt (clj->js (get-in translations/dict [:borrow :rentals :filter :js-component]))}]

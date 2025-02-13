@@ -24,7 +24,6 @@
   (let [from (:from filters)
         until (:until filters)
         term (:term filters)
-        state (:state filters)
         pool-id (:pool-id filters)]
     (cond-> {}
       (not-empty term)
@@ -33,8 +32,6 @@
       (assoc :from from)
       until
       (assoc :until until)
-      state
-      (assoc :refinedRentalState state)
       pool-id
       (assoc :poolIds [pool-id]))))
 
