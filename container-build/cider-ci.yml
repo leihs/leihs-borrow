@@ -10,7 +10,7 @@ jobs:
       task_defaults:
         environment_variables:
           CI: "true"
-          LXC_BASE_IMAGE: "images:debian/bookworm/amd64"
+          CONTAINER_BASE_IMAGE: "images:debian/bookworm/amd64"
           LEIHS_MY_DIR: "{{CIDER_CI_WORKING_DIR}}"
           LEIHS_DATABASE_DIR: "{{LEIHS_MY_DIR}}/database"
           CONTAINER_NAME: "leihs-my-build-{{CIDER_CI_TRIAL_ID}}"
