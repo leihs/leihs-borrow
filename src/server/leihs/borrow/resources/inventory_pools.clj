@@ -64,6 +64,14 @@
        to-reserve-from-sqlvec
        (jdbc-query tx)))
 
+(comment
+  (->> (to-reserve-from (db/get-ds)
+                        #uuid "c0777d74-668b-5e01-abb5-f8277baa0ea8"
+                        "2025-02-21"
+                        "2025-02-26")
+       (map :name)
+       sort))
+
 (defn get-multiple
   [{{tx :tx} :request user-id ::target-user/id}
    {:keys [order-by ids]}

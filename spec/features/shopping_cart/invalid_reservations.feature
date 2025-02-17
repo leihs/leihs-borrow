@@ -57,7 +57,7 @@ Feature: Invalid reservations
     Then I see the "Edit reservation" dialog
     But I see the following warnings in the "Time span" section:
       | text                                    |
-      | Earliest pickup date in 3 days from now |
+      | Earliest pickup date in 3 working days from now |
     And I click on "Confirm"
     But the "Edit reservation" dialog did not close
 

@@ -175,6 +175,74 @@ describe 'models connection' do
                               endDateRestriction: "CLOSE_TIME" } ] } ] } } ] }
         })
       end
+
+      it 'earliest possible pick up date' do
+        days_of_week = [:sunday,
+                        :monday,
+                        :tuesday,
+                        :wednesday,
+                        :thursday,
+                        :friday,
+                        :saturday].cycle
+                        
+        # Update the workday for the next day to be closed.
+        closed_date = Date.today + 1.day
+        closed_day =
+          days_of_week
+          .with_index
+          .detect { |_, idx| idx == closed_date.wday }
+          .first
+
+        @inventory_pool.workday.update(closed_day => false)
+
+        # Add holiday starting 2 days after the closed_date and lasting for 2 days.
+        FactoryBot.create(:holiday,
+                          start_date: "#{closed_date + 2.day}",
+                          end_date: "#{closed_date + 3.day}",
+                          inventory_pool_id: @inventory_pool.id)
+
+        @inventory_pool.update(borrow_reservation_advance_days: 3)
+
+        @end ||= Date.today + 6.days
+        result = query(q, @user.id)
+
+        expect_graphql_result(result, {
+          models: {
+            edges: [
+              { node: { id: "#{@model.id}",
+                        availability: [ {
+                          dates: [
+                            { date: "#{Date.today}T00:00:00Z",
+                              quantity: 1,
+                              startDateRestriction: "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE",
+                              endDateRestriction: nil },
+                            { date: "#{Date.today + 1.day}T00:00:00Z",
+                              quantity: 1,
+                              startDateRestriction: "CLOSE_TIME",
+                              endDateRestriction: "CLOSE_TIME" },
+                            { date: "#{Date.today + 2.days}T00:00:00Z",
+                              quantity: 1,
+                              startDateRestriction: "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE",
+                              endDateRestriction: nil },
+                            { date: "#{Date.today + 3.days}T00:00:00Z",
+                              quantity: 1,
+                              startDateRestriction: "CLOSE_TIME",
+                              endDateRestriction: "CLOSE_TIME" },
+                            { date: "#{Date.today + 4.days}T00:00:00Z",
+                              quantity: 1,
+                              startDateRestriction: "CLOSE_TIME",
+                              endDateRestriction: "CLOSE_TIME" },
+                            { date: "#{Date.today + 5.days}T00:00:00Z",
+                              quantity: 1,
+                              startDateRestriction: "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE",
+                              endDateRestriction: nil },
+                            { date: "#{Date.today + 6.days}T00:00:00Z",
+                              quantity: 1,
+                              startDateRestriction: nil,
+                              endDateRestriction: nil }
+                          ] } ] } } ] }
+        })
+      end
     end
 
     it 'priorities' do

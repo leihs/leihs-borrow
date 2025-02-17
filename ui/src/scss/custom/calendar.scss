@@ -145,7 +145,7 @@
 
   // marker for today
   .rdrDayToday .rdrDayNumber span {
-    font-weight: $font-weight-normal;
+    font-weight: $font-weight-bold;
     &:after {
       background: $body-color;
     }

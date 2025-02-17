@@ -24,7 +24,7 @@ export const orderPanelTexts = {
 
     'start-date-in-past': { 'de-CH': 'Abholdatum liegt in der Vergangenheit' },
     'start-date-not-before': {
-      'de-CH': '{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens heute in # Tagen}}'
+      'de-CH': '{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens heute in # Arbeitstagen}}'
     },
 
     'quantity-to-large-at-day': {

@@ -812,41 +812,101 @@ describe 'models connection' do
       .to eq "User ID not authorized!"
   end
 
-  it 'searches properly' do
-    model = FactoryBot.create(:leihs_model,
-                              product: "Kabelrolle 230V",
-                              version: "50m",
-                              manufacturer: "Steffen")
-    FactoryBot.create(:item,
-                      leihs_model: model,
-                      responsible: @inventory_pool,
-                      is_borrowable: true)
+  context 'searches properly' do
+    before :each do
+      @model = FactoryBot.create(:leihs_model,
+                                product: "Kabelrolle 230V",
+                                version: "50m",
+                                manufacturer: "Steffen")
+      FactoryBot.create(:item,
+                        leihs_model: @model,
+                        responsible: @inventory_pool,
+                        is_borrowable: true)
+    end
 
-    q = <<-GRAPHQL
-      query($searchTerm: String) {
-        models(searchTerm: $searchTerm) {
-          edges {
-            node {
-              id
+    it 'match' do
+      q = <<-GRAPHQL
+        query($searchTerm: String) {
+          models(searchTerm: $searchTerm) {
+            edges {
+              node {
+                id
+              }
             }
           }
         }
+      GRAPHQL
+
+      search_terms = ["kabel",
+                      "rolle",
+                      "kabelrolle 50m 230v",
+                      "230v 50m",
+                      "steffen",
+                      "steffen 230v"]
+
+      search_terms.each do |t|
+        vars = { searchTerm: t }
+        result = query(q, @user.id, vars).deep_symbolize_keys
+        model_ids = result.dig(:data, :models, :edges).map { |n| n[:node][:id] }
+        expect(model_ids.count).to eq 1
+        expect(model_ids.first).to eq @model.id
+      end
+    end
+
+    it 'no match because of reservation_advance_days' do
+      days_of_week = [:sunday,
+                      :monday,
+                      :tuesday,
+                      :wednesday,
+                      :thursday,
+                      :friday,
+                      :saturday].cycle
+
+      # Update the workday for the next day to be closed.
+      closed_date = Date.today + 1.day
+      closed_day =
+        days_of_week
+        .with_index
+        .detect { |_, idx| idx == closed_date.wday }
+        .first
+
+      @inventory_pool.workday.update(closed_day => false)
+
+      # Add holiday starting 2 days after the closed_date and lasting for 2 days.
+      FactoryBot.create(:holiday,
+                        start_date: "#{closed_date + 2.day}",
+                        end_date: "#{closed_date + 3.day}",
+                        inventory_pool_id: @inventory_pool.id)
+
+      @inventory_pool.update(borrow_reservation_advance_days: 3)
+
+      q = ->(date) {
+        <<-GRAPHQL
+          {
+            models(onlyAvailable: true) {
+              edges {
+                node {
+                  id
+                  availableQuantityInDateRange(
+                    startDate: "#{date}",
+                    endDate: "#{date}"
+                  )
+                }
+              }
+            }
+          }
+        GRAPHQL
       }
-    GRAPHQL
 
-    search_terms = ["kabel",
-                    "rolle",
-                    "kabelrolle 50m 230v",
-                    "230v 50m",
-                    "steffen",
-                    "steffen 230v"]
+      model_ids = ->(result) {
+        result.dig(:data, :models, :edges).map { |n| n[:node][:id] }
+      }
 
-    search_terms.each do |t|
-      vars = { searchTerm: t }
-      result = query(q, @user.id, vars).deep_symbolize_keys
-      model_ids = result.dig(:data, :models, :edges).map { |n| n[:node][:id] }
-      expect(model_ids.count).to eq 1
-      expect(model_ids.first).to eq model.id
+      result = query(q.(Date.today + 5.days), @user.id).deep_symbolize_keys
+      expect(model_ids.(result)).to be_empty
+
+      result = query(q.(Date.today + 6.days), @user.id).deep_symbolize_keys
+      expect(model_ids.(result)).not_to be_empty
     end
   end
 end

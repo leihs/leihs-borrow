@@ -2,72 +2,108 @@
 -- (as hashmaps) will be returned
 -- :name to-reserve-from :? :*
 -- :doc Get all pools which are relevant for making a reservation
-SELECT inventory_pools.*,
-       workdays.monday,
-       workdays.tuesday,
-       workdays.wednesday,
-       workdays.thursday,
-       workdays.friday,
-       workdays.saturday,
-       workdays.sunday,
-       workdays.max_visits
-FROM inventory_pools
-INNER JOIN access_rights ON access_rights.inventory_pool_id = inventory_pools.id
-INNER JOIN workdays ON workdays.inventory_pool_id = inventory_pools.id
-WHERE inventory_pools.is_active = TRUE
-AND access_rights.user_id = CAST(:user-id AS uuid)
-AND NOT EXISTS (
-  SELECT 1
-  FROM suspensions
-  WHERE suspensions.inventory_pool_id = inventory_pools.id
-    AND suspensions.user_id = :user-id
-    AND CURRENT_DATE <= suspensions.suspended_until
+
+WITH accessible_pools AS (
+  SELECT DISTINCT inventory_pools.*,
+                  workdays.monday,
+                  workdays.tuesday,
+                  workdays.wednesday,
+                  workdays.thursday,
+                  workdays.friday,
+                  workdays.saturday,
+                  workdays.sunday,
+                  workdays.max_visits
+  FROM inventory_pools
+  INNER JOIN access_rights ON access_rights.inventory_pool_id = inventory_pools.id
+  INNER JOIN workdays ON workdays.inventory_pool_id = inventory_pools.id
+  WHERE inventory_pools.is_active = TRUE
+    AND NOT EXISTS (
+      SELECT 1
+      FROM suspensions
+      WHERE suspensions.inventory_pool_id = inventory_pools.id
+      AND suspensions.user_id = :user-id
+      AND CURRENT_DATE <= suspensions.suspended_until
+    )
+),
+date_range AS (
+  SELECT generate_series(CURRENT_DATE, :start-date::date, '1 day'::interval) AS val
 )
-AND (CAST(:start-date AS date) - CURRENT_DATE) >= inventory_pools.borrow_reservation_advance_days
+
+SELECT accessible_pools.*
+FROM accessible_pools
+
+-- the number of open days is at least `borrow_reservation_advance_days`
+WHERE (
+  SELECT count(*)
+  FROM date_range
+  WHERE (
+    array[
+      accessible_pools.monday,
+      accessible_pools.tuesday,
+      accessible_pools.wednesday,
+      accessible_pools.thursday,
+      accessible_pools.friday,
+      accessible_pools.saturday,
+      accessible_pools.sunday
+    ]
+  )[to_char(date_range.val, 'ID')::int]
+    AND NOT EXISTS (
+      SELECT 1
+      FROM holidays
+      WHERE holidays.inventory_pool_id = accessible_pools.id
+        AND date_range.val BETWEEN holidays.start_date AND holidays.end_date
+  )
+) > accessible_pools.borrow_reservation_advance_days
+
 -- start_date does not fall on holiday
 AND NOT EXISTS
     (SELECT TRUE
      FROM holidays
-     WHERE holidays.inventory_pool_id = inventory_pools.id
+     WHERE holidays.inventory_pool_id = accessible_pools.id
        AND CAST(:start-date AS date) BETWEEN holidays.start_date AND holidays.end_date )
+
 -- end_date does not fall on holiday
 AND NOT EXISTS
     (SELECT TRUE
      FROM holidays
-     WHERE holidays.inventory_pool_id = inventory_pools.id
+     WHERE holidays.inventory_pool_id = accessible_pools.id
        AND CAST(:end-date AS date) BETWEEN holidays.start_date AND holidays.end_date )
+
 -- pool is open on the start_date
-AND (array[workdays.monday,
-           workdays.tuesday,
-           workdays.wednesday,
-           workdays.thursday,
-           workdays.friday,
-           workdays.saturday,
-           workdays.sunday])[to_char(CAST(:start-date AS date), 'ID')::int]
+AND (array[accessible_pools.monday,
+           accessible_pools.tuesday,
+           accessible_pools.wednesday,
+           accessible_pools.thursday,
+           accessible_pools.friday,
+           accessible_pools.saturday,
+           accessible_pools.sunday])[to_char(CAST(:start-date AS date), 'ID')::int]
+
 -- pool is open on the end_date
-AND (array[workdays.monday,
-           workdays.tuesday,
-           workdays.wednesday,
-           workdays.thursday,
-           workdays.friday,
-           workdays.saturday,
-          workdays.sunday])[to_char(CAST(:end-date AS date), 'ID')::int]
+AND (array[accessible_pools.monday,
+           accessible_pools.tuesday,
+           accessible_pools.wednesday,
+           accessible_pools.thursday,
+           accessible_pools.friday,
+           accessible_pools.saturday,
+           accessible_pools.sunday])[to_char(CAST(:end-date AS date), 'ID')::int]
+
 -- max amount of visits is not exceeded yet for the start date and pool
 AND
     (SELECT count(*)
      FROM visits
-     WHERE visits.inventory_pool_id = inventory_pools.id
+     WHERE visits.inventory_pool_id = accessible_pools.id
        AND visits.date = CAST(:start-date AS date) )
     <
     coalesce(
       (max_visits->>(EXTRACT(DOW FROM CAST(:start-date AS date))::int)::text)::integer,
       2147483647
     )
+
 -- max amount of visits is not exceeded yet for the end-date and pool
 AND
     (SELECT count(*)
      FROM visits
-     WHERE visits.inventory_pool_id = inventory_pools.id
+     WHERE visits.inventory_pool_id = accessible_pools.id
        AND visits.date = CAST(:end-date AS date) )
     <
     coalesce(

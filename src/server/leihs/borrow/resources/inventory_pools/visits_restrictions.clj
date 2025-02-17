@@ -5,7 +5,8 @@
             [honey.sql.helpers :as sql]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
-            [java-time :refer [local-date before?] :as jt]))
+            [java-time :refer [local-date before?] :as jt]
+            [taoensso.timbre :as timbre :refer [debug spy]]))
 
 (defn holiday? [tx date pool]
   (let [date* [:cast date :date]]
@@ -19,25 +20,30 @@
         empty?
         not)))
 
-(defn not-a-working-day? [date pool]
+(defn working-day? [date pool]
   (let [day-of-week (-> date
-                        local-date
                         .getDayOfWeek
                         .toString
                         .toLowerCase
                         keyword)]
-    (not (day-of-week pool))))
+    (day-of-week pool)))
 
 (defn close-time? [tx date pool]
-  (or (not-a-working-day? date pool)
+  (or (not (working-day? (local-date date) pool))
       (holiday? tx date pool)))
 
-(defn before-earliest-possible-pick-up-date? [date pool]
-  (and (:reservation_advance_days pool)
-       (< (jt/time-between (local-date)
-                           (local-date date)
-                           :days)
-          (:reservation_advance_days pool))))
+(defn working-days-between [tx start end pool]
+  (->> (jt/iterate jt/plus start (jt/days 1))
+       (take-while #(or (jt/before? % end)))
+       (filter #(not (close-time? tx % pool)))))
+
+(defn before-earliest-possible-pick-up-date? [tx date pool]
+  (let [today (local-date)
+        pick-up-date (local-date date)
+        working-days (working-days-between tx today pick-up-date pool)]
+    (and (:reservation_advance_days pool)
+         (< (count working-days)
+            (:reservation_advance_days pool)))))
 
 (defn visits-capacity-reached? [date visits-count pool]
   (let [index (-> date
@@ -53,7 +59,7 @@
 (defn start-date-restriction [tx date-with-avail pool]
   (cond (close-time? tx (:date date-with-avail) pool)
         :CLOSE_TIME
-        (before-earliest-possible-pick-up-date? (:date date-with-avail) pool)
+        (before-earliest-possible-pick-up-date? tx (:date date-with-avail) pool)
         :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE
         (visits-capacity-reached? (:date date-with-avail)
                                   (:visits_count date-with-avail)

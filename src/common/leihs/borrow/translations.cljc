@@ -89,8 +89,8 @@
                 {:de-CH "Abholdatum liegt in der Vergangenheit"
                  :en-GB "Pickup date is in the past"}
                 :start-date-not-before
-                {:de-CH "{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens heute in # Tagen}}"
-                 :en-GB "{days, plural, =1 {Earliest pickup date is tomorrow} other {Earliest pickup date in # days from now}}"}
+                {:de-CH "{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens heute in # Arbeitstagen}}"
+                 :en-GB "{days, plural, =1 {Earliest pickup date is tomorrow} other {Earliest pickup date in # working days from now}}"}
 
                 :quantity-to-large-at-day
                 {:de-CH
