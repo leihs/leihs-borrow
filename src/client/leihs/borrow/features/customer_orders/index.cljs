@@ -90,6 +90,12 @@
         (map :node)
         not-empty)))
 
+(reg-sub
+ ::current-lendings
+ :<- [::data]
+ (fn [data _]
+   (->> (get-in data [:current-lendings]))))
+
 ;; UI
 
 (defn rental-line [rental date-locale]
@@ -147,18 +153,18 @@
                                                            (routing/path-for ::routes/rentals-show :rental-id (:id r)))
                                                          (:reservations r)))
                                                 open-rentals))
-        current-reservations (->> (mapcat :reservations open-rentals)
-                                  (filter #(#{"APPROVED" "SIGNED"} (:status %)))
-                                  (sort-by (fn [r] [(date-fns/differenceInCalendarDays
-                                                     (if (= "SIGNED" (:status r))
-                                                       (js/Date. (:end-date r))
-                                                       (js/Date. (:start-date r)))
-                                                     now)
-                                                    (js/Date. (:start-date r))
-                                                    (js/Date. (:end-date r))
-                                                    (-> r :inventory-pool :name)
-                                                    (-> r :model :name)]))
-                                  (map #(vector % (-> % :id rental-path-by-reservation-id))))]
+        current-lendings (->> @(subscribe [::current-lendings])
+                              (sort-by (fn [r] [(date-fns/differenceInCalendarDays
+                                                 (if (= "SIGNED" (:status r))
+                                                   (js/Date. (:end-date r))
+                                                   (js/Date. (:start-date r)))
+                                                 now)
+                                                (js/Date. (:start-date r))
+                                                (js/Date. (:end-date r))
+                                                (-> r :inventory-pool :name)
+                                                (-> r :model :name)
+                                                (-> r :id)]))
+                              (map #(vector % (-> % :id rental-path-by-reservation-id))))]
     [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}
@@ -179,24 +185,24 @@
        [:<>
         [:> UI/Components.ReactBootstrap.Tabs
          {:class "mb-1 page-inset-x-inverse"
-          :active-key (or (:tab filters) "reservations")
+          :active-key (or (:tab filters) "current-lendings")
           :on-select #(dispatch [:routing/navigate
                                  [::routes/rentals-index {:query-params (assoc filters :tab %)}]])}
          [:> UI/Components.ReactBootstrap.Tab
-          {:event-key "reservations"
+          {:event-key "current-lendings"
            :title (r/as-element
                    [:span
                     (t :section-title-current-lendings) " "
-                    [:span.badge.rounded-pill.bg-light-gray.text-body (count current-reservations)]])}
+                    [:span.badge.rounded-pill.bg-light-gray.text-body (count current-lendings)]])}
           (when-not (empty? open-rentals)
-            [reservations-list current-reservations now date-locale])]
+            [reservations-list current-lendings now date-locale])]
          [:> UI/Components.ReactBootstrap.Tab
           {:event-key "open-orders"
            :title (r/as-element
                    [:span
                     (t :section-title-open-rentals) " "
                     [:span.badge.rounded-pill.bg-light-gray.text-body (count open-rentals)]])}
-          (when-not (empty? current-reservations)
+          (when-not (empty? open-rentals)
             [rentals-list open-rentals date-locale])]
          [:> UI/Components.ReactBootstrap.Tab
           {:event-key "closed-orders"

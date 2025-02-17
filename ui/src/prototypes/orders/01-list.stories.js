@@ -26,9 +26,9 @@ export const list = ({ ordersByBasicState }) => {
       <Stack space="4">
         <OrderSearchFilter {...orderSearchFilterProps} />
 
-        <Tabs defaultActiveKey="reservations" className="mb-1 page-inset-x-inverse">
+        <Tabs defaultActiveKey="current-lendings" className="mb-1 page-inset-x-inverse">
           <Tab
-            eventKey="reservations"
+            eventKey="current-lendings"
             title={
               <span>
                 Aktuelle Ausleihen <span className="badge rounded-pill bg-light-gray text-body">{4}</span>
