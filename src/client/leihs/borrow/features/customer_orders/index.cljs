@@ -137,6 +137,10 @@
       [:<> {:key (:id reservation)}
        [reservation-card reservation now href date-locale]]))])
 
+(defn no-matches [filters]
+  [:div.text-center.mt-5
+   (if (empty? (dissoc filters :seq :tab)) (t :no-orders-yet) (t :no-orders-found))])
+
 (defn view []
   (let [errors @(subscribe [::errors])
         loading? @(subscribe [::loading?])
@@ -177,10 +181,6 @@
 
        errors [ui/error-view errors]
 
-       (and (empty? open-rentals) (empty? closed-rentals))
-       [:div.text-center
-        (if (empty? filters) (t :no-orders-yet) (t :no-orders-found))]
-
        :else
        [:<>
         [:> UI/Components.ReactBootstrap.Tabs
@@ -194,7 +194,8 @@
                    [:span
                     (t :section-title-current-lendings) " "
                     [:span.badge.rounded-pill.bg-light-gray.text-body (count current-lendings)]])}
-          (when-not (empty? open-rentals)
+          (if (empty? current-lendings)
+            [no-matches filters]
             [reservations-list current-lendings now date-locale])]
          [:> UI/Components.ReactBootstrap.Tab
           {:event-key "open-orders"
@@ -202,7 +203,8 @@
                    [:span
                     (t :section-title-open-rentals) " "
                     [:span.badge.rounded-pill.bg-light-gray.text-body (count open-rentals)]])}
-          (when-not (empty? open-rentals)
+          (if (empty? open-rentals)
+            [no-matches filters]
             [rentals-list open-rentals date-locale])]
          [:> UI/Components.ReactBootstrap.Tab
           {:event-key "closed-orders"
@@ -210,5 +212,6 @@
                    [:span
                     (t :section-title-closed-rentals) " "
                     [:span.badge.rounded-pill.bg-light-gray.text-body (count closed-rentals)]])}
-          (when-not (empty? closed-rentals)
+          (if (empty? closed-rentals)
+            [no-matches filters]
             [rentals-list closed-rentals date-locale])]]])]))

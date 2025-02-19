@@ -344,8 +344,8 @@
                                            :de-CH "Aktive Bestellungen"}
               :section-title-closed-rentals {:en-GB "Closed orders"
                                              :de-CH "Abgeschlossene Bestellungen"}
-              :no-orders-found {:en-GB "No orders found"
-                                :de-CH "Keine Bestellungen gefunden"}
+              :no-orders-found {:en-GB "No results found for the current search filter"
+                                :de-CH "Keine Treffer zum aktuellen Suchfilter gefunden"}
               :no-orders-yet {:en-GB "No orders yet"
                               :de-CH "Noch keine Bestellungen vorhanden"}
               :filter  {:pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
