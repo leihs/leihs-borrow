@@ -95,7 +95,7 @@ const OrderPanel = ({
     })()
 
     // Extract data for DateRangePicker
-    const { disabledDates, disabledStartDates, disabledEndDates, minDate } = getDateRangePickerConstraints(
+    const { disabledDates, disabledStartDates, disabledEndDates } = getDateRangePickerConstraints(
       poolAvailability,
       today,
       quantity
@@ -112,7 +112,6 @@ const OrderPanel = ({
       disabledDates,
       disabledStartDates,
       disabledEndDates,
-      minDate,
       maxQuantityByDay,
       validationResult
     })
@@ -194,7 +193,6 @@ const OrderPanel = ({
     disabledDates,
     disabledStartDates,
     disabledEndDates,
-    minDate,
     maxQuantityByDay,
     validationResult
   } = dependentState
@@ -271,7 +269,7 @@ const OrderPanel = ({
                       onCalendarNavigate={handleCalendarNavigate}
                       maxDateLoaded={maxDateLoaded}
                       now={today}
-                      minDate={minDate}
+                      minDate={today}
                       maxDate={maxDate}
                       disabledDates={disabledDates}
                       disabledStartDates={disabledStartDates}
@@ -323,15 +321,12 @@ OrderPanel.propTypes = orderPanelPropTypes
 export default OrderPanel
 
 function getDateRangePickerConstraints(poolAvailability, today, wantedQuantity) {
-  const { dates, inventoryPool } = poolAvailability
-  const { reservationAdvanceDays } = inventoryPool
-  const minBorrowDate = addDays(today, reservationAdvanceDays || 0)
+  const { dates } = poolAvailability
   const getDates = filter => [...dates.filter(filter).map(x => x.parsedDate)]
   return {
     disabledDates: getDates(x => x.quantity < wantedQuantity && x.parsedDate >= today),
-    disabledStartDates: getDates(x => x.startDateRestriction === 'CLOSE_TIME'),
-    disabledEndDates: getDates(x => x.endDateRestriction === 'CLOSE_TIME'),
-    minDate: minBorrowDate
+    disabledStartDates: getDates(x => x.startDateRestriction),
+    disabledEndDates: getDates(x => x.endDateRestriction)
   }
 }
 
@@ -389,16 +384,11 @@ function validateDateRange(selectedRange, today, maxDate, poolAvailability, want
   }
 
   // Start date
-  const minBorrowDate = addDays(today, reservationAdvanceDays || 0)
   const isOneDayPeriod = isSameDay(startDate, endDate)
   const startDateMessage = (() => {
     // Future-only
     if (startDate < today) {
       return t(txt, 'start-date-in-past', locale)
-    } else {
-      if (startDate < minBorrowDate) {
-        return t(txt, 'start-date-not-before', locale, { days: reservationAdvanceDays })
-      }
     }
 
     // Closed pool
@@ -425,7 +415,7 @@ function validateDateRange(selectedRange, today, maxDate, poolAvailability, want
     }
 
     // Closed pool
-    if (endDate < minBorrowDate) {
+    if (endDate < today) {
       // (report issues only for non-past dates)
       return
     }
@@ -443,7 +433,7 @@ function validateDateRange(selectedRange, today, maxDate, poolAvailability, want
   const availabilityMessage = (() => {
     const noAvailDates = [
       ...eachDayOfInterval({ start: startDate, end: endDate }).filter(d => {
-        if (d < minBorrowDate) {
+        if (d < today) {
           // (report issues only for non-past dates)
           return false
         }
