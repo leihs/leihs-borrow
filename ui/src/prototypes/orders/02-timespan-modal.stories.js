@@ -5,7 +5,6 @@ import { isAfter, parse } from 'date-fns'
 
 import Section from '../../components/Section'
 import ModalDialog from '../../components/ModalDialog'
-import Stack from '../../components/Stack'
 import DatePicker from '../../components/DatePicker'
 import Warning from '../../components/Warning'
 
@@ -50,7 +49,7 @@ export const timespanModal = ({ onSubmit }) => {
       <ModalDialog title="Zeitraum" shown={shown} onDismiss={cancel}>
         <ModalDialog.Body>
           <form action="/search" onSubmit={submit} autoComplete="off" id="order-filter-form">
-            <Stack space="4">
+            <div className="d-grid gap-4">
               <Section>
                 <fieldset>
                   <legend className="visually-hidden">Zeitraum</legend>
@@ -77,7 +76,7 @@ export const timespanModal = ({ onSubmit }) => {
                   </div>
                 </fieldset>
               </Section>
-            </Stack>
+            </div>
           </form>
         </ModalDialog.Body>
         <ModalDialog.Footer>

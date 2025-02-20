@@ -4,7 +4,6 @@ import SquareImageGrid from '../../components/SquareImageGrid'
 import Section from '../../components/Section'
 import PageLayoutMock from '../../story-utils/PageLayoutMock'
 import PageLayout from '../../components/PageLayout'
-import Stack from '../../components/Stack'
 import { categoryList, modelSearchFilterProps } from '../../story-utils/sample-props'
 
 export default {
@@ -18,11 +17,11 @@ export const start = () => {
       <PageLayout.Header title="Katalog">
         <ModelSearchFilter {...modelSearchFilterProps} />
       </PageLayout.Header>
-      <Stack space="4">
+      <div className="d-grid gap-4">
         <Section title="Kategorien">
           <SquareImageGrid list={categoryList} />
         </Section>
-      </Stack>
+      </div>
     </PageLayoutMock>
   )
 }

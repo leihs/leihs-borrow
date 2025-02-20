@@ -7,7 +7,6 @@ import ModalDialog from '../../components/ModalDialog'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import PageLayout from '../../components/PageLayout'
 import Section from '../../components/Section'
-import Stack from '../../components/Stack'
 import DateRangePicker from '../../components/DateRangePicker'
 import Warning from '../../components/Warning'
 import PageLayoutMock from '../../story-utils/PageLayoutMock'
@@ -91,20 +90,20 @@ export function repeatOrder() {
             title="Video Semesterprojekt"
             subTitle="Zwischen 26.5.2020 und 7.6.2020, 8 Gegenstände"
           ></PageLayout.Header>
-          <Stack space={5}>
+          <div className="d-grid gap-5">
             <Section title="Status" collapsible>
-              <Stack space="3">
+              <div className="d-grid gap-3">
                 <div>...</div>
                 <ActionButtonGroup>
                   <button type="button" className="btn btn-secondary" onClick={openFormDialog}>
                     Bestellung wiederholen
                   </button>
                 </ActionButtonGroup>
-              </Stack>
+              </div>
             </Section>
             <Section title="Zweck">...</Section>
             <Section title="Gegenstände">...</Section>
-          </Stack>
+          </div>
         </>
       )}
 
@@ -121,7 +120,7 @@ export function repeatOrder() {
         >
           <ModalDialog.Body>
             <form noValidate autoComplete="off" id="repeat-order-form">
-              <Stack space={4}>
+              <div className="d-grid gap-4">
                 <Section>
                   <p>{withOptions ? 5 : 8} Gegenstände werden zum Warenkorb hinzugefügt.</p>
                   {withOptions && (
@@ -150,7 +149,7 @@ export function repeatOrder() {
                     </div>
                   </fieldset>
                 </Section>
-              </Stack>
+              </div>
             </form>
           </ModalDialog.Body>
           <ModalDialog.Footer>

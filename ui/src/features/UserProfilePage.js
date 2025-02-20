@@ -2,7 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import cx from 'classnames'
 import PageLayout from '../components/PageLayout'
-import Stack from '../components/Stack'
 import Section from '../components/Section'
 import PropertyTable from '../components/PropertyTable'
 import ListCard from '../components/ListCard'
@@ -44,13 +43,13 @@ function UserProfilePage({ txt, user, delegations, contracts, onLogoutClick, ...
           </ActionButtonGroup>
         )}
       </PageLayout.Header>
-      <Stack space="5">
+      <div className="d-grid gap-5">
         <Section title={sectionUserData} collapsible>
           <PropertyTable properties={userDataTable} />
         </Section>
         {!!delegations.length && (
           <Section title={sectionDelegations} collapsible>
-            <Stack>
+            <ListCard.Stack>
               {delegations.map(({ id, name, responsibleName, responsibleEmail, href }) => (
                 <ListCard key={id} href={href}>
                   <ListCard.Title>
@@ -72,14 +71,14 @@ function UserProfilePage({ txt, user, delegations, contracts, onLogoutClick, ...
                   </ListCard.Body>
                 </ListCard>
               ))}
-            </Stack>
+            </ListCard.Stack>
           </Section>
         )}
         <Section title={sectionContracts} collapsible>
           {!contracts.length ? (
             <p>{noContracts}</p>
           ) : (
-            <Stack space="3">
+            <div className="d-grid gap-3">
               {contracts.map(({ id, downloadUrl, displayName }) => {
                 return (
                   <DownloadLink key={id} href={downloadUrl} target="_blank">
@@ -87,10 +86,10 @@ function UserProfilePage({ txt, user, delegations, contracts, onLogoutClick, ...
                   </DownloadLink>
                 )
               })}
-            </Stack>
+            </div>
           )}
         </Section>
-      </Stack>
+      </div>
     </div>
   )
 }

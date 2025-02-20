@@ -2,7 +2,6 @@
 /* Component for prototype stories! Not to be used in production code */
 import React from 'react'
 import ListCard from '../../components/ListCard'
-import Stack from '../../components/Stack'
 import ProgressInfo from '../../components/ProgressInfo'
 
 export default function OrderCard({ order, orderLink, ...restProps }) {
@@ -21,11 +20,11 @@ export default function OrderCard({ order, orderLink, ...restProps }) {
           </div>
           <div style={{ flex: '1 1 47%' }}>
             <ListCard.Foot className="p-md-0 pe-md-3">
-              <Stack space="2">
+              <div className="d-grid gap-2">
                 {order.stateGroups.map((stateGroup, i) => (
                   <ProgressInfo key={i} {...stateGroup} small={true} />
                 ))}
-              </Stack>
+              </div>
             </ListCard.Foot>
           </div>
         </div>

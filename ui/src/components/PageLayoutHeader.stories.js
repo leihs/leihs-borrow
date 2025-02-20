@@ -21,7 +21,7 @@ export const pageLayoutHeader = () => {
 }
 pageLayoutHeader.storyName = 'PageLayout.Header'
 
-export const typicalExample = ({ onClick }) => {
+export const typicalExample = () => {
   return (
     <div>
       <h1>PageLayout.Header</h1>

@@ -6,7 +6,6 @@ import ListCard from '../../components/ListCard'
 import PageLayout from '../../components/PageLayout'
 import ProgressInfo from '../../components/ProgressInfo'
 import Section from '../../components/Section'
-import Stack from '../../components/Stack'
 import Warning from '../../components/Warning'
 import PageLayoutMock from '../../story-utils/PageLayoutMock'
 
@@ -101,16 +100,16 @@ export const cart = ({ order, onResetTimeLimitClick, onItemClick, onConfirmClick
     <PageLayoutMock>
       <PageLayout.Header title="Warenkorb"></PageLayout.Header>
 
-      <Stack space="5">
+      <div className="d-grid gap-5">
         <Section title="Status" collapsible>
-          <Stack space="3">
+          <div className="d-grid gap-3">
             <ProgressInfo title="Zeitlimit" info="Noch 23 Minuten übrig" totalCount="30" doneCount="23" />
             <ActionButtonGroup>
               <button type="button" className="btn btn-secondary" onClick={onResetTimeLimitClick}>
                 Zeitlimit zurückstellen
               </button>
             </ActionButtonGroup>
-          </Stack>
+          </div>
         </Section>
 
         <Section title="Bestellung für" collapsible>
@@ -118,7 +117,7 @@ export const cart = ({ order, onResetTimeLimitClick, onItemClick, onConfirmClick
         </Section>
 
         <Section title="Gegenstände" collapsible className="position-relative">
-          <Stack divided>
+          <ListCard.Stack>
             {order.models.map(({ reservation, model, pool }, i) => (
               <ListCard key={i} onClick={() => onItemClick(reservation.id)}>
                 <ListCard.Title>
@@ -133,7 +132,7 @@ export const cart = ({ order, onResetTimeLimitClick, onItemClick, onConfirmClick
                 </ListCard.Foot>
               </ListCard>
             ))}
-          </Stack>
+          </ListCard.Stack>
         </Section>
 
         <Section>
@@ -147,7 +146,7 @@ export const cart = ({ order, onResetTimeLimitClick, onItemClick, onConfirmClick
             </button>
           </ActionButtonGroup>
         </Section>
-      </Stack>
+      </div>
     </PageLayoutMock>
   )
 }

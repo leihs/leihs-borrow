@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
 import PageLayoutMock from '../story-utils/PageLayoutMock'
-import Stack from '../components/Stack'
 import ErrorNotification from '../components/ErrorNotification'
 import ErrorView from '../components/ErrorView'
 
@@ -35,7 +34,7 @@ export const errors = () => {
   return (
     <PageLayoutMock>
       <h1>Errors</h1>
-      <Stack space="4">
+      <div className="d-grid gap-4">
         <div>
           <h2>Initial fetching (routing)</h2>
           <p className="text-muted">
@@ -98,7 +97,7 @@ export const errors = () => {
             Ignore the dark-coloured overlay that is shown first, it does not exist in production
           </p>
         </div>
-      </Stack>
+      </div>
     </PageLayoutMock>
   )
 }

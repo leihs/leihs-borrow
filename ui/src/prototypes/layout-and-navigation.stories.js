@@ -4,7 +4,7 @@ import Topnav from '../components/Topnav'
 import Menu from '../components/Menu'
 import PageLayout from '../components/PageLayout'
 import { PowerOffIcon, UserIcon } from '../components/Icons'
-import Stack from '../components/Stack'
+import ListCard from '../components/ListCard'
 import Section from '../components/Section'
 
 export default {
@@ -198,7 +198,7 @@ export function layoutAndNavigation() {
           <span className="d-none d-md-inline d-lg-none text-primary">md</span>
           <span className="d-none d-lg-inline text-primary">lg, xl, xxl</span>
         </p>
-        <Stack space="4">
+        <div className="d-grid gap-4">
           <Section title="Section with text" collapsible>
             <p className="fw-bold">
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Excepturi nostrum ducimus perspiciatis
@@ -209,13 +209,13 @@ export function layoutAndNavigation() {
             </p>
           </Section>
           <Section title="Section with a list" collapsible>
-            <Stack space="3" divided>
-              <div>Divided stack</div>
-              <div>...</div>
-              <div>...</div>
-            </Stack>
+            <ListCard.Stack>
+              <ListCard>List Card 1</ListCard>
+              <ListCard>List Card 2</ListCard>
+              <ListCard>List Card 3</ListCard>
+            </ListCard.Stack>
           </Section>
-        </Stack>
+        </div>
       </PageLayout.ContentContainer>
     </PageLayout>
   )

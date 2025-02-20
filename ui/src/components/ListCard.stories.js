@@ -1,8 +1,6 @@
 import React from 'react'
 import { action } from '@storybook/addon-actions'
-import { linkTo } from '@storybook/addon-links'
 import ListCard from './ListCard'
-import Stack from './Stack'
 import SquareImage from './SquareImage'
 import Badge from './Badge'
 
@@ -22,11 +20,7 @@ export const listCard = () => {
       <h1>ListCard</h1>
       <p className="text-muted">Presents a list entry, often linked to an action (href or onClick).</p>
       <p className="text-muted">
-        A <code>Stack</code> can be used to wrap multiple cards with dividers and space.
-        <br />
-        <button className="btn btn-light btn-sm" onClick={linkTo('Design Components/Layout/Stack')}>
-          Design Components &gt; Layout &gt; Stack
-        </button>
+        A <code>ListCard.Stack</code> is typically used to wrap multiple cards with separators (see next story).
       </p>
       <p className="text-muted">The card can be assembled with three sub-components:</p>
       <ul className="text-muted">
@@ -45,7 +39,7 @@ export const listCard = () => {
           Arbitrary content, with a gap to the previous element
         </li>
       </ul>
-      <Stack divided>
+      <ListCard.Stack>
         <ListCard>
           <ListCard.Title>Ibex</ListCard.Title>
           <ListCard.Body>
@@ -69,22 +63,91 @@ export const listCard = () => {
           </ListCard.Body>
           <ListCard.Foot className="very-small">{getFoot('Phasianidae')}</ListCard.Foot>
         </ListCard>
-      </Stack>
+      </ListCard.Stack>
     </div>
   )
 }
 listCard.storyName = 'ListCard'
+
+export const listCardStack = () => {
+  return (
+    <div>
+      <h1>ListCard</h1>
+      <p className="text-muted">
+        A <code>ListCard.Stack</code> regulates the horizontal separator lines. It is meant for <code>ListCard</code>,
+        but also works with any type of elements. Note: It does not render a container.
+      </p>
+      <p className="text-muted">
+        <code>separators=all|true (default)</code>
+      </p>
+      <ListCard.Stack>
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </ListCard.Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>separators=top</code>
+      </p>
+      <ListCard.Stack separators="top">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </ListCard.Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>separators=bottom</code>
+      </p>
+      <ListCard.Stack separators="bottom">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </ListCard.Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>separators=between</code>
+      </p>
+      <ListCard.Stack separators="between">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </ListCard.Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        <code>separators=none|false</code>
+      </p>
+      <ListCard.Stack separators="none">
+        <div>Elefant</div>
+        <div>Tiger</div>
+        <div>Cow</div>
+      </ListCard.Stack>
+      <div>&nbsp;</div>
+      <p className="text-muted">
+        Usage with <code>PageLayout</code> / <code>.page-inset-x</code>. The separators will extend to the padge edges
+        when the page layout is edge-to-edge (on smaller screens).
+      </p>
+      <div className="shadow page-inset-x">
+        <ListCard.Stack>
+          <div>Elefant</div>
+          <div>Tiger</div>
+          <div>Cow</div>
+        </ListCard.Stack>
+      </div>
+    </div>
+  )
+}
+listCardStack.storyName = 'ListCard.Stack'
 
 export const minimalExample = () => {
   return (
     <div>
       <h1>ListCard</h1>
       <p className="text-muted">Minimal example with unstructured content</p>
-      <Stack divided>
+      <ListCard.Stack>
         <ListCard>Ibex</ListCard>
         <ListCard>Marmot</ListCard>
         <ListCard>Ptarmigan</ListCard>
-      </Stack>
+      </ListCard.Stack>
     </div>
   )
 }
@@ -96,11 +159,11 @@ export const with_onclick = () => {
       <p className="text-muted">
         Using <code>onClick</code> instead of <code>href</code> prop.
       </p>
-      <Stack divided>
+      <ListCard.Stack>
         <ListCard onClick={action('list-card-click-1')}>Ibex</ListCard>
         <ListCard onClick={action('list-card-click-2')}>Marmot</ListCard>
         <ListCard onClick={action('list-card-click-3')}>Ptarmigan</ListCard>
-      </Stack>
+      </ListCard.Stack>
     </div>
   )
 }
@@ -111,7 +174,7 @@ export const withImage = () => {
     <div>
       <h1>ListCard</h1>
       <p className="text-muted">With image</p>
-      <Stack divided>
+      <ListCard.Stack>
         <ListCard img={<SquareImage imgSrc={imgSrc} />}>
           <ListCard.Title>Ibex</ListCard.Title>
           <ListCard.Body>
@@ -132,7 +195,7 @@ export const withImage = () => {
           <ListCard.Title>Ptarmigan</ListCard.Title>
           <ListCard.Foot>{getFoot('Phasianidae')}</ListCard.Foot>
         </ListCard>
-      </Stack>
+      </ListCard.Stack>
     </div>
   )
 }
@@ -147,7 +210,7 @@ export const oneLineLink = () => {
             By default the geometry of linked card assumes content with two lines (or more). To keep the heights evenly
             distributed this is not changed for cards which have one line only:
           </p>
-          <Stack divided>
+          <ListCard.Stack>
             <ListCard onClick={() => {}}>
               <ListCard.Title>Something</ListCard.Title>
               <ListCard.Body>With two lines</ListCard.Body>
@@ -159,13 +222,13 @@ export const oneLineLink = () => {
               <ListCard.Title>Another thing</ListCard.Title>
               <ListCard.Body>With two lines</ListCard.Body>
             </ListCard>
-          </Stack>
+          </ListCard.Stack>
         </div>
         <div>
           <p className="text-muted">
             However when most or all cards have only one line, a lot of whitespace and also some assymetry results:
           </p>
-          <Stack divided>
+          <ListCard.Stack>
             <ListCard onClick={() => {}}>
               <ListCard.Title>Ibex</ListCard.Title>
             </ListCard>
@@ -175,13 +238,13 @@ export const oneLineLink = () => {
             <ListCard onClick={() => {}}>
               <ListCard.Title>Ptarmigan</ListCard.Title>
             </ListCard>
-          </Stack>
+          </ListCard.Stack>
         </div>
         <div>
           <p className="text-muted">
             For a more compact look, apply the <code>`oneLine`</code> prop:
           </p>
-          <Stack divided>
+          <ListCard.Stack>
             <ListCard onClick={() => {}} oneLine>
               <ListCard.Title>Ibex</ListCard.Title>
             </ListCard>
@@ -191,7 +254,7 @@ export const oneLineLink = () => {
             <ListCard onClick={() => {}} oneLine>
               <ListCard.Title>Ptarmigan</ListCard.Title>
             </ListCard>
-          </Stack>
+          </ListCard.Stack>
         </div>
         <div></div>
       </div>
@@ -206,7 +269,7 @@ export const edgeCases = () => {
       <div className="d-flex flex-column gap-4" style={{ maxWidth: '25rem' }}>
         <div>
           <p className="text-muted">Examples with long title:</p>
-          <Stack divided>
+          <ListCard.Stack>
             <ListCard>
               <ListCard.Title>
                 Lorem ipsum dolor sit, amet consectetur adipisicing elit. Libero minus debitis labore
@@ -220,7 +283,7 @@ export const edgeCases = () => {
             <ListCard onClick={() => {}}>
               <ListCard.Title>LoremipsumdolorsitametconsecteturadipisicingelitLiberominusdebitislabore</ListCard.Title>
             </ListCard>
-          </Stack>
+          </ListCard.Stack>
         </div>
 
         <div></div>
@@ -237,7 +300,7 @@ export const flexFoot = ({ onItemClick }) => {
         Example where the footer is arranged in 2nd column for screen size md+ (make sure to remove the top padding the
         footer has by default)
       </p>
-      <Stack divided>
+      <ListCard.Stack>
         <ListCard onClick={onItemClick}>
           <div className="d-md-flex">
             <div style={{ flex: '1 1 52%' }} className="pe-4">
@@ -252,7 +315,7 @@ export const flexFoot = ({ onItemClick }) => {
             </div>
           </div>
         </ListCard>
-      </Stack>
+      </ListCard.Stack>
     </div>
   )
 }

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types'
 import cx from 'classnames'
 import SwipeableViews from 'react-swipeable-views'
 import PageLayout from '../components/PageLayout'
-import Stack from '../components/Stack'
 import Section from '../components/Section'
 import SquareImageGrid from '../components/SquareImageGrid'
 import DownloadLink from '../components/DownloadLink'
@@ -113,7 +112,7 @@ export default function ModelShow({
         </div>
       )}
 
-      <Stack space="5">
+      <div className="d-grid gap-5">
         <ActionButtonGroup>
           <button type="button" className="btn btn-primary" onClick={onOrderClick} disabled={!isAddButtonEnabled}>
             {t.addItemToCart}
@@ -152,13 +151,13 @@ export default function ModelShow({
 
         {model.attachments.length > 0 && (
           <Section title={t.documents} collapsible>
-            <Stack space="3">
+            <div className="d-grid gap-3">
               {model.attachments.map(attachment => (
                 <div key={attachment.id}>
                   <DownloadLink href={attachment.attachmentUrl}>{attachment.filename}</DownloadLink>
                 </div>
               ))}
-            </Stack>
+            </div>
           </Section>
         )}
 
@@ -167,7 +166,7 @@ export default function ModelShow({
             {getRecommendsGrid(model.recommends)}
           </Section>
         )}
-      </Stack>
+      </div>
     </>
   )
 }

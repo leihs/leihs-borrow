@@ -1,6 +1,7 @@
 import React from 'react'
 import cx from 'classnames'
 import { CardArrowIcon } from './Icons'
+import PropTypes from 'prop-types'
 
 const BASE_CLASS = 'ui-list-card'
 
@@ -32,6 +33,33 @@ export default function ListCard({ onClick, href, img, children, className, oneL
       )}
     </div>
   )
+}
+
+ListCard.Stack = function ListCardStack({ children, separators = true }) {
+  const nonEmptyChildren = [...React.Children.toArray(children).filter(Boolean)]
+  const length = nonEmptyChildren.length
+  const hasSeparators = separators && separators.toString() !== 'false' && separators !== 'none'
+  return (
+    nonEmptyChildren.map((child, i) => {
+      const isLast = i + 1 === length
+      return (
+        <React.Fragment key={i}>
+          {i === 0 && hasSeparators && separators !== 'between' && separators !== 'bottom' && renderDivider()}
+          {child}
+          {hasSeparators && (!isLast || (separators !== 'between' && separators !== 'top')) && renderDivider()}
+        </React.Fragment>
+      )
+    }) || null
+  )
+}
+
+ListCard.Stack.propTypes = {
+  children: PropTypes.node,
+  separators: PropTypes.oneOf([true, false, 'all', 'top', 'bottom', 'between'])
+}
+
+function renderDivider() {
+  return <hr className={'page-inset-x-inverse my-0'} />
 }
 
 ListCard.Title = function ListCardTitle({ children, className, ...restProps }) {
