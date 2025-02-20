@@ -58,7 +58,7 @@
        errors [ui/error-view errors]
        :else
        [:<>
-        [:> UI/Components.Design.Stack {:divided true}
+        [:> UI/Components.Design.ListCard.Stack
          (doall
           (for [template data]
             (let [id (:id template)

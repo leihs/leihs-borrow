@@ -26,7 +26,7 @@
        {:small small
         :title (t (str :fulfillment-state-label.CANCELED))}]
 
-      [:> UI/Components.Design.Stack {:space 2}
+      [:div.d-grid.gap-2
 
        ; Process 1: Approval
        (let [total-count initial-total-count

@@ -180,12 +180,12 @@
         [repeat-order/repeat-dialog rental reservations current-profile-id date-locale]
         [repeat-order/repeat-success-notification]
 
-        [:> UI/Components.Design.Stack {:space 5}
+        [:div.d-grid.gap-5
 
          [:> UI/Components.Design.Section
           {:title (t :state) :collapsible false}
 
-          [:> UI/Components.Design.Stack {:space 3}
+          [:div.d-grid.gap-3
 
            [status-summary rental false]
 
@@ -217,7 +217,7 @@
 
          [:> UI/Components.Design.Section
           {:title (t :items-section-title) :collapsible true}
-          [:> UI/Components.Design.Stack {:divided true}
+          [:> UI/Components.Design.ListCard.Stack
            (doall
             (for [reservation reservations-sorted]
               [:<> {:key (:id reservation)}
@@ -231,7 +231,7 @@
            [:> UI/Components.Design.Section
             {:title (t :documents-section-title) :collapsible true}
 
-            [:> UI/Components.Design.Stack {:space 3}
+            [:div.d-grid.gap-3
              (doall
               (for [contract contracts]
                 ^{:key (:id contract)}

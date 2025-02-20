@@ -124,14 +124,14 @@
          [status-summary rental true]]]]]]))
 
 (defn rentals-list [rentals date-locale]
-  [:> UI/Components.Design.Stack {:divided "bottom"}
+  [:> UI/Components.Design.ListCard.Stack
    (doall
     (for [rental rentals]
       [:<> {:key (:id rental)}
        [rental-line rental date-locale]]))])
 
 (defn reservations-list [reservations now date-locale]
-  [:> UI/Components.Design.Stack {:divided "bottom"}
+  [:> UI/Components.Design.ListCard.Stack
    (doall
     (for [[reservation href] reservations]
       [:<> {:key (:id reservation)}
@@ -182,25 +182,22 @@
         #(dispatch [:routing/navigate
                     [::routes/rentals-index {:query-params %}]])]]]
 
-     ;; mobile "tab" navigation
-     [:> UI/Components.Design.Stack {:class "d-sm-none" :divided "bottom"}
-      [:select.form-select
-       {:style {:border-radius 0 :border "none" :background-color "white" :padding-left "0"}
-        :value tab
-        :on-change #(switch-tab filters (-> % .-target .-value))}
-       [:option {:value "current-lendings"} (str (t :section-title-current-lendings))]
-       [:option {:value "open-orders"} (str (t :section-title-open-rentals))]
-       [:option {:value "closed-orders"} (str (t :section-title-closed-rentals))]]]
      (cond
        loading? [ui/loading]
 
        errors [ui/error-view errors]
 
        :else
-       [:<>
+       [:div.responsive-tab-combo
+        [:div.page-inset-x-inverse
+         [:select.form-select.tab-select {:value tab
+                                          :on-change #(switch-tab filters (-> % .-target .-value))}
+          [:option {:value "current-lendings"} (str (t :section-title-current-lendings))]
+          [:option {:value "open-orders"} (str (t :section-title-open-rentals))]
+          [:option {:value "closed-orders"} (str (t :section-title-closed-rentals))]]]
+
         [:> UI/Components.ReactBootstrap.Tabs
-         {:class "page-inset-x-inverse d-none d-sm-flex"
-          :active-key tab
+         {:active-key tab
           :on-select #(switch-tab filters %)}
          [:> UI/Components.ReactBootstrap.Tab
           {:event-key "current-lendings"

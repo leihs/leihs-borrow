@@ -131,10 +131,10 @@
                     :auto-complete :off
                     :id :the-form}
              (if (= models-quantity 0)
-               [:> UI/Components.Design.Stack {:space 4}
+               [:div.d-grid.gap-4
                 [:> UI/Components.Design.Warning {:class "fs-2"}
                  (t :dialog.error-no-items)]]
-               [:> UI/Components.Design.Stack {:space 4}
+               [:div.d-grid.gap-4
                 [:> UI/Components.Design.Section
                  [:p.fw-bold (t :dialog.info {:count models-quantity})]]
                 [:> UI/Components.Design.Section {:title (t :dialog.order-for)}

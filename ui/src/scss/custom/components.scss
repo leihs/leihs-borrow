@@ -352,3 +352,25 @@ $arrow-icon: url("data:image/svg+xml,<svg width='12px' height='7px' viewBox='0 0
     background-color: black;
   }
 }
+
+/* Responsive tabs (select element as substitute) */
+.tab-select {
+  border-color: $body-bg;
+  background-color: $body-bg !important;
+  border-radius: 0;
+  border: none;
+  width: 100%;
+}
+.responsive-tab-combo {
+  .nav-tabs {
+    display: none;
+  }
+  @media screen and (min-width: 700px) {
+    .nav-tabs {
+      display: flex;
+    }
+    .tab-select {
+      display: none;
+    }
+  }
+}

@@ -26,7 +26,12 @@ export const list = ({ ordersByBasicState }) => {
       <div className="d-grid gap-4">
         <OrderSearchFilter {...orderSearchFilterProps} />
 
-        <div>
+        <div className="responsive-tab-combo">
+          <div className="page-inset-x-inverse">
+            <select className="form-select tab-select">
+              <option>(Responsive Tab Selector - not implemented here)</option>
+            </select>
+          </div>
           <Tabs defaultActiveKey="current-lendings">
             <Tab
               eventKey="current-lendings"

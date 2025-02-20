@@ -57,9 +57,6 @@ export default function ModelSearchFilter({
         />
 
         <div className="filters">
-          {/* "Filter:" */}
-          <div className="filters--title">{t(txt, 'filter', locale)}:</div>
-
           <label className="visually-hidden" htmlFor="pool">
             {t(txt, 'pool-select-label', locale)}
           </label>

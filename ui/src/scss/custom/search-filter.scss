@@ -48,13 +48,3 @@ button.filter-input {
     max-width: 350px;
   }
 }
-
-@media screen and (min-width: 750px) {
-  .filters {
-    &--title {
-      display: block;
-      flex: 0 0 auto;
-      padding-right: 5px;
-    }
-  }
-}

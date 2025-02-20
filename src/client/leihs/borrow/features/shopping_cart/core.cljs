@@ -430,7 +430,7 @@
                                               :title (t :edit-dialog/dialog-title)
                                               :class "ui-booking-calendar"}
          [:> UI/Components.Design.ModalDialog.Body
-          [:> UI/Components.Design.Stack {:space 4}
+          [:div.d-grid.gap-4
            [:> UI/Components.OrderPanel
             {:initialQuantity quantity
              :initialStartDate start-date
@@ -527,7 +527,7 @@
           remaining-minutes (-> remaining-seconds (/ 60) (js/Math.ceil))
           waiting? @(subscribe [::timeout/waiting])]
       [:> UI/Components.Design.Section {:title (t :countdown/section-title) :collapsible false}
-       [:> UI/Components.Design.Stack {:space 3}
+       [:div.d-grid.gap-3
         [:> UI/Components.Design.ProgressInfo {:title (t :countdown/time-limit)
                                                :info (cond (<= remaining-seconds 0)
                                                            (reagent/as-element [:> UI/Components.Design.Warning (t :countdown/expired)])
@@ -578,7 +578,7 @@
             :auto-complete :off
             :id :the-form
             :class (when @form-validated? "was-validated")}
-           [:> UI/Components.Design.Stack {:space "4"}
+           [:div.d-grid.gap-4
 
             [:> UI/Components.Design.Section
              {:title (t :confirm-dialog/title)
@@ -706,7 +706,7 @@
          (empty? grouped-reservations)
          [:<>
           [:> UI/Components.Design.PageLayout.Header {:title  (t :order-overview)}]
-          [:> UI/Components.Design.Stack {:space 4 :class "text-center decorate-links"}
+          [:div.d-grid.gap-4.text-center.decorate-links
            (t :empty-order)
            [:a.fw-bold {:href (routing/path-for ::routes/home)}
             (t :borrow-items)]]]
@@ -723,7 +723,7 @@
 
           [delete-dialog reservations]
 
-          [:> UI/Components.Design.Stack {:space 5}
+          [:div.d-grid.gap-5
 
            (if (:valid-until data)
              [countdown]
@@ -741,7 +741,7 @@
                       (when (or is-loading? refreshing-timeout?)
                         [:div.position-absolute {:style {:right "0" :top "3px"}} [:> UI/Components.Design.Spinner]])])
              :collapsible true}
-            [:> UI/Components.Design.Stack {:divided true}
+            [:> UI/Components.Design.ListCard.Stack
              (doall
               (for [[grouped-key res-lines] grouped-reservations]
                 ^{:key grouped-key}

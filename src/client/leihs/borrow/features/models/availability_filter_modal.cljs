@@ -45,7 +45,7 @@
                            :start-date (format-date (:startDate @selected-range))
                            :end-date (format-date (:endDate @selected-range))
                            :quantity @quantity}))}
-             [:> UI/Components.Design.Stack {:space 4}
+             [:div.d-grid.gap-4
 
               [:> UI/Components.Design.Section
 

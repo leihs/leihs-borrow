@@ -45,9 +45,8 @@
                                           presence
                                           (date-fns/parse "P" (js/Date.) #js {:locale date-locale})
                                           (date-fns/format "yyyy-MM-dd"))}))}
-             [:> UI/Components.Design.Stack {:space 4}
-
-              [:> UI/Components.Design.Stack {:space 4}
+             [:div.d-grid.gap-4
+              [:div.d-grid.gap-4
                [:> UI/Components.Design.Section
                 [:fieldset
                  [:legend.visually-hidden (t :title)]

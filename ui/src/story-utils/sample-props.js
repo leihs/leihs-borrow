@@ -116,10 +116,6 @@ export const modelSearchFilterProps = {
       'de-CH': 'Suchbegriff',
       'en-GB': 'Search term'
     },
-    filter: {
-      'de-CH': 'Filter',
-      'en-GB': 'Filter'
-    },
     'pool-select-label': {
       'de-CH': 'Inventarparks',
       'en-GB': 'Inventory pools'

@@ -144,7 +144,7 @@
            [:div.col-md-9
 
             [:> UI/Components.Design.PageLayout.ContentContainer
-             [:> UI/Components.Design.Stack {:space 4}
+             [:div.d-grid.gap-4
 
               [:div.text-center
                [filter-comp
@@ -169,7 +169,7 @@
 
           ; else (does not have any reservable item)
           [:> UI/Components.Design.PageLayout.ContentContainer
-           [:> UI/Components.Design.Stack {:space 4 :class "text-center"}
+           [:div.d-grid.gap-4.text-center
             [:> UI/Components.Design.Warning {:class "fs-2"} (t :!borrow.catalog.no-reservable-items)]
             [:a.decorate-links {:href (routing/path-for ::routes/inventory-pools-index)}
              (t :!borrow.catalog.check-available-pools)]]])])]))
