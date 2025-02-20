@@ -4,7 +4,7 @@ import ProfileMenuButton from './ProfileMenuButton'
 import Menu from './Menu'
 
 export default {
-  title: 'Design Components/Layout/ProfileMenuButton',
+  title: 'Design Components/Navigation/ProfileMenuButton',
   component: ProfileMenuButton
 }
 

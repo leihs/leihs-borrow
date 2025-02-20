@@ -74,8 +74,6 @@ export const show = ({ onItemClick }) => {
           </button>
         </ActionButtonGroup>
       </Stack>
-
-      <PageLayout.Metadata>ID: 12345</PageLayout.Metadata>
     </PageLayoutMock>
   )
 }

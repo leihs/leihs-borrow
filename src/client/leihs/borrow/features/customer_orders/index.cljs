@@ -175,12 +175,22 @@
                               (map #(vector % (-> % :id rental-path-by-reservation-id))))
         tab (or (:tab filters) "current-lendings")]
     [:> UI/Components.Design.PageLayout.ContentContainer
-     [:> UI/Components.Design.PageLayout.Header
-      {:title (t :title)}
-      [order-filter/filter-comp
-       filters
-       #(dispatch [:routing/navigate
-                   [::routes/rentals-index {:query-params %}]])]]
+     [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
+      [:div.pt-2
+       [order-filter/filter-comp
+        filters
+        #(dispatch [:routing/navigate
+                    [::routes/rentals-index {:query-params %}]])]]]
+
+     ;; mobile "tab" navigation
+     [:> UI/Components.Design.Stack {:class "d-sm-none" :divided "bottom"}
+      [:select.form-select
+       {:style {:border-radius 0 :border "none" :background-color "white" :padding-left "0"}
+        :value tab
+        :on-change #(switch-tab filters (-> % .-target .-value))}
+       [:option {:value "current-lendings"} (str (t :section-title-current-lendings))]
+       [:option {:value "open-orders"} (str (t :section-title-open-rentals))]
+       [:option {:value "closed-orders"} (str (t :section-title-closed-rentals))]]]
      (cond
        loading? [ui/loading]
 
@@ -188,19 +198,8 @@
 
        :else
        [:<>
-        [:div.d-sm-none
-         [:button.btn.btn-outline-secondary.w-100
-          {:on-click #(switch-tab filters "current-lendings")}
-          (t :section-title-current-lendings)]
-         [:button.btn.btn-outline-secondary.w-100
-          {:on-click #(switch-tab filters "open-orders")}
-          (t :section-title-open-rentals)]
-         [:button.btn.btn-outline-secondary.w-100
-          {:on-click #(switch-tab filters "closed-orders")}
-          (t :section-title-closed-rentals)]]
-
         [:> UI/Components.ReactBootstrap.Tabs
-         {:class "mb-1 page-inset-x-inverse d-none d-sm-flex"
+         {:class "page-inset-x-inverse d-none d-sm-flex"
           :active-key tab
           :on-select #(switch-tab filters %)}
          [:> UI/Components.ReactBootstrap.Tab

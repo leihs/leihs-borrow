@@ -2,7 +2,7 @@ import React from 'react'
 import Topnav from './Topnav'
 
 export default {
-  title: 'Design Components/Layout/Topnav',
+  title: 'Design Components/Navigation/Topnav',
   component: Topnav
 }
 

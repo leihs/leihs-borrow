@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { action } from '@storybook/addon-actions'
 
-import FilterButton from './FilterButton'
 import PageLayoutMock from '../story-utils/PageLayoutMock'
 import PageLayout from './PageLayout'
 import ModalDialog from './ModalDialog'
@@ -22,7 +21,9 @@ export const demo = () => {
   return (
     <PageLayoutMock>
       <PageLayout.Header title="Modal Dialog Demo">
-        <FilterButton onClick={() => setModalOpen(!modalOpen)}>Click to open Modal</FilterButton>
+        <button className="btn btn-primary" onClick={() => setModalOpen(!modalOpen)}>
+          Click to open Modal
+        </button>
         <ModalDialog shown={modalOpen} title="Modal Dialog Title">
           <ModalDialog.Body>
             {new Array(3).fill().map((_, i) => (
@@ -47,7 +48,9 @@ export const dismissible = () => {
   return (
     <PageLayoutMock>
       <PageLayout.Header title="Dismissible dialog demo">
-        <FilterButton onClick={() => setModalOpen(!modalOpen)}>Click to open Modal</FilterButton>
+        <button className="btn btn-primary" onClick={() => setModalOpen(!modalOpen)}>
+          Click to open Modal
+        </button>
         <ModalDialog dismissible shown={modalOpen} onDismiss={handleClose} title="Dismissible dialog">
           <ModalDialog.Body>
             <p>A dismissible modal dialog can be closed in the following ways:</p>

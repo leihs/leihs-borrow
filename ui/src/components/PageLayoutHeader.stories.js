@@ -1,6 +1,5 @@
 import React from 'react'
 import PageLayout from './PageLayout'
-import FilterButton from './FilterButton'
 
 export default {
   title: 'Design Components/Layout/PageLayoutHeader',
@@ -28,7 +27,7 @@ export const typicalExample = ({ onClick }) => {
       <h1>PageLayout.Header</h1>
       <p className="text-muted">Typical example:</p>
       <PageLayout.Header preTitle="Audio" title="Mischpulte & CD Player">
-        <FilterButton onClick={onClick}>FilterButton</FilterButton>
+        <div>(more header content, e.g. some filters)</div>
       </PageLayout.Header>
     </div>
   )

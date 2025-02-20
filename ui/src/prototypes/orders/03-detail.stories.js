@@ -69,8 +69,6 @@ export const detail = ({ order, onOrderCancelClick, onItemClick }) => {
           </Stack>
         </Section>
       </Stack>
-
-      <PageLayout.Metadata>ID {order.id}</PageLayout.Metadata>
     </PageLayoutMock>
   )
 }
