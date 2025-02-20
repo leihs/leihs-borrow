@@ -141,6 +141,10 @@
   [:div.text-center.mt-5
    (if (empty? (dissoc filters :seq :tab)) (t :no-orders-yet) (t :no-orders-found))])
 
+(defn switch-tab [filters tab]
+  (dispatch [:routing/navigate
+             [::routes/rentals-index {:query-params (assoc filters :tab tab)}]]))
+
 (defn view []
   (let [errors @(subscribe [::errors])
         loading? @(subscribe [::loading?])
@@ -168,7 +172,8 @@
                                                 (-> r :inventory-pool :name)
                                                 (-> r :model :name)
                                                 (-> r :id)]))
-                              (map #(vector % (-> % :id rental-path-by-reservation-id))))]
+                              (map #(vector % (-> % :id rental-path-by-reservation-id))))
+        tab (or (:tab filters) "current-lendings")]
     [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)}
@@ -183,11 +188,21 @@
 
        :else
        [:<>
+        [:div.d-sm-none
+         [:button.btn.btn-outline-secondary.w-100
+          {:on-click #(switch-tab filters "current-lendings")}
+          (t :section-title-current-lendings)]
+         [:button.btn.btn-outline-secondary.w-100
+          {:on-click #(switch-tab filters "open-orders")}
+          (t :section-title-open-rentals)]
+         [:button.btn.btn-outline-secondary.w-100
+          {:on-click #(switch-tab filters "closed-orders")}
+          (t :section-title-closed-rentals)]]
+
         [:> UI/Components.ReactBootstrap.Tabs
-         {:class "mb-1 page-inset-x-inverse"
-          :active-key (or (:tab filters) "current-lendings")
-          :on-select #(dispatch [:routing/navigate
-                                 [::routes/rentals-index {:query-params (assoc filters :tab %)}]])}
+         {:class "mb-1 page-inset-x-inverse d-none d-sm-flex"
+          :active-key tab
+          :on-select #(switch-tab filters %)}
          [:> UI/Components.ReactBootstrap.Tab
           {:event-key "current-lendings"
            :title (r/as-element
