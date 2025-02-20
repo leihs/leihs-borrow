@@ -5,19 +5,33 @@ import { ArrowIcon } from './Icons'
 
 function TruncateText({ maxHeight, translations, className, children }) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [shouldTruncate, setShouldTruncate] = useState(false)
+  const childrenRef = React.useRef(null)
+  const truncateRef = React.useRef(null)
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded)
   }
 
+  React.useEffect(() => {
+    if (!childrenRef.current || !truncateRef.current) return
+
+    const contentHeight = childrenRef.current.clientHeight
+    const truncateHeight = truncateRef.current.clientHeight
+
+    setShouldTruncate(contentHeight > truncateHeight)
+  }, [childrenRef, truncateRef])
+
   return (
     <>
       <div
+        ref={truncateRef}
         className={cx('position-relative overflow-hidden', className)}
         style={{ maxHeight: isExpanded ? 'none' : maxHeight }}
       >
         <div className={cx('truncate-text', isExpanded ? 'truncate-text--expanded' : 'truncate-text--collapsed')}>
-          {children}
+          <div ref={childrenRef}>{children}</div>
+
           {isExpanded && (
             <button className="btn btn-link p-0 text-body fw-bold text-decoration-none" onClick={toggleExpand}>
               <ArrowIcon className="truncate-text__arrow-up" />
@@ -25,13 +39,13 @@ function TruncateText({ maxHeight, translations, className, children }) {
             </button>
           )}
         </div>
-        {!isExpanded && (
+        {!isExpanded && shouldTruncate && (
           <div className="position-absolute bottom-0 w-100">
             <div className={cx('truncate-text__gradient-overlay')}></div>
           </div>
         )}
       </div>
-      {!isExpanded && (
+      {!isExpanded && shouldTruncate && (
         <button className="btn btn-link p-0 text-body fw-bold text-decoration-none" onClick={toggleExpand}>
           <ArrowIcon className="truncate-text__arrow-right mr-1" />
           {translations?.more || 'read more'}

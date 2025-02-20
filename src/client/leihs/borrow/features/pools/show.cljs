@@ -112,7 +112,7 @@
                                             :title (t :holidays.title)
                                             :class "fw-bold"}
 
-           [:> UI/Components.Design.TruncateText {:max-height "150px"
+           [:> UI/Components.Design.TruncateText {:max-height "140px"
                                                   :translations {:more (t :show-remaining-holidays.more)
                                                                  :hide (t :show-remaining-holidays.hide)}}
             (doall (for [[index holiday] (map-indexed (fn [index item] [index item])
