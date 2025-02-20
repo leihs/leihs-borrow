@@ -63,380 +63,424 @@
                     "id": "7d32a165-7879-4dda-b33d-4d5c842a20de",
                     "name": "Videopool",
                     "totalReservableQuantity": 5,
-                    "reservationAdvanceDays": 1
+                    "reservationAdvanceDays": 1,
+                    "holidays": [
+                      {
+                        "startDate": "2020-04-10T00:00:00Z",
+                        "endDate": "2020-04-10T00:00:00Z",
+                        "name": "Fancy Feiertag"
+                      }
+                    ],
+                    "workdays": [
+                      {
+                        "day": "MONDAY",
+                        "open": true,
+                        "info": null
+                      },
+                      {
+                        "day": "TUESDAY",
+                        "open": true,
+                        "info": null
+                      },
+                      {
+                        "day": "WEDNESDAY",
+                        "open": true,
+                        "info": null
+                      },
+                      {
+                        "day": "THURSDAY",
+                        "open": true,
+                        "info": null
+                      },
+                      {
+                        "day": "FRIDAY",
+                        "open": true,
+                        "info": null
+                      },
+                      {
+                        "day": "SATURDAY",
+                        "open": false,
+                        "info": null
+                      },
+                      {
+                        "day": "SUNDAY",
+                        "open": false,
+                        "info": null
+                      }
+                    ]
                   },
                   "dates": [
                     {
                       "date": "2020-04-01",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-02",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-03",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-04",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-05",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-06",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-07",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-08",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-09",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-10",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": ["HOLIDAY"],
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": ["HOLIDAY"]
                     },
                     {
                       "date": "2020-04-11",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 1,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-04-12",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 1,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-04-13",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-14",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-15",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-16",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-17",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-18",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 1,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-04-19",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 1,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-04-20",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 0,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-21",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 0,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-22",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 0,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-23",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 0,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-24",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 0,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-25",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 1,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-04-26",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 1,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-04-27",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-28",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-29",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 3,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-04-30",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 3,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-01",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 1,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-02",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 1,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-05-03",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 1,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-05-04",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 3,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-05",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 3,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-06",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 3,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-07",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 3,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-08",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 3,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-09",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 5,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-05-10",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 5,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-05-11",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-12",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 28,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-13",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 28,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-14",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-15",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-16",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 5,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-05-17",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 5,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-05-18",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-19",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-20",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-21",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-22",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-23",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 5,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-05-24",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 5,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-05-25",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-26",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-27",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-28",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-29",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     },
                     {
                       "date": "2020-05-30",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 5,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-05-31",
-                      "endDateRestriction": "CLOSE_TIME",
+                      "endDateRestrictions": ["NON_WORKDAY"],
                       "quantity": 5,
-                      "startDateRestriction": "CLOSE_TIME"
+                      "startDateRestrictions": ["NON_WORKDAY"]
                     },
                     {
                       "date": "2020-06-01",
-                      "endDateRestriction": null,
+                      "endDateRestrictions": null,
                       "quantity": 5,
-                      "startDateRestriction": null
+                      "startDateRestrictions": null
                     }
                   ]
                 }

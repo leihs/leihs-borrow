@@ -106,6 +106,9 @@
                 :pool-closed-max-visits
                 {:de-CH " (maximale Besucherzahl erreicht)"
                  :en-GB " (maximum visitor capacity reached)"}
+                :closed-on-day-of-week
+                {:de-CH "{dayName} geschlossen"
+                 :en-GB "closed on {dayName}"}
 
                 :maximum-reservation-duration
                 {:de-CH "Maximale Reservationsdauer ist beschränkt auf {days} Tage"

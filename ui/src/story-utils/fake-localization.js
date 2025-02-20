@@ -38,6 +38,7 @@ export const orderPanelTexts = {
     'pool-closed-at-end-date': { 'de-CH': 'Rückgabe am {endDate, date, small} nicht möglich' },
     'pool-closed-at-start-and-end-date': { 'de-CH': 'Abholung/Rückgabe am {startDate, date, small} nicht möglich' },
     'pool-closed-max-visits': { 'de-CH': ' (maximale Besucherzahl erreicht)' },
+    'closed-on-day-of-week': { 'de-CH': '{dayName} geschlossen' },
 
     'maximum-reservation-duration': { 'de-CH': 'Maximale Reservationsdauer ist beschränkt auf {days} Tage' },
 

@@ -187,140 +187,140 @@ const model = {
         {
           date: '2021-06-23T00:00:00Z',
           quantity: 4,
-          startDateRestriction: 'BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE',
-          endDateRestriction: null
+          startDateRestrictions: 'BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE',
+          endDateRestrictions: null
         },
         {
           date: '2021-06-24T00:00:00Z',
           quantity: 3,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-06-25T00:00:00Z',
           quantity: 3,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-06-26T00:00:00Z',
           quantity: 3,
-          startDateRestriction: 'CLOSE_TIME',
-          endDateRestriction: 'CLOSE_TIME'
+          startDateRestrictions: ['NON_WORKDAY'],
+          endDateRestrictions: ['NON_WORKDAY']
         },
         {
           date: '2021-06-27T00:00:00Z',
           quantity: 3,
-          startDateRestriction: 'CLOSE_TIME',
-          endDateRestriction: 'CLOSE_TIME'
+          startDateRestrictions: ['NON_WORKDAY'],
+          endDateRestrictions: ['NON_WORKDAY']
         },
         {
           date: '2021-06-28T00:00:00Z',
           quantity: 3,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-06-29T00:00:00Z',
           quantity: 4,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-06-30T00:00:00Z',
           quantity: 4,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-01T00:00:00Z',
           quantity: 4,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-02T00:00:00Z',
           quantity: 4,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-03T00:00:00Z',
           quantity: 4,
-          startDateRestriction: 'CLOSE_TIME',
-          endDateRestriction: 'CLOSE_TIME'
+          startDateRestrictions: ['NON_WORKDAY'],
+          endDateRestrictions: ['NON_WORKDAY']
         },
         {
           date: '2021-07-04T00:00:00Z',
           quantity: 4,
-          startDateRestriction: 'CLOSE_TIME',
-          endDateRestriction: 'CLOSE_TIME'
+          startDateRestrictions: ['NON_WORKDAY'],
+          endDateRestrictions: ['NON_WORKDAY']
         },
         {
           date: '2021-07-05T00:00:00Z',
           quantity: 4,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-06T00:00:00Z',
           quantity: 4,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-07T00:00:00Z',
           quantity: 4,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-08T00:00:00Z',
           quantity: 4,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-09T00:00:00Z',
           quantity: 4,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-10T00:00:00Z',
           quantity: 6,
-          startDateRestriction: 'CLOSE_TIME',
-          endDateRestriction: 'CLOSE_TIME'
+          startDateRestrictions: ['NON_WORKDAY'],
+          endDateRestrictions: ['NON_WORKDAY']
         },
         {
           date: '2021-07-11T00:00:00Z',
           quantity: 6,
-          startDateRestriction: 'CLOSE_TIME',
-          endDateRestriction: 'CLOSE_TIME'
+          startDateRestrictions: ['NON_WORKDAY'],
+          endDateRestrictions: ['NON_WORKDAY']
         },
         {
           date: '2021-07-12T00:00:00Z',
           quantity: 6,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-13T00:00:00Z',
           quantity: 6,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-14T00:00:00Z',
           quantity: 5,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         },
         {
           date: '2021-07-15T00:00:00Z',
           quantity: 5,
-          startDateRestriction: null,
-          endDateRestriction: null
+          startDateRestrictions: null,
+          endDateRestrictions: null
         }
       ]
     }

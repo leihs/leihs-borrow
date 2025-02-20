@@ -1,5 +1,5 @@
 # source: http://localhost:3250/borrow/graphql
-# timestamp: Thu Jan 30 2025 12:47:57 GMT+0100 (Central European Standard Time)
+# timestamp: Thu Feb 20 2025 16:11:53 GMT+0100 (Central European Standard Time)
 
 schema {
   query: QueryRoot
@@ -101,9 +101,9 @@ scalar DateTime
 
 type DayData {
   date: Date!
-  endDateRestriction: endDateRestrictionEnum
+  endDateRestrictions: [endDateRestrictionEnum]
   quantity: Int!
-  startDateRestriction: startDateRestrictionEnum
+  startDateRestrictions: [startDateRestrictionEnum]
 }
 
 type Delegation {
@@ -116,7 +116,8 @@ type Delegation {
 }
 
 enum endDateRestrictionEnum {
-  CLOSE_TIME
+  NON_WORKDAY
+  HOLIDAY
   VISITS_CAPACITY_REACHED
 }
 
@@ -501,7 +502,8 @@ type ReturnFulfillment implements Fulfillment {
 }
 
 enum startDateRestrictionEnum {
-  CLOSE_TIME
+  NON_WORKDAY
+  HOLIDAY
   VISITS_CAPACITY_REACHED
   BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE
 }

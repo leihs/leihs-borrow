@@ -148,13 +148,17 @@ function generateMockAvailabilityDates(maxDate, getQuantity) {
     const holiday = dateShort === '2020-04-10' || dateShort === '2020-04-13'
     const maxVisitsReached = dateShort === '2020-04-27'
 
-    const restriction = noWorkDay || holiday ? 'CLOSE_TIME' : maxVisitsReached ? 'VISITS_CAPACITY_REACHED' : undefined
+    const restrictions = [
+      noWorkDay && 'NON_WORKDAY',
+      holiday && 'HOLIDAY',
+      maxVisitsReached && 'VISITS_CAPACITY_REACHED'
+    ].filter(Boolean)
 
     return {
       date: dateISO,
       quantity: getQuantity(dateShort),
-      startDateRestriction: restriction,
-      endDateRestriction: restriction
+      startDateRestrictions: restrictions,
+      endDateRestrictions: restrictions
     }
   })
 }
