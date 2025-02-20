@@ -343,7 +343,8 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
     FactoryBot.create(:holiday,
       start_date: 8.days.from_now,
       end_date: 8.days.from_now,
-      inventory_pool: inventory_pool_6_holiday)
+      inventory_pool: inventory_pool_6_holiday,
+      name: "Ogtern")
     FactoryBot.create(:reservation,
       id: "d08550f3-3717-43e5-91a1-4c36cbfa44f8",
       leihs_model: model_8,

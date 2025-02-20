@@ -3,8 +3,8 @@ query getModelBookingCalendar(
   $startDate: Date
   $endDate: Date
   $userId: UUID
-  # $pools: [UUID!]!
-) {
+) # $pools: [UUID!]!
+{
   model(id: $modelId) {
     id
     name
@@ -16,8 +16,8 @@ query getModelBookingCalendar(
       startDate: $startDate
       endDate: $endDate
       userId: $userId
-      # inventoryPoolIds: $pools
-    ) {
+    ) # inventoryPoolIds: $pools
+    {
       inventoryPool {
         id
         name
@@ -25,8 +25,8 @@ query getModelBookingCalendar(
       dates {
         date
         quantity
-        startDateRestriction
-        endDateRestriction
+        startDateRestrictions
+        endDateRestrictions
       }
     }
   }

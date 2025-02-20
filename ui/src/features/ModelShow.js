@@ -245,8 +245,8 @@ const modelPropTypes = {
         PropTypes.shape({
           date: PropTypes.string.isRequired,
           quantity: PropTypes.number.isRequired,
-          startDateRestriction: PropTypes.string,
-          endDateRestriction: PropTypes.any
+          startDateRestrictions: PropTypes.any,
+          endDateRestrictions: PropTypes.any
         })
       )
     })

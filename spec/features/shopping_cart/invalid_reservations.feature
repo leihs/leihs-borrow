@@ -56,7 +56,7 @@ Feature: Invalid reservations
     When I click on the card with title "1× Reservation Advance Days"
     Then I see the "Edit reservation" dialog
     But I see the following warnings in the "Time span" section:
-      | text                                    |
+      | text                                            |
       | Earliest pickup date in 3 working days from now |
     And I click on "Confirm"
     But the "Edit reservation" dialog did not close
@@ -83,9 +83,9 @@ Feature: Invalid reservations
     When I click on the card with title "1× Not A Workday"
     Then I see the "Edit reservation" dialog
     But I see the following warnings in the "Time span" section:
-      | text                                      |
-      | Pickup not possible on ${now}             |
-      | Return not possible on ${1.days.from_now} |
+      | text                                                                                    |
+      | Pickup not possible on ${now} (closed on ${now.strftime('%A')})                         |
+      | Return not possible on ${1.days.from_now} (closed on ${1.days.from_now.strftime('%A')}) |
     And I click on "Confirm"
     But the "Edit reservation" dialog did not close
 
@@ -97,8 +97,8 @@ Feature: Invalid reservations
     When I click on the card with title "1× Holiday on End Date"
     Then I see the "Edit reservation" dialog
     But I see the following warnings in the "Time span" section:
-      | text                                      |
-      | Return not possible on ${8.days.from_now} |
+      | text                                               |
+      | Return not possible on ${8.days.from_now} (Ogtern) |
     And I click on "Confirm"
     But the "Edit reservation" dialog did not close
 

@@ -105,8 +105,8 @@ describe "models connection" do
                     dates {
                       date
                       quantity
-                      startDateRestriction
-                      endDateRestriction
+                      startDateRestrictions
+                      endDateRestrictions
                     }
                   }
                 }
@@ -142,12 +142,12 @@ describe "models connection" do
                         dates: [
                           {date: "#{Date.today}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: "CLOSE_TIME",
-                           endDateRestriction: "CLOSE_TIME"},
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE", "NON_WORKDAY"],
+                           endDateRestrictions: ["NON_WORKDAY"]},
                           {date: "#{Date.tomorrow}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: nil,
-                           endDateRestriction: nil}
+                           startDateRestrictions: nil,
+                           endDateRestrictions: nil}
                         ]
                       }]}}
             ]
@@ -171,12 +171,12 @@ describe "models connection" do
                         dates: [
                           {date: "#{Date.today}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: nil,
-                           endDateRestriction: nil},
+                           startDateRestrictions: nil,
+                           endDateRestrictions: nil},
                           {date: "#{Date.tomorrow}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: "CLOSE_TIME",
-                           endDateRestriction: "CLOSE_TIME"}
+                           startDateRestrictions: ["HOLIDAY"],
+                           endDateRestrictions: ["HOLIDAY"]}
                         ]
                       }]}}
             ]
@@ -222,32 +222,32 @@ describe "models connection" do
                         dates: [
                           {date: "#{Date.today}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE",
-                           endDateRestriction: nil},
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                           endDateRestrictions: nil},
                           {date: "#{Date.today + 1.day}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: "CLOSE_TIME",
-                           endDateRestriction: "CLOSE_TIME"},
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE", "NON_WORKDAY"],
+                           endDateRestrictions: ["NON_WORKDAY"]},
                           {date: "#{Date.today + 2.days}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE",
-                           endDateRestriction: nil},
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                           endDateRestrictions: nil},
                           {date: "#{Date.today + 3.days}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: "CLOSE_TIME",
-                           endDateRestriction: "CLOSE_TIME"},
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE", "HOLIDAY"],
+                           endDateRestrictions: ["HOLIDAY"]},
                           {date: "#{Date.today + 4.days}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: "CLOSE_TIME",
-                           endDateRestriction: "CLOSE_TIME"},
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE", "HOLIDAY"],
+                           endDateRestrictions: ["HOLIDAY"]},
                           {date: "#{Date.today + 5.days}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE",
-                           endDateRestriction: nil},
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                           endDateRestrictions: nil},
                           {date: "#{Date.today + 6.days}T00:00:00Z",
                            quantity: 1,
-                           startDateRestriction: nil,
-                           endDateRestriction: nil}
+                           startDateRestrictions: nil,
+                           endDateRestrictions: nil}
                         ]
                       }]}}
             ]
@@ -359,8 +359,8 @@ describe "models connection" do
                       dates: [
                         {date: "#{Date.today}T00:00:00Z",
                          quantity: 1,
-                         startDateRestriction: "CLOSE_TIME",
-                         endDateRestriction: "CLOSE_TIME"}
+                         startDateRestrictions: ["VISITS_CAPACITY_REACHED", "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE", "HOLIDAY"],
+                         endDateRestrictions: ["VISITS_CAPACITY_REACHED", "HOLIDAY"]}
                       ]
                     }]}}
           ]
@@ -379,8 +379,8 @@ describe "models connection" do
                       dates: [
                         {date: "#{Date.today}T00:00:00Z",
                          quantity: 1,
-                         startDateRestriction: "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE",
-                         endDateRestriction: "VISITS_CAPACITY_REACHED"}
+                         startDateRestrictions: ["VISITS_CAPACITY_REACHED", "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                         endDateRestrictions: ["VISITS_CAPACITY_REACHED"]}
                       ]
                     }]}}
           ]
@@ -399,8 +399,8 @@ describe "models connection" do
                       dates: [
                         {date: "#{Date.today}T00:00:00Z",
                          quantity: 1,
-                         startDateRestriction: "VISITS_CAPACITY_REACHED",
-                         endDateRestriction: "VISITS_CAPACITY_REACHED"}
+                         startDateRestrictions: ["VISITS_CAPACITY_REACHED"],
+                         endDateRestrictions: ["VISITS_CAPACITY_REACHED"]}
                       ]
                     }]}}
           ]

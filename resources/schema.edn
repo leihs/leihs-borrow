@@ -20,8 +20,8 @@
          :ReservationMetaStateEnum {:values [:CURRENT_LENDING]}
          :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED :CANCELED]}
          :WorkdayEnum {:values [:MONDAY :TUESDAY :WEDNESDAY :THURSDAY :FRIDAY :SATURDAY :SUNDAY]}
-         :startDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
-         :endDateRestrictionEnum {:values [:CLOSE_TIME :VISITS_CAPACITY_REACHED]}}
+         :startDateRestrictionEnum {:values [:NON_WORKDAY :HOLIDAY :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
+         :endDateRestrictionEnum {:values [:NON_WORKDAY :HOLIDAY :VISITS_CAPACITY_REACHED]}}
 
  :interfaces {:Fulfillment {:fields {:fulfilledQuantity {:type (non-null Int)}
                                      :toFulfillQuantity {:type (non-null Int)}}}}
@@ -160,8 +160,8 @@
            :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null :Date)}
                               :quantity {:type (non-null Int)}
-                              :startDateRestriction {:type :startDateRestrictionEnum}
-                              :endDateRestriction {:type :endDateRestrictionEnum}}}
+                              :startDateRestrictions {:type (list :startDateRestrictionEnum)}
+                              :endDateRestrictions {:type (list :endDateRestrictionEnum)}}}
            :Item {:fields {:id {:type (non-null :UUID)}
                            :inventoryCode {:type (non-null String)}
                            :model {:type (non-null :Model) :resolve :model}}}

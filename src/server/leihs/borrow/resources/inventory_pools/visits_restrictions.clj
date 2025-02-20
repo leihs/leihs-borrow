@@ -1,5 +1,4 @@
 (ns leihs.borrow.resources.inventory-pools.visits-restrictions
-  (:refer-clojure :exclude [range])
   (:require [clojure.tools.logging :as log]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
@@ -11,15 +10,15 @@
             [java-time :as jt]
             [taoensso.timbre :as timbre :refer [debug info spy]]))
 
-(defn range [start end]
+(defn dates-range [start end]
   (->> (jt/iterate jt/plus start (jt/days 1))
        (take-while #(or (jt/before? % end) (= % end)))))
 
-(comment (range (jt/local-date) (jt/local-date "2025-02-28")))
+(comment (dates-range (jt/local-date) (jt/local-date "2025-02-28")))
 
 (defn holiday? [date pool]
-  (some #(->> (range (jt/local-date (:start_date %))
-                     (jt/local-date (:end_date %)))
+  (some #(->> (dates-range (jt/local-date (:start_date %))
+                           (jt/local-date (:end_date %)))
               (some #{date}))
         (:holidays pool)))
 
@@ -67,31 +66,46 @@
         max_visits (some-> pool :max_visits index Integer.)]
     (and max_visits (>= visits-count max_visits))))
 
-(defn start-date-restriction [date-with-avail pool]
-  (cond (close-time? (:date date-with-avail) pool)
-        :CLOSE_TIME
-        (when-let [eppd (:earliest-possible-pickup-date pool)]
-          (jt/before? (jt/local-date (:date date-with-avail)) eppd))
-        :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE
-        (visits-capacity-reached? (:date date-with-avail)
-                                  (:visits_count date-with-avail)
-                                  pool)
-        :VISITS_CAPACITY_REACHED))
+(defn start-date-restrictions [date-with-avail pool]
+  (cond-> nil
+    (-> date-with-avail :date jt/local-date
+        (pools/working-day? pool)
+        not)
+    (conj :NON_WORKDAY)
 
-(defn end-date-restriction [date-with-avail pool]
-  (cond (close-time? (:date date-with-avail) pool)
-        :CLOSE_TIME
-        (visits-capacity-reached? (:date date-with-avail)
-                                  (:visits_count date-with-avail)
-                                  pool)
-        :VISITS_CAPACITY_REACHED))
+    (-> date-with-avail :date jt/local-date (holiday? pool))
+    (conj :HOLIDAY)
+
+    (when-let [eppd (:earliest-possible-pickup-date pool)]
+      (jt/before? (jt/local-date (:date date-with-avail)) eppd))
+    (conj :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE)
+
+    (visits-capacity-reached? (:date date-with-avail)
+                              (:visits_count date-with-avail)
+                              pool)
+    (conj :VISITS_CAPACITY_REACHED)))
+
+(defn end-date-restrictions [date-with-avail pool]
+  (cond-> nil
+    (-> date-with-avail :date jt/local-date
+        (pools/working-day? pool)
+        not)
+    (conj :NON_WORKDAY)
+
+    (-> date-with-avail :date jt/local-date (holiday? pool))
+    (conj :HOLIDAY)
+
+    (visits-capacity-reached? (:date date-with-avail)
+                              (:visits_count date-with-avail)
+                              pool)
+    (conj :VISITS_CAPACITY_REACHED)))
 
 (defn validate-single-date [date-with-avail pool]
   (assoc date-with-avail
-         :start-date-restriction
-         (start-date-restriction date-with-avail pool)
-         :end-date-restriction
-         (end-date-restriction date-with-avail pool)))
+         :start-date-restrictions
+         (start-date-restrictions date-with-avail pool)
+         :end-date-restrictions
+         (end-date-restrictions date-with-avail pool)))
 
 (defn validate-dates [tx dates-with-avail pool]
   (let [pool* (as-> pool <>
@@ -101,6 +115,5 @@
                 (assoc <>
                        :earliest-possible-pickup-date
                        (earliest-possible-pickup-date <>)))]
-    (debug pool*)
     (map #(validate-single-date % pool*)
          dates-with-avail)))

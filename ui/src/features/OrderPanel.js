@@ -131,6 +131,7 @@ const OrderPanel = ({
       poolAvailability,
       quantity,
       locale,
+      dateLocale,
       txt.validate
     )
     if (dateRangeErrors && dateRangeErrors.length > 0) {
@@ -324,8 +325,8 @@ function getDateRangePickerConstraints(poolAvailability, today, wantedQuantity) 
   const getDates = filter => [...dates.filter(filter).map(x => x.parsedDate)]
   return {
     disabledDates: getDates(x => x.quantity < wantedQuantity && x.parsedDate >= today),
-    disabledStartDates: getDates(x => x.startDateRestriction),
-    disabledEndDates: getDates(x => x.endDateRestriction)
+    disabledStartDates: getDates(x => x.startDateRestrictions && x.startDateRestrictions.length > 0),
+    disabledEndDates: getDates(x => x.endDateRestrictions && x.startDateRestrictions.length > 0)
   }
 }
 
@@ -354,10 +355,10 @@ function validatePool(inventoryPool, locale, txt) {
   }
 }
 
-function validateDateRange(selectedRange, today, maxDate, poolAvailability, wantedQuantity, locale, txt) {
+function validateDateRange(selectedRange, today, maxDate, poolAvailability, wantedQuantity, locale, dateLocale, txt) {
   const { startDate, endDate } = selectedRange
   const { dates, inventoryPool } = poolAvailability
-  const { reservationAdvanceDays, maximumReservationDuration } = inventoryPool
+  const { reservationAdvanceDays, maximumReservationDuration, holidays = [] } = inventoryPool
 
   const basicValidityMessage = (() => {
     // Ensure that a valid quantity is given (the quantity field also has its own validator, so this is an exceptional case)
@@ -394,11 +395,22 @@ function validateDateRange(selectedRange, today, maxDate, poolAvailability, want
     const txtPoolClosed = isOneDayPeriod ? 'pool-closed-at-start-and-end-date' : 'pool-closed-at-start-date'
     const startDateInfo = getByDay(dates, startDate)
     if (startDateInfo) {
-      if (startDateInfo.startDateRestriction === 'CLOSE_TIME') {
-        return t(txt, txtPoolClosed, locale, { startDate })
-      } else if (startDateInfo.startDateRestriction === 'VISITS_CAPACITY_REACHED') {
+      const isRestrictedBy = r => startDateInfo.startDateRestrictions && startDateInfo.startDateRestrictions.includes(r)
+      if (isRestrictedBy('HOLIDAY')) {
+        const holidayName = holidays.find(
+          holiday =>
+            startDate >= startOfDay(parseISO(holiday.startDate)) && startDate <= startOfDay(parseISO(holiday.endDate))
+        )?.name
+        return t(txt, txtPoolClosed, locale, { startDate }) + (holidayName ? ' (' + holidayName + ')' : '')
+      } else if (isRestrictedBy('NON_WORKDAY')) {
+        const dayName = format(startDate, 'EEEE', { locale: dateLocale })
+        return (
+          t(txt, txtPoolClosed, locale, { startDate }) +
+          (dayName ? ' (' + t(txt, 'closed-on-day-of-week', locale, { dayName }) + ')' : '')
+        )
+      } else if (isRestrictedBy('VISITS_CAPACITY_REACHED')) {
         return t(txt, txtPoolClosed, locale, { startDate }) + t(txt, 'pool-closed-max-visits', locale)
-      } else if (startDateInfo.startDateRestriction === 'BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE') {
+      } else if (isRestrictedBy('BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE')) {
         // (This case should have been prevented by the future-only rule above)
         return t(txt, 'start-date-not-before', locale, { days: reservationAdvanceDays })
       }
@@ -420,9 +432,19 @@ function validateDateRange(selectedRange, today, maxDate, poolAvailability, want
     }
     const endDateInfo = getByDay(dates, endDate)
     if (endDateInfo) {
-      if (endDateInfo.endDateRestriction === 'CLOSE_TIME') {
-        return t(txt, 'pool-closed-at-end-date', locale, { endDate })
-      } else if (endDateInfo.endDateRestriction === 'VISITS_CAPACITY_REACHED') {
+      const isRestrictedBy = r => endDateInfo.startDateRestrictions && endDateInfo.endDateRestrictions.includes(r)
+      if (isRestrictedBy('HOLIDAY')) {
+        const holidayName = holidays.find(
+          h => endDate >= startOfDay(parseISO(h.startDate)) && endDate <= startOfDay(parseISO(h.endDate))
+        )?.name
+        return t(txt, 'pool-closed-at-end-date', locale, { endDate }) + (holidayName ? ' (' + holidayName + ')' : '')
+      } else if (isRestrictedBy('NON_WORKDAY')) {
+        const dayName = format(endDate, 'EEEE', { locale: dateLocale })
+        return (
+          t(txt, 'pool-closed-at-end-date', locale, { endDate }) +
+          (dayName ? ' (' + t(txt, 'closed-on-day-of-week', locale, { dayName }) + ')' : '')
+        )
+      } else if (isRestrictedBy('VISITS_CAPACITY_REACHED')) {
         return t(txt, 'pool-closed-at-end-date', locale, { endDate }) + t(txt, 'pool-closed-max-visits', locale)
       }
     }

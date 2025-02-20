@@ -3,8 +3,8 @@ import PropTypes from 'prop-types'
 const dateInfoPropType = PropTypes.shape({
   date: PropTypes.string.isRequired,
   quantity: PropTypes.number.isRequired,
-  endDateRestriction: PropTypes.any,
-  startDateRestriction: PropTypes.any
+  endDateRestrictions: PropTypes.any,
+  startDateRestrictions: PropTypes.any
 })
 
 const modelDataPropType = PropTypes.shape({
