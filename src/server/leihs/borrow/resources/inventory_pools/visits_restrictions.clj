@@ -1,53 +1,53 @@
 (ns leihs.borrow.resources.inventory-pools.visits-restrictions
-  (:require [taoensso.timbre :as timbre :refer [debug info spy]]
-            [clojure.tools.logging :as log]
+  (:refer-clojure :exclude [range])
+  (:require [clojure.tools.logging :as log]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
+            [leihs.borrow.resources.holidays :as holidays]
+            [leihs.borrow.resources.inventory-pools :as pools]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
-            [java-time :refer [local-date before?] :as jt]
-            [taoensso.timbre :as timbre :refer [debug spy]]))
+            [java-time :as jt]
+            [taoensso.timbre :as timbre :refer [debug info spy]]))
 
-(defn holiday? [tx date pool]
-  (let [date* [:cast date :date]]
-    (-> (sql/select true)
-        (sql/from :holidays)
-        (sql/where [:= :inventory_pool_id (:id pool)])
-        (sql/where [:>= date* :start_date])
-        (sql/where [:<= date* :end_date])
-        sql-format
-        (->> (jdbc-query tx))
-        empty?
-        not)))
-
-(defn working-day? [date pool]
-  (let [day-of-week (-> date
-                        .getDayOfWeek
-                        .toString
-                        .toLowerCase
-                        keyword)]
-    (day-of-week pool)))
-
-(defn close-time? [tx date pool]
-  (or (not (working-day? (local-date date) pool))
-      (holiday? tx date pool)))
-
-(defn working-days-between [tx start end pool]
+(defn range [start end]
   (->> (jt/iterate jt/plus start (jt/days 1))
-       (take-while #(or (jt/before? % end)))
-       (filter #(not (close-time? tx % pool)))))
+       (take-while #(or (jt/before? % end) (= % end)))))
 
-(defn before-earliest-possible-pick-up-date? [tx date pool]
-  (let [today (local-date)
-        pick-up-date (local-date date)
-        working-days (working-days-between tx today pick-up-date pool)]
-    (and (:reservation_advance_days pool)
-         (< (count working-days)
-            (:reservation_advance_days pool)))))
+(comment (range (jt/local-date) (jt/local-date "2025-02-28")))
+
+(defn holiday? [date pool]
+  (some #(->> (range (jt/local-date (:start_date %))
+                     (jt/local-date (:end_date %)))
+              (some #{date}))
+        (:holidays pool)))
+
+(defn close-time? [date pool]
+  (let [date* (jt/local-date date)]
+    (or (not (pools/working-day? date* pool))
+        (holiday? date* pool))))
+
+(defn earliest-possible-pickup-date [pool]
+  (let [start (jt/local-date)
+        limit (jt/plus start (jt/years 100))]
+    (loop [date start, in-advance 0]
+      (debug date in-advance)
+      (cond (= date limit)
+            (throw (ex-info "No possible pickup date found" {:pool pool}))
+
+            (or (spy (not (pools/working-day? date pool)))
+                (spy (holiday? date pool)))
+            (recur (jt/plus date (jt/days 1)) in-advance)
+
+            (and (:borrow_reservation_advance_days pool)
+                 (< in-advance (:borrow_reservation_advance_days pool)))
+            (recur (jt/plus date (jt/days 1)) (inc in-advance))
+
+            :else date))))
 
 (defn visits-capacity-reached? [date visits-count pool]
   (let [index (-> date
-                  local-date
+                  jt/local-date
                   .getDayOfWeek
                   .getValue
                   (#(if (= % 7) 0 %)) ; convert from 1-based mon-sun to 0-based sun-sat
@@ -56,29 +56,49 @@
         max_visits (some-> pool :max_visits index Integer.)]
     (and max_visits (>= visits-count max_visits))))
 
-(defn start-date-restriction [tx date-with-avail pool]
-  (cond (close-time? tx (:date date-with-avail) pool)
+(defn start-date-restriction [date-with-avail pool]
+  (cond (close-time? (:date date-with-avail) pool)
         :CLOSE_TIME
-        (before-earliest-possible-pick-up-date? tx (:date date-with-avail) pool)
+        (jt/before? (jt/local-date (:date date-with-avail))
+                    (:earliest-possible-pickup-date pool))
         :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE
         (visits-capacity-reached? (:date date-with-avail)
                                   (:visits_count date-with-avail)
                                   pool)
         :VISITS_CAPACITY_REACHED))
 
-(defn end-date-restriction [tx date-with-avail pool]
-  (cond (close-time? tx (:date date-with-avail) pool)
+(defn end-date-restriction [date-with-avail pool]
+  (cond (close-time? (:date date-with-avail) pool)
         :CLOSE_TIME
         (visits-capacity-reached? (:date date-with-avail)
                                   (:visits_count date-with-avail)
                                   pool)
         :VISITS_CAPACITY_REACHED))
 
-(def past-date? #(before? (local-date %) (local-date)))
-
-(defn validate-date-with-avail [tx date-with-avail pool]
+(defn validate-single-date [date-with-avail pool]
   (assoc date-with-avail
          :start-date-restriction
-         (start-date-restriction tx date-with-avail pool)
+         (start-date-restriction date-with-avail pool)
          :end-date-restriction
-         (end-date-restriction tx date-with-avail pool)))
+         (end-date-restriction date-with-avail pool)))
+
+(defn validate-dates [tx dates-with-avail pool]
+  (let [pool* (as-> pool <>
+                (assoc <>
+                       :holidays
+                       (holidays/get-by-pool-id tx (:id <>)))
+                (assoc <>
+                       :earliest-possible-pickup-date
+                       (earliest-possible-pickup-date <>)))]
+    (map #(validate-single-date % pool*)
+         dates-with-avail)))
+
+(comment
+  (require '[leihs.core.db :as db])
+  (let [tx (db/get-ds)
+        pool (pools/get-by-id tx #uuid "8bd16d45-056d-5590-bc7f-12849f034351")
+        holidays (holidays/get-by-pool-id tx (:id pool))
+        pool* (assoc pool :holidays holidays)]
+   ; (holiday? (jt/plus (jt/local-date) (jt/days 3)) pool*)
+    (earliest-possible-pickup-date pool*)))
+

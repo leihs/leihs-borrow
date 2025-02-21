@@ -140,6 +140,14 @@
       count
       (> 0)))
 
+(defn working-day? [date pool]
+  (let [day-of-week (-> date
+                        .getDayOfWeek
+                        .toString
+                        .toLowerCase
+                        keyword)]
+    (day-of-week pool)))
+
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
 ; (debug/debug-ns *ns*)
