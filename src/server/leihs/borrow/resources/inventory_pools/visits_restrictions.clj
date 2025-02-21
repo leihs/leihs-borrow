@@ -5,6 +5,7 @@
             [honey.sql.helpers :as sql]
             [leihs.borrow.resources.holidays :as holidays]
             [leihs.borrow.resources.inventory-pools :as pools]
+            [leihs.borrow.resources.workdays :as workdays]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [java-time :as jt]
@@ -28,17 +29,22 @@
         (holiday? date* pool))))
 
 (defn earliest-possible-pickup-date [pool]
-  (let [start (jt/local-date)
-        limit (jt/plus start (jt/years 100))]
-    (loop [date start, in-advance 0]
-      (cond (= date limit)
-            (throw (ex-info "No possible pickup date found" {:pool pool}))
+  (let [start-date (jt/local-date)
+        reservation-advance-days (:reservation_advance_days pool)]
+    (loop [date start-date, in-advance 0]
+      (debug date in-advance)
+      (cond (and (-> pool :holidays empty?)
+                 (-> pool workdays/closed-days empty?)
+                 reservation-advance-days
+                 (not= reservation-advance-days 0))
+            start-date
 
             (close-time? date pool)
             (recur (jt/plus date (jt/days 1)) in-advance)
 
-            (and (:borrow_reservation_advance_days pool)
-                 (< in-advance (:borrow_reservation_advance_days pool)))
+            (and reservation-advance-days
+                 (not= reservation-advance-days 0)
+                 (< in-advance reservation-advance-days))
             (recur (jt/plus date (jt/days 1)) (inc in-advance))
 
             :else date))))
@@ -88,15 +94,16 @@
                 (assoc <>
                        :earliest-possible-pickup-date
                        (earliest-possible-pickup-date <>)))]
+    (debug pool*)
     (map #(validate-single-date % pool*)
          dates-with-avail)))
 
 (comment
   (require '[leihs.core.db :as db])
   (let [tx (db/get-ds)
-        pool (pools/get-by-id tx #uuid "ab61cf01-08ce-4d9b-97d3-8dcd8360605a")
+        pool (pools/get-by-id tx #uuid "2b58402a-b77e-41fb-94e3-29a047684a52")
         holidays (holidays/get-by-pool-id tx (:id pool))
         pool* (assoc pool :holidays holidays)]
-    holidays
+    pool*
     #_(earliest-possible-pickup-date pool*)))
 
