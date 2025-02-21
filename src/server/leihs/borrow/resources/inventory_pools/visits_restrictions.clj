@@ -31,12 +31,10 @@
   (let [start (jt/local-date)
         limit (jt/plus start (jt/years 100))]
     (loop [date start, in-advance 0]
-      (debug date in-advance)
       (cond (= date limit)
             (throw (ex-info "No possible pickup date found" {:pool pool}))
 
-            (or (spy (not (pools/working-day? date pool)))
-                (spy (holiday? date pool)))
+            (close-time? date pool)
             (recur (jt/plus date (jt/days 1)) in-advance)
 
             (and (:borrow_reservation_advance_days pool)
@@ -96,9 +94,9 @@
 (comment
   (require '[leihs.core.db :as db])
   (let [tx (db/get-ds)
-        pool (pools/get-by-id tx #uuid "8bd16d45-056d-5590-bc7f-12849f034351")
+        pool (pools/get-by-id tx #uuid "ab61cf01-08ce-4d9b-97d3-8dcd8360605a")
         holidays (holidays/get-by-pool-id tx (:id pool))
         pool* (assoc pool :holidays holidays)]
-   ; (holiday? (jt/plus (jt/local-date) (jt/days 3)) pool*)
-    (earliest-possible-pickup-date pool*)))
+    holidays
+    #_(earliest-possible-pickup-date pool*)))
 
