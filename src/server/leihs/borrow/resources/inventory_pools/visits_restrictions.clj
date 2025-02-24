@@ -48,13 +48,13 @@
                 :else date))))))
 
 (comment
- (require '[leihs.core.db :as db])
- (let [tx (db/get-ds)
-       pool (pools/get-by-id tx #uuid "37f689af-458b-4173-a3c5-cb6ca7f29a2f")
-       holidays (holidays/get-by-pool-id tx (:id pool))
-       pool* (assoc pool :holidays holidays)]
-   #_pool*
-   (earliest-possible-pickup-date pool*)))
+  (require '[leihs.core.db :as db])
+  (let [tx (db/get-ds)
+        pool (pools/get-by-id tx #uuid "37f689af-458b-4173-a3c5-cb6ca7f29a2f")
+        holidays (holidays/get-by-pool-id tx (:id pool))
+        pool* (assoc pool :holidays holidays)]
+    #_pool*
+    (earliest-possible-pickup-date pool*)))
 
 (defn visits-capacity-reached? [date visits-count pool]
   (let [index (-> date
