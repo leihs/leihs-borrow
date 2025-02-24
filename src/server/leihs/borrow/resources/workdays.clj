@@ -25,6 +25,17 @@
               :workdays.sunday_info
               :workdays.max_visits])
 
+(defn closed-days [workdays]
+  (filter #(-> % name string/lower-case keyword
+               workdays
+               not)
+          DAYS))
+
+(defn open-days [workdays]
+  (filter #(-> % name string/lower-case keyword
+               workdays)
+          DAYS))
+
 (defn base-sqlmap [pool-id]
   (-> (apply sql/select columns)
       (sql/from :workdays)
@@ -62,4 +73,5 @@
   (require '[leihs.core.db :as db])
   (let [pool-id #uuid "8bd16d45-056d-5590-bc7f-12849f034351"
         tx (db/get-ds)]
-    (get-multiple {:tx tx} nil {:id pool-id})))
+    (closed-days (get-by-pool-id tx pool-id))
+    #_(get-multiple {:tx tx} nil {:id pool-id})))

@@ -15,7 +15,7 @@
   (-> (apply sql/select columns)
       (sql/from :holidays)
       (sql/where [:= :inventory_pool_id pool-id])
-      (sql/where [:>= :holidays.end_date [:now]]))) ; only future holidays
+      (sql/where [:>= :holidays.end_date :current_date]))) ; only future holidays
 
 (defn get-by-pool-id [tx pool-id]
   (-> pool-id

@@ -210,10 +210,7 @@
                                 (:id value)
                                 (or exclude-reservation-ids []))]
              (-> avail
-                 (update :dates
-                         (fn [dates-with-avail]
-                           (map #(restrict/validate-date-with-avail tx % pool)
-                                dates-with-avail)))
+                 (update :dates #(restrict/validate-dates tx % pool))
                  (assoc :inventory-pool pool))))
          pools)))
 
