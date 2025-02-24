@@ -30,24 +30,31 @@
 
 (defn earliest-possible-pickup-date [pool]
   (let [start-date (jt/local-date)
-        reservation-advance-days (:reservation_advance_days pool)]
-    (loop [date start-date, in-advance 0]
-      (debug date in-advance)
-      (cond (and (-> pool :holidays empty?)
-                 (-> pool workdays/closed-days empty?)
-                 reservation-advance-days
-                 (not= reservation-advance-days 0))
-            start-date
+        reservation-advance-days (or (:reservation_advance_days pool) 0)
+        limit (jt/plus start-date (jt/days 10))]
+    (if (and (-> pool :holidays empty?)
+             (-> pool workdays/closed-days empty?)
+             (zero? reservation-advance-days))
+      start-date
+      (when (-> pool workdays/open-days empty? not)
+        (loop [date start-date, in-advance 0]
+          (cond (close-time? date pool)
+                (recur (jt/plus date (jt/days 1))
+                       in-advance)
+                (and (not (zero? reservation-advance-days))
+                     (< in-advance reservation-advance-days))
+                (recur (jt/plus date (jt/days 1))
+                       (inc in-advance))
+                :else date))))))
 
-            (close-time? date pool)
-            (recur (jt/plus date (jt/days 1)) in-advance)
-
-            (and reservation-advance-days
-                 (not= reservation-advance-days 0)
-                 (< in-advance reservation-advance-days))
-            (recur (jt/plus date (jt/days 1)) (inc in-advance))
-
-            :else date))))
+(comment
+ (require '[leihs.core.db :as db])
+ (let [tx (db/get-ds)
+       pool (pools/get-by-id tx #uuid "37f689af-458b-4173-a3c5-cb6ca7f29a2f")
+       holidays (holidays/get-by-pool-id tx (:id pool))
+       pool* (assoc pool :holidays holidays)]
+   #_pool*
+   (earliest-possible-pickup-date pool*)))
 
 (defn visits-capacity-reached? [date visits-count pool]
   (let [index (-> date
@@ -63,8 +70,8 @@
 (defn start-date-restriction [date-with-avail pool]
   (cond (close-time? (:date date-with-avail) pool)
         :CLOSE_TIME
-        (jt/before? (jt/local-date (:date date-with-avail))
-                    (:earliest-possible-pickup-date pool))
+        (when-let [eppd (:earliest-possible-pickup-date pool)]
+          (jt/before? (jt/local-date (:date date-with-avail)) eppd))
         :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE
         (visits-capacity-reached? (:date date-with-avail)
                                   (:visits_count date-with-avail)
@@ -97,13 +104,3 @@
     (debug pool*)
     (map #(validate-single-date % pool*)
          dates-with-avail)))
-
-(comment
-  (require '[leihs.core.db :as db])
-  (let [tx (db/get-ds)
-        pool (pools/get-by-id tx #uuid "2b58402a-b77e-41fb-94e3-29a047684a52")
-        holidays (holidays/get-by-pool-id tx (:id pool))
-        pool* (assoc pool :holidays holidays)]
-    pool*
-    #_(earliest-possible-pickup-date pool*)))
-

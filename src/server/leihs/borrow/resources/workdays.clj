@@ -31,6 +31,11 @@
                not)
           DAYS))
 
+(defn open-days [workdays]
+  (filter #(-> % name string/lower-case keyword
+               workdays)
+          DAYS))
+
 (defn base-sqlmap [pool-id]
   (-> (apply sql/select columns)
       (sql/from :workdays)
