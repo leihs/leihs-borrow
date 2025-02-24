@@ -47,9 +47,12 @@
                       end-date (jt/local-date end_date)
                       span (if (= start-date end-date)
                              (jt/format (-> formats locale* :default) start-date)
-                             (str (jt/format (-> formats locale* :short) start-date)
-                                  " - "
-                                  (jt/format (-> formats locale* :default) end-date)))]
+                             (let [sd-format (if (= (jt/year start-date) (jt/year end-date))
+                                               :short
+                                               :default)]
+                               (str (jt/format (-> formats locale* sd-format) start-date)
+                                    "\u2013" ; en-dash
+                                    (jt/format (-> formats locale* :default) end-date))))]
                   (str name ": " span))))
          (string/join "\n")
          (assoc pool :holidays))))
