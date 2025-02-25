@@ -17,6 +17,7 @@ WITH accessible_pools AS (
   INNER JOIN access_rights ON access_rights.inventory_pool_id = inventory_pools.id
   INNER JOIN workdays ON workdays.inventory_pool_id = inventory_pools.id
   WHERE inventory_pools.is_active = TRUE
+    AND access_rights.user_id = :user-id
     AND NOT EXISTS (
       SELECT 1
       FROM suspensions
