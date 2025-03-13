@@ -1,17 +1,17 @@
 class LeihsModel < Sequel::Model(:models)
   many_to_many(:categories,
-               left_key: :model_id,
-               right_key: :model_group_id,
-               join_table: :model_links)
+    left_key: :model_id,
+    right_key: :model_group_id,
+    join_table: :model_links)
   one_to_many(:items, key: :model_id)
   one_to_many(:images, key: :target_id)
   one_to_many(:attachments, key: :model_id)
   one_to_many(:properties, key: :model_id)
   many_to_many(:recommends,
-               class: :LeihsModel,
-               left_key: :model_id,
-               right_key: :compatible_id,
-               join_table: :models_compatibles)
+    class: :LeihsModel,
+    left_key: :model_id,
+    right_key: :compatible_id,
+    join_table: :models_compatibles)
 end
 
 FactoryBot.define do

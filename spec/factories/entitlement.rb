@@ -5,10 +5,10 @@ end
 
 FactoryBot.define do
   factory :entitlement do
-    #created_at { Time.now }
-    #updated_at { Time.now }
+    # created_at { Time.now }
+    # updated_at { Time.now }
     entitlement_group
     leihs_model
-    #quantity
+    # quantity
   end
 end

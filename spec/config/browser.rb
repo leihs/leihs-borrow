@@ -1,21 +1,20 @@
-require 'pry'
-require 'capybara'
-require 'capybara/rspec'
-require 'selenium-webdriver'
-require 'turnip/capybara'
-require 'turnip/rspec'
+require "pry"
+require "capybara"
+require "capybara/rspec"
+require "selenium-webdriver"
+require "turnip/capybara"
+require "turnip/rspec"
 
-firefox_bin_path = Pathname.new(`asdf where firefox`.strip).join('bin/firefox').expand_path.to_s
+firefox_bin_path = Pathname.new(`asdf where firefox`.strip).join("bin/firefox").expand_path.to_s
 Selenium::WebDriver::Firefox.path = firefox_bin_path
 
-LEIHS_BORROW_HTTP_BASE_URL = ENV['LEIHS_BORROW_HTTP_BASE_URL'].presence || 'http://localhost:3250'
-LEIHS_BORROW_HTTP_PORT =  Addressable::URI.parse(LEIHS_BORROW_HTTP_BASE_URL).port.presence  || '3250'
-raise 'LEIHS_BORROW_HTTP_BASE_URL not set!' unless LEIHS_BORROW_HTTP_BASE_URL
+LEIHS_BORROW_HTTP_BASE_URL = ENV["LEIHS_BORROW_HTTP_BASE_URL"].presence || "http://localhost:3250"
+LEIHS_BORROW_HTTP_PORT = Addressable::URI.parse(LEIHS_BORROW_HTTP_BASE_URL).port.presence || "3250"
+raise "LEIHS_BORROW_HTTP_BASE_URL not set!" unless LEIHS_BORROW_HTTP_BASE_URL
 Capybara.app_host = LEIHS_BORROW_HTTP_BASE_URL
 
-
 Capybara.register_driver :firefox do |app|
-  capabilities = Selenium::WebDriver::Remote::Capabilities.firefox(
+  Selenium::WebDriver::Remote::Capabilities.firefox(
     # TODO: trust the cert used in container and remove this:
     acceptInsecureCerts: true
   )
@@ -27,11 +26,12 @@ Capybara.register_driver :firefox do |app|
   opts = Selenium::WebDriver::Firefox::Options.new(
     binary: firefox_bin_path,
     profile: profile,
-    log_level: :trace)
+    log_level: :trace
+  )
 
   # NOTE: good for local dev
-  if ENV['LEIHS_TEST_HEADLESS'].present?
-    opts.args << '--headless'
+  if ENV["LEIHS_TEST_HEADLESS"].present?
+    opts.args << "--headless"
   end
   # opts.args << '--devtools' # NOTE: useful for local debug
 

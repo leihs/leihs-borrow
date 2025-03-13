@@ -1,4 +1,4 @@
-require_relative "./invalid_reservations_data_setup"
+require_relative "invalid_reservations_data_setup"
 
 step "a user with some mostly invalid reservations" do
   expect(create_all_sample_reservations).to be

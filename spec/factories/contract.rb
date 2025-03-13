@@ -4,11 +4,11 @@ class Contract < Sequel::Model
   one_to_many(:reservations)
 
   def self.create_with_disabled_triggers(id,
-                                         user_id,
-                                         inventory_pool_id,
-                                         state = :open,
-                                         compact_id = id,
-                                         purpose = Faker::Lorem.word)
+    user_id,
+    inventory_pool_id,
+    state = :open,
+    compact_id = id,
+    purpose = Faker::Lorem.word)
     db_with_disabled_triggers do
       database.run <<-SQL
         INSERT INTO contracts(
@@ -34,7 +34,7 @@ class Contract < Sequel::Model
       SQL
     end
 
-    def self.update_with_disabled_triggers(id, column, value)
+    def self.update_with_disabled_triggers(id, column, value) # standard:disable Lint/NestedMethodDefinition
       db_with_disabled_triggers do
         database.run <<-SQL
           UPDATE contracts SET #{column} = #{value} WHERE id = '#{id}'
@@ -42,7 +42,7 @@ class Contract < Sequel::Model
       end
     end
 
-    find(id: id) 
+    find(id: id)
   end
 end
 
@@ -51,7 +51,7 @@ FactoryBot.define do
     user
     inventory_pool
     purpose { Faker::Lorem.sentence }
-    created_at { DateTime.now } 
+    created_at { DateTime.now }
     updated_at { DateTime.now }
 
     transient do
@@ -61,12 +61,12 @@ FactoryBot.define do
     after(:build) do |contract, trans|
       contract.id = trans.uuid.to_s
       b32 = Base32::Crockford.encode(contract.id.to_i)
-      contract.compact_id ||= \
+      contract.compact_id ||=
         (3..26)
-        .lazy
-        .map { |i| b32[0..i] }
-        .map { |c_id| !Contract.find(compact_id: c_id) && c_id }
-        .find(&:itself)
+          .lazy
+          .map { |i| b32[0..i] }
+          .map { |c_id| !Contract.find(compact_id: c_id) && c_id }
+          .find(&:itself)
     end
   end
 end

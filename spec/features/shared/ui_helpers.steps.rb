@@ -50,7 +50,7 @@ step "I accept the :title dialog with the text:" do |title, text|
   end
 end
 
-def expect_equal_card_data(card_data, table) 
+def expect_equal_card_data(card_data, table)
   # ignore keys that are not present in the expectations table by removing them:
   actual_data = card_data.map { |l| l.slice(*table.headers.map(&:to_sym)) }
 

@@ -46,18 +46,18 @@ end
 def get_ui_list_cards(scope = page)
   find_ui_list_cards(scope).map do |c|
     divs = c.all(":scope div").to_a
-      .map { |x| [x["data-test-id"], x.text]}
+      .map { |x| [x["data-test-id"], x.text] }
       .filter { |x| x[0] }
     {
-      title: (divs.find { |x| x[0] == "title"} || [nil, ""])[1],
-      body: (divs.find { |x| x[0] == "body"} || [nil, ""])[1],
-      foot: (divs.find { |x| x[0] == "foot"} || [nil, ""])[1]
+      title: (divs.find { |x| x[0] == "title" } || [nil, ""])[1],
+      body: (divs.find { |x| x[0] == "body" } || [nil, ""])[1],
+      foot: (divs.find { |x| x[0] == "foot" } || [nil, ""])[1]
     }
   end
 end
 
 def get_ui_list_card_by_title(title)
-  find_ui_list_cards().find do |c|
+  find_ui_list_cards.find do |c|
     divs = c.all(":scope [data-test-id=title]")
     card_title = divs[0].text
     card_title == title
@@ -73,7 +73,7 @@ def get_ui_page_headings
     h2s = all("h2", wait: false)
     {
       title: first("h1").text,
-      subtitle: h2s.count > 0 ? h2s[0].text : "",
+      subtitle: (h2s.count > 0) ? h2s[0].text : ""
     }
   end
 end
@@ -107,7 +107,7 @@ def get_ui_progress_infos(scope = page)
     {
       title: title,
       progressbar: progressbar_val,
-      info: info,
+      info: info
     }
   end
 end
@@ -127,7 +127,7 @@ def hashes_to_gherkin_table(input)
   sep = " | "
   keys = arr.map(&:keys).flatten.uniq
   cols = keys.map(&:to_s)
-  rows = arr.map do |row| keys.map { |c| row[c].to_s } end
+  rows = arr.map { |row| keys.map { |c| row[c].to_s } }
   [cols].concat(rows).map do |line|
     [nil].push(line).push(nil).join(sep).strip
   end.join("\n")

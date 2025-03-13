@@ -1,9 +1,9 @@
 step "I pry" do
-  binding.pry
+  binding.pry # standard:disable Lint/Debugger
 end
 
 step "I debug :code" do |code|
-  eval(code)
+  eval(code) # standard:disable Security/Eval
 end
 
 step "there is an empty database" do
@@ -56,12 +56,12 @@ step "I am on :path" do |path|
 end
 
 step "I am redirected to :url" do |url|
-  binding.pry if url == "?"
+  binding.pry if url == "?" # standard:disable Lint/Debugger
   wait_until(10) { expect(page.current_path).to eq url }
 end
 
 step "I see the text:" do |txt|
-  expect(page).to have_content(txt.strip())
+  expect(page).to have_content(txt.strip)
 end
 
 step "I see :txt" do |txt|
@@ -69,7 +69,7 @@ step "I see :txt" do |txt|
 end
 
 step "I don't see :txt" do |txt|
-  expect(page).not_to have_content(txt.to_s.strip())
+  expect(page).not_to have_content(txt.to_s.strip)
 end
 
 step "I log in with the email :email" do |email|
@@ -82,7 +82,7 @@ step "I log in as the user" do
 end
 
 step "I log in as the user :full_name" do |name|
-  user = find_user_by_full_name!(name)
+  find_user_by_full_name!(name)
   expect(@user).to be_a User
   log_in_as_user_with_email(@user.email)
 end
@@ -105,7 +105,7 @@ step "I wait for :n second(s)" do |n|
 end
 
 step "I eval :code" do |code|
-  eval(code)
+  eval(code) # standard:disable Security/Eval
 end
 
 step "I click button :name" do |name|

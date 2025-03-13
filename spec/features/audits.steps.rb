@@ -95,7 +95,7 @@ step "I approve the order of the user/delegation" do
 end
 
 step "the maximum quantity shows :n" do |n|
-  expect(page).to have_content /#{n}.max/
+  expect(page).to have_content(/#{n}.max/)
 end
 
 step "the search filters are persisted in the url" do
@@ -107,7 +107,7 @@ step "the search filters are persisted in the url" do
       "start-date" => Date.today.to_s,
       "end-date" => Date.tomorrow.to_s,
       "term" => "Kamera",
-      "user-id" => @user.id,
+      "user-id" => @user.id
     }
   )
 end
@@ -161,7 +161,7 @@ step "I select :name xxx" do |name|
     # find('select[name="user-id"] option', text: name).select_option
     'select[name="user-id"] option'
   )
-    .select { |n| n.text.include?(name) }.first
+    .find { |n| n.text.include?(name) }
     .select_option
 end
 
@@ -175,11 +175,11 @@ step "I visit the show page for :name model" do |name|
 end
 
 step "the delegations select field is disabled" do
-  binding.pry
+  binding.pry  # standard:disable Lint/Debugger
 end
 
 step "there is an error message below the field" do
-  binding.pry
+  binding.pry # standard:disable Lint/Debugger
 end
 
 step "there are no audited requests" do
@@ -189,4 +189,3 @@ end
 step "there is/are :n audited request(s)" do |n|
   expect(AuditedRequest.count).to eq n.to_i
 end
-

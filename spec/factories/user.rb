@@ -2,15 +2,15 @@ class User < Sequel::Model
   one_to_many(:direct_access_rights)
   many_to_one(:delegator_user, class: self)
   many_to_many(:delegation_users,
-               left_key: :delegation_id,
-               right_key: :user_id,
-               class: self,
-               join_table: :delegations_users)
+    left_key: :delegation_id,
+    right_key: :user_id,
+    class: self,
+    join_table: :delegations_users)
   many_to_many(:favorite_models,
-               class: LeihsModel,
-               join_table: :favorite_models,
-               left_key: :user_id,
-               right_key: :model_id)
+    class: LeihsModel,
+    join_table: :favorite_models,
+    left_key: :user_id,
+    right_key: :model_id)
   many_to_one(:language, key: :language_locale)
 end
 
@@ -22,9 +22,9 @@ FactoryBot.define do
     language do
       Language.find(locale: "en-GB") or
         create(:language,
-               locale: "en-GB",
-               name: "British English",
-               default: true)
+          locale: "en-GB",
+          name: "British English",
+          default: true)
     end
     organization { Faker::Lorem.characters(number: 8) }
 
@@ -64,7 +64,7 @@ FactoryBot.define do
       after(:create) do |user, trans|
         pw_hash = database[<<-SQL]
           SELECT crypt(
-            #{database.literal('password')},
+            #{database.literal("password")},
             gen_salt('bf')
           ) AS pw_hash
         SQL
@@ -72,7 +72,7 @@ FactoryBot.define do
 
         database[:authentication_systems_users].insert(
           user_id: user.id,
-          authentication_system_id: 'password',
+          authentication_system_id: "password",
           data: pw_hash
         )
       end

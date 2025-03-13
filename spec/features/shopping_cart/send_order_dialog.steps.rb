@@ -1,12 +1,12 @@
 step "I have one item in the cart ready to be submitted" do
   item = FactoryBot.create(:item, owner: @pool, responsible: @pool)
   FactoryBot.create(:reservation,
-                    status: :unsubmitted,
-                    inventory_pool: @pool,
-                    user: @user,
-                    start_date: Date.today,
-                    end_date: Date.tomorrow,
-                    leihs_model: item.leihs_model)
+    status: :unsubmitted,
+    inventory_pool: @pool,
+    user: @user,
+    start_date: Date.today,
+    end_date: Date.tomorrow,
+    leihs_model: item.leihs_model)
 end
 
 step "I enter :txt as :field" do |txt, field|

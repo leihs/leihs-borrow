@@ -1,5 +1,5 @@
-require_relative "./shared/refresh_timeout_data"
-include ShoppingCartRefreshTimeoutData
+require_relative "shared/refresh_timeout_data"
+include ShoppingCartRefreshTimeoutData # standard:disable Style/MixinUsage
 
 # NOTE: does not work because `let` from respec is not available.
 #       GOT ERROR: NoMethodError: undefined method `let' for ShoppingCartRefreshTimeoutData:Module

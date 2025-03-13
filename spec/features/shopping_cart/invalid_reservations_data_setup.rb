@@ -10,7 +10,7 @@ end
 
 # NOTE: UUIDs are hardcoded to quickly find the context from a test failure message cointaining an ID
 
-RSpec.shared_context "invalid reservations data setup", :shared_context => :metadata do
+RSpec.shared_context "invalid reservations data setup", shared_context: :metadata do
   let(:now) { DateTime.now.utc }
 
   # Structure data (pools, models etc)
@@ -50,12 +50,12 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
     let(:user) do
       u = FactoryBot.create(:user, id: "8c360361-f70c-4b31-a271-b4050d4b9d26")
       [inventory_pool,
-       inventory_pool_2,
-       inventory_pool_3_max_visits,
-       inventory_pool_4_advance_days,
-       inventory_pool_6_holiday,
-       inventory_pool_7_no_workday,
-       inventory_pool_8_suspended].each do |ip|
+        inventory_pool_2,
+        inventory_pool_3_max_visits,
+        inventory_pool_4_advance_days,
+        inventory_pool_6_holiday,
+        inventory_pool_7_no_workday,
+        inventory_pool_8_suspended].each do |ip|
         FactoryBot.create(:direct_access_right, inventory_pool: ip, user: u)
       end
 
@@ -68,8 +68,8 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
     let(:user_2) do
       u = FactoryBot.create(:user, id: "cd1eb17a-2cc0-4c08-a766-cdf4ba6bfe0f")
       FactoryBot.create(:direct_access_right,
-                        inventory_pool: inventory_pool,
-                        user: u)
+        inventory_pool: inventory_pool,
+        user: u)
       u
     end
 
@@ -77,156 +77,156 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
     let(:user_3_max_visits) do
       u = FactoryBot.create(:user, id: "ebe016ce-3d73-4e5a-ac90-3475b43b8def")
       FactoryBot.create(:direct_access_right,
-                        inventory_pool: inventory_pool_3_max_visits,
-                        user: u)
+        inventory_pool: inventory_pool_3_max_visits,
+        user: u)
       u
     end
 
     let(:model_1) do
       model = FactoryBot.create(:leihs_model, product: "Start Date In Past",
-                                              id: "db3197f4-7fef-4139-83e1-09f79abfa691")
+        id: "db3197f4-7fef-4139-83e1-09f79abfa691")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool))
+          is_borrowable: true,
+          responsible: inventory_pool))
       end
       model
     end
 
     let(:model_2) do
       model = FactoryBot.create(:leihs_model, product: "Quantity Too High",
-                                              id: "a9105e4f-4eef-4d44-8d2b-cb635a220c09")
+        id: "a9105e4f-4eef-4d44-8d2b-cb635a220c09")
       2.times do
         model.add_item(FactoryBot.create(:item, is_borrowable: true,
-                                                responsible: inventory_pool))
+          responsible: inventory_pool))
       end
       model
     end
 
     let(:model_3) do
       model = FactoryBot.create(:leihs_model, product: "OK and Timed Out",
-                                              id: "b0e1e686-2fed-4607-a3d9-9ae056282766")
+        id: "b0e1e686-2fed-4607-a3d9-9ae056282766")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool))
+          is_borrowable: true,
+          responsible: inventory_pool))
       end
       model
     end
 
     let(:model_4) do
       model = FactoryBot.create(:leihs_model, product: "OK and Not Timed Out",
-                                              id: "b58dc1cc-3114-4019-a173-49eed478bfdb")
+        id: "b58dc1cc-3114-4019-a173-49eed478bfdb")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool))
+          is_borrowable: true,
+          responsible: inventory_pool))
       end
       model
     end
 
     let(:model_5) do
       model = FactoryBot.create(:leihs_model, product: "Reservation Advance Days",
-                                              id: "510466c2-7c4d-49d5-819a-15e2513f2ae5")
+        id: "510466c2-7c4d-49d5-819a-15e2513f2ae5")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool_4_advance_days))
+          is_borrowable: true,
+          responsible: inventory_pool_4_advance_days))
       end
       model
     end
 
     let(:model_6) do
       model = FactoryBot.create(:leihs_model, product: "Max Visits Count Pickup",
-                                              id: "755a44b2-7ae8-4325-98ea-bbc553f147bf")
+        id: "755a44b2-7ae8-4325-98ea-bbc553f147bf")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool_3_max_visits))
+          is_borrowable: true,
+          responsible: inventory_pool_3_max_visits))
       end
       model
     end
 
     let(:model_6_return) do
       model = FactoryBot.create(:leihs_model, product: "Max Visits Count Return",
-                                              id: "eb20fabe-768d-4285-8c65-47f0c11f5d7d")
+        id: "eb20fabe-768d-4285-8c65-47f0c11f5d7d")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool_3_max_visits))
+          is_borrowable: true,
+          responsible: inventory_pool_3_max_visits))
       end
       model
     end
 
     let(:model_6_x) do
       model = FactoryBot.create(:leihs_model, product: "Another User is Returning This Causing Max Visits Reached",
-                                              id: "83ecc0e0-2bfe-4548-86cb-1ed43bf31014")
+        id: "83ecc0e0-2bfe-4548-86cb-1ed43bf31014")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool_3_max_visits))
+          is_borrowable: true,
+          responsible: inventory_pool_3_max_visits))
       end
       model
     end
 
     let(:model_7) do
       model = FactoryBot.create(:leihs_model, product: "No Access To Pool",
-                                              id: "5ba5c20a-4edc-4003-8240-a2f12d93968c")
+        id: "5ba5c20a-4edc-4003-8240-a2f12d93968c")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool_5_no_access))
+          is_borrowable: true,
+          responsible: inventory_pool_5_no_access))
       end
       model
     end
 
     let(:model_8) do
       model = FactoryBot.create(:leihs_model, product: "Holiday on End Date",
-                                              id: "cb125cfe-026c-45ee-899e-ec768f7573f7")
+        id: "cb125cfe-026c-45ee-899e-ec768f7573f7")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool_6_holiday))
+          is_borrowable: true,
+          responsible: inventory_pool_6_holiday))
       end
       model
     end
 
     let(:model_9) do
       model = FactoryBot.create(:leihs_model, product: "Not A Workday",
-                                              id: "bcb3c469-63d7-48ad-8ea5-d0e3e7927cfd")
+        id: "bcb3c469-63d7-48ad-8ea5-d0e3e7927cfd")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool_7_no_workday))
+          is_borrowable: true,
+          responsible: inventory_pool_7_no_workday))
       end
       model
     end
 
     let(:model_10) do
       model = FactoryBot.create(:leihs_model, product: "Maximum Reservation Duration",
-                                              id: "0ec34a40-f528-411a-ad9c-7a6a7642df6c")
+        id: "0ec34a40-f528-411a-ad9c-7a6a7642df6c")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool))
+          is_borrowable: true,
+          responsible: inventory_pool))
       end
       model
     end
 
     let(:model_11_suspended) do
       model = FactoryBot.create(:leihs_model, product: "User is Suspended",
-                                              id: "816bdd15-fc4f-4c8f-a464-a33fb2009f56")
+        id: "816bdd15-fc4f-4c8f-a464-a33fb2009f56")
       2.times do
         model.add_item(FactoryBot.create(:item,
-                                         is_borrowable: true,
-                                         responsible: inventory_pool_8_suspended))
+          is_borrowable: true,
+          responsible: inventory_pool_8_suspended))
       end
       model
     end
 
     let(:model_without_items) do
       FactoryBot.create(:leihs_model, product: "Model With No Items",
-                                      id: "70e6153f-6a33-4942-a12d-dbd80ab4c156")
+        id: "70e6153f-6a33-4942-a12d-dbd80ab4c156")
     end
   end
 
@@ -239,12 +239,12 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
   #####################################################################################################
   let(:r1a_start_date_in_past) do
     FactoryBot.create(:reservation,
-                      id: "0a3ea476-f1e9-42e8-943f-35f7eefdad90",
-                      leihs_model: model_1,
-                      inventory_pool: inventory_pool,
-                      start_date: Date.yesterday,
-                      end_date: Date.tomorrow,
-                      user: user)
+      id: "0a3ea476-f1e9-42e8-943f-35f7eefdad90",
+      leihs_model: model_1,
+      inventory_pool: inventory_pool,
+      start_date: Date.yesterday,
+      end_date: Date.tomorrow,
+      user: user)
   end
 
   #####################################################################################################
@@ -252,12 +252,12 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
     test_advance_days = 3
     inventory_pool_4_advance_days.update(borrow_reservation_advance_days: test_advance_days)
     FactoryBot.create(:reservation,
-                      id: "de021090-cd50-4b1f-9448-5f7ba4367f1f",
-                      leihs_model: model_5,
-                      inventory_pool: inventory_pool_4_advance_days,
-                      start_date: (test_advance_days - 1).days.from_now,
-                      end_date: (test_advance_days + 1).days.from_now,
-                      user: user)
+      id: "de021090-cd50-4b1f-9448-5f7ba4367f1f",
+      leihs_model: model_5,
+      inventory_pool: inventory_pool_4_advance_days,
+      start_date: (test_advance_days - 1).days.from_now,
+      end_date: (test_advance_days + 1).days.from_now,
+      user: user)
   end
 
   #####################################################################################################
@@ -267,61 +267,61 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
   #   * another user already has a pickup on the day I would return
   #   * TODO: another user already has a signed order with return on the day I would visit
   let(:r1c_max_visits_count_reached) do
-    Workday.find(inventory_pool_id: inventory_pool_3_max_visits.id).update(max_visits: { "1": "1",
-                                                                                         "2": "1",
-                                                                                         "3": "1",
-                                                                                         "4": "1",
-                                                                                         "5": "1",
-                                                                                         "6": "1",
-                                                                                         "0": "1" })
+    Workday.find(inventory_pool_id: inventory_pool_3_max_visits.id).update(max_visits: {"1": "1",
+                                                                                        "2": "1",
+                                                                                        "3": "1",
+                                                                                        "4": "1",
+                                                                                        "5": "1",
+                                                                                        "6": "1",
+                                                                                        "0": "1"})
 
     user_3_max_visits_customer_order = FactoryBot.create(:order,
-                                                         user: user_3_max_visits)
+      user: user_3_max_visits)
     user_3_max_visits_order = FactoryBot.create(:pool_order,
-                                                user: user_3_max_visits,
-                                                inventory_pool: inventory_pool_3_max_visits,
-                                                state: :submitted,
-                                                order: user_3_max_visits_customer_order)
+      user: user_3_max_visits,
+      inventory_pool: inventory_pool_3_max_visits,
+      state: :submitted,
+      order: user_3_max_visits_customer_order)
 
     # this reservations pickup-visit blocks my pickup (in 4 days)
     FactoryBot.create(:reservation,
-                      id: "3d98b789-5dd5-48ed-9002-79623be71789",
-                      status: :submitted,
-                      order: user_3_max_visits_order,
-                      leihs_model: model_6_x,
-                      inventory_pool: inventory_pool_3_max_visits,
-                      start_date: 4.days.from_now,
-                      end_date: 6.days.from_now,
-                      user: user_3_max_visits)
+      id: "3d98b789-5dd5-48ed-9002-79623be71789",
+      status: :submitted,
+      order: user_3_max_visits_order,
+      leihs_model: model_6_x,
+      inventory_pool: inventory_pool_3_max_visits,
+      start_date: 4.days.from_now,
+      end_date: 6.days.from_now,
+      user: user_3_max_visits)
     # this reservations pickup-visit blocks my return (in 12 days)
     FactoryBot.create(:reservation,
-                      id: "dcef87fc-2e09-4a30-8492-22acd1c27215",
-                      status: :submitted,
-                      order: user_3_max_visits_order,
-                      leihs_model: model_6_x,
-                      inventory_pool: inventory_pool_3_max_visits,
-                      start_date: 12.days.from_now,
-                      end_date: 14.days.from_now,
-                      user: user_3_max_visits)
+      id: "dcef87fc-2e09-4a30-8492-22acd1c27215",
+      status: :submitted,
+      order: user_3_max_visits_order,
+      leihs_model: model_6_x,
+      inventory_pool: inventory_pool_3_max_visits,
+      start_date: 12.days.from_now,
+      end_date: 14.days.from_now,
+      user: user_3_max_visits)
 
     # this reservation is blocked at the pickup (in 4 days)
     max_visits_count_reached_at_pickup =
       FactoryBot.create(:reservation,
-                        id: "7f2c1eb2-5f0a-4156-a21a-d3c116780458",
-                        leihs_model: model_6,
-                        inventory_pool: inventory_pool_3_max_visits,
-                        start_date: 4.days.from_now,
-                        end_date: 6.days.from_now,
-                        user: user)
+        id: "7f2c1eb2-5f0a-4156-a21a-d3c116780458",
+        leihs_model: model_6,
+        inventory_pool: inventory_pool_3_max_visits,
+        start_date: 4.days.from_now,
+        end_date: 6.days.from_now,
+        user: user)
     # this reservation is blocked at the return (in 12 days)
     max_visits_count_reached_at_return =
       FactoryBot.create(:reservation,
-                        id: "314446a7-7d07-48d6-b7a3-5fbf66e693d1",
-                        leihs_model: model_6_return,
-                        inventory_pool: inventory_pool_3_max_visits,
-                        start_date: 10.days.from_now,
-                        end_date: 12.days.from_now,
-                        user: user)
+        id: "314446a7-7d07-48d6-b7a3-5fbf66e693d1",
+        leihs_model: model_6_return,
+        inventory_pool: inventory_pool_3_max_visits,
+        start_date: 10.days.from_now,
+        end_date: 12.days.from_now,
+        user: user)
     return [max_visits_count_reached_at_pickup, max_visits_count_reached_at_return]
   end
 
@@ -329,28 +329,28 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
   # no access for inventory pool
   let(:r1d_no_access_to_pool) do
     FactoryBot.create(:reservation,
-                      id: "c7557286-b375-48a4-8b90-52e35ba65a07",
-                      leihs_model: model_7,
-                      inventory_pool: inventory_pool_5_no_access,
-                      start_date: Date.today,
-                      end_date: Date.tomorrow,
-                      user: user)
+      id: "c7557286-b375-48a4-8b90-52e35ba65a07",
+      leihs_model: model_7,
+      inventory_pool: inventory_pool_5_no_access,
+      start_date: Date.today,
+      end_date: Date.tomorrow,
+      user: user)
   end
 
   #####################################################################################################
   # holidays
   let(:r1e_holiday) do
     FactoryBot.create(:holiday,
-                      start_date: 8.days.from_now,
-                      end_date: 8.days.from_now,
-                      inventory_pool: inventory_pool_6_holiday)
+      start_date: 8.days.from_now,
+      end_date: 8.days.from_now,
+      inventory_pool: inventory_pool_6_holiday)
     FactoryBot.create(:reservation,
-                      id: "d08550f3-3717-43e5-91a1-4c36cbfa44f8",
-                      leihs_model: model_8,
-                      inventory_pool: inventory_pool_6_holiday,
-                      start_date: 7.days.from_now,
-                      end_date: 8.days.from_now,
-                      user: user)
+      id: "d08550f3-3717-43e5-91a1-4c36cbfa44f8",
+      leihs_model: model_8,
+      inventory_pool: inventory_pool_6_holiday,
+      start_date: 7.days.from_now,
+      end_date: 8.days.from_now,
+      user: user)
   end
 
   #####################################################################################################
@@ -359,19 +359,19 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
   let(:r1f_no_workday) do
     Workday.find(inventory_pool_id: inventory_pool_7_no_workday.id)
       .update(monday: false,
-              tuesday: false,
-              wednesday: false,
-              thursday: false,
-              friday: false,
-              saturday: false,
-              sunday: false)
+        tuesday: false,
+        wednesday: false,
+        thursday: false,
+        friday: false,
+        saturday: false,
+        sunday: false)
     FactoryBot.create(:reservation,
-                      id: "09bf1e92-82e0-4b6c-b944-e483933a0ea2",
-                      leihs_model: model_9,
-                      inventory_pool: inventory_pool_7_no_workday,
-                      start_date: Date.today,
-                      end_date: Date.tomorrow,
-                      user: user)
+      id: "09bf1e92-82e0-4b6c-b944-e483933a0ea2",
+      leihs_model: model_9,
+      inventory_pool: inventory_pool_7_no_workday,
+      start_date: Date.today,
+      end_date: Date.tomorrow,
+      user: user)
   end
 
   #####################################################################################################
@@ -379,54 +379,54 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
   let(:r1g_max_reservation_time) do
     inventory_pool.update(borrow_maximum_reservation_duration: 7)
     FactoryBot.create(:reservation,
-                      id: "206bfb67-5997-4318-965a-689db5990c70",
-                      leihs_model: model_10,
-                      inventory_pool: inventory_pool,
-                      start_date: Date.today,
-                      end_date: (Date.today + 8.days),
-                      user: user)
+      id: "206bfb67-5997-4318-965a-689db5990c70",
+      leihs_model: model_10,
+      inventory_pool: inventory_pool,
+      start_date: Date.today,
+      end_date: (Date.today + 8.days),
+      user: user)
   end
 
   #####################################################################################################
   # 1 item was retired after reservation was created
   let(:r2_not_timed_out_with_invalid_avail_1) do
     FactoryBot.create(:reservation,
-                      id: "d5303020-d9c7-4e71-b882-5963fc516726",
-                      leihs_model: model_without_items,
-                      inventory_pool: inventory_pool,
-                      start_date: Date.today,
-                      end_date: Date.tomorrow,
-                      user: user)
+      id: "d5303020-d9c7-4e71-b882-5963fc516726",
+      leihs_model: model_without_items,
+      inventory_pool: inventory_pool,
+      start_date: Date.today,
+      end_date: Date.tomorrow,
+      user: user)
   end
 
   #####################################################################################################
   let(:r3_timed_out_with_invalid_avail) do
     timed_out_with_invalid_avail_1 = FactoryBot.create(:reservation,
-                                                       id: "e894f7df-7ef2-4b84-a9a4-1d56dfa202c9",
-                                                       leihs_model: model_2,
-                                                       inventory_pool: inventory_pool,
-                                                       start_date: Date.today,
-                                                       end_date: Date.tomorrow,
-                                                       user: user,
-                                                       created_at: timed_out_date_time,
-                                                       updated_at: timed_out_date_time)
+      id: "e894f7df-7ef2-4b84-a9a4-1d56dfa202c9",
+      leihs_model: model_2,
+      inventory_pool: inventory_pool,
+      start_date: Date.today,
+      end_date: Date.tomorrow,
+      user: user,
+      created_at: timed_out_date_time,
+      updated_at: timed_out_date_time)
     timed_out_with_invalid_avail_2 = FactoryBot.create(:reservation,
-                                                       id: "dbb412c5-c3b2-40b6-9adf-c3d3377b600e",
-                                                       leihs_model: model_2,
-                                                       inventory_pool: inventory_pool,
-                                                       start_date: Date.today,
-                                                       end_date: Date.tomorrow,
-                                                       user: user,
-                                                       created_at: timed_out_date_time,
-                                                       updated_at: timed_out_date_time)
+      id: "dbb412c5-c3b2-40b6-9adf-c3d3377b600e",
+      leihs_model: model_2,
+      inventory_pool: inventory_pool,
+      start_date: Date.today,
+      end_date: Date.tomorrow,
+      user: user,
+      created_at: timed_out_date_time,
+      updated_at: timed_out_date_time)
     # quantity of 1 taken away by another user after timeout
     FactoryBot.create(:reservation,
-                      id: "6b044a17-b088-43e3-b104-e721cab5af36",
-                      leihs_model: model_2,
-                      inventory_pool: inventory_pool,
-                      start_date: Date.today,
-                      end_date: Date.tomorrow,
-                      user: user_2)
+      id: "6b044a17-b088-43e3-b104-e721cab5af36",
+      leihs_model: model_2,
+      inventory_pool: inventory_pool,
+      start_date: Date.today,
+      end_date: Date.tomorrow,
+      user: user_2)
 
     return [timed_out_with_invalid_avail_1, timed_out_with_invalid_avail_2]
   end
@@ -434,40 +434,40 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
   #####################################################################################################
   let(:r4_timed_out_ok) do
     FactoryBot.create(:reservation,
-                      id: "d57b51b7-e83e-4687-ac1f-3d6d4e1a3f45",
-                      leihs_model: model_3,
-                      inventory_pool: inventory_pool,
-                      start_date: Date.today,
-                      end_date: Date.tomorrow,
-                      user: user,
-                      created_at: timed_out_date_time,
-                      updated_at: timed_out_date_time)
+      id: "d57b51b7-e83e-4687-ac1f-3d6d4e1a3f45",
+      leihs_model: model_3,
+      inventory_pool: inventory_pool,
+      start_date: Date.today,
+      end_date: Date.tomorrow,
+      user: user,
+      created_at: timed_out_date_time,
+      updated_at: timed_out_date_time)
   end
 
   #####################################################################################################
   let(:r5_not_timed_out_ok) do
     FactoryBot.create(:reservation,
-                      id: "89ca0106-34e4-4131-b64c-6bcc703b4489",
-                      leihs_model: model_4,
-                      inventory_pool: inventory_pool,
-                      start_date: Date.today,
-                      end_date: Date.tomorrow,
-                      user: user)
+      id: "89ca0106-34e4-4131-b64c-6bcc703b4489",
+      leihs_model: model_4,
+      inventory_pool: inventory_pool,
+      start_date: Date.today,
+      end_date: Date.tomorrow,
+      user: user)
   end
 
   #####################################################################################################
   let(:r6_user_is_suspended) do
     FactoryBot.create(:reservation,
-                      id: "b403139c-9b46-48ba-8aca-d35e2f1e05ab",
-                      leihs_model: model_11_suspended,
-                      inventory_pool: inventory_pool_8_suspended,
-                      start_date: Date.today,
-                      end_date: Date.tomorrow,
-                      user: user)
+      id: "b403139c-9b46-48ba-8aca-d35e2f1e05ab",
+      leihs_model: model_11_suspended,
+      inventory_pool: inventory_pool_8_suspended,
+      start_date: Date.today,
+      end_date: Date.tomorrow,
+      user: user)
   end
 
   #####################################################################################################
-  
+
   let(:r1c_max_visits_count_reached_at_pickup) do
     r1c_max_visits_count_reached.first
   end
@@ -487,24 +487,24 @@ RSpec.shared_context "invalid reservations data setup", :shared_context => :meta
   # Example specs can call this to force all reservations to be created in the database (without explicitly calling each of them)
   let(:create_all_sample_reservations) do
     {
-      :r1a_start_date_in_past => r1a_start_date_in_past,
-      :r1b_invalid_reservation_advance_days => r1b_invalid_reservation_advance_days,
-      :r1c_max_visits_count_reached_at_pickup => r1c_max_visits_count_reached_at_pickup,
-      :r1c_max_visits_count_reached_at_return => r1c_max_visits_count_reached_at_return,
-      :r1d_no_access_to_pool => r1d_no_access_to_pool,
-      :r1e_holiday => r1e_holiday,
-      :r1f_no_workday => r1f_no_workday,
-      :r1g_max_reservation_time => r1g_max_reservation_time,
-      :r2_not_timed_out_with_invalid_avail_1 => r2_not_timed_out_with_invalid_avail_1,
-      :r3_timed_out_with_invalid_avail_1 => r3_timed_out_with_invalid_avail_1,
-      :r3_timed_out_with_invalid_avail_2 => r3_timed_out_with_invalid_avail_2,
-      :r4_timed_out_ok => r4_timed_out_ok,
-      :r5_not_timed_out_ok => r5_not_timed_out_ok,
-      :r6_user_is_suspended => r6_user_is_suspended
+      r1a_start_date_in_past: r1a_start_date_in_past,
+      r1b_invalid_reservation_advance_days: r1b_invalid_reservation_advance_days,
+      r1c_max_visits_count_reached_at_pickup: r1c_max_visits_count_reached_at_pickup,
+      r1c_max_visits_count_reached_at_return: r1c_max_visits_count_reached_at_return,
+      r1d_no_access_to_pool: r1d_no_access_to_pool,
+      r1e_holiday: r1e_holiday,
+      r1f_no_workday: r1f_no_workday,
+      r1g_max_reservation_time: r1g_max_reservation_time,
+      r2_not_timed_out_with_invalid_avail_1: r2_not_timed_out_with_invalid_avail_1,
+      r3_timed_out_with_invalid_avail_1: r3_timed_out_with_invalid_avail_1,
+      r3_timed_out_with_invalid_avail_2: r3_timed_out_with_invalid_avail_2,
+      r4_timed_out_ok: r4_timed_out_ok,
+      r5_not_timed_out_ok: r5_not_timed_out_ok,
+      r6_user_is_suspended: r6_user_is_suspended
     }
   end
 end
 
 RSpec.configure do |rspec|
-  rspec.include_context "invalid reservations data setup", :include_shared => true
+  rspec.include_context "invalid reservations data setup", include_shared: true
 end

@@ -1,0 +1,4 @@
+ignore:
+  - 'database/**/*'
+  - 'shared-clj/**/*'
+  - 'cider-ci/**/*'

@@ -6,7 +6,7 @@ FactoryBot.define do
   factory :option do
     inventory_pool
     inventory_code do
-      "#{Faker::Lorem.words(number: 3).join.slice(0, 3)}#{rand(9999) + 1000}"
+      "#{Faker::Lorem.words(number: 3).join.slice(0, 3)}#{rand(1000..10998)}"
     end
     manufacturer { nil }
     product { Faker::Commerce.product_name }

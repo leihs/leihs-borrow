@@ -1,7 +1,6 @@
 include: container-build/cider-ci.yml
 
 jobs:
-
   borrow-build-uberjar:
     name: Build prod ready uberjar
     run_when: &ON_BRANCH_UPDATE
@@ -19,14 +18,14 @@ jobs:
         job_key: borrow-build-uberjar
         states: [passed]
     run_when: *BACKEND_SPEC_DEPS
-    context:  
-      include: cider-ci/jobs/backend_specs.yml 
+    context:
+      include: cider-ci/jobs/backend_specs.yml
 
   check-feature-tasks:
     name: Check if feature tasks are up to date
     run_when: *ON_BRANCH_UPDATE
     context:
-      include: cider-ci/jobs/feature_tasks_check.yml 
+      include: cider-ci/jobs/feature_tasks_check.yml
 
   feature-specs:
     name: Feature specs
@@ -40,7 +39,7 @@ jobs:
         job_key: check-feature-tasks
         states: [passed]
     run_when: *FEATURE_SPECS_DEPS
-    context: 
+    context:
       include: cider-ci/jobs/feature_specs.yml
 
   graphql-schema-check:
@@ -65,9 +64,9 @@ jobs:
           test:
             body: |
               ./ui/bin/lint
-              
+
   lint:
-    name: "Linting"
+    name: 'Linting'
     description: |
       Code checks: static checks and metrics: complexity, duplication, and format,
         also other consistency checks.
@@ -90,6 +89,14 @@ jobs:
                 #!/usr/bin/env bash
                 set -euo pipefail
                 ./bin/cljfmt check
+
+        standardrb-lint:
+          scripts:
+            test:
+              body: |
+                #!/usr/bin/env bash
+                set -euo pipefail
+                ./bin/standardrb
 
   all-ok:
     name: 'All Tests OK'
@@ -137,11 +144,11 @@ jobs:
     depends_on: &GOOD_TO_MERGE_DEPENDENCIES
       all passed: { type: job, job_key: all-ok, states: [passed] }
     run_when: *GOOD_TO_MERGE_DEPENDENCIES
-    context: 
+    context:
       include: cider-ci/jobs/good-to-merge.yml
 
   merged-to-master:
-    name: "Merged to master"
+    name: 'Merged to master'
     priority: 999
     depends_on:
       master branch matches:
@@ -156,4 +163,4 @@ jobs:
         merged-to-master:
           scripts:
             test:
-              body: "exit 0"
+              body: 'exit 0'

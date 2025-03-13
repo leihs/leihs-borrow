@@ -32,22 +32,22 @@ step "the form has exactly these fields:" do |table|
       sec.all("input,textarea,select", wait: 0).map do |field|
         field_id = field[:id]
         label = if field_id
-            find("label[for='#{field_id}']", wait: 0)
-          else
-            field.find(:xpath, "./ancestor::label")
-          end
+          find("label[for='#{field_id}']", wait: 0)
+        else
+          field.find(:xpath, "./ancestor::label")
+        end
         value = if field.tag_name === "select"
-            field.find("option[value='#{field.value}']").text
-          else
-            field.value
-          end
-        { label: label.text, value: value }
+          field.find("option[value='#{field.value}']").text
+        else
+          field.value
+        end
+        {label: label.text, value: value}
       end
     end
   end.flatten
 
   # interpolate dates form values
-  expected_fields = table.hashes.map { |h| h.merge({ "value" => interpolate_dates_long(h["value"]) }) }
+  expected_fields = table.hashes.map { |h| h.merge({"value" => interpolate_dates_long(h["value"])}) }
 
   expect(form_fields).to eq(symbolize_hash_keys(expected_fields))
 end

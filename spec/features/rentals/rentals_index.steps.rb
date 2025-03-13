@@ -1,12 +1,12 @@
 step "I enter :value in the :field field" do |value, field|
   value2 = case value
-    when "day after tomorrow"
-      Locales.format_date(Date.tomorrow + 1.day, @user)
-    when "yesterday"
-      Locales.format_date(Date.yesterday, @user)
-    else
-      value
-    end
+  when "day after tomorrow"
+    Locales.format_date(Date.tomorrow + 1.day, @user)
+  when "yesterday"
+    Locales.format_date(Date.yesterday, @user)
+  else
+    value
+  end
   el = find_field(field)
   simulate_typing(el, value2)
 end

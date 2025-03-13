@@ -15,7 +15,7 @@ step "the following inventory exists:" do |table|
       inventory_code: item["code"],
       leihs_model: model,
       owner: pool,
-      responsible: pool,
+      responsible: pool
     )
   end
 end

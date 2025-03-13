@@ -1,8 +1,8 @@
 module Locales
-  FORMAT = { "en-GB" => { :date => "%d/%m/%Y" },
-             "de-CH" => { :date => "%d.%m.%Y" } }
-  FORMAT_SHORT = { "en-GB" => { :date => "%d/%m/%y" },
-                   "de-CH" => { :date => "%d.%m.%y" } }
+  FORMAT = {"en-GB" => {date: "%d/%m/%Y"},
+            "de-CH" => {date: "%d.%m.%Y"}}
+  FORMAT_SHORT = {"en-GB" => {date: "%d/%m/%y"},
+                  "de-CH" => {date: "%d.%m.%y"}}
 
   def self.format_date(date, user)
     l = user.language_locale

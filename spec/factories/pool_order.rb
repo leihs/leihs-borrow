@@ -10,7 +10,7 @@ FactoryBot.define do
     order
     user
     inventory_pool
-    state { 'submitted' }
+    state { "submitted" }
     purpose { Faker::Lorem.sentence }
   end
 end

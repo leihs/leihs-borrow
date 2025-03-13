@@ -8,7 +8,7 @@ step "the order panel is shown" do
 end
 
 step "I switch to a new window" do
-  w = open_new_window()
+  w = open_new_window
   switch_to_window(w)
 end
 

@@ -99,7 +99,7 @@ step "I see the following orders:" do |table|
 end
 
 step "the maximum quantity shows :n" do |n|
-  expect(page).to have_content /#{n}.max/
+  expect(page).to have_content(/#{n}.max/)
 end
 
 step "the search filters are persisted in the url" do
@@ -111,7 +111,7 @@ step "the search filters are persisted in the url" do
       "start-date" => Date.today.to_s,
       "end-date" => Date.tomorrow.to_s,
       "term" => "Kamera",
-      "user-id" => @user.id,
+      "user-id" => @user.id
     }
   )
 end
@@ -165,7 +165,7 @@ step "I select :name xxx" do |name|
     # find('select[name="user-id"] option', text: name).select_option
     'select[name="user-id"] option'
   )
-    .select { |n| n.text.include?(name) }.first
+    .find { |n| n.text.include?(name) }
     .select_option
 end
 
@@ -179,11 +179,11 @@ step "I visit the show page for :name model" do |name|
 end
 
 step "the delegations select field is disabled" do
-  binding.pry
+  binding.pry # standard:disable Lint/Debugger
 end
 
 step "there is an error message below the field" do
-  binding.pry
+  binding.pry # standard:disable Lint/Debugger
 end
 
 step "there are no audited requests" do
@@ -197,16 +197,16 @@ end
 step "a submitted email has been created for user :full_name" do |full_name|
   first, last = full_name.split
   u = User.find(firstname: first, lastname: last)
-  e = Email.find(to_address: u.email,
-                 user_id: u.id,
-                 subject: "[leihs] Reservation Submitted")
+  Email.find(to_address: u.email,
+    user_id: u.id,
+    subject: "[leihs] Reservation Submitted")
 end
 
 step "a received email has been created for pool :name" do |name|
   ip = InventoryPool.find(name: name)
-  e = Email.find(to_address: ip.email,
-                 inventory_pool_id: ip.id,
-                 subject: "[leihs] Order Received")
+  Email.find(to_address: ip.email,
+    inventory_pool_id: ip.id,
+    subject: "[leihs] Order Received")
 end
 
 step "there have been :n emails created" do |n|
@@ -220,4 +220,3 @@ end
 step "the cart is expired" do
   expect(find(".ui-progress-info", text: "Time limit")).to have_content "Expired"
 end
-

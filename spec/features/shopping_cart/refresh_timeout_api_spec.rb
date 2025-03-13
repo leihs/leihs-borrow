@@ -1,6 +1,6 @@
 require "spec_helper"
 require_relative "../../graphql/graphql_helper"
-require_relative "./invalid_reservations_data_setup"
+require_relative "invalid_reservations_data_setup"
 
 # Switch to launch a browser to visualize the sample data in UI
 DEVELOP_UI = false
@@ -18,13 +18,13 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
     expect(create_all_sample_reservations).to_not be_nil
 
     r_draft_ok = FactoryBot.create(:reservation,
-                                   status: "draft",
-                                   id: "f2989153-2ad9-4cc8-b76a-0fa45a797eb7",
-                                   leihs_model: model_1,
-                                   inventory_pool: inventory_pool,
-                                   start_date: Date.today,
-                                   end_date: Date.tomorrow,
-                                   user: user)
+      status: "draft",
+      id: "f2989153-2ad9-4cc8-b76a-0fa45a797eb7",
+      leihs_model: model_1,
+      inventory_pool: inventory_pool,
+      start_date: Date.today,
+      end_date: Date.tomorrow,
+      user: user)
 
     # Apply mutation query to sample reservations
 
@@ -49,9 +49,9 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
     # Get data returned from query
 
     reservations = m_result.dig(:data, :refreshTimeout, :unsubmittedOrder, :reservations)
-    valid_until = if vu = m_result.dig(:data, :refreshTimeout, :unsubmittedOrder, :validUntil)
-        DateTime.parse(vu)
-      end
+    valid_until = if (vu = m_result.dig(:data, :refreshTimeout, :unsubmittedOrder, :validUntil))
+      DateTime.parse(vu)
+    end
     unsubmitted_ids = reservations.select { |r| r[:status] == "UNSUBMITTED" }.map { |r| r[:id] }
     draft_ids = reservations.select { |r| r[:status] == "DRAFT" }.map { |r| r[:id] }
     invalid_ids = m_result.dig(:data, :refreshTimeout, :unsubmittedOrder, :invalidReservationIds)
@@ -63,7 +63,7 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
       visit "/borrow/order"
 
       # dev_take_screenshots_of_each_order_panel
-      binding.pry
+      binding.pry # standard:disable Lint/Debugger
     end
 
     # Check expected status
@@ -72,29 +72,29 @@ describe "refresh timeout", type: (DEVELOP_UI ? :feature : nil) do
       .to match_array [r4_timed_out_ok, r5_not_timed_out_ok, r_draft_ok].map(&:id)
 
     expect(draft_ids.to_set).to match_array [r1a_start_date_in_past,
-                                             r1b_invalid_reservation_advance_days,
-                                             r1c_max_visits_count_reached_at_pickup,
-                                             r1c_max_visits_count_reached_at_return,
-                                             r1d_no_access_to_pool,
-                                             r1e_holiday,
-                                             r1f_no_workday,
-                                             r1g_max_reservation_time,
-                                             r2_not_timed_out_with_invalid_avail_1,
-                                             r3_timed_out_with_invalid_avail_1,
-                                             r3_timed_out_with_invalid_avail_2,
-                                             r6_user_is_suspended].map(&:id)
+      r1b_invalid_reservation_advance_days,
+      r1c_max_visits_count_reached_at_pickup,
+      r1c_max_visits_count_reached_at_return,
+      r1d_no_access_to_pool,
+      r1e_holiday,
+      r1f_no_workday,
+      r1g_max_reservation_time,
+      r2_not_timed_out_with_invalid_avail_1,
+      r3_timed_out_with_invalid_avail_1,
+      r3_timed_out_with_invalid_avail_2,
+      r6_user_is_suspended].map(&:id)
     expect(invalid_ids.to_set).to match_array [r1a_start_date_in_past,
-                                               r1b_invalid_reservation_advance_days,
-                                               r1c_max_visits_count_reached_at_pickup,
-                                               r1c_max_visits_count_reached_at_return,
-                                               r1d_no_access_to_pool,
-                                               r1e_holiday,
-                                               r1f_no_workday,
-                                               r1g_max_reservation_time,
-                                               r2_not_timed_out_with_invalid_avail_1,
-                                               r3_timed_out_with_invalid_avail_1,
-                                               r3_timed_out_with_invalid_avail_2,
-                                               r6_user_is_suspended].map(&:id)
+      r1b_invalid_reservation_advance_days,
+      r1c_max_visits_count_reached_at_pickup,
+      r1c_max_visits_count_reached_at_return,
+      r1d_no_access_to_pool,
+      r1e_holiday,
+      r1f_no_workday,
+      r1g_max_reservation_time,
+      r2_not_timed_out_with_invalid_avail_1,
+      r3_timed_out_with_invalid_avail_1,
+      r3_timed_out_with_invalid_avail_2,
+      r6_user_is_suspended].map(&:id)
 
     expect(valid_until.try(:utc).change(usec: 0, sec: 0)).to eq (now.utc + 30.minutes).change(usec: 0, sec: 0)
   end

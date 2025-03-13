@@ -1,18 +1,19 @@
 def wait_until(wait_time = 60, &block)
-  begin
-    Timeout.timeout(wait_time) do
-      until value = yield
-        sleep(1)
-      end
-      value
+  Timeout.timeout(wait_time) do
+    until (value = yield)
+      sleep(1)
     end
-  rescue Timeout::Error => _e
-    fail Timeout::Error.new(block.source), "It timed out!"
+    value
   end
+rescue Timeout::Error => _e
+  fail Timeout::Error.new(block.source), "It timed out!"
 end
 
 def simulate_typing(el, val)
-  val.chars.each { |c| el.send_keys(c); sleep(0.1) }
+  val.chars.each { |c|
+    el.send_keys(c)
+    sleep(0.1)
+  }
 end
 
 def log_in_as_user_with_email(email)
@@ -33,7 +34,7 @@ end
 # spec args given as "${some_ruby_code}" -> eval(some_ruby_code)
 def custom_eval(spec_string)
   ruby_code = spec_string.to_s.match(/^\$\{(.*)\}$/)[1]
-  eval(ruby_code)
+  eval(ruby_code) # standard:disable Security/Eval
 end
 
 # spec args given as "A${1+1}Z" -> "A#{1+1}Z" -> "A2Z"

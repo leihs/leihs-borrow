@@ -1,6 +1,6 @@
 step "I see the following text in the dialog:" do |txt|
   expect(@dialog).to be
-  expect(@dialog).to have_content(txt.strip())
+  expect(@dialog).to have_content(txt.strip)
 end
 
 step "I see the :title dialog with the text:" do |title, text|
@@ -19,5 +19,5 @@ step "I see a warning in the dialog:" do |txt|
 end
 
 step "the :title button is disabled" do |title|
-  expect(find('button', text: title )).to be_disabled
+  expect(find("button", text: title)).to be_disabled
 end

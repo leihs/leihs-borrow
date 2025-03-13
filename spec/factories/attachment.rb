@@ -5,12 +5,12 @@ end
 
 FactoryBot.define do
   factory :attachment do
-    transient do 
-      real_filename { 'secd.pdf' }
+    transient do
+      real_filename { "secd.pdf" }
     end
 
     filename { real_filename }
-    content_type { 'application/pdf' }
+    content_type { "application/pdf" }
     size { 160000 }
 
     after(:build) do |attachment, trans|

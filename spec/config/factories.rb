@@ -1,5 +1,5 @@
-require 'factory_bot'
-require 'faker'
+require "factory_bot"
+require "faker"
 
 Sequel::Model.db = database
 

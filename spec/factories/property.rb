@@ -4,7 +4,7 @@ end
 
 FactoryBot.define do
   factory :property do
-    key { Faker::Hipster.words(number: 2).join(' ') }
+    key { Faker::Hipster.words(number: 2).join(" ") }
     value { Faker::Measurement.metric_length }
   end
 end

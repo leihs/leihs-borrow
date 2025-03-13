@@ -18,7 +18,7 @@ def create_reservations_from_table_for_user(user, table)
       start_date: start_date,
       end_date: end_date,
       leihs_model: model,
-      inventory_pool: pool,
+      inventory_pool: pool
     )
   end
 end

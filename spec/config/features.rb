@@ -51,10 +51,10 @@ RSpec.configure do |config|
 
   config.after(:each) do |example|
     # auto-pry after failures, except in CI!
-    if ( not ENV["CIDER_CI_TRIAL_ID"].present? and ENV["PRY_ON_EXCEPTION"].present? )
+    if !ENV["CIDER_CI_TRIAL_ID"].present? && ENV["PRY_ON_EXCEPTION"].present?
       unless example.exception.nil?
         puts decorate_exception(example.exception)
-        binding.pry if example.exception
+        binding.pry if example.exception # standard:disable Lint/Debugger
       end
     end
   end
@@ -89,17 +89,17 @@ end
 
 def decorate_exception(ex)
   div = Array.new(80, "-").join
-  location = begin ex.backtrace.first;     rescue; end
-  msg = case true
-    when ex.is_a?(Turnip::Pending)
-      "MISSING STEP! try this:\n\n" \
-      "step \"#{ex.message}\" do\n  binding.pry\nend"
-    else
-      "GOT ERROR: #{ex.class}: #{ex.message}"
-    end
+  location = begin ex.backtrace.first; rescue; end
+  msg = case true # standard:disable Lint/LiteralAsCondition
+  when ex.is_a?(Turnip::Pending)
+    "MISSING STEP! try this:\n\n" \
+    "step \"#{ex.message}\" do\n  binding.pry\nend"
+  else
+    "GOT ERROR: #{ex.class}: #{ex.message}"
+  end
   trace = unless ex.is_a?(RSpec::Expectations::ExpectationNotMetError)
-      "from: #{location || "UNKNOWN"}"
-    end
+    "from: #{location || "UNKNOWN"}"
+  end
   "\n\n#{div}\n\n#{msg}\n\n#{div}\n#{trace}\n"
 end
 
@@ -109,16 +109,16 @@ def log_turnip_step(file, step)
   line_nr = step.line.to_s.rjust(3, " ")
   step_text = "#{step.keyword}#{step.text}"
   args = if step.argument.is_a?(Turnip::Table)
-      table = step.argument
-      json_line = table.hashes.to_json
-      if json_line.length < 120
-        "\n#{inner_indent}#{json_line}"
-      else
-        dat = JSON.pretty_generate(table.hashes).split("\n")
-          .map { |l| "#{inner_indent}#{l}" }.join("\n")
-        "\n#{dat}"
-      end
+    table = step.argument
+    json_line = table.hashes.to_json
+    if json_line.length < 120
+      "\n#{inner_indent}#{json_line}"
+    else
+      dat = JSON.pretty_generate(table.hashes).split("\n")
+        .map { |l| "#{inner_indent}#{l}" }.join("\n")
+      "\n#{dat}"
     end
+  end
   puts "#{indent}#{line_nr} | #{step_text}#{args}"
 end
 
@@ -127,7 +127,7 @@ module TurnipExtensions
   module CustomStepRunner
     def run_step(*args)
       log_turnip_step(*args)
-      super(*args)
+      super
     end
   end
 end

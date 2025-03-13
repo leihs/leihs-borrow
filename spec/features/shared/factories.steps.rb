@@ -26,7 +26,7 @@ end
 
 step "there is an initial admin" do
   @initial_admin = FactoryBot.create(:user, is_admin: true, admin_protected: true,
-                                     is_system_admin: true, system_admin_protected: true)
+    is_system_admin: true, system_admin_protected: true)
 end
 
 step "there is a leihs admin" do
@@ -43,13 +43,13 @@ end
 
 step "there is a user with an ultimate access" do
   @user = FactoryBot.create(:user, is_admin: true, admin_protected: true,
-                            is_system_admin: true, system_admin_protected: true)
+    is_system_admin: true, system_admin_protected: true)
   ip = FactoryBot.create(:inventory_pool, id: IP_UUID)
   FactoryBot.create(:procurement_admin, user_id: @user.id)
   FactoryBot.create(:direct_access_right,
-                    user: @user,
-                    inventory_pool: ip,
-                    role: :inventory_manager)
+    user: @user,
+    inventory_pool: ip,
+    role: :inventory_manager)
 end
 
 step "the user does not have any pool access rights" do
@@ -59,17 +59,17 @@ end
 step "there is a default language :lang with locale name :l_name" do |lang, l_name|
   unless Language.find(name: lang, default: true)
     FactoryBot.create(:language,
-                      name: lang,
-                      default: true,
-                      locale: l_name)
+      name: lang,
+      default: true,
+      locale: l_name)
   end
 end
 
 step "there is a language :lang with locale name :l_name" do |lang, l_name|
   unless Language.find(name: lang)
     FactoryBot.create(:language,
-                      name: lang,
-                      locale: l_name)
+      name: lang,
+      locale: l_name)
   end
 end
 
@@ -80,29 +80,29 @@ end
 step "the user is inventory manager of some pool" do
   @pool = FactoryBot.create(:inventory_pool)
   FactoryBot.create(:direct_access_right,
-                    user_id: @user.id,
-                    inventory_pool_id: @pool.id,
-                    role: :inventory_manager)
+    user_id: @user.id,
+    inventory_pool_id: @pool.id,
+    role: :inventory_manager)
 end
 
 step "the user is inventory manager of pool :name" do |name|
   pool = InventoryPool.find(name: name) ||
-         FactoryBot.create(:inventory_pool, name: name)
+    FactoryBot.create(:inventory_pool, name: name)
 
   FactoryBot.create(:direct_access_right,
-                    user_id: @user.id,
-                    inventory_pool_id: pool.id,
-                    role: :inventory_manager)
+    user_id: @user.id,
+    inventory_pool_id: pool.id,
+    role: :inventory_manager)
 end
 
 def user_is_customer_of_pool(user, pool)
   pool = InventoryPool.find(name: pool) ||
-         FactoryBot.create(:inventory_pool, name: pool)
+    FactoryBot.create(:inventory_pool, name: pool)
 
   FactoryBot.create(:direct_access_right,
-                    user_id: user.id,
-                    inventory_pool_id: pool.id,
-                    role: :customer)
+    user_id: user.id,
+    inventory_pool_id: pool.id,
+    role: :customer)
 end
 
 step "the user is customer of pool :pool" do |pool|
@@ -122,20 +122,20 @@ end
 
 step "the delegation :delegation is customer of pool :name" do |delegation, name|
   pool = InventoryPool.find(name: name) ||
-         FactoryBot.create(:inventory_pool, name: name)
+    FactoryBot.create(:inventory_pool, name: name)
 
   FactoryBot.create(:direct_access_right,
-                    user_id: @delegation.id,
-                    inventory_pool_id: pool.id,
-                    role: :customer)
+    user_id: @delegation.id,
+    inventory_pool_id: pool.id,
+    role: :customer)
 end
 
 step "the user is group manager of pool :name" do |name|
   pool = FactoryBot.create(:inventory_pool, name: name)
   FactoryBot.create(:direct_access_right,
-                    user_id: @user.id,
-                    inventory_pool_id: pool.id,
-                    role: :group_manager)
+    user_id: @user.id,
+    inventory_pool_id: pool.id,
+    role: :group_manager)
 end
 
 step "the user is procurement admin" do
@@ -154,8 +154,8 @@ end
 step "the user has external authentication" do
   ext_sys = AuthenticationSystem.find(type: "external")
   FactoryBot.create(:authentication_system_user,
-                    user_id: @user.id,
-                    authentication_system_id: ext_sys.id)
+    user_id: @user.id,
+    authentication_system_id: ext_sys.id)
 end
 
 step "the user does not have password authentication" do
@@ -201,20 +201,20 @@ end
 step "there are meta mail templates" do
   Language.all.each do |lang|
     [[:approved, :order],
-     [:received, :order],
-     [:rejected, :order],
-     [:submitted, :order],
-     [:deadline_soon_reminder, :user],
-     [:reminder, :user]].each do |tmpl, type|
+      [:received, :order],
+      [:rejected, :order],
+      [:submitted, :order],
+      [:deadline_soon_reminder, :user],
+      [:reminder, :user]].each do |tmpl, type|
       FactoryBot.create(:mail_template,
-                        is_template_template: true,
-                        language_locale: lang.locale,
-                        name: tmpl,
-                        type: type,
-                        format: :text,
-                        body: "template stub",
-                        created_at: DateTime.now,
-                        updated_at: DateTime.now)
+        is_template_template: true,
+        language_locale: lang.locale,
+        name: tmpl,
+        type: type,
+        format: :text,
+        body: "template stub",
+        created_at: DateTime.now,
+        updated_at: DateTime.now)
     end
   end
 end
@@ -225,10 +225,10 @@ step "there is/are :n borrowable item(s) for model :model in pool :pool" do |n, 
 
   n.to_i.times do
     FactoryBot.create(:item,
-                      is_borrowable: true,
-                      leihs_model: model,
-                      responsible: pool,
-                      owner: pool)
+      is_borrowable: true,
+      leihs_model: model,
+      responsible: pool,
+      owner: pool)
   end
 end
 
@@ -241,7 +241,7 @@ step "the following items exist:" do |table|
       inventory_code: item["code"],
       leihs_model: model,
       owner: pool,
-      responsible: pool,
+      responsible: pool
     )
   end
 end
@@ -263,7 +263,7 @@ step "parent of category :child_name is category :parent_name" do |child_name, p
 end
 
 def user_login_from_full_name(full_name)
-  full_name.downcase.gsub(' ','')
+  full_name.downcase.delete(" ")
 end
 
 def find_user_by_full_name!(name)
@@ -274,19 +274,19 @@ step "the inventory pool :pool_name has a template called :template_name with th
   pool = InventoryPool.find(name: pool_name)
   template = FactoryBot.create(:template, name: template_name)
   template.add_inventory_pool(pool)
-  for h in models.hashes
-    model = LeihsModel.find(product: h['product'])
+  models.hashes.each do |h|
+    model = LeihsModel.find(product: h["product"])
     template.add_direct_model(model)
   end
 end
 
-step 'there is an entitlement group :name in pool :pool_name' do |name, pool_name|
+step "there is an entitlement group :name in pool :pool_name" do |name, pool_name|
   pool = InventoryPool.find(name: pool_name)
 
   FactoryBot.create(:entitlement_group, inventory_pool: pool, name: name)
 end
 
-step 'the group :entitlement_group is entitled for :n item(s) of model :model' do |entitlement_group_name, n, model_name|
+step "the group :entitlement_group is entitled for :n item(s) of model :model" do |entitlement_group_name, n, model_name|
   model = LeihsModel.find(product: model_name)
   entitlement_group = EntitlementGroup.find(name: entitlement_group_name)
 
