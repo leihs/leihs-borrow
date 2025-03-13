@@ -245,6 +245,64 @@ describe 'models connection' do
       end
     end
 
+    it 'maximum reservation duration' do
+      q = ->(start_date, end_date) {
+        <<-GRAPHQL
+          {
+            models(
+              onlyAvailable: true
+            ) {
+              edges {
+                node {
+                  id
+                  availableQuantityInDateRange(
+                    startDate: "#{start_date}",
+                    endDate: "#{end_date}"
+                  )
+                }
+              }
+            }
+          }
+        GRAPHQL
+      }
+
+      @model = FactoryBot.create(
+        :leihs_model,
+        id: '8afe4e63-fded-4726-8808-6a097452374e'
+      )
+      FactoryBot.create(:item,
+                        leihs_model: @model,
+                        responsible: @inventory_pool,
+                        is_borrowable: true)
+
+      @inventory_pool.update(borrow_maximum_reservation_duration: 2)
+
+      @start = Date.today
+      @end = @start + 2.days
+      result = query(q.(@start, @end), @user.id)
+      expect_graphql_result(result, {
+        models: {
+          edges: []
+        }
+      })
+
+      @start = Date.today
+      @end = @start + 1.days
+      result = query(q.(@start, @end), @user.id)
+      expect_graphql_result(result, {
+        models: {
+          edges: [
+            { node: {
+                id: @model.id,
+                availableQuantityInDateRange: 1
+              }
+            }
+          ]
+        }
+      })
+    end
+
+
     it 'priorities' do
       @model = FactoryBot.create(
         :leihs_model,

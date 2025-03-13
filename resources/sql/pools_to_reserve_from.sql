@@ -33,8 +33,14 @@ date_range AS (
 SELECT accessible_pools.*
 FROM accessible_pools
 
--- the number of open days is at least `borrow_reservation_advance_days`
+-- the duration of the reservation is less than or equal to the maximum reservation duration
 WHERE (
+  accessible_pools.borrow_maximum_reservation_duration IS NULL OR
+  EXTRACT(DAY FROM age(:end-date::date, :start-date::date)) < accessible_pools.borrow_maximum_reservation_duration
+)
+
+-- the number of open days is at least `borrow_reservation_advance_days`
+AND (
   SELECT count(*)
   FROM date_range
   WHERE (
