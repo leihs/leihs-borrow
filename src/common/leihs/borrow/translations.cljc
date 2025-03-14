@@ -21,12 +21,6 @@
                        :saturday {:de-CH "Samstag" :en-GB "Saturday"}
                        :sunday {:de-CH "Sonntag" :en-GB "Sunday"}}}
 
-    ; --- MAIL TEMPLATES ---
-    :mail-templates {:received {:subject {:en-GB "[leihs] Order received"
-                                          :de-CH "[leihs] Bestellung eingetroffen"}}
-                     :submitted {:subject {:en-GB "[leihs] Reservation Submitted"
-                                           :de-CH "[leihs] Reservation abgeschickt"}}}
-
   ; --- GENERAL PHRASES ---
   ; use them for consistency between different parts of the app
   ; but NOT for interpolation / string concating (that assumes to much about the languages)

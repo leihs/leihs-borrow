@@ -19,15 +19,14 @@
    [taoensso.timbre :refer [debug info warn error spy]]))
 
 (defn get-tmpl [tx name pool-id lang-locale]
-  (-> (sql/select :body)
+  (-> (sql/select :subject :body)
       (sql/from :mail_templates)
       (sql/where [:= :name name])
       (sql/where [:= :inventory_pool_id pool-id])
       (sql/where [:= :language_locale lang-locale])
       sql-format
       (->> (jdbc-query tx))
-      first
-      :body))
+      first))
 
 (defn send-received [{{:keys [settings tx]} :request} order]
   (let [inventory-pool (->> order
@@ -53,7 +52,7 @@
                                        (->> (jdbc-query tx)))
                       purpose (:purpose order)
                       order-url (str (:external_base_url settings) "/manage/" (:id pool) "/orders/" (:id order) "/edit")
-                      email-body (wet/render (wet/parse tmpl)
+                      email-body (wet/render (wet/parse (:body tmpl))
                                              {:params {:user user
                                                        :inventory_pool pool
                                                        :email_signature email-signature
@@ -63,12 +62,11 @@
                                                        :order_url order-url}
                                               :filters {}})
                       address (or (:email pool) (:smtp_default_from_address settings))]
-                  (debug email-body)
                   (-> (sql/insert-into :emails)
                       (sql/values [{:inventory_pool_id (:id pool)
                                     :from_address address
                                     :to_address address
-                                    :subject (t :borrow.mail-templates.received.subject lang-locale)
+                                    :subject (:subject tmpl)
                                     :body email-body}])
                       sql-format
                       (->> (jdbc-execute! tx)))))))))
@@ -101,7 +99,7 @@
                                    (->> (jdbc-query tx)))
                   purpose (:purpose order)
                   order-url (str (:external_base_url settings) "/manage/" (:id inventory-pool) "/orders/" (:id order) "/edit")
-                  email-body (wet/render (wet/parse tmpl)
+                  email-body (wet/render (wet/parse (:body tmpl))
                                          {:params {:user target-user
                                                    :inventory_pool inventory-pool
                                                    :email_signature email-signature
@@ -112,12 +110,11 @@
                                           :filters {}})
                   to-address (or (:email target-user) (:secondary_email target-user))
                   from-address (or (:email inventory-pool) (:smtp_default_from_address settings))]
-              (debug email-body)
               (-> (sql/insert-into :emails)
                   (sql/values [{:user_id target-user-id
                                 :from_address from-address
                                 :to_address to-address
-                                :subject (t :borrow.mail-templates.submitted.subject lang-locale)
+                                :subject (:subject tmpl)
                                 :body email-body}])
                   sql-format
                   (->> (jdbc-execute! tx)))))))
