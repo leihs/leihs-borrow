@@ -1,310 +1,310 @@
 './spec/features/access_rights.feature[1:1:1]':
-  name: 'Access rights Expired suspension should not have any effect on the customer 1'
+  name: 'Access rights Expired suspension should not have any effect on the customer 01'
   environment_variables:
-    FEATURE_NAME: 'Access rights Expired suspension should not have any effect on the customer 1'
+    FEATURE_NAME: 'Access rights Expired suspension should not have any effect on the customer 01'
     FEATURE: './spec/features/access_rights.feature[1:1:1]'
 './spec/features/audits.feature[1:1:1]':
-  name: 'Audits Audited requests 1'
+  name: 'Audits Audited requests 01'
   environment_variables:
-    FEATURE_NAME: 'Audits Audited requests 1'
+    FEATURE_NAME: 'Audits Audited requests 01'
     FEATURE: './spec/features/audits.feature[1:1:1]'
 './spec/features/categories.feature[1:1:1]':
-  name: 'Search results (and caching) Navigation and breadcrumbs 1'
+  name: 'Search results (and caching) Navigation and breadcrumbs 01'
   environment_variables:
-    FEATURE_NAME: 'Search results (and caching) Navigation and breadcrumbs 1'
+    FEATURE_NAME: 'Search results (and caching) Navigation and breadcrumbs 01'
     FEATURE: './spec/features/categories.feature[1:1:1]'
 './spec/features/categories.feature[1:2:1]':
-  name: 'Search results (and caching) Breadcrumbs when coming directly to a sub-category 1'
+  name: 'Search results (and caching) Breadcrumbs when coming directly to a sub-category 01'
   environment_variables:
-    FEATURE_NAME: 'Search results (and caching) Breadcrumbs when coming directly to a sub-category 1'
+    FEATURE_NAME: 'Search results (and caching) Breadcrumbs when coming directly to a sub-category 01'
     FEATURE: './spec/features/categories.feature[1:2:1]'
 './spec/features/categories.feature[1:3:1]':
-  name: 'Search results (and caching) Expand and collapse sub-categories 1'
+  name: 'Search results (and caching) Expand and collapse sub-categories 01'
   environment_variables:
-    FEATURE_NAME: 'Search results (and caching) Expand and collapse sub-categories 1'
+    FEATURE_NAME: 'Search results (and caching) Expand and collapse sub-categories 01'
     FEATURE: './spec/features/categories.feature[1:3:1]'
 './spec/features/categories.feature[1:4:1]':
-  name: 'Search results (and caching) Show subcategories with models deep within 1'
+  name: 'Search results (and caching) Show subcategories with models deep within 01'
   environment_variables:
-    FEATURE_NAME: 'Search results (and caching) Show subcategories with models deep within 1'
+    FEATURE_NAME: 'Search results (and caching) Show subcategories with models deep within 01'
     FEATURE: './spec/features/categories.feature[1:4:1]'
 './spec/features/delegation.feature[1:1:1]':
-  name: 'Delegations Switching between personal and delegation profile 1'
+  name: 'Delegations Switching between personal and delegation profile 01'
   environment_variables:
-    FEATURE_NAME: 'Delegations Switching between personal and delegation profile 1'
+    FEATURE_NAME: 'Delegations Switching between personal and delegation profile 01'
     FEATURE: './spec/features/delegation.feature[1:1:1]'
 './spec/features/delegation.feature[1:2:1]':
-  name: 'Delegations Delegations in user account 1'
+  name: 'Delegations Delegations in user account 01'
   environment_variables:
-    FEATURE_NAME: 'Delegations Delegations in user account 1'
+    FEATURE_NAME: 'Delegations Delegations in user account 01'
     FEATURE: './spec/features/delegation.feature[1:2:1]'
 './spec/features/delegation.feature[1:3:1]':
-  name: 'Delegations Model available depending on profile 1'
+  name: 'Delegations Model available depending on profile 01'
   environment_variables:
-    FEATURE_NAME: 'Delegations Model available depending on profile 1'
+    FEATURE_NAME: 'Delegations Model available depending on profile 01'
     FEATURE: './spec/features/delegation.feature[1:3:1]'
 './spec/features/delegation.feature[1:4:1]':
-  name: 'Delegations Open a new window as delegation user 1'
+  name: 'Delegations Open a new window as delegation user 01'
   environment_variables:
-    FEATURE_NAME: 'Delegations Open a new window as delegation user 1'
+    FEATURE_NAME: 'Delegations Open a new window as delegation user 01'
     FEATURE: './spec/features/delegation.feature[1:4:1]'
 './spec/features/delegation.feature[1:5:1]':
-  name: 'Delegations Open a new window as personal user 1'
+  name: 'Delegations Open a new window as personal user 01'
   environment_variables:
-    FEATURE_NAME: 'Delegations Open a new window as personal user 1'
+    FEATURE_NAME: 'Delegations Open a new window as personal user 01'
     FEATURE: './spec/features/delegation.feature[1:5:1]'
 './spec/features/entitlement.feature[1:1:1]':
-  name: 'Borrow Entitlement User without entitlement 1'
+  name: 'Borrow Entitlement User without entitlement 01'
   environment_variables:
-    FEATURE_NAME: 'Borrow Entitlement User without entitlement 1'
+    FEATURE_NAME: 'Borrow Entitlement User without entitlement 01'
     FEATURE: './spec/features/entitlement.feature[1:1:1]'
 './spec/features/entitlement.feature[1:2:1]':
-  name: 'Borrow Entitlement User with entitlement 1'
+  name: 'Borrow Entitlement User with entitlement 01'
   environment_variables:
-    FEATURE_NAME: 'Borrow Entitlement User with entitlement 1'
+    FEATURE_NAME: 'Borrow Entitlement User with entitlement 01'
     FEATURE: './spec/features/entitlement.feature[1:2:1]'
 './spec/features/favorites.feature[1:1:1]':
-  name: 'Favorites Whole cycle of favor, check, unfavor, check 1'
+  name: 'Favorites Whole cycle of favor, check, unfavor, check 01'
   environment_variables:
-    FEATURE_NAME: 'Favorites Whole cycle of favor, check, unfavor, check 1'
+    FEATURE_NAME: 'Favorites Whole cycle of favor, check, unfavor, check 01'
     FEATURE: './spec/features/favorites.feature[1:1:1]'
 './spec/features/mobile.feature[1:1:1]':
-  name: 'Mobile screen Using navigation menus 1'
+  name: 'Mobile screen Using navigation menus 01'
   environment_variables:
-    FEATURE_NAME: 'Mobile screen Using navigation menus 1'
+    FEATURE_NAME: 'Mobile screen Using navigation menus 01'
     FEATURE: './spec/features/mobile.feature[1:1:1]'
 './spec/features/pools/pools.feature[1:1:1]':
-  name: 'Pools Pools index 1'
+  name: 'Pools Pools index 01'
   environment_variables:
-    FEATURE_NAME: 'Pools Pools index 1'
+    FEATURE_NAME: 'Pools Pools index 01'
     FEATURE: './spec/features/pools/pools.feature[1:1:1]'
 './spec/features/pools/pools.feature[1:2:1]':
-  name: 'Pools User has no pools 1'
+  name: 'Pools User has no pools 01'
   environment_variables:
-    FEATURE_NAME: 'Pools User has no pools 1'
+    FEATURE_NAME: 'Pools User has no pools 01'
     FEATURE: './spec/features/pools/pools.feature[1:2:1]'
 './spec/features/pools/pools.feature[1:3:1]':
-  name: 'Pools User has no pools with reservable items 1'
+  name: 'Pools User has no pools with reservable items 01'
   environment_variables:
-    FEATURE_NAME: 'Pools User has no pools with reservable items 1'
+    FEATURE_NAME: 'Pools User has no pools with reservable items 01'
     FEATURE: './spec/features/pools/pools.feature[1:3:1]'
 './spec/features/rentals/rentals_index.feature[1:1:1]':
-  name: 'Rentals Switching profile 1'
+  name: 'Rentals Switching profile 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals Switching profile 1'
+    FEATURE_NAME: 'Rentals Switching profile 01'
     FEATURE: './spec/features/rentals/rentals_index.feature[1:1:1]'
 './spec/features/rentals/rentals_index.feature[1:2:1]':
-  name: 'Rentals Filtering according date (until date only) 1'
+  name: 'Rentals Filtering according date (until date only) 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals Filtering according date (until date only) 1'
+    FEATURE_NAME: 'Rentals Filtering according date (until date only) 01'
     FEATURE: './spec/features/rentals/rentals_index.feature[1:2:1]'
 './spec/features/rentals/rentals_index.feature[1:3:1]':
-  name: 'Rentals Filtering according to inventory pool 1'
+  name: 'Rentals Filtering according to inventory pool 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals Filtering according to inventory pool 1'
+    FEATURE_NAME: 'Rentals Filtering according to inventory pool 01'
     FEATURE: './spec/features/rentals/rentals_index.feature[1:3:1]'
 './spec/features/rentals/rentals_index.feature[1:4:1]':
-  name: 'Rentals Filtering according to search term 1'
+  name: 'Rentals Filtering according to search term 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals Filtering according to search term 1'
+    FEATURE_NAME: 'Rentals Filtering according to search term 01'
     FEATURE: './spec/features/rentals/rentals_index.feature[1:4:1]'
 './spec/features/rentals/rentals_show.feature[1:1:1]':
-  name: 'Rentals - Show General example (2 approved items) 1'
+  name: 'Rentals - Show General example (2 approved items) 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show General example (2 approved items) 1'
+    FEATURE_NAME: 'Rentals - Show General example (2 approved items) 01'
     FEATURE: './spec/features/rentals/rentals_show.feature[1:1:1]'
 './spec/features/rentals/rentals_show.feature[1:2:1]':
-  name: 'Rentals - Show Sort order of the Reservation Lines 1'
+  name: 'Rentals - Show Sort order of the Reservation Lines 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show Sort order of the Reservation Lines 1'
+    FEATURE_NAME: 'Rentals - Show Sort order of the Reservation Lines 01'
     FEATURE: './spec/features/rentals/rentals_show.feature[1:2:1]'
 './spec/features/rentals/rentals_show.feature[1:3:1]':
-  name: 'Rentals - Show Status: 2 picked up items 1'
+  name: 'Rentals - Show Status: 2 picked up items 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show Status: 2 picked up items 1'
+    FEATURE_NAME: 'Rentals - Show Status: 2 picked up items 01'
     FEATURE: './spec/features/rentals/rentals_show.feature[1:3:1]'
 './spec/features/rentals/rentals_show.feature[1:4:1]':
-  name: 'Rentals - Show Switching profile 1'
+  name: 'Rentals - Show Switching profile 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show Switching profile 1'
+    FEATURE_NAME: 'Rentals - Show Switching profile 01'
     FEATURE: './spec/features/rentals/rentals_show.feature[1:4:1]'
 './spec/features/rentals/rentals_show_cancel_rental.feature[1:1:1]':
-  name: 'Rentals - Show - Cancel rental Cancelling an unapproved order 1'
+  name: 'Rentals - Show - Cancel rental Cancelling an unapproved order 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Cancel rental Cancelling an unapproved order 1'
+    FEATURE_NAME: 'Rentals - Show - Cancel rental Cancelling an unapproved order 01'
     FEATURE: './spec/features/rentals/rentals_show_cancel_rental.feature[1:1:1]'
 './spec/features/rentals/rentals_show_cancel_rental.feature[1:2:1]':
-  name: 'Rentals - Show - Cancel rental Where cancelling is not possible 1'
+  name: 'Rentals - Show - Cancel rental Where cancelling is not possible 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Cancel rental Where cancelling is not possible 1'
+    FEATURE_NAME: 'Rentals - Show - Cancel rental Where cancelling is not possible 01'
     FEATURE: './spec/features/rentals/rentals_show_cancel_rental.feature[1:2:1]'
 './spec/features/rentals/rentals_show_status.feature[1:1:1]':
-  name: 'Rentals - Show - Status Story: Typical flow 1'
+  name: 'Rentals - Show - Status Story: Typical flow 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Status Story: Typical flow 1'
+    FEATURE_NAME: 'Rentals - Show - Status Story: Typical flow 01'
     FEATURE: './spec/features/rentals/rentals_show_status.feature[1:1:1]'
 './spec/features/rentals/rentals_show_status.feature[1:2:1]':
-  name: 'Rentals - Show - Status Story: Details approval 1'
+  name: 'Rentals - Show - Status Story: Details approval 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Status Story: Details approval 1'
+    FEATURE_NAME: 'Rentals - Show - Status Story: Details approval 01'
     FEATURE: './spec/features/rentals/rentals_show_status.feature[1:2:1]'
 './spec/features/rentals/rentals_show_status.feature[1:3:1]':
-  name: 'Rentals - Show - Status Story: Details pickup 1'
+  name: 'Rentals - Show - Status Story: Details pickup 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Status Story: Details pickup 1'
+    FEATURE_NAME: 'Rentals - Show - Status Story: Details pickup 01'
     FEATURE: './spec/features/rentals/rentals_show_status.feature[1:3:1]'
 './spec/features/rentals/rentals_show_status.feature[1:4:1]':
-  name: 'Rentals - Show - Status Story: Details return 1'
+  name: 'Rentals - Show - Status Story: Details return 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Status Story: Details return 1'
+    FEATURE_NAME: 'Rentals - Show - Status Story: Details return 01'
     FEATURE: './spec/features/rentals/rentals_show_status.feature[1:4:1]'
 './spec/features/rentals/repeat_order.feature[1:1:1]':
-  name: 'Rentals - Show - Repeat order Repeating an order 1'
+  name: 'Rentals - Show - Repeat order Repeating an order 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Repeat order Repeating an order 1'
+    FEATURE_NAME: 'Rentals - Show - Repeat order Repeating an order 01'
     FEATURE: './spec/features/rentals/repeat_order.feature[1:1:1]'
 './spec/features/rentals/repeat_order.feature[1:2:1]':
-  name: 'Rentals - Show - Repeat order Order with options only 1'
+  name: 'Rentals - Show - Repeat order Order with options only 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Repeat order Order with options only 1'
+    FEATURE_NAME: 'Rentals - Show - Repeat order Order with options only 01'
     FEATURE: './spec/features/rentals/repeat_order.feature[1:2:1]'
 './spec/features/rentals/repeat_order.feature[1:3:1]':
-  name: 'Rentals - Show - Repeat order Order with models and an option 1'
+  name: 'Rentals - Show - Repeat order Order with models and an option 01'
   environment_variables:
-    FEATURE_NAME: 'Rentals - Show - Repeat order Order with models and an option 1'
+    FEATURE_NAME: 'Rentals - Show - Repeat order Order with models and an option 01'
     FEATURE: './spec/features/rentals/repeat_order.feature[1:3:1]'
 './spec/features/request_framework.feature[1:1:1]':
-  name: 'Request framework Login and retry after having been logged out 1'
+  name: 'Request framework Login and retry after having been logged out 01'
   environment_variables:
-    FEATURE_NAME: 'Request framework Login and retry after having been logged out 1'
+    FEATURE_NAME: 'Request framework Login and retry after having been logged out 01'
     FEATURE: './spec/features/request_framework.feature[1:1:1]'
 './spec/features/search_and_order.feature[1:1:1]':
-  name: 'Search and order Order for delegation Delegation D 1'
+  name: 'Search and order Order for delegation Delegation D 01'
   environment_variables:
-    FEATURE_NAME: 'Search and order Order for delegation Delegation D 1'
+    FEATURE_NAME: 'Search and order Order for delegation Delegation D 01'
     FEATURE: './spec/features/search_and_order.feature[1:1:1]'
 './spec/features/search_and_order.feature[1:2:1]':
-  name: 'Search and order Order for delegation User A (personal) 1'
+  name: 'Search and order Order for delegation User A (personal) 01'
   environment_variables:
-    FEATURE_NAME: 'Search and order Order for delegation User A (personal) 1'
+    FEATURE_NAME: 'Search and order Order for delegation User A (personal) 01'
     FEATURE: './spec/features/search_and_order.feature[1:2:1]'
 './spec/features/search_and_order.feature[1:3:1]':
-  name: 'Search and order Overbooking of expired reservation 1'
+  name: 'Search and order Overbooking of expired reservation 01'
   environment_variables:
-    FEATURE_NAME: 'Search and order Overbooking of expired reservation 1'
+    FEATURE_NAME: 'Search and order Overbooking of expired reservation 01'
     FEATURE: './spec/features/search_and_order.feature[1:3:1]'
 './spec/features/search_results.feature[1:1:1]':
-  name: 'Search results (and caching) Home page 1'
+  name: 'Search results (and caching) Home page 01'
   environment_variables:
-    FEATURE_NAME: 'Search results (and caching) Home page 1'
+    FEATURE_NAME: 'Search results (and caching) Home page 01'
     FEATURE: './spec/features/search_results.feature[1:1:1]'
 './spec/features/search_results.feature[1:2:1]':
-  name: 'Search results (and caching) Search term entered into main input field can be submitted with enter key 1'
+  name: 'Search results (and caching) Search term entered into main input field can be submitted with enter key 01'
   environment_variables:
-    FEATURE_NAME: 'Search results (and caching) Search term entered into main input field can be submitted with enter key 1'
+    FEATURE_NAME: 'Search results (and caching) Search term entered into main input field can be submitted with enter key 01'
     FEATURE: './spec/features/search_results.feature[1:2:1]'
 './spec/features/search_results.feature[1:3:1]':
-  name: 'Search results (and caching) Filter with search term (and caching) 1'
+  name: 'Search results (and caching) Filter with search term (and caching) 01'
   environment_variables:
-    FEATURE_NAME: 'Search results (and caching) Filter with search term (and caching) 1'
+    FEATURE_NAME: 'Search results (and caching) Filter with search term (and caching) 01'
     FEATURE: './spec/features/search_results.feature[1:3:1]'
 './spec/features/search_results.feature[1:4:1]':
-  name: 'Search results (and caching) Category page (implicit filter taken from the URL) 1'
+  name: 'Search results (and caching) Category page (implicit filter taken from the URL) 01'
   environment_variables:
-    FEATURE_NAME: 'Search results (and caching) Category page (implicit filter taken from the URL) 1'
+    FEATURE_NAME: 'Search results (and caching) Category page (implicit filter taken from the URL) 01'
     FEATURE: './spec/features/search_results.feature[1:4:1]'
 './spec/features/search_results.feature[1:5:1]':
-  name: 'Search results (and caching) Category pages, navigation keeps the filters 1'
+  name: 'Search results (and caching) Category pages, navigation keeps the filters 01'
   environment_variables:
-    FEATURE_NAME: 'Search results (and caching) Category pages, navigation keeps the filters 1'
+    FEATURE_NAME: 'Search results (and caching) Category pages, navigation keeps the filters 01'
     FEATURE: './spec/features/search_results.feature[1:5:1]'
 './spec/features/search_results.feature[1:6:1]':
-  name: 'Search results (and caching) Filter available with quantity > 1 1'
+  name: 'Search results (and caching) Filter available with quantity > 1 01'
   environment_variables:
-    FEATURE_NAME: 'Search results (and caching) Filter available with quantity > 1 1'
+    FEATURE_NAME: 'Search results (and caching) Filter available with quantity > 1 01'
     FEATURE: './spec/features/search_results.feature[1:6:1]'
 './spec/features/shopping_cart/edit_reservations.feature[1:1:1]':
-  name: 'Shopping Cart - Editing Reservations Editing a the quantity of a reservation 1'
+  name: 'Shopping Cart - Editing Reservations Editing a the quantity of a reservation 01'
   environment_variables:
-    FEATURE_NAME: 'Shopping Cart - Editing Reservations Editing a the quantity of a reservation 1'
+    FEATURE_NAME: 'Shopping Cart - Editing Reservations Editing a the quantity of a reservation 01'
     FEATURE: './spec/features/shopping_cart/edit_reservations.feature[1:1:1]'
 './spec/features/shopping_cart/edit_reservations.feature[1:2:1]':
-  name: 'Shopping Cart - Editing Reservations Deleting a reservation 1'
+  name: 'Shopping Cart - Editing Reservations Deleting a reservation 01'
   environment_variables:
-    FEATURE_NAME: 'Shopping Cart - Editing Reservations Deleting a reservation 1'
+    FEATURE_NAME: 'Shopping Cart - Editing Reservations Deleting a reservation 01'
     FEATURE: './spec/features/shopping_cart/edit_reservations.feature[1:2:1]'
 './spec/features/shopping_cart/invalid_reservations.feature[1:1:1]':
-  name: 'Invalid reservations Identity and fix invalid reservations 1'
+  name: 'Invalid reservations Identity and fix invalid reservations 01'
   environment_variables:
-    FEATURE_NAME: 'Invalid reservations Identity and fix invalid reservations 1'
+    FEATURE_NAME: 'Invalid reservations Identity and fix invalid reservations 01'
     FEATURE: './spec/features/shopping_cart/invalid_reservations.feature[1:1:1]'
 './spec/features/shopping_cart/refresh_timeout_api_spec.rb[1:1]':
-  name: 'refresh timeout 1'
+  name: 'refresh timeout 01'
   environment_variables:
-    FEATURE_NAME: 'refresh timeout 1'
+    FEATURE_NAME: 'refresh timeout 01'
     FEATURE: './spec/features/shopping_cart/refresh_timeout_api_spec.rb[1:1]'
 './spec/features/shopping_cart/reservation_lines_display.feature[1:1:1]':
-  name: 'Shopping Cart - Display of Reservation Lines Grouping Reservations by Model, Dates and Pool 1'
+  name: 'Shopping Cart - Display of Reservation Lines Grouping Reservations by Model, Dates and Pool 01'
   environment_variables:
-    FEATURE_NAME: 'Shopping Cart - Display of Reservation Lines Grouping Reservations by Model, Dates and Pool 1'
+    FEATURE_NAME: 'Shopping Cart - Display of Reservation Lines Grouping Reservations by Model, Dates and Pool 01'
     FEATURE: './spec/features/shopping_cart/reservation_lines_display.feature[1:1:1]'
 './spec/features/shopping_cart/reservation_lines_display.feature[1:2:1]':
-  name: 'Shopping Cart - Display of Reservation Lines Sort order of the Reservation Lines 1'
+  name: 'Shopping Cart - Display of Reservation Lines Sort order of the Reservation Lines 01'
   environment_variables:
-    FEATURE_NAME: 'Shopping Cart - Display of Reservation Lines Sort order of the Reservation Lines 1'
+    FEATURE_NAME: 'Shopping Cart - Display of Reservation Lines Sort order of the Reservation Lines 01'
     FEATURE: './spec/features/shopping_cart/reservation_lines_display.feature[1:2:1]'
 './spec/features/shopping_cart/reservation_lines_display.feature[1:3:1]':
-  name: 'Shopping Cart - Display of Reservation Lines Locale-/Language-based Formatting 1'
+  name: 'Shopping Cart - Display of Reservation Lines Locale-/Language-based Formatting 01'
   environment_variables:
-    FEATURE_NAME: 'Shopping Cart - Display of Reservation Lines Locale-/Language-based Formatting 1'
+    FEATURE_NAME: 'Shopping Cart - Display of Reservation Lines Locale-/Language-based Formatting 01'
     FEATURE: './spec/features/shopping_cart/reservation_lines_display.feature[1:3:1]'
 './spec/features/shopping_cart/send_order_dialog.feature[1:1:1]':
-  name: 'Shopping Cart - Filling out title and purpose Title and purpose 1'
+  name: 'Shopping Cart - Filling out title and purpose Title and purpose 01'
   environment_variables:
-    FEATURE_NAME: 'Shopping Cart - Filling out title and purpose Title and purpose 1'
+    FEATURE_NAME: 'Shopping Cart - Filling out title and purpose Title and purpose 01'
     FEATURE: './spec/features/shopping_cart/send_order_dialog.feature[1:1:1]'
 './spec/features/shopping_cart/send_order_dialog.feature[1:2:1]':
-  name: 'Shopping Cart - Filling out title and purpose Lending terms 1'
+  name: 'Shopping Cart - Filling out title and purpose Lending terms 01'
   environment_variables:
-    FEATURE_NAME: 'Shopping Cart - Filling out title and purpose Lending terms 1'
+    FEATURE_NAME: 'Shopping Cart - Filling out title and purpose Lending terms 01'
     FEATURE: './spec/features/shopping_cart/send_order_dialog.feature[1:2:1]'
 './spec/features/shopping_cart/send_order_dialog.feature[1:3:1]':
-  name: 'Shopping Cart - Filling out title and purpose Contact details 1'
+  name: 'Shopping Cart - Filling out title and purpose Contact details 01'
   environment_variables:
-    FEATURE_NAME: 'Shopping Cart - Filling out title and purpose Contact details 1'
+    FEATURE_NAME: 'Shopping Cart - Filling out title and purpose Contact details 01'
     FEATURE: './spec/features/shopping_cart/send_order_dialog.feature[1:3:1]'
 './spec/features/smoke.feature[1:1:1]':
-  name: 'Borrow Smoke Access borrow app 1'
+  name: 'Borrow Smoke Access borrow app 01'
   environment_variables:
-    FEATURE_NAME: 'Borrow Smoke Access borrow app 1'
+    FEATURE_NAME: 'Borrow Smoke Access borrow app 01'
     FEATURE: './spec/features/smoke.feature[1:1:1]'
 './spec/features/technical/abort_queries_spec.rb[1:1]':
-  name: 'abort queries 1'
+  name: 'abort queries 01'
   environment_variables:
-    FEATURE_NAME: 'abort queries 1'
+    FEATURE_NAME: 'abort queries 01'
     FEATURE: './spec/features/technical/abort_queries_spec.rb[1:1]'
 './spec/features/templates/templates.feature[1:1:1]':
-  name: 'Templates Browsing templates 1'
+  name: 'Templates Browsing templates 01'
   environment_variables:
-    FEATURE_NAME: 'Templates Browsing templates 1'
+    FEATURE_NAME: 'Templates Browsing templates 01'
     FEATURE: './spec/features/templates/templates.feature[1:1:1]'
 './spec/features/templates/templates.feature[1:2:1]':
-  name: 'Templates Ordering by template 1'
+  name: 'Templates Ordering by template 01'
   environment_variables:
-    FEATURE_NAME: 'Templates Ordering by template 1'
+    FEATURE_NAME: 'Templates Ordering by template 01'
     FEATURE: './spec/features/templates/templates.feature[1:2:1]'
 './spec/features/templates/templates.feature[1:3:1]':
-  name: 'Templates Template with an unreservable model 1'
+  name: 'Templates Template with an unreservable model 01'
   environment_variables:
-    FEATURE_NAME: 'Templates Template with an unreservable model 1'
+    FEATURE_NAME: 'Templates Template with an unreservable model 01'
     FEATURE: './spec/features/templates/templates.feature[1:3:1]'
 './spec/features/templates/templates.feature[1:4:1]':
-  name: 'Templates Template no reservable models 1'
+  name: 'Templates Template no reservable models 01'
   environment_variables:
-    FEATURE_NAME: 'Templates Template no reservable models 1'
+    FEATURE_NAME: 'Templates Template no reservable models 01'
     FEATURE: './spec/features/templates/templates.feature[1:4:1]'
 './spec/features/templates/templates.feature[1:5:1]':
-  name: 'Templates Template forbidden for profile 1'
+  name: 'Templates Template forbidden for profile 01'
   environment_variables:
-    FEATURE_NAME: 'Templates Template forbidden for profile 1'
+    FEATURE_NAME: 'Templates Template forbidden for profile 01'
     FEATURE: './spec/features/templates/templates.feature[1:5:1]'

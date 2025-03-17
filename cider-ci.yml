@@ -42,15 +42,16 @@ jobs:
     context:
       include: cider-ci/jobs/feature_specs.yml
 
-  graphql-schema-check:
-    name: Check GraphQL Schema
-    depends_on: &UBERJAR
-      uberjar was built:
-        type: job
-        job_key: borrow-build-uberjar
-        states: [passed]
-    context:
-      include: cider-ci/jobs/graph-ql-check.yml
+  # TODO: remove scripts
+  # graphql-schema-check:
+  #   name: Check GraphQL Schema
+  #   depends_on: &UBERJAR
+  #     uberjar was built:
+  #       type: job
+  #       job_key: borrow-build-uberjar
+  #       states: [passed]
+  #   context:
+  #     include: cider-ci/jobs/graph-ql-check.yml
 
   ui-checks:
     name: Check UI package

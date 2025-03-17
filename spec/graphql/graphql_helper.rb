@@ -1,4 +1,3 @@
-require "edn"
 require "faraday"
 require "rack"
 
