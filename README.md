@@ -19,7 +19,7 @@ See: [ui/README.md](ui/README.md)
 
 ## DEV
 
-For seamless dependency installation: use [__asdf__ version manager](https://asdf-vm.com)
+For seamless dependency installation: use [**asdf** version manager](https://asdf-vm.com)
 
 ### Quickstart (shell):
 
@@ -49,7 +49,7 @@ source bin/set-env && bin/dev-run-backend
 # run frontend
 source bin/set-env && bin/dev-run-frontend
 
-# run ui watch (only when working on ui components and theme) 
+# run ui watch (only when working on ui components and theme)
 cd ui && npm run watch
 
 # run storybook (only when working on ui components and theme)
@@ -107,7 +107,7 @@ Start in prod mode:
 bin/run
 ```
 
-...or start in dev mode (instructions see above), but you might want to comment-out `:preloads [day8.re-frame-10x.preload]` in `shadow-cljs.edn` to prevent the `re-frame-10x` debugger from covering buttons etc. 
+...or start in dev mode (instructions see above), but you might want to comment-out `:preloads [day8.re-frame-10x.preload]` in `shadow-cljs.edn` to prevent the `re-frame-10x` debugger from covering buttons etc.
 
 Then run a spec:
 
@@ -137,6 +137,14 @@ start it:
 
 ### Formatting Code
 
-Use `./bin/cljfmt check` and  `./bin/cljfmt fix`.
+#### Clojure
+
+Use `./bin/cljfmt check` and `./bin/cljfmt fix`.
 
 From vim you can use `:! ./bin/cljfmt fix %` to format the current file.
+
+### Formatting Code
+
+#### Ruby
+
+Use `./bin/rblint` and `./bin/rblint --fix`.

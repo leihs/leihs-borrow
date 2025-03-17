@@ -89,14 +89,13 @@ jobs:
                 #!/usr/bin/env bash
                 set -euo pipefail
                 ./bin/cljfmt check
-
-        standardrb-lint:
+        ruby-lint:
           scripts:
             test:
               body: |
                 #!/usr/bin/env bash
                 set -euo pipefail
-                ./bin/standardrb
+                ./bin/rblint
 
   all-ok:
     name: 'All Tests OK'

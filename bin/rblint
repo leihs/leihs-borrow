@@ -5,5 +5,5 @@ PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && p
 cd $PROJECT_DIR
 ./bin/env/ruby-setup
 
-bundle exec standardrb
+bundle exec standardrb "$@"
 # vi: ft=sh
