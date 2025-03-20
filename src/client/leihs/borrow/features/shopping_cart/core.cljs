@@ -259,7 +259,9 @@
 (reg-event-db
  ::close-order-success-notification
  (fn-traced [db]
-   (dissoc-in db [::data :order-success])))
+   (-> db
+       (dissoc-in [::data :order-success])
+       (assoc-in [:ls ::data :reservations] []))))
 
 (reg-event-fx
  ::order-success-notification-confirm
