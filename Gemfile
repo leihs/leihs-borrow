@@ -8,4 +8,3 @@ gem "graphlient"
 gem "selenium-webdriver"
 gem "sinatra"
 gem "turnip", github: "leihs/turnip"
-gem "standard", group: [:development, :test]
