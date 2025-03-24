@@ -1,5 +1,6 @@
 require "spec_helper"
 require_relative "graphql_helper"
+require_relative "models/reservation_advance_days_context"
 
 def cursor(uuid)
   database[
@@ -838,60 +839,38 @@ describe "models connection" do
       end
     end
 
-    it "no match because of reservation_advance_days" do
-      days_of_week = [:sunday,
-        :monday,
-        :tuesday,
-        :wednesday,
-        :thursday,
-        :friday,
-        :saturday].cycle
+    context "no match because of reservation_advance_days" do
+      include_context "reservation advance days"
 
-      # Update the workday for the next day to be closed.
-      closed_date = Date.today + 1.day
-      closed_day =
-        days_of_week
-          .with_index
-          .detect { |_, idx| idx == closed_date.wday }
-          .first
-
-      @inventory_pool.workday.update(closed_day => false)
-
-      # Add holiday starting 2 days after the closed_date and lasting for 2 days.
-      FactoryBot.create(:holiday,
-        start_date: (closed_date + 2.day).to_s,
-        end_date: (closed_date + 3.day).to_s,
-        inventory_pool_id: @inventory_pool.id)
-
-      @inventory_pool.update(borrow_reservation_advance_days: 3)
-
-      q = ->(date) {
-        <<-GRAPHQL
-          {
-            models(onlyAvailable: true) {
-              edges {
-                node {
-                  id
-                  availableQuantityInDateRange(
-                    startDate: "#{date}",
-                    endDate: "#{date}"
-                  )
+      it "works" do
+        q = ->(date) {
+          <<-GRAPHQL
+            {
+              models(onlyAvailable: true) {
+                edges {
+                  node {
+                    id
+                    availableQuantityInDateRange(
+                      startDate: "#{date}",
+                      endDate: "#{date}"
+                    )
+                  }
                 }
               }
             }
-          }
-        GRAPHQL
-      }
+          GRAPHQL
+        }
 
-      model_ids = ->(result) {
-        result.dig(:data, :models, :edges).map { |n| n[:node][:id] }
-      }
+        model_ids = ->(result) {
+          result.dig(:data, :models, :edges).map { |n| n[:node][:id] }
+        }
 
-      result = query(q.call(Date.today + 5.days), @user.id).deep_symbolize_keys
-      expect(model_ids.call(result)).to be_empty
+        result = query(q.call(Date.today + 4.days), @user.id).deep_symbolize_keys
+        expect(model_ids.call(result)).to be_empty
 
-      result = query(q.call(Date.today + 6.days), @user.id).deep_symbolize_keys
-      expect(model_ids.call(result)).not_to be_empty
+        result = query(q.call(Date.today + 5.days), @user.id).deep_symbolize_keys
+        expect(model_ids.call(result)).not_to be_empty
+      end
     end
   end
 end

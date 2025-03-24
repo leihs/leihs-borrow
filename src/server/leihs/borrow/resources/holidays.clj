@@ -9,7 +9,8 @@
 
 (def columns [:holidays.start_date
               :holidays.end_date
-              :holidays.name])
+              :holidays.name
+              :holidays.orders_processing])
 
 (defn base-sqlmap [pool-id]
   (-> (apply sql/select columns)

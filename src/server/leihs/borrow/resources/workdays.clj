@@ -11,18 +11,25 @@
 
 (def columns [:workdays.monday
               :workdays.monday_info
+              :workdays.monday_orders_processing
               :workdays.tuesday
               :workdays.tuesday_info
+              :workdays.tuesday_orders_processing
               :workdays.wednesday
               :workdays.wednesday_info
+              :workdays.wednesday_orders_processing
               :workdays.thursday
               :workdays.thursday_info
+              :workdays.thursday_orders_processing
               :workdays.friday
               :workdays.friday_info
+              :workdays.friday_orders_processing
               :workdays.saturday
               :workdays.saturday_info
+              :workdays.saturday_orders_processing
               :workdays.sunday
               :workdays.sunday_info
+              :workdays.sunday_orders_processing
               :workdays.max_visits])
 
 (defn closed-days [workdays]

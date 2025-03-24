@@ -148,6 +148,15 @@
                         keyword)]
     (day-of-week pool)))
 
+(defn orders-processing-day? [date pool]
+  (let [orders-processing-day (-> date
+                                  .getDayOfWeek
+                                  .toString
+                                  .toLowerCase
+                                  (str "_orders_processing")
+                                  keyword)]
+    (orders-processing-day pool)))
+
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
 ; (debug/debug-ns *ns*)

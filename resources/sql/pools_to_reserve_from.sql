@@ -12,6 +12,13 @@ WITH accessible_pools AS (
                   workdays.friday,
                   workdays.saturday,
                   workdays.sunday,
+                  workdays.monday_orders_processing,
+                  workdays.tuesday_orders_processing,
+                  workdays.wednesday_orders_processing,
+                  workdays.thursday_orders_processing,
+                  workdays.friday_orders_processing,
+                  workdays.saturday_orders_processing,
+                  workdays.sunday_orders_processing,
                   workdays.max_visits
   FROM inventory_pools
   INNER JOIN access_rights ON access_rights.inventory_pool_id = inventory_pools.id
@@ -45,13 +52,13 @@ AND (
   FROM date_range
   WHERE (
     array[
-      accessible_pools.monday,
-      accessible_pools.tuesday,
-      accessible_pools.wednesday,
-      accessible_pools.thursday,
-      accessible_pools.friday,
-      accessible_pools.saturday,
-      accessible_pools.sunday
+      accessible_pools.monday_orders_processing,
+      accessible_pools.tuesday_orders_processing,
+      accessible_pools.wednesday_orders_processing,
+      accessible_pools.thursday_orders_processing,
+      accessible_pools.friday_orders_processing,
+      accessible_pools.saturday_orders_processing,
+      accessible_pools.sunday_orders_processing
     ]
   )[to_char(date_range.val, 'ID')::int]
     AND NOT EXISTS (
@@ -59,6 +66,7 @@ AND (
       FROM holidays
       WHERE holidays.inventory_pool_id = accessible_pools.id
         AND date_range.val BETWEEN holidays.start_date AND holidays.end_date
+        AND NOT holidays.orders_processing
   )
 ) > accessible_pools.borrow_reservation_advance_days
 
