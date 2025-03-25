@@ -1,28 +1,20 @@
 (ns leihs.borrow.features.current-user.core
   (:require
-   [ajax.core :refer [GET POST]]
-   [day8.re-frame.tracing :refer-macros [fn-traced]]
    ["date-fns" :as datefn]
-   [re-frame.core :as rf]
+   [ajax.core :refer [POST]]
+   [day8.re-frame.tracing :refer-macros [fn-traced]]
+   [leihs.borrow.features.customer-orders.current-lendings-status :as current-lendings-status]
+   [leihs.borrow.features.languages.core :as languages]
+   [leihs.borrow.lib.browser-storage :as browser-storage]
+   [leihs.borrow.lib.errors :as errors]
+   [leihs.borrow.lib.helpers :as h]
+   [leihs.borrow.lib.re-frame :refer [dispatch-sync reg-event-db reg-event-fx
+                                      reg-sub]]
+   leihs.borrow.lib.re-graph
+   [leihs.core.core :refer [dissoc-in]]
    [re-frame.db :as db]
    [re-graph.core :as re-graph]
-   [re-frame.std-interceptors :refer [path]]
-   [shadow.resource :as rc]
-   [leihs.core.core :refer [dissoc-in]]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                      reg-event-db
-                                      reg-sub
-                                      reg-fx
-                                      subscribe
-                                      dispatch
-                                      dispatch-sync]]
-   [leihs.borrow.lib.errors :as errors]
-   [leihs.borrow.lib.browser-storage :as browser-storage]
-   [leihs.borrow.lib.helpers :as h]
-   leihs.borrow.lib.re-graph
-   [leihs.borrow.client.routes :as routes]
-   [leihs.core.core :refer [presence]]
-   [leihs.borrow.features.languages.core :as languages]))
+   [shadow.resource :as rc]))
 
 (def query (rc/inline "leihs/borrow/features/current_user/core.gql"))
 
@@ -67,7 +59,8 @@
                         session-id (:session-id current-user-data)
                         ls-session-id (-> db :ls ::data :session-id)
                         languages-data (:languages data)
-                        cart-data (-> current-user-data :user :unsubmitted-order)]
+                        cart-data (-> current-user-data :user :unsubmitted-order)
+                        current-lendings (:current-lendings data)]
                     (list (when (not= session-id ls-session-id)
                             [::browser-storage/clear-session-storage])
                           [::set (merge current-user-data
@@ -77,7 +70,8 @@
                                           {:current-delegation current-delegation}))]
                           [:leihs.borrow.features.shopping-cart.core/set cart-data]
                           (when (seq languages-data)
-                            [::languages/set-languages languages-data])))})))
+                            [::languages/set-languages languages-data])
+                          [::current-lendings-status/set-current-lendings current-lendings]))})))
 
 (reg-event-db
  ::set

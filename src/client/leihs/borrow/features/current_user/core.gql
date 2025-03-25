@@ -1,4 +1,8 @@
-query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID, $includeLanguages: Boolean) {
+query getCurrentUser(
+  $includeDelegation: Boolean
+  $delegationId: UUID
+  $includeLanguages: Boolean
+) {
   currentUser {
     user {
       id
@@ -79,5 +83,11 @@ query getCurrentUser($includeDelegation: Boolean, $delegationId: UUID, $includeL
   languages @include(if: $includeLanguages) {
     name
     locale
+  }
+  currentLendings: reservations(metaState: CURRENT_LENDING) {
+    id
+    status
+    startDate
+    actualEndDate
   }
 }

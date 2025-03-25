@@ -17,14 +17,15 @@
         is-end-date-past? (date-fns/isAfter (js/Date.) (date-fns/addDays actual-end-date 1))
         expired-unapproved? (and (= status "SUBMITTED") is-end-date-past?)
         expired? (and (= status "APPROVED") is-end-date-past?)
+        actionable? (and days-to-action (not expired-unapproved?) (not expired?))
         refined-status (cond expired-unapproved? "EXPIRED-UNAPPROVED" expired? "EXPIRED" :else status)]
     [:div {:class (cond
-                    (nil? days-to-action) ""
+                    (not actionable?) ""
                     (< days-to-action 0) "text-danger"
                     (<= days-to-action 1) "text-warning"
                     (<= days-to-action 5) "text-primary")}
      (t (str :reservation-status-label "/" refined-status)) " "
-     (when (and days-to-action (not expired-unapproved?) (not expired?))
+     (when actionable?
        (if (< days-to-action 0)
          (t :reservation-line/overdue)
          (t :in-x-days {:days days-to-action})))]))

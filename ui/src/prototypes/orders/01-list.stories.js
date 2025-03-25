@@ -9,6 +9,7 @@ import Tab from 'react-bootstrap/Tab'
 import OrderCard from './OrderCard'
 import ReservationCard from './ReservationCard'
 import SquareImage from '../../components/SquareImage'
+import CircleBadge from '../../components/CircleBadge'
 
 export default {
   title: 'Prototypes/Orders/List',
@@ -37,7 +38,10 @@ export const list = ({ ordersByBasicState }) => {
               eventKey="current-lendings"
               title={
                 <span>
-                  Aktuelle Ausleihen <span className="badge rounded-pill bg-light-gray text-body">{4}</span>
+                  Aktuelle Ausleihen{' '}
+                  <CircleBadge variant="secondary" inline>
+                    4
+                  </CircleBadge>
                 </span>
               }
             >
@@ -98,7 +102,9 @@ export const list = ({ ordersByBasicState }) => {
               title={
                 <span>
                   Aktive Bestellungen{' '}
-                  <span className="badge rounded-pill bg-light-gray text-body">{openOrders.length}</span>
+                  <CircleBadge variant="secondary" inline>
+                    {openOrders.length}
+                  </CircleBadge>
                 </span>
               }
             >
@@ -113,7 +119,9 @@ export const list = ({ ordersByBasicState }) => {
               title={
                 <span>
                   Abgeschlossene Bestellungen{' '}
-                  <span className="badge rounded-pill bg-light-gray text-body">{closedOrders.length}</span>
+                  <CircleBadge variant="secondary" inline>
+                    {closedOrders.length}
+                  </CircleBadge>
                 </span>
               }
             >

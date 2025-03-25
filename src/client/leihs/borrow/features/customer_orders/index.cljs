@@ -6,6 +6,7 @@
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.borrow.features.customer-orders.current-lendings-status :as current-lendings-status]
    [leihs.borrow.features.customer-orders.order-filter :as order-filter]
    [leihs.borrow.features.customer-orders.reservation-card :refer [reservation-card]]
    [leihs.borrow.features.customer-orders.status-summary :refer [status-summary]]
@@ -48,13 +49,14 @@
            [::on-fetched-data]])
     :db (-> db (assoc ::errors nil))}))
 
-(reg-event-db
+(reg-event-fx
  ::on-fetched-data
- (fn-traced [db [_ {:keys [data errors]}]]
-   (-> db
-       (cond-> errors (assoc ::errors errors))
-       (assoc ::data data)
-       (assoc-in [::data :loading?] false))))
+ (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
+   {:db (-> db
+            (cond-> errors (assoc ::errors errors))
+            (assoc ::data data)
+            (assoc-in [::data :loading?] false))
+    :dispatch [::current-lendings-status/set-current-lendings (-> data :current-lendings-status)]}))
 
 (reg-event-db
  ::set-loading
@@ -204,7 +206,7 @@
            :title (r/as-element
                    [:span
                     (t :section-title-current-lendings) " "
-                    [:span.badge.rounded-pill.bg-light-gray.text-body (count current-lendings)]])}
+                    [:> UI/Components.Design.CircleBadge {:inline true :variant :secondary} (count current-lendings)]])}
           (if (empty? current-lendings)
             [no-matches filters]
             [reservations-list current-lendings now date-locale])]
@@ -213,7 +215,7 @@
            :title (r/as-element
                    [:span
                     (t :section-title-open-rentals) " "
-                    [:span.badge.rounded-pill.bg-light-gray.text-body (count open-rentals)]])}
+                    [:> UI/Components.Design.CircleBadge {:inline true :variant :secondary} (count open-rentals)]])}
           (if (empty? open-rentals)
             [no-matches filters]
             [rentals-list open-rentals date-locale])]
@@ -222,7 +224,28 @@
            :title (r/as-element
                    [:span
                     (t :section-title-closed-rentals) " "
-                    [:span.badge.rounded-pill.bg-light-gray.text-body (count closed-rentals)]])}
+                    [:> UI/Components.Design.CircleBadge {:inline true :variant :secondary} (count closed-rentals)]])}
           (if (empty? closed-rentals)
             [no-matches filters]
             [rentals-list closed-rentals date-locale])]]])]))
+
+(defn current-lendings-status-badge []
+  (let [now (js/Date.)
+        current-lendings @(subscribe [::current-lendings-status/current-lendings])
+        current-lendings-count (some-> current-lendings count)
+        min-days-to-action
+        (apply min (map (fn [{:keys [status start-date actual-end-date]}]
+                          (js/console.log start-date actual-end-date)
+                          (->
+                           (cond (= "SIGNED" status) (date-fns/parseISO actual-end-date)
+                                 (= "APPROVED" status) (date-fns/parseISO start-date))
+                           (date-fns/differenceInCalendarDays now)))
+                        current-lendings))]
+    [:> UI/Components.Design.CircleBadge
+     {:inline true
+      :variant (cond
+                 (nil? min-days-to-action) "secondary"
+                 (< min-days-to-action 0) "danger"
+                 (<= min-days-to-action 1) "warning"
+                 (<= min-days-to-action 5) "primary")}
+     (or current-lendings-count ui/non-breaking-space)]))

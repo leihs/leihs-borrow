@@ -15,6 +15,7 @@ export const Components = {
   Design: {
     ActionButtonGroup: require('./components/ActionButtonGroup').default,
     Badge: require('./components/Badge').default,
+    CircleBadge: require('./components/CircleBadge').default,
     ConfirmDialog: require('./components/ConfirmDialog').default,
     DatePicker: require('./components/DatePicker').default,
     DateRangePicker: require('./components/DateRangePicker').default,

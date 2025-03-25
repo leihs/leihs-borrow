@@ -353,7 +353,7 @@ $arrow-icon: url("data:image/svg+xml,<svg width='12px' height='7px' viewBox='0 0
   }
 }
 
-/* Responsive tabs (SELECT element as substitute) */
+/* CSS Component: Responsive tabs (SELECT element as substitute) */
 .tab-select {
   border-color: $border-color;
   background-color: $body-bg !important;
@@ -371,5 +371,37 @@ $arrow-icon: url("data:image/svg+xml,<svg width='12px' height='7px' viewBox='0 0
     .tab-select {
       display: none;
     }
+  }
+}
+
+/* Component: circle badge */
+.circle-badge {
+  display: inline-block;
+  background-color: $body-color;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 18px;
+  min-width: 1.4em;
+  height: 1.4em;
+  padding: 1px 5px 0 5px;
+  text-align: center;
+
+  &--inline {
+    position: relative;
+    top: -0.1em;
+  }
+  &--primary {
+    background-color: $primary;
+  }
+  &--secondary {
+    background-color: $secondary;
+    color: $body-color;
+  }
+  &--warning {
+    background-color: $warning;
+  }
+  &--danger {
+    background-color: $danger;
   }
 }

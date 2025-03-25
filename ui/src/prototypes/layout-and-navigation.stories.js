@@ -6,6 +6,7 @@ import PageLayout from '../components/PageLayout'
 import { PowerOffIcon, UserIcon } from '../components/Icons'
 import ListCard from '../components/ListCard'
 import Section from '../components/Section'
+import CircleBadge from '../components/CircleBadge'
 
 export default {
   title: 'Prototypes/Layout And Navigation',
@@ -67,7 +68,14 @@ function mobileUserNav({ onLinkClick }) {
 function mainMenuItems() {
   return [
     { href: '#', label: 'Katalog', selected: true },
-    { href: '#', label: 'Bestellungen' },
+    {
+      href: '#',
+      label: (
+        <span>
+          Bestellungen <CircleBadge inline>7</CircleBadge>
+        </span>
+      )
+    },
     { href: '#', label: 'Favoriten' },
     { href: '#', label: 'Inventarparks' },
     { href: '#', label: 'Hilfe' }

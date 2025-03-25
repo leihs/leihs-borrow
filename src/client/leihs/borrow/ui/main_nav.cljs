@@ -8,6 +8,7 @@
             [leihs.borrow.csrf :as csrf]
             [leihs.borrow.features.current-user.core :as current-user]
             [leihs.borrow.features.current-user.profile-switch :as profile-switch]
+            [leihs.borrow.features.customer-orders.index :as customer-orders]
             [leihs.borrow.features.languages.core :as languages]
             [leihs.borrow.features.languages.language-switch :as language-switch]
             [leihs.borrow.features.shopping-cart.core :as cart]
@@ -89,7 +90,7 @@
          :<- [::current-user/current-profile]
          (fn [current-profile _] current-profile))
 
-(defn menu-link [href label is-selected]
+(defn- menu-link [href label is-selected]
   [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::set-current-menu nil]) :href href :isSelected is-selected} label])
 
 (defn- borrow-menu-items [lg-screen?]
@@ -105,7 +106,7 @@
                 :label (t :borrow/shopping-cart)
                 :selected (some #{handler} [::routes/shopping-cart])})
              {:href (routing/path-for ::routes/rentals-index)
-              :label (t :user/rentals)
+              :label (reagent/as-element [:<> (t :user/rentals) " " [customer-orders/current-lendings-status-badge]])
               :selected (some #{handler} [::routes/rentals-index ::routes/rentals-show])}
              {:href (routing/path-for ::routes/models-favorites)
               :label (t :borrow/favorite-models)
