@@ -10,11 +10,5 @@ source $PROJECT_DIR/bin/env/asdf-helper.bash
 
 asdf-update-plugin
 
-# Uninstall all versions of bundler except for the standard one
-# which comes with the respective ruby version.
-gem uninstall --all bundler
-
-asdf reshim
-
 bundle install --quiet "$@"
 # vi: ft=sh
