@@ -432,7 +432,7 @@ function validateDateRange(selectedRange, today, maxDate, poolAvailability, want
     }
     const endDateInfo = getByDay(dates, endDate)
     if (endDateInfo) {
-      const isRestrictedBy = r => endDateInfo.startDateRestrictions && endDateInfo.endDateRestrictions.includes(r)
+      const isRestrictedBy = r => endDateInfo.endDateRestrictions && endDateInfo.endDateRestrictions.includes(r)
       if (isRestrictedBy('HOLIDAY')) {
         const holidayName = holidays.find(
           h => endDate >= startOfDay(parseISO(h.startDate)) && endDate <= startOfDay(parseISO(h.endDate))
