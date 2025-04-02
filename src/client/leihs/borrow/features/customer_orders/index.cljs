@@ -232,20 +232,30 @@
 (defn current-lendings-status-badge []
   (let [now (js/Date.)
         current-lendings @(subscribe [::current-lendings-status/current-lendings])
-        current-lendings-count (some-> current-lendings count)
-        min-days-to-action
-        (apply min (map (fn [{:keys [status start-date actual-end-date]}]
-                          (js/console.log start-date actual-end-date)
-                          (->
-                           (cond (= "SIGNED" status) (date-fns/parseISO actual-end-date)
-                                 (= "APPROVED" status) (date-fns/parseISO start-date))
-                           (date-fns/differenceInCalendarDays now)))
-                        current-lendings))]
-    [:> UI/Components.Design.CircleBadge
-     {:inline true
-      :variant (cond
-                 (nil? min-days-to-action) "secondary"
-                 (< min-days-to-action 0) "danger"
-                 (<= min-days-to-action 1) "warning"
-                 (<= min-days-to-action 5) "primary")}
-     (or current-lendings-count ui/non-breaking-space)]))
+        [most-urgent-state most-urgent-count]
+        (some->>
+         current-lendings
+         (map
+          (fn [{:keys [status start-date actual-end-date]}]
+            (-> (cond
+                  (= "SIGNED" status) (date-fns/parseISO actual-end-date)
+                  (= "APPROVED" status) (date-fns/parseISO start-date))
+                (date-fns/differenceInCalendarDays now))))
+         (group-by #(cond
+                      (< % 0) -1
+                      (<= % 1) 1
+                      (<= % 5) 2
+                      :else 6))
+         (sort-by first)
+         first
+         ((fn [[days-to-action c]]
+            [(cond
+               (< days-to-action 0) "danger"
+               (<= days-to-action 1) "warning"
+               (<= days-to-action 5) "primary")
+             (count c)])))]
+    (when most-urgent-state
+      [:> UI/Components.Design.CircleBadge
+       {:inline true
+        :variant most-urgent-state}
+       most-urgent-count])))

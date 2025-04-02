@@ -195,7 +195,7 @@ Topnav.propTypes = {
   mainMenuItems: PropTypes.arrayOf(
     PropTypes.shape({
       href: PropTypes.string,
-      label: PropTypes.string.isRequired,
+      label: PropTypes.node.isRequired,
       selected: PropTypes.any
     })
   ),

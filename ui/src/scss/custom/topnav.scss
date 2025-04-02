@@ -36,6 +36,7 @@
   }
 
   &__main-menu-item-link {
+    white-space: nowrap;
     &--selected {
       font-weight: 600;
     }
