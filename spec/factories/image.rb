@@ -29,11 +29,9 @@ FactoryBot.define do
       end
 
       file_path = "spec/files/#{trans.real_filename}"
-      md_ext = MetadataExtractor.new(file_path)
       file = File.new(file_path)
 
       image.content = Base64.encode64(file.read)
-      image.metadata = md_ext.data.to_display_hash.to_json
     end
 
     after(:create) do |image, trans|

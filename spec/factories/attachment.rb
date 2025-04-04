@@ -15,11 +15,9 @@ FactoryBot.define do
 
     after(:build) do |attachment, trans|
       file_path = "spec/files/#{trans.real_filename}"
-      md_ext = MetadataExtractor.new(file_path)
       file = File.new(file_path)
 
       attachment.content = Base64.encode64(file.read)
-      attachment.metadata = md_ext.data.to_display_hash.to_json
     end
   end
 end
