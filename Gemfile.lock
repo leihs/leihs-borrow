@@ -117,10 +117,6 @@ GEM
     drb (2.2.1)
     edn (1.1.1)
     erubi (1.13.0)
-    exiftool (1.2.4)
-      json
-    exiftool_vendored (12.54.0)
-      exiftool (>= 0.7.0)
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
     faker (3.1.0)
@@ -325,7 +321,6 @@ DEPENDENCIES
   base32-crockford
   capybara (~> 3.8)
   edn
-  exiftool_vendored
   factory_bot
   faker
   faraday
