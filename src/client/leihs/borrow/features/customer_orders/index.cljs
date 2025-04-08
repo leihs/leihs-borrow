@@ -55,8 +55,7 @@
    {:db (-> db
             (cond-> errors (assoc ::errors errors))
             (assoc ::data data)
-            (assoc-in [::data :loading?] false))
-    :dispatch [::current-lendings-status/set-current-lendings (-> data :current-lendings-status)]}))
+            (assoc-in [::data :loading?] false))}))
 
 (reg-event-db
  ::set-loading
@@ -139,10 +138,6 @@
       [:<> {:key (:id reservation)}
        [reservation-card reservation now href date-locale]]))])
 
-(defn no-matches [filters]
-  [:div.text-center.mt-5
-   (if (empty? (dissoc filters :seq :tab)) (t :no-orders-yet) (t :no-orders-found))])
-
 (defn switch-tab [filters tab]
   (dispatch [:routing/navigate
              [::routes/rentals-index {:query-params (assoc filters :tab tab)}]]))
@@ -208,7 +203,8 @@
                     (t :section-title-current-lendings) " "
                     [:> UI/Components.Design.CircleBadge {:inline true :variant :secondary} (count current-lendings)]])}
           (if (empty? current-lendings)
-            [no-matches filters]
+            [:div.text-center.mt-5
+             (if (empty? (dissoc filters :seq :tab)) (t :no-current-lendings-yet) (t :no-matches-found))]
             [reservations-list current-lendings now date-locale])]
          [:> UI/Components.ReactBootstrap.Tab
           {:event-key "open-orders"
@@ -217,7 +213,8 @@
                     (t :section-title-open-rentals) " "
                     [:> UI/Components.Design.CircleBadge {:inline true :variant :secondary} (count open-rentals)]])}
           (if (empty? open-rentals)
-            [no-matches filters]
+            [:div.text-center.mt-5
+             (if (empty? (dissoc filters :seq :tab)) (t :no-active-orders-yet) (t :no-matches-found))]
             [rentals-list open-rentals date-locale])]
          [:> UI/Components.ReactBootstrap.Tab
           {:event-key "closed-orders"
@@ -226,7 +223,8 @@
                     (t :section-title-closed-rentals) " "
                     [:> UI/Components.Design.CircleBadge {:inline true :variant :secondary} (count closed-rentals)]])}
           (if (empty? closed-rentals)
-            [no-matches filters]
+            [:div.text-center.mt-5
+             (if (empty? (dissoc filters :seq :tab)) (t :no-closed-orders-yet) (t :no-matches-found))]
             [rentals-list closed-rentals date-locale])]]])]))
 
 (defn current-lendings-status-badge []
@@ -254,8 +252,10 @@
                (<= days-to-action 1) "warning"
                (<= days-to-action 5) "primary")
              (count c)])))]
+    (js/console.log most-urgent-count most-urgent-state)
     (when most-urgent-state
       [:> UI/Components.Design.CircleBadge
        {:inline true
-        :variant most-urgent-state}
+        :variant most-urgent-state
+        :className "ui-urgent-lendings-badge"}
        most-urgent-count])))

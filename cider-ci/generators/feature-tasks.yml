@@ -88,6 +88,36 @@
   environment_variables:
     FEATURE_NAME: 'Pools User has no pools with reservable items 01'
     FEATURE: './spec/features/pools/pools.feature[1:3:1]'
+'./spec/features/rentals/rentals_current_lendings.feature[1:1:1]':
+  name: 'Rentals - Current lendings Lendings which are NOT current 01'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Current lendings Lendings which are NOT current 01'
+    FEATURE: './spec/features/rentals/rentals_current_lendings.feature[1:1:1]'
+'./spec/features/rentals/rentals_current_lendings.feature[1:2:1]':
+  name: 'Rentals - Current lendings Lendings which are current, but not urgent 01'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Current lendings Lendings which are current, but not urgent 01'
+    FEATURE: './spec/features/rentals/rentals_current_lendings.feature[1:2:1]'
+'./spec/features/rentals/rentals_current_lendings.feature[1:3:1]':
+  name: 'Rentals - Current lendings Action in 2-5 days (blue) 01'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Current lendings Action in 2-5 days (blue) 01'
+    FEATURE: './spec/features/rentals/rentals_current_lendings.feature[1:3:1]'
+'./spec/features/rentals/rentals_current_lendings.feature[1:4:1]':
+  name: 'Rentals - Current lendings Action today or tomorrow (orange) 01'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Current lendings Action today or tomorrow (orange) 01'
+    FEATURE: './spec/features/rentals/rentals_current_lendings.feature[1:4:1]'
+'./spec/features/rentals/rentals_current_lendings.feature[1:5:1]':
+  name: 'Rentals - Current lendings Action overdue (red) 01'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Current lendings Action overdue (red) 01'
+    FEATURE: './spec/features/rentals/rentals_current_lendings.feature[1:5:1]'
+'./spec/features/rentals/rentals_current_lendings.feature[1:6:1]':
+  name: 'Rentals - Current lendings Switching profile 01'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Current lendings Switching profile 01'
+    FEATURE: './spec/features/rentals/rentals_current_lendings.feature[1:6:1]'
 './spec/features/rentals/rentals_index.feature[1:1:1]':
   name: 'Rentals Switching profile 01'
   environment_variables:

@@ -341,10 +341,14 @@
                                            :de-CH "Aktive Bestellungen"}
               :section-title-closed-rentals {:en-GB "Closed orders"
                                              :de-CH "Abgeschlossene Bestellungen"}
-              :no-orders-found {:en-GB "No results found for the current search filter"
-                                :de-CH "Keine Treffer zum aktuellen Suchfilter gefunden"}
-              :no-orders-yet {:en-GB "No orders yet"
-                              :de-CH "Noch keine Bestellungen vorhanden"}
+              :no-matches-found {:en-GB "No results found for the current search filter"
+                                 :de-CH "Keine Treffer zum aktuellen Suchfilter gefunden"}
+              :no-current-lendings-yet {:en-GB "No current lendings"
+                                        :de-CH "Keine aktuellen Ausleihen vorhanden"}
+              :no-active-orders-yet {:en-GB "No active orders"
+                                     :de-CH "Keine aktiven Bestellungen vorhanden"}
+              :no-closed-orders-yet {:en-GB "No closed orders yet"
+                                     :de-CH "Noch keine abgeschlossene Bestellungen vorhanden"}
               :filter  {:pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
                                 :all {:en-GB "All inventory pools" :de-CH "Alle Inventarparks"}
                                 :invalid-option {:en-GB "Invalid selection" :de-CH "Ungültige Auswahl"}

@@ -69,3 +69,11 @@ end
 step "the :name button is not visible" do |name|
   page.has_no_selector?("button", text: name)
 end
+
+step "I see the text :text with selector :selector" do |text, selector|
+  expect(page).to have_selector(selector, text: text)
+end
+
+step "I don't see the selector :selector" do |selector|
+  expect(page).not_to have_selector(selector)
+end

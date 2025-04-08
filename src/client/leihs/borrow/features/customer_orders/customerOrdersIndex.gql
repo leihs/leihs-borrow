@@ -37,12 +37,6 @@ query customerOrdersIndex(
   ) {
     ...reservationProps
   }
-  currentLendingsStatus: reservations(metaState: CURRENT_LENDING) {
-    id
-    status
-    startDate
-    actualEndDate
-  }
 }
 
 fragment rentalConProps on RentalsConnection {

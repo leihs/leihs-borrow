@@ -55,15 +55,13 @@ def interpolate_dates_long(s)
 end
 
 def format_date_range_short(d1, d2)
-  if d1 == d2
+  formatted_d1 = Locales.format_date(d1, @user)
+  formatted_d2 = Locales.format_date(d2, @user)
+  if formatted_d1 == formatted_d2
     Locales.format_date(d1, @user)
+  elsif d1.year == d2.year
+    "#{formatted_d1[0..-6]} – #{formatted_d2}"
   else
-    formatted_d1 = Locales.format_date(d1, @user)
-    formatted_d2 = Locales.format_date(d2, @user)
-    if d1.year == d2.year
-      "#{formatted_d1[0..-6]} – #{formatted_d2}"
-    else
-      "#{formatted_d1} – #{formatted_d2}"
-    end
+    "#{formatted_d1} – #{formatted_d2}"
   end
 end

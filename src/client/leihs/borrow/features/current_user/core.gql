@@ -84,7 +84,10 @@ query getCurrentUser(
     name
     locale
   }
-  currentLendings: reservations(metaState: CURRENT_LENDING) {
+  currentLendings: reservations(
+    metaState: CURRENT_LENDING
+    userId: $delegationId
+  ) {
     id
     status
     startDate
