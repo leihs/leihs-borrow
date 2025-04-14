@@ -72,6 +72,9 @@ Feature: Rentals - Current lendings
     And I see the text "Return in 5 days" with selector ".text-primary"
     And I see the text "4" with selector ".ui-urgent-lendings-badge.circle-badge--primary"
 
+    When I resize the window to mobile size
+    Then I see the text "4" with selector ".ui-urgent-lendings-badge.circle-badge--primary"
+
   Scenario: Action today or tomorrow (orange)
     # These will show in the list, but must not be counted in the status badge
     Given a customer order with title "Order 1" and the following reservations exists for the user:

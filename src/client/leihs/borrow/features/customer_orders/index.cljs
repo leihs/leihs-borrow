@@ -227,7 +227,7 @@
              (if (empty? (dissoc filters :seq :tab)) (t :no-closed-orders-yet) (t :no-matches-found))]
             [rentals-list closed-rentals date-locale])]]])]))
 
-(defn current-lendings-status-badge []
+(defn current-lendings-status-badge [display-inline]
   (let [now (js/Date.)
         current-lendings @(subscribe [::current-lendings-status/current-lendings])
         [most-urgent-state most-urgent-count]
@@ -255,7 +255,7 @@
     (js/console.log most-urgent-count most-urgent-state)
     (when most-urgent-state
       [:> UI/Components.Design.CircleBadge
-       {:inline true
+       {:inline display-inline
         :variant most-urgent-state
         :className "ui-urgent-lendings-badge"}
        most-urgent-count])))

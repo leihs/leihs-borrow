@@ -16,6 +16,7 @@ export default function Topnav({
   // main menu mobile
   mainMenuIsOpen = false,
   mainMenuLinkProps = {},
+  mainMenuLinkBadge,
 
   // main menu desktop
   mainMenuItems = [],
@@ -41,7 +42,18 @@ export default function Topnav({
     <nav className={cx('ui-main-nav topnav', className)} {...restProps}>
       {/* Burger */}
       <a role="button" aria-expanded={mainMenuIsOpen} {...mainMenuLinkProps} className="topnav__burger-link">
-        <span className="ui-icon ui-menu-icon">{mainMenuIsOpen ? <MenuCloseIcon /> : <MenuIcon />}</span>
+        {mainMenuIsOpen ? (
+          <span className="ui-icon ui-menu-icon">
+            <MenuCloseIcon />
+          </span>
+        ) : (
+          <span className="ui-icon ui-menu-icon">
+            <MenuIcon />
+            {mainMenuLinkBadge && (
+              <span style={{ position: 'relative', left: '-4px', top: '0.5px' }}>{mainMenuLinkBadge}</span>
+            )}
+          </span>
+        )}
       </a>
 
       {/* Title ("Brand") */}
@@ -190,6 +202,8 @@ Topnav.propTypes = {
   mainMenuIsOpen: PropTypes.bool,
   /** Props for the `a` element of the main menu */
   mainMenuLinkProps: PropTypes.shape({}),
+  /** Badge to be placed beneath the burger button */
+  mainMenuLinkBadge: PropTypes.node,
 
   /** Main menu items (shown within topbar for screens md+) */
   mainMenuItems: PropTypes.arrayOf(

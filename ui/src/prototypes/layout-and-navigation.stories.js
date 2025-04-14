@@ -19,7 +19,12 @@ function mobileMainNav({ onLinkClick }) {
       <Menu.Group title="Ausleihen">
         <Menu.Link onClick={onLinkClick}>Katalog</Menu.Link>
         <Menu.Link onClick={onLinkClick}>Warenkorb</Menu.Link>
-        <Menu.Link onClick={onLinkClick}>Bestellungen</Menu.Link>
+        <Menu.Link onClick={onLinkClick}>
+          Bestellungen{' '}
+          <CircleBadge inline variant="warning">
+            4
+          </CircleBadge>
+        </Menu.Link>
         <Menu.Link onClick={onLinkClick}>Favoriten</Menu.Link>
         <Menu.Link onClick={onLinkClick}>Inventarparks</Menu.Link>
         <Menu.Link onClick={onLinkClick}>Hilfe</Menu.Link>
@@ -72,7 +77,10 @@ function mainMenuItems() {
       href: '#',
       label: (
         <span>
-          Bestellungen <CircleBadge inline>7</CircleBadge>
+          Bestellungen{' '}
+          <CircleBadge inline variant="warning">
+            4
+          </CircleBadge>
         </span>
       )
     },
@@ -165,6 +173,7 @@ export function layoutAndNavigation() {
           brandLinkProps={{ role: 'button', onClick: dismissOverlay }}
           mainMenuIsOpen={overlay === 'main'}
           mainMenuLinkProps={{ onClick: onMainMenubuttonClick, 'aria-controls': 'menu' }}
+          mainMenuLinkBadge={<CircleBadge variant="warning">4</CircleBadge>}
           mainMenuItems={mainMenuItems()}
           cartItemCount={0}
           cartItemLinkProps={{ onClick: dismissOverlay, title: 'Warenkorb' }}

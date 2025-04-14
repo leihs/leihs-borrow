@@ -106,7 +106,7 @@
                 :label (t :borrow/shopping-cart)
                 :selected (some #{handler} [::routes/shopping-cart])})
              {:href (routing/path-for ::routes/rentals-index)
-              :label (reagent/as-element [:<> (t :user/rentals) " " [customer-orders/current-lendings-status-badge]])
+              :label (reagent/as-element [:<> (t :user/rentals) " " [customer-orders/current-lendings-status-badge true]])
               :selected (some #{handler} [::routes/rentals-index ::routes/rentals-show])}
              {:href (routing/path-for ::routes/models-favorites)
               :label (t :borrow/favorite-models)
@@ -180,7 +180,7 @@
                      [:option {:value (:id user) :key (:id user)} (str #_(:short-name user) (:profile-name user))]
                      (doall
                       (for [delegation delegations]
-                        [:option {:value (:id delegation) :key (:id delegation)} (str #_(:short-name delegation) (:profile-name delegation))]))]])
+                        [:option {:value (:id delegation) :key (:id delegation)} (str (:profile-name delegation))]))]])
 
                  ; language select
                  (when (> (count languages) 1)
@@ -218,6 +218,7 @@
         :mainMenuIsOpen (= current-menu "main")
         :mainMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "main") "main")])
                             :aria-controls "menu"}
+        :mainMenuLinkBadge (reagent/as-element [customer-orders/current-lendings-status-badge false])
         :mainMenuItems (borrow-menu-items true)
         :cartItemCount cart-item-count
         :invalidCartItemCount invalid-cart-item-count
