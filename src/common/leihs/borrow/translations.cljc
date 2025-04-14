@@ -349,6 +349,8 @@
                                      :de-CH "Keine aktiven Bestellungen vorhanden"}
               :no-closed-orders-yet {:en-GB "No closed orders yet"
                                      :de-CH "Noch keine abgeschlossene Bestellungen vorhanden"}
+              :info-see-also-delegations {:en-GB "To view orders from a delegation, select the corresponding profile in the user menu"
+                                          :de-CH "Zum Anzeigen von Bestellungen einer Delegation das entsprechende Profil im Benutzermenü auswählen"}
               :filter  {:pools {:title {:en-GB "Inventory pools" :de-CH "Inventarparks"}
                                 :all {:en-GB "All inventory pools" :de-CH "Alle Inventarparks"}
                                 :invalid-option {:en-GB "Invalid selection" :de-CH "Ungültige Auswahl"}

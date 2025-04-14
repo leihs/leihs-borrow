@@ -170,7 +170,8 @@
                                                 (-> r :model :name)
                                                 (-> r :id)]))
                               (map #(vector % (-> % :id rental-path-by-reservation-id))))
-        tab (or (:tab filters) "current-lendings")]
+        tab (or (:tab filters) "current-lendings")
+        show-delegation-hint? (and (not @(subscribe [::current-user/current-delegation])) (seq @(subscribe [::current-user/delegations])))]
     [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header {:title (t :title)}
       [:div.pt-2
@@ -178,6 +179,9 @@
         filters
         #(dispatch [:routing/navigate
                     [::routes/rentals-index {:query-params %}]])]]]
+
+     (when show-delegation-hint?
+       [:div.mb-4.text-center.text-muted (t :info-see-also-delegations)])
 
      (cond
        loading? [ui/loading]
