@@ -342,7 +342,9 @@
        :user-id user-id})))
 
 (defn submit
-  [{{tx :tx} :request user-id ::target-user/id :as context}
+  [{{tx :tx {auth-entity-id :id} :authenticated-entity} :request
+    user-id ::target-user/id
+    :as context}
    {:keys [purpose title contact-details lending-terms-accepted]}
    _]
   (let [reservations (rs/unsubmitted tx user-id)]
@@ -380,9 +382,11 @@
                         (->> (jdbc-query tx))
                         first)]
           (-> (sql/update :reservations)
-              (sql/set {:status "submitted"
-                        :inventory_pool_id pool-id
-                        :order_id (:id order)})
+              (sql/set (cond-> {:status "submitted"
+                                :inventory_pool_id pool-id
+                                :order_id (:id order)}
+                         (not= user-id auth-entity-id)
+                         (assoc :delegated_user_id auth-entity-id)))
               (sql/where [:in :id (map :id rs)])
               sql-format
               (->> (jdbc/execute! tx)))
