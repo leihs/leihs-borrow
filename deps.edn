@@ -33,4 +33,4 @@
            :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.5.1109"} }
                       :main-opts ["-m" "antq.core"]}
 
-           :resource-paths ["resources"]}}
+           :resource-paths ["resources" "shared-clj/resources"]}}
