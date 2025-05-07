@@ -1,21 +1,19 @@
 (ns leihs.borrow.features.templates.show
   (:require
+   ["/borrow-ui" :as UI]
+   ["date-fns" :as date-fns]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [re-graph.core :as re-graph]
-   [shadow.resource :as rc]
-   [leihs.borrow.components :as ui]
-   [leihs.borrow.lib.helpers :as h]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx
-                                      reg-event-db
-                                      reg-sub
-                                      subscribe
-                                      dispatch]]
-   [leihs.borrow.lib.routing :as routing]
-   [leihs.borrow.lib.translate :as translate :refer [t set-default-translate-path]]
    [leihs.borrow.client.routes :as routes]
+   [leihs.borrow.components :as ui]
    [leihs.borrow.features.current-user.core :as current-user]
    [leihs.borrow.features.templates.apply-template :as apply-template]
-   ["/borrow-ui" :as UI]))
+   [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db reg-event-fx
+                                      reg-sub subscribe]]
+   [leihs.borrow.lib.routing :as routing]
+   [leihs.borrow.lib.translate :as translate :refer [set-default-translate-path
+                                                     t]]
+   [re-graph.core :as re-graph]
+   [shadow.resource :as rc]))
 
 (set-default-translate-path :borrow.templates.show)
 
@@ -23,11 +21,15 @@
 (reg-event-fx
  ::routes/templates-show
  (fn-traced [{:keys [db]} [_ args]]
-   (let [template-id (get-in args [:route-params :template-id])]
+   (let [template-id (get-in args [:route-params :template-id])
+         start-date (date-fns/startOfMonth (js/Date.))
+         end-date (date-fns/addYears start-date 1)]
      {:dispatch [::re-graph/query
                  (rc/inline "leihs/borrow/features/templates/show.gql")
                  {:id template-id
-                  :userId (current-user/get-current-profile-id db)}
+                  :userId (current-user/get-current-profile-id db)
+                  :startDate start-date
+                  :endDate end-date}
                  [::on-fetched-data template-id]]})))
 
 (reg-event-db
@@ -47,15 +49,22 @@
          :<- [::current-user/current-profile-id]
          (fn [current-profile-id _] current-profile-id))
 
+(reg-sub ::suspensions
+         :<- [::current-user/current-profile]
+         (fn [current-profile _]
+           (:suspensions current-profile)))
+
 (defn view []
   (let [routing @(subscribe [:routing/routing])
         template-id (get-in routing [:bidi-match :route-params :template-id])
         template @(subscribe [::data template-id])
         errors @(subscribe [::errors template-id])
+        suspensions (filter #(= (get-in % [:inventory-pool :id]) (-> template :inventory-pool :id)) @(subscribe [::suspensions]))
         is-loading? (not (or template errors))
         error403? (and (not is-loading?) (some #(= 403 (-> % :extensions :code)) errors))
         current-profile-id @(subscribe [::current-profile-id])
-        date-locale @(subscribe [::translate/date-locale])]
+        date-locale @(subscribe [::translate/date-locale])
+        text-locale @(subscribe [::translate/text-locale])]
     [:> UI/Components.Design.PageLayout.ContentContainer
      [:> UI/Components.Design.PageLayout.Header
       {:title (t :title)
@@ -106,19 +115,22 @@
                                    (map #(-> % :model :is-reservable))
                                    (not-any? identity))]
          [:<>
-          [apply-template/dialog template models current-profile-id date-locale]
+          [apply-template/dialog template models current-profile-id date-locale text-locale]
           [apply-template/success-notification]
 
           [:div.d-grid.gap-4
 
-           (cond none-reservable?
+           (cond (seq suspensions)
+                 [:> UI/Components.Design.Warning
+                  (t :user-suspended {:poolName (-> template :inventory-pool :name)})]
+                 none-reservable?
                  [:> UI/Components.Design.Warning
                   (t :no-items-available)]
                  some-not-reservable?
                  [:> UI/Components.Design.InfoMessage
                   (t :some-items-not-available)])
 
-           (when-not none-reservable?
+           (when-not (or (seq suspensions) none-reservable?)
              [:> UI/Components.Design.ActionButtonGroup
               [:button.btn.btn-primary {:disabled none-reservable? :onClick #(dispatch [::apply-template/open-dialog])}
                (t :apply-button-label)]])

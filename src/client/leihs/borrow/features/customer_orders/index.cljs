@@ -256,7 +256,6 @@
                (<= days-to-action 1) "warning"
                (<= days-to-action 5) "primary")
              (count c)])))]
-    (js/console.log most-urgent-count most-urgent-state)
     (when most-urgent-state
       [:> UI/Components.Design.CircleBadge
        {:inline display-inline

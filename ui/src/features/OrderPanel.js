@@ -355,7 +355,16 @@ function validatePool(inventoryPool, locale, txt) {
   }
 }
 
-function validateDateRange(selectedRange, today, maxDate, poolAvailability, wantedQuantity, locale, dateLocale, txt) {
+export const validateDateRange = (
+  selectedRange,
+  today,
+  maxDate,
+  poolAvailability,
+  wantedQuantity,
+  locale,
+  dateLocale,
+  txt
+) => {
   const { startDate, endDate } = selectedRange
   const { dates, inventoryPool } = poolAvailability
   const { reservationAdvanceDays, maximumReservationDuration, holidays = [] } = inventoryPool
@@ -385,6 +394,7 @@ function validateDateRange(selectedRange, today, maxDate, poolAvailability, want
 
   // Start date
   const isOneDayPeriod = isSameDay(startDate, endDate)
+
   const startDateMessage = (() => {
     // Future-only
     if (startDate < today) {

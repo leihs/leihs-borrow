@@ -3,7 +3,7 @@ Feature: Templates
   Background:
     Given there is an initial admin
 
-    And there is an inventory pool "Pool A"
+    And there is an inventory pool "Pool A" with date restrictions
     And there is an inventory pool "Pool B"
 
     And there is a category "Video"
@@ -99,8 +99,8 @@ Feature: Templates
     And I see the date "${Date.today}" in the "From" field
     And I see the date "${Date.tomorrow}" in the "Until" field
 
-    When I enter the date "${3.day.from_now}" in the "From" field
-    And I enter the date "${4.day.from_now}" in the "Until" field
+    When I enter the date "${3.days.from_now}" in the "From" field
+    And I enter the date "${4.days.from_now}" in the "Until" field
     And I accept the "Add items" dialog
     Then the "Add items" dialog has closed
     And I see the "Items added" dialog with the text:
@@ -112,10 +112,80 @@ Feature: Templates
     Then the "Items added" dialog has closed
     And I see the page title "Cart"
     And I see the following lines in the "Items" section:
-      | title           | body                                                                         |
-      | 1× Gecko        | Pool A\n${format_date_range_short(3.days.from_now, 4.day.from_now)} (2 days) |
-      | 1× Video Camera | Pool A\n${format_date_range_short(3.days.from_now, 4.day.from_now)} (2 days) |
+      | title           | body                                                                          |
+      | 1× Gecko        | Pool A\n${format_date_range_short(3.days.from_now, 4.days.from_now)} (2 days) |
+      | 1× Video Camera | Pool A\n${format_date_range_short(3.days.from_now, 4.days.from_now)} (2 days) |
 
+  Scenario: Date validation
+    When I log in as the user
+    And I click on the item captioned "Templates" in the category list
+    And I click on the card with title "Recommendation of the day"
+    And I click on "Order items"
+
+    Then I see the "Add items" dialog
+
+    When I enter the date "${Date.yesterday}" in the "From" field
+    And I press the tab key
+    Then I see the following warnings in the "Time span" section:
+      | text                       |
+      | Pickup date is in the past |
+    And the submit button is disabled
+
+    When I enter the date "${Date.today}" in the "From" field
+    And I press the tab key
+    Then I see the following warnings in the "Time span" section:
+      | text                                                                                    |
+      | Pickup not possible on ${0.days.from_now} (closed on ${0.days.from_now.strftime("%A")}) |
+    And the submit button is disabled
+
+    When I enter the date "${Date.tomorrow}" in the "From" field
+    And I press the tab key
+    Then I see the following warnings in the "Time span" section:
+      | text                                            |
+      | Earliest pickup date in 2 working days from now |
+    And the submit button is disabled
+
+    When I enter the date "${6.days.from_now}" in the "From" field
+    And I press the tab key
+    Then I see the following warnings in the "Time span" section:
+      | text                                                                                |
+      | Pickup/return not possible on ${6.days.from_now} (maximum visitor capacity reached) |
+    And the submit button is disabled
+
+    When I enter the date "${15.days.from_now}" in the "From" field
+    And I enter the date "${16.days.from_now}" in the "Until" field
+    And I press the tab key
+    Then I see the following warnings in the "Time span" section:
+      | text                                              |
+      | Pickup not possible on ${15.days.from_now} (Yolo) |
+      | Return not possible on ${16.days.from_now} (Yolo) |
+    And the submit button is disabled
+
+    When I enter the date "${3.days.from_now}" in the "From" field
+    And I enter the date "${10.days.from_now}" in the "Until" field
+    And I press the tab key
+    Then I see the following warnings in the "Time span" section:
+      | text                                                 |
+      | Maximum reservation duration is restricted to 7 days |
+    And the submit button is disabled
+
+    When I enter the date "${3.days.from_now}" in the "From" field
+    And I enter the date "${9.days.from_now}" in the "Until" field
+    And I press the tab key
+    And I accept the "Add items" dialog
+    Then the "Add items" dialog has closed
+    And I see the "Items added" dialog with the text:
+      """
+      2 items were added to the cart and can be reviewed/edited there.
+      """
+
+  Scenario: Suspended user
+    When the user is suspended in "Pool A"
+    And I log in as the user
+    And I click on the item captioned "Templates" in the category list
+    And I click on the card with title "Recommendation of the day"
+    Then I don't see "Order items"
+    And I see "Access to Pool A is suspended"
 
   Scenario: Template with an unreservable model
     When I log in as the user
@@ -134,7 +204,9 @@ Feature: Templates
     Then I see the "Add items" dialog
     And I see "One item will be added to the cart."
 
-    When I accept the "Add items" dialog
+    When I enter the date "${3.days.from_now}" in the "From" field
+    And I enter the date "${4.days.from_now}" in the "Until" field
+    And I accept the "Add items" dialog
     Then the "Add items" dialog has closed
     And I see the "Items added" dialog with the text:
       """
@@ -145,8 +217,8 @@ Feature: Templates
     Then the "Items added" dialog has closed
     And I see the page title "Cart"
     And I see the following lines in the "Items" section:
-      | title           | body                                                                   |
-      | 1× Video Camera | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | title           | body                                                                          |
+      | 1× Video Camera | Pool A\n${format_date_range_short(3.days.from_now, 4.days.from_now)} (2 days) |
 
   Scenario: Template no reservable models
     When I log in as the user

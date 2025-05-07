@@ -667,6 +667,8 @@
                        :item-title {:de-CH "{itemCount}× {itemName}" :en-GB "{itemCount}× {itemName}"}
                        :template-not-available {:de-CH "Diese Vorlage ist für das aktuelle Profil nicht verfügbar"
                                                 :en-GB "This template is not available for the current profile"}
+                       :user-suspended {:de-CH "Zugang zu {poolName} gesperrt"
+                                        :en-GB "Access to {poolName} is suspended"}
                        :some-items-not-available {:de-CH "Die Gegenstände in grauer Schrift sind für das aktuelle Profil nicht reservierbar"
                                                   :en-GB "The items shown in grey font are not reservable for the current profile"}
                        :no-items-available {:de-CH "Diese Vorlage enthält keine Gegenstände, welche für das aktuelle Profil reservierbar sind"
@@ -687,14 +689,9 @@
                                  :from {:de-CH "Von" :en-GB "From"}
                                  :until {:de-CH "Bis" :en-GB "Until"}
                                  :order-for {:de-CH "Bestellung für" :en-GB "Order for"}
+                                 :pool {:de-CH "Inventarpark" :en-GB "Inventory pool"}
                                  :cancel {:de-CH "Abbrechen" :en-GB "Cancel"}
-                                 :submit {:de-CH "Hinzufügen" :en-GB "Add"}
-                                 :validation {:start-after-end {:de-CH "Enddatum muss nach Beginndatum sein"
-                                                                :en-GB "End date must be after start date"}
-                                              :start-date-in-past {:de-CH "Datum liegt in der Vergangenheit"
-                                                                   :en-GB "Date is in the past"}
-                                              :end-date-too-late {:de-CH "Datum darf nicht nach {maxDate, date, small} sein"
-                                                                  :en-GB "Date must not be after {maxDate, date, small}"}}}
+                                 :submit {:de-CH "Hinzufügen" :en-GB "Add"}}
                         :success-notification {:title {:de-CH "Gegenstände hinzugefügt" :en-GB "Items added"}
                                                :message {:de-CH "{count, plural, 
                                                                           =1 {Ein Gegenstand wurde zum Warenkorb hinzugefügt und kann nun dort überprüft werden.}

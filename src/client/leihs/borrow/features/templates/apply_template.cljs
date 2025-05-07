@@ -1,19 +1,22 @@
 (ns leihs.borrow.features.templates.apply-template
   (:require
-   [shadow.resource :as rc]
+   ["/borrow-ui" :as UI]
    ["date-fns" :as date-fns]
-   [reagent.core :as reagent]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
-   [leihs.borrow.lib.re-frame :refer [reg-event-fx reg-event-db reg-sub subscribe dispatch]]
-   [re-graph.core :as re-graph]
-   [leihs.core.core :refer [dissoc-in]]
-   [leihs.borrow.lib.helpers :as h]
-   [leihs.borrow.lib.errors :as errors]
-   [leihs.borrow.lib.translate :as translate :refer [t set-default-translate-path]]
-   [leihs.borrow.lib.form-helpers :refer [UiDateRangePicker]]
    [leihs.borrow.client.routes :as routes]
    [leihs.borrow.features.current-user.core :as current-user]
-   ["/borrow-ui" :as UI]))
+   [leihs.borrow.lib.errors :as errors]
+   [leihs.borrow.lib.form-helpers :refer [UiDateRangePicker]]
+   [leihs.borrow.lib.helpers :as h]
+   [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db reg-event-fx
+                                      reg-sub subscribe]]
+   [leihs.borrow.lib.translate :as translate :refer [set-default-translate-path
+                                                     t]]
+   [leihs.borrow.translations :as translations]
+   [leihs.core.core :refer [dissoc-in]]
+   [re-graph.core :as re-graph]
+   [reagent.core :as reagent]
+   [shadow.resource :as rc]))
 
 (set-default-translate-path :borrow.templates.apply)
 
@@ -79,28 +82,53 @@
                   (cond (-> user-data :delegations seq)
                         (t :!borrow.phrases.user-or-delegation-personal-postfix))))))
 
-(defn dialog [template models user-id date-locale]
-  (let [today (date-fns/startOfToday)
-        max-date (date-fns/addYears today 10)
+(defn- get-disabled-dates [pool f]
+  (->> pool :availability :dates
+       (filter #(-> % f seq))
+       (map #(-> % :date date-fns/parseISO))))
+
+(defn- get-pool-availability-js [pool]
+  (clj->js
+   (h/camel-case-keys
+    {:inventoryPool pool
+     :dates (->> pool :availability :dates
+                 (map (fn [day-data]
+                        (assoc day-data :parsedDate (-> day-data :date date-fns/parseISO)))))})))
+
+(defn dialog [template models user-id date-locale text-locale]
+  (let [pool (:inventory-pool template)
+        today (date-fns/startOfToday)
+        max-date (date-fns/addYears today 1)
         selected-range (reagent/atom {:startDate today :endDate  (date-fns/addDays today 1)})
         validation-result (reagent/atom {:valid? true})
-        validate-dates (fn [start-date, end-date]
-                         (cond
-                           (not (and (date-fns/isValid start-date) (date-fns/isValid end-date)))
-                           {:valid? false}
-                           (> start-date end-date)
-                           {:valid? false :date-message (t :dialog.validation.start-after-end)}
-                           (< start-date today)
-                           {:valid? false :date-message (t :dialog.validation.start-date-in-past)}
-                           (> end-date max-date)
-                           {:valid? false :date-message (t :dialog.validation.end-date-too-late {:maxDate max-date})}
-                           :else
-                           {:valid? true}))
+        validate! (fn [start-date end-date]
+                    (reset!
+                     validation-result
+                     (cond
+                       (not (and (date-fns/isValid start-date) (date-fns/isValid end-date)))
+                       {:valid? false}
+                       (> start-date end-date)
+                       {:valid? false :date-messages [(t :dialog.validation.start-after-end)]}
+                       :else
+                       (let [availability-messages
+                             (UI/validateDateRange
+                              #js {:startDate start-date :endDate end-date}
+                              today
+                              max-date
+                              (get-pool-availability-js pool)
+                              1
+                              text-locale
+                              date-locale
+                              (clj->js (get-in translations/dict [:borrow :order-panel :validate])))]
+                         (if (seq availability-messages)
+                           {:valid? false :date-messages availability-messages}
+                           {:valid? true})))))
         change-selected-range (fn [r]
+                                (js/console.log "oki")
                                 (let [start-date (-> r .-startDate)
                                       end-date (-> r .-endDate)]
                                   (reset! selected-range {:startDate start-date :endDate end-date})
-                                  (reset! validation-result (validate-dates start-date end-date))))
+                                  (validate! start-date end-date)))
         get-quantity (fn [reservations filter-pred]
                        (->> reservations (filter filter-pred) (map :quantity) (reduce +)))]
     (fn [template models user-id date-locale]
@@ -108,7 +136,9 @@
             current-profile-name @(subscribe [::current-profile-name])
             is-saving? (:is-saving? dialog-data)
             template-id (:id template)
-            models-quantity (get-quantity models #(-> % :is-reservable))]
+            models-quantity (get-quantity models #(-> % :is-reservable))
+            disabled-start-dates (get-disabled-dates pool :start-date-restrictions)
+            disabled-end-dates (get-disabled-dates pool :end-date-restrictions)]
         (if-not dialog-data
           nil
           [:> UI/Components.Design.ModalDialog
@@ -121,7 +151,8 @@
            [:> UI/Components.Design.ModalDialog.Body
             [:form {:on-submit (fn [e]
                                  (-> e .preventDefault)
-                                 (when (-> e .-target .checkValidity)
+                                 (validate! (:startDate @selected-range) (:endDate @selected-range))
+                                 (when (and (-> e .-target .checkValidity) (:valid? @validation-result))
                                    (dispatch [::mutate
                                               {:id template-id
                                                :startDate (h/date-format-day (:startDate @selected-range))
@@ -139,6 +170,8 @@
                  [:p.fw-bold (t :dialog.info {:count models-quantity})]]
                 [:> UI/Components.Design.Section {:title (t :dialog.order-for)}
                  [:div.fw-bold current-profile-name]]
+                [:> UI/Components.Design.Section {:title (t :dialog.pool)}
+                 [:div.fw-bold (:name pool)]]
                 [:> UI/Components.Design.Section {:title (t :dialog.timespan)}
                  [:fieldset
                   [:legend.visually-hidden (t :dialog.timespan)]
@@ -152,10 +185,14 @@
                      :selected-range @selected-range
                      :onChange change-selected-range
                      :min-date today
-                     :max-date max-date}]
-                   (when (:date-message @validation-result)
-                     [:> UI/Components.Design.Warning
-                      (:date-message @validation-result)])]]]])]]
+                     :max-date max-date
+                     :disabledStartDates disabled-start-dates
+                     :disabledEndDates disabled-end-dates
+                     :className (when (not (:valid? @validation-result)) "invalid-date-range")}]
+                   (when-let [messages (-> @validation-result :date-messages seq)]
+                     (doall
+                      (for [[idx message] (map-indexed vector messages)]
+                        ^{:key idx} [:<> [:> UI/Components.Design.Warning message]])))]]]])]]
            [:> UI/Components.Design.ModalDialog.Footer
             [:button.btn.btn-primary {:form :the-form :type :submit :disabled (or (= 0 models-quantity) (not (:valid? @validation-result)))}
              (when is-saving? [:> UI/Components.Design.Spinner]) " "

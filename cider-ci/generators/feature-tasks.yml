@@ -324,17 +324,27 @@
     FEATURE_NAME: 'Templates Ordering by template 01'
     FEATURE: './spec/features/templates/templates.feature[1:2:1]'
 './spec/features/templates/templates.feature[1:3:1]':
+  name: 'Templates Date validation 01'
+  environment_variables:
+    FEATURE_NAME: 'Templates Date validation 01'
+    FEATURE: './spec/features/templates/templates.feature[1:3:1]'
+'./spec/features/templates/templates.feature[1:4:1]':
+  name: 'Templates Suspended user 01'
+  environment_variables:
+    FEATURE_NAME: 'Templates Suspended user 01'
+    FEATURE: './spec/features/templates/templates.feature[1:4:1]'
+'./spec/features/templates/templates.feature[1:5:1]':
   name: 'Templates Template with an unreservable model 01'
   environment_variables:
     FEATURE_NAME: 'Templates Template with an unreservable model 01'
-    FEATURE: './spec/features/templates/templates.feature[1:3:1]'
-'./spec/features/templates/templates.feature[1:4:1]':
+    FEATURE: './spec/features/templates/templates.feature[1:5:1]'
+'./spec/features/templates/templates.feature[1:6:1]':
   name: 'Templates Template no reservable models 01'
   environment_variables:
     FEATURE_NAME: 'Templates Template no reservable models 01'
-    FEATURE: './spec/features/templates/templates.feature[1:4:1]'
-'./spec/features/templates/templates.feature[1:5:1]':
+    FEATURE: './spec/features/templates/templates.feature[1:6:1]'
+'./spec/features/templates/templates.feature[1:7:1]':
   name: 'Templates Template forbidden for profile 01'
   environment_variables:
     FEATURE_NAME: 'Templates Template forbidden for profile 01'
-    FEATURE: './spec/features/templates/templates.feature[1:5:1]'
+    FEATURE: './spec/features/templates/templates.feature[1:7:1]'

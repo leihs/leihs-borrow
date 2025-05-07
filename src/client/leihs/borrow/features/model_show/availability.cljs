@@ -1,7 +1,6 @@
 (ns leihs.borrow.features.model-show.availability
   (:require
-   ["date-fns" :as datefn]
-   [leihs.borrow.lib.helpers :as h]))
+   ["date-fns" :as datefn]))
 
 (def MONTHS-BUFFER 6)
 (defn with-future-buffer [date]

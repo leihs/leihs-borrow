@@ -2,7 +2,6 @@
   (:require
    [java-time :as jt]
    [leihs.borrow.resources.holidays :as holidays]
-   [leihs.borrow.resources.inventory-pools :as pools]
    [leihs.borrow.resources.workdays :as workdays]
    [leihs.core.core :refer [detect]]
    [taoensso.timbre :as timbre :refer [debug spy]]))
@@ -19,14 +18,31 @@
                 (some #{date}))
           (:holidays pool)))
 
+(defn working-day? [date pool]
+  (let [day-of-week (-> date
+                        .getDayOfWeek
+                        .toString
+                        .toLowerCase
+                        keyword)]
+    (day-of-week pool)))
+
+(defn orders-processing-day? [date pool]
+  (let [orders-processing-day (-> date
+                                  .getDayOfWeek
+                                  .toString
+                                  .toLowerCase
+                                  (str "_orders_processing")
+                                  keyword)]
+    (orders-processing-day pool)))
+
 (defn close-time? [date pool]
   (let [date* (jt/local-date date)]
-    (or (not (pools/working-day? date* pool))
+    (or (not (working-day? date* pool))
         (some? (get-holiday date* pool)))))
 
 (defn orders-processing? [date pool]
   (let [date* (jt/local-date date)]
-    (and (pools/orders-processing-day? date* pool)
+    (and (orders-processing-day? date* pool)
          (if-let [holiday (get-holiday date* pool)]
            (:orders_processing holiday)
            true))))
@@ -52,15 +68,6 @@
                        (inc in-advance))
                 :else date))))))
 
-(comment
-  (require '[leihs.core.db :as db])
-  (let [tx (db/get-ds)
-        pool (pools/get-by-id tx #uuid "ab61cf01-08ce-4d9b-97d3-8dcd8360605a")
-        holidays (holidays/get-by-pool-id tx (:id pool))
-        pool* (assoc pool :holidays holidays)]
-    ; pool*
-    (earliest-possible-pickup-date pool*)))
-
 (defn visits-capacity-reached? [date visits-count pool]
   (let [index (-> date
                   jt/local-date
@@ -75,7 +82,7 @@
 (defn start-date-restrictions [date-with-avail pool]
   (cond-> nil
     (-> date-with-avail :date jt/local-date
-        (pools/working-day? pool)
+        (working-day? pool)
         not)
     (conj :NON_WORKDAY)
 
@@ -94,7 +101,7 @@
 (defn end-date-restrictions [date-with-avail pool]
   (cond-> nil
     (-> date-with-avail :date jt/local-date
-        (pools/working-day? pool)
+        (working-day? pool)
         not)
     (conj :NON_WORKDAY)
 

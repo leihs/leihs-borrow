@@ -1,9 +1,10 @@
 import './scss/styles.scss'
 import _IntlMessageFormat from 'intl-messageformat'
+const OrderPanel = require('./features/OrderPanel')
 
 export const Components = {
   // Feature components
-  OrderPanel: require('./features/OrderPanel').default,
+  OrderPanel: OrderPanel.default,
   CategoryBreadcrumbs: require('./features/CategoryBreadcrumbs').default,
   ModelSearchFilter: require('./features/ModelSearchFilter').default,
   ModelList: require('./features/ModelList').default,
@@ -53,3 +54,5 @@ export const Components = {
 }
 
 export const IntlMessageFormat = _IntlMessageFormat
+
+export const validateDateRange = OrderPanel.validateDateRange

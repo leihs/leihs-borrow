@@ -60,6 +60,10 @@
                                                          :resolve :has-reservable-items}
                                     :maximumReservationDuration {:type Int}
                                     :reservationAdvanceDays {:type Int}
+                                    :availability {:args {:startDate {:type (non-null :Date)}
+                                                          :endDate {:type (non-null :Date)}}
+                                                   :type :InventoryPoolAvailability
+                                                   :resolve :pool-availability}
                                     :hasTemplates {:type Boolean
                                                    :resolve :inventory-pool-has-templates}
                                     :holidays {:type (list :Holiday)
@@ -157,11 +161,13 @@
                                         :resolve :user-navigation}
                                   :settings {:type (non-null :UserSettings)
                                              :resolve :user-settings}}}
-           :Availability {:fields {:dates {:type (list :DayData)}}}
            :DayData {:fields {:date {:type (non-null :Date)}
-                              :quantity {:type (non-null Int)}
                               :startDateRestrictions {:type (list :startDateRestrictionEnum)}
                               :endDateRestrictions {:type (list :endDateRestrictionEnum)}}}
+           :DayDataWithQuantity {:fields {:date {:type (non-null :Date)}
+                                          :quantity {:type (non-null Int)}
+                                          :startDateRestrictions {:type (list :startDateRestrictionEnum)}
+                                          :endDateRestrictions {:type (list :endDateRestrictionEnum)}}}
            :Item {:fields {:id {:type (non-null :UUID)}
                            :inventoryCode {:type (non-null String)}
                            :model {:type (non-null :Model) :resolve :model}}}
@@ -230,8 +236,9 @@
            :Property {:fields {:id {:type (non-null :UUID)}
                                :key {:type (non-null String)}
                                :value {:type (non-null String)}}}
+           :InventoryPoolAvailability {:fields {:dates {:type (list :DayData)}}}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
-                                                     :dates {:type (list :DayData)}}}
+                                                     :dates {:type (list :DayDataWithQuantity)}}}
            :TotalReservableQuantity {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                               :quantity {:type (non-null Int)}}}
            :Attachment {:fields {:id {:type (non-null :UUID)}
