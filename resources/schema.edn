@@ -24,7 +24,11 @@
          :endDateRestrictionEnum {:values [:NON_WORKDAY :HOLIDAY :VISITS_CAPACITY_REACHED]}}
 
  :interfaces {:Fulfillment {:fields {:fulfilledQuantity {:type (non-null Int)}
-                                     :toFulfillQuantity {:type (non-null Int)}}}}
+                                     :toFulfillQuantity {:type (non-null Int)}}}
+              :DayData {:fields {:date {:type (non-null :Date)}
+                                 ; :quantity {:type (non-null Int)}
+                                 :startDateRestrictions {:type (list :startDateRestrictionEnum)}
+                                 :endDateRestrictions {:type (list :endDateRestrictionEnum)}}}}
 
  :objects {:Contract {:fields {:id {:type (non-null :UUID)}
                                :compactId {:type (non-null :UUID)
@@ -157,11 +161,8 @@
                                         :resolve :user-navigation}
                                   :settings {:type (non-null :UserSettings)
                                              :resolve :user-settings}}}
-           :Availability {:fields {:dates {:type (list :DayData)}}}
-           :DayData {:fields {:date {:type (non-null :Date)}
-                              :quantity {:type (non-null Int)}
-                              :startDateRestrictions {:type (list :startDateRestrictionEnum)}
-                              :endDateRestrictions {:type (list :endDateRestrictionEnum)}}}
+           :DayDataWithQuantity {:implements [:DayData]
+                                 :fields {:quantity {:type (non-null Int)}}}
            :Item {:fields {:id {:type (non-null :UUID)}
                            :inventoryCode {:type (non-null String)}
                            :model {:type (non-null :Model) :resolve :model}}}
@@ -231,7 +232,7 @@
                                :key {:type (non-null String)}
                                :value {:type (non-null String)}}}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
-                                                     :dates {:type (list :DayData)}}}
+                                                     :dates {:type (list :DayDataWithQuantity)}}}
            :TotalReservableQuantity {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                               :quantity {:type (non-null Int)}}}
            :Attachment {:fields {:id {:type (non-null :UUID)}
