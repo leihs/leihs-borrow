@@ -8,6 +8,8 @@
             [hugsql.core :as hugsql]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
+            [leihs.borrow.resources.inventory-pools.visits-restrictions :as restrict]
+            [leihs.borrow.resources.legacy-availability.changes :as ch]
             [leihs.borrow.resources.workdays :as workdays]
             [leihs.core.db :as db]
             [taoensso.timbre :refer [debug info warn error spy]]))
@@ -140,22 +142,17 @@
       count
       (> 0)))
 
-(defn working-day? [date pool]
-  (let [day-of-week (-> date
-                        .getDayOfWeek
-                        .toString
-                        .toLowerCase
-                        keyword)]
-    (day-of-week pool)))
-
-(defn orders-processing-day? [date pool]
-  (let [orders-processing-day (-> date
-                                  .getDayOfWeek
-                                  .toString
-                                  .toLowerCase
-                                  (str "_orders_processing")
-                                  keyword)]
-    (orders-processing-day pool)))
+(defn get-availability
+  [{{tx :tx} :request user-id ::target-user/id :as context}
+   {:keys [start-date end-date]}
+   value]
+  (let [start-date-jt (ch/local-date start-date)
+        end-date-jt (ch/local-date end-date)
+        date-range (ch/explode-date-range start-date-jt end-date-jt)]
+    (->> date-range
+         (map #(hash-map :date (str %)))
+         (#(restrict/validate-dates tx % value))
+         (hash-map :dates))))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)
