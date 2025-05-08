@@ -1,10 +1,25 @@
-query templateShow($id: UUID!, $userId: UUID) {
+query templateShow(
+  $id: UUID!,
+  $userId: UUID,
+  $startDate: Date,
+  $endDate: Date
+) {
   template(id: $id, userId: $userId) {
     id
     name
     inventoryPool {
       id
       name
+      availability(
+        startDate: $startDate
+        endDate: $endDate
+      ) {
+        dates {
+          date
+          startDateRestrictions
+          endDateRestrictions
+        }
+      }
     }
     lines {
       model {
