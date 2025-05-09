@@ -4,6 +4,7 @@
    [clojure.pprint :refer [pprint]]
    [clojure.tools.cli :as cli :refer [parse-opts]]
    [environ.core :refer [env]]
+   [leihs.borrow.reload]
    [leihs.borrow.run :as run]
    [leihs.core.logging]
    [leihs.core.repl :as repl]
