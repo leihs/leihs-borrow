@@ -1,12 +1,12 @@
-(ns ^:clj-reload/no-unload leihs.borrow.main
+(ns leihs.borrow.main
   (:require
-   [clj-reload.core]
    [clj-yaml.core :as yaml]
    [clojure.pprint :refer [pprint]]
    [clojure.tools.cli :as cli :refer [parse-opts]]
    [environ.core :refer [env]]
    [leihs.borrow.run :as run]
    [leihs.core.logging]
+   [leihs.core.reload :as reload]
    [leihs.core.repl :as repl]
    [logbug.catcher :as catcher]
    [logbug.debug :as debug]
@@ -42,13 +42,9 @@
            "-------------------------------------------------------------------"])]
        flatten (clojure.string/join \newline)))
 
-(defonce args* (atom nil))
-
-(defn main []
+(defn main [args]
   (leihs.core.logging/init)
-  (info 'main @args*)
-  (let [args @args*
-        {:keys [options arguments
+  (let [{:keys [options arguments
                 errors summary]} (cli/parse-opts
                                   args cli-options :in-order true)
         cmd (some-> arguments first keyword)
@@ -60,11 +56,12 @@
                   :run (run/main options (rest arguments))
                   (print-summary)))))
 
-; dynamic restart on require
-(when @args* (main))
-
 (defn -main [& args]
-  (reset! args* args)
-  (main))
+  (info 'main args)
+  (reset! reload/args* args)
+  (main args))
+
+; dynamic restart on require
+(when @reload/args* (main @reload/args*))
 
 ;(main)
