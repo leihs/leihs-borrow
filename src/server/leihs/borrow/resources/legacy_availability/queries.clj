@@ -30,6 +30,8 @@
                      :user_group_ids])
         (sql/from :reservations)
         (sql/left-join :items [:= :reservations.item_id :items.id])
+        (sql/where [:= :reservations.type "ItemLine"])
+        (cond-> pool-id (sql/where [:= :reservations.inventory_pool_id pool-id]))
         (sql/where [:or [:is-null :reservations.item_id] [:= :items.is_borrowable true]])
         (sql/where [:not-in :reservations.status ["draft" "rejected" "canceled" "closed"]])
         (sql/where [:not [:and
@@ -40,11 +42,10 @@
         (sql/where [:not [:and
                           [:< :reservations.end_date [:raw "(now() at time zone 'UTC')::date"]]
                           [:is-null :reservations.item_id]]])
-        (cond-> pool-id (sql/where [:= :reservations.inventory_pool_id pool-id]))
-        (sql/where [:= :reservations.type "ItemLine"])
         (sql/where [:= :reservations.model_id model-id])
         (cond-> (not (empty? exclude-res-ids))
           (sql/where [:not-in :reservations.id exclude-res-ids]))
+        (sql/order-by [:reservations.created_at :asc])
         sql-format
         (->> (jdbc-query tx)))))
 
