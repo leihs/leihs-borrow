@@ -26,7 +26,8 @@
          group-ids (concat [:general] user-group-ids)
          inner-changes (ch/between changes
                                    (ch/local-date start-date)
-                                   (ch/local-date end-date))]
+                                   (ch/local-date end-date))
+         non-negative (fn [n] (if (neg? n) 0 n))]
      (->> inner-changes
           vals
           (map (fn [allocs]
@@ -34,9 +35,9 @@
                      (select-keys group-ids)
                      vals
                      (->> (map :in-quantity)
-                          (map #(if (< % 0) 0 %))
                           (apply +)))))
-          (apply min)))))
+          (apply min)
+          non-negative))))
 
 (defn maximum-available-in-period-summed-for-groups
   "In a collection of inventory pools."
@@ -60,12 +61,12 @@
                exclude-res-ids))
         (apply +))))
 
-(comment (let [model-id "804a50c1-2329-5d5b-9884-340f43833514"
-               pool-id "8bd16d45-056d-5590-bc7f-12849f034351"
+(comment (let [model-id #uuid "041d82c9-c02f-4f6e-bf15-805c49796911"
+               pool-id #uuid "8bd16d45-056d-5590-bc7f-12849f034351"
                tx (db/get-ds)
-               user-id "c0777d74-668b-5e01-abb5-f8277baa0ea8"
-               start-date (ch/local-date)
-               end-date (t/plus (ch/local-date) #_start-date (t/days 30))
+               user-id #uuid "c0777d74-668b-5e01-abb5-f8277baa0ea8"
+               start-date #_(ch/local-date) (t/plus (ch/local-date) #_start-date (t/days 1))
+               end-date #_(ch/local-date) (t/plus (ch/local-date) #_start-date (t/days 1))
                changes (ch/main tx model-id pool-id nil)]
            (maximum-available-in-pool-and-period-summed-for-groups tx
                                                                    model-id
