@@ -475,7 +475,6 @@
                                 :en-GB "This order is not visible for the current profile"}
                   :state {:de-CH "Status" :en-GB "State"}
                   :cancel-action-label {:de-CH "Bestellung stornieren" :en-GB "Cancel order"}
-                  :repeat-action-label {:de-CH "Bestellung wiederholen" :en-GB "Repeat order"}
                   :purpose {:de-CH "Zweck" :en-GB "Purpose"}
                   :contact-details {:de-CH "Kontaktdaten" :en-GB "Contact details"}
                   :pools-section-title {:de-CH "Inventarparks" :en-GB "Inventory pools"}
@@ -520,7 +519,8 @@
                   :cancellation-dialog {:title {:de-CH "Bestellung stornieren" :en-GB "Cancel order"}
                                         :confirm {:de-CH "Stornieren" :en-GB "Cancel order"}
                                         :cancel {:de-CH "Abbrechen" :en-GB "Abort"}}
-                  :repeat-order {:dialog {:title {:de-CH "Gegenstände hinzufügen" :en-GB "Add items"}
+                  :repeat-order {:repeat-action-label {:de-CH "Bestellung wiederholen" :en-GB "Repeat order"}
+                                 :dialog {:title {:de-CH "Gegenstände hinzufügen" :en-GB "Add items"}
                                           :info {:de-CH "{count, plural,
                                                          =1 {Ein Gegenstand wird zum Warenkorb hinzugefügt.}
                                                          other {# Gegenstände werden zum Warenkorb hinzugefügt.}}"
@@ -535,19 +535,15 @@
                                                                  :en-GB "{count, plural,
                                                          =1 {Please note: One option can only be added by the lending desk.}
                                                          other {Please note: # options can only be added by the lending desk.}}"}
+                                          :info-multi-pool {:de-CH "Öffnungszeiten werden nicht angezeigt, wenn Gegenstände aus mehreren Inventarparks enthalten sind. Die Verfügbarkeiten können nach dem Hinzufügen im Warenkorb geprüft werden."
+                                                            :en-GB "Opening hours are not displayed when items from multiple inventory pools are included. Availability can be checked in the shopping cart after adding the items."}
                                           :timespan {:de-CH "Zeitraum" :en-GB "Time span"}
                                           :undefined {:de-CH "Unbestimmt" :en-GB "undefined"}
                                           :from {:de-CH "Von" :en-GB "From"}
                                           :until {:de-CH "Bis" :en-GB "Until"}
                                           :order-for {:de-CH "Bestellung für" :en-GB "Order for"}
                                           :cancel {:de-CH "Abbrechen" :en-GB "Cancel"}
-                                          :submit {:de-CH "Hinzufügen" :en-GB "Add"}
-                                          :validation {:start-after-end {:de-CH "Enddatum muss nach Beginndatum sein"
-                                                                         :en-GB "End date must be after start date"}
-                                                       :start-date-in-past {:de-CH "Datum liegt in der Vergangenheit"
-                                                                            :en-GB "Date is in the past"}
-                                                       :end-date-too-late {:de-CH "Datum darf nicht nach {maxDate, date, small} sein"
-                                                                           :en-GB "Date must not be after {maxDate, date, small}"}}}
+                                          :submit {:de-CH "Hinzufügen" :en-GB "Add"}}
                                  :success-notification {:title {:de-CH "Gegenstände hinzugefügt" :en-GB "Items added"}
                                                         :message {:de-CH "{count, plural,
                                                                           =1 {# Gegenstand wurde zum Warenkorb hinzugefügt und kann nun dort überprüft werden.}

@@ -180,9 +180,6 @@
         #(dispatch [:routing/navigate
                     [::routes/rentals-index {:query-params %}]])]]]
 
-     (when show-delegation-hint?
-       [:div.mb-4.text-center.text-muted (t :info-see-also-delegations)])
-
      (cond
        loading? [ui/loading]
 
@@ -190,6 +187,8 @@
 
        :else
        [:div.responsive-tab-combo
+        (when show-delegation-hint?
+          [:div.mb-4.text-center.text-muted (t :info-see-also-delegations)])
         [:div
          [:select.form-select.tab-select {:value tab
                                           :on-change #(switch-tab filters (-> % .-target .-value))}

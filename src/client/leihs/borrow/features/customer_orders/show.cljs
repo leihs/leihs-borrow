@@ -33,7 +33,9 @@
                  {:id order-id
                   :userId (current-user/get-current-profile-id db)}
                  [::on-fetched-data order-id]]
-      :db (-> db (assoc-in [::errors order-id] nil))})))
+      :db (-> db
+              (assoc-in [::errors order-id] nil)
+              (dissoc ::repeat-order/data))})))
 
 (reg-event-db
  ::on-fetched-data
@@ -151,7 +153,8 @@
         current-profile-id @(subscribe [::current-profile-id])
         can-change-profile? @(subscribe [::can-change-profile?])
         rental-user-id (-> rental :user :id)
-        date-locale @(subscribe [::translate/date-locale])]
+        date-locale @(subscribe [::translate/date-locale])
+        text-locale @(subscribe [::translate/text-locale])]
 
     [:> UI/Components.Design.PageLayout.ContentContainer
      (cond
@@ -177,7 +180,7 @@
 
         [cancellation-dialog rental]
 
-        [repeat-order/repeat-dialog rental reservations current-profile-id date-locale]
+        [repeat-order/repeat-dialog rental reservations current-profile-id date-locale text-locale]
         [repeat-order/repeat-success-notification]
 
         [:div.d-grid.gap-5
@@ -194,7 +197,7 @@
               (when is-cancelable?
                 [:button.btn.btn-secondary {:onClick #(dispatch [::open-cancellation-dialog rental-id])} (t :cancel-action-label)])
               (when is-repeatable?
-                [:button.btn.btn-secondary {:onClick #(dispatch [::repeat-order/open-repeat-dialog])} (t :repeat-action-label)])])]]
+                [repeat-order/repeat-button rental])])]]
 
          (when (not-empty (:delegations user-data))
            [:> UI/Components.Design.Section

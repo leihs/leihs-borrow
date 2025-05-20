@@ -124,7 +124,6 @@
                            {:valid? false :date-messages availability-messages}
                            {:valid? true})))))
         change-selected-range (fn [r]
-                                (js/console.log "oki")
                                 (let [start-date (-> r .-startDate)
                                       end-date (-> r .-endDate)]
                                   (reset! selected-range {:startDate start-date :endDate end-date})

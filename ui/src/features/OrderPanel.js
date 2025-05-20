@@ -428,14 +428,16 @@ export const validateDateRange = (
   })()
 
   const endDateMessage = (() => {
-    if (isOneDayPeriod) return // (because then the error is already mentioned in startDateMessage)
-
     // Max date
     if (endDate > maxDate) {
       return t(txt, 'end-date-too-late', locale, { maxDate })
     }
 
     // Closed pool
+    if (isOneDayPeriod) {
+      // (don't repeat the startDateMessage for the same day)
+      return
+    }
     if (endDate < today) {
       // (report issues only for non-past dates)
       return
