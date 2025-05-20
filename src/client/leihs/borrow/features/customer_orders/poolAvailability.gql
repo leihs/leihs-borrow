@@ -1,0 +1,20 @@
+query poolAvailability($id: UUID!, $startDate: Date, $endDate: Date) {
+  inventoryPool(id: $id) {
+    id
+    name
+    maximumReservationDuration
+    reservationAdvanceDays
+    holidays {
+      startDate
+      endDate
+      name
+    }
+    availability(startDate: $startDate, endDate: $endDate) {
+      dates {
+        date
+        startDateRestrictions
+        endDateRestrictions
+      }
+    }
+  }
+}
