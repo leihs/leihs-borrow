@@ -7,10 +7,9 @@
 (def base-sqlmap
   (-> (sql/select-distinct
        :models.*
-       [[:raw "trim(both ' ' from concat_ws(' ', models.product, models.version))"]
-        :name])
+       [[:raw "trim(both ' ' from models.name)"] :name])
       (sql/from :models)
-      (sql/order-by [:name :asc])))
+      (sql/order-by [:models.name :asc])))
 
 (defn get-one-by-id [tx id]
   (-> base-sqlmap

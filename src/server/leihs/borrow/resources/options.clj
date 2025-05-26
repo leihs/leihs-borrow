@@ -9,10 +9,10 @@
 
 (def base-sqlmap
   (-> (sql/select :options.*
-                  [[:raw "trim(both ' ' from concat_ws(' ', options.product, options.version))"]
+                  [[:raw "trim(both ' ' from options.name)"]
                    :name])
       (sql/from :options)
-      (sql/order-by [:name :asc])))
+      (sql/order-by [:options.name :asc])))
 
 (defn get-one-by-id [tx id]
   (-> base-sqlmap
