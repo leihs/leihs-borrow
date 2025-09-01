@@ -13,4 +13,4 @@ WHERE NOT EXISTS (
 )
 AND ARRAY( :snip:category-tree-snip ) && ARRAY( SELECT id from all_reservable_categories )
 :sql:limit
-ORDER BY name ASC
+ORDER BY model_groups.name ASC

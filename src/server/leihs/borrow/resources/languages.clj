@@ -9,7 +9,7 @@
 (def base-sqlmap (-> (sql/select :languages.*)
                      (sql/from :languages)
                      (sql/where [:= :active true])
-                     (sql/order-by [:name :asc])))
+                     (sql/order-by [:languages.name :asc])))
 
 (defn get-by-locale [tx locale]
   (-> base-sqlmap

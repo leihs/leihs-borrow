@@ -117,7 +117,7 @@
   (-> (sql/select-distinct :model_groups.id [:model_groups.name :name])
       (sql/from :model_groups)
       (sql/where [:= :model_groups.type "Category"])
-      (sql/order-by [:name :asc])))
+      (sql/order-by [:model_groups.name :asc])))
 
 (defn get-one [{{tx :tx} :request} {:keys [id parent-id]} _]
   (-> base-sqlmap
