@@ -342,7 +342,9 @@
        :user-id user-id})))
 
 (defn submit
-  [{{tx :tx {auth-entity-id :id} :authenticated-entity} :request
+  [{{tx :tx {auth-entity-id :id} :authenticated-entity,
+     settings :settings, after-tx-hooks* :after-tx-hooks*}
+    :request
     user-id ::target-user/id
     :as context}
    {:keys [purpose title contact-details lending-terms-accepted]}
@@ -369,7 +371,7 @@
                    (->> (jdbc-query tx))
                    first
                    :id)]
-      (doseq [[pool-id rs :as group-el]
+      (doseq [[pool-id rs]
               (seq (group-by :inventory_pool_id reservations))]
         (let [order (-> (sql/insert-into :orders)
                         (sql/values [{:user_id user-id
@@ -390,8 +392,14 @@
               (sql/where [:in :id (map :id rs)])
               sql-format
               (->> (jdbc/execute! tx)))
-          (mails/send-received context order)
-          (mails/send-submitted context order)))
+          (swap! after-tx-hooks* conj
+                 (fn [_ _]
+                   (jdbc/with-transaction+options [tx (db/get-ds)]
+                     (mails/send-received tx order settings))))
+          (swap! after-tx-hooks* conj
+                 (fn [_ _]
+                   (jdbc/with-transaction+options [tx (db/get-ds)]
+                     (mails/send-submitted tx order settings))))))
       (get-one-by-id tx user-id uuid))))
 
 (defn cancel
