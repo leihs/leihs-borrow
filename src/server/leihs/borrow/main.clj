@@ -1,5 +1,6 @@
 (ns leihs.borrow.main
   (:require
+   [clj-reload.core]
    [clj-yaml.core :as yaml]
    [clojure.pprint :refer [pprint]]
    [clojure.tools.cli :as cli :refer [parse-opts]]

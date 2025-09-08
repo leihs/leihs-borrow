@@ -7,6 +7,7 @@
         com.layerware/hugsql {:mvn/version "0.5.3"}
         com.rpl/specter {:mvn/version "1.1.4"}
         com.walmartlabs/lacinia {:mvn/version "0.37.0"}
+        io.github.tonsky/clj-reload {:mvn/version "0.9.8"}
         leihs-core/leihs-core {:local/root "./shared-clj"}
         org.clojure/data.generators {:mvn/version "1.0.0"}
         org.clojure/spec.alpha {:mvn/version "0.3.218"}
