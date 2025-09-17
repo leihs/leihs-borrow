@@ -96,12 +96,11 @@
                         (assoc day-data :parsedDate (-> day-data :date date-fns/parseISO)))))})))
 
 (defn dialog [template models user-id date-locale text-locale]
-  (let [pool (:inventory-pool template)
-        today (date-fns/startOfToday)
+  (let [today (date-fns/startOfToday)
         max-date (date-fns/addYears today 1)
         selected-range (reagent/atom {:startDate today :endDate  (date-fns/addDays today 1)})
         validation-result (reagent/atom {:valid? true})
-        validate! (fn [start-date end-date]
+        validate! (fn [start-date end-date pool]
                     (reset!
                      validation-result
                      (cond
@@ -123,11 +122,11 @@
                          (if (seq availability-messages)
                            {:valid? false :date-messages availability-messages}
                            {:valid? true})))))
-        change-selected-range (fn [r]
+        change-selected-range (fn [r pool]
                                 (let [start-date (-> r .-startDate)
                                       end-date (-> r .-endDate)]
                                   (reset! selected-range {:startDate start-date :endDate end-date})
-                                  (validate! start-date end-date)))
+                                  (validate! start-date end-date pool)))
         get-quantity (fn [reservations filter-pred]
                        (->> reservations (filter filter-pred) (map :quantity) (reduce +)))]
     (fn [template models user-id date-locale]
@@ -136,6 +135,7 @@
             is-saving? (:is-saving? dialog-data)
             template-id (:id template)
             models-quantity (get-quantity models #(-> % :is-reservable))
+            pool (:inventory-pool template)
             disabled-start-dates (get-disabled-dates pool :start-date-restrictions)
             disabled-end-dates (get-disabled-dates pool :end-date-restrictions)]
         (if-not dialog-data
@@ -150,7 +150,7 @@
            [:> UI/Components.Design.ModalDialog.Body
             [:form {:on-submit (fn [e]
                                  (-> e .preventDefault)
-                                 (validate! (:startDate @selected-range) (:endDate @selected-range))
+                                 (validate! (:startDate @selected-range) (:endDate @selected-range) pool)
                                  (when (and (-> e .-target .checkValidity) (:valid? @validation-result))
                                    (dispatch [::mutate
                                               {:id template-id
@@ -182,7 +182,7 @@
                            :placeholderFrom (t :dialog.undefined)
                            :placeholderUntil (t :dialog.undefined)}
                      :selected-range @selected-range
-                     :onChange change-selected-range
+                     :onChange #(change-selected-range % pool)
                      :min-date today
                      :max-date max-date
                      :disabledStartDates disabled-start-dates
