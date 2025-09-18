@@ -24,19 +24,10 @@ For seamless dependency installation: use [**asdf** version manager](https://asd
 ### Quickstart (shell):
 
 ```shell
-# ENV config: copy from template
-cp .env.local-example .env.local.dev
-cp .env.local-example .env.local.test
-ln -sf .env.local.dev .env.local
-# ln -sf .env.local.test .env.local # to switch settings to dev env
-
 # == prepare ==
 
 # ensure correct version of shared code (UI/React and ClojureScript) and DB migrations
 git submodule update --init --recursive --force
-
-# prepare UI (npm install and build)
-bin/ui-build
 
 # prepare DB
 source bin/set-env && bin/db-migrate

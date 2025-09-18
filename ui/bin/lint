@@ -9,7 +9,7 @@ debug_setup
 $PROJECT_DIR/bin/env/nodejs-setup
 
 cd ui
-npm ci
+npm ci --ignore-scripts
 npm run lint
 cd -
 

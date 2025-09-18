@@ -4,7 +4,7 @@
 # config docs: https://github.com/clj-kondo/clj-kondo/blob/master/doc/config.md
 # code style docs: https://github.com/bbatsov/clojure-style-guide
 
-npm ls shadow-cljs > /dev/null || npm install --silent --no-audit
+npm ls shadow-cljs > /dev/null || npm ci --ignore-scripts --silent --no-audit
 
 RESULT="$(npx shadow-cljs run clj-kondo.main/main --lint src)"
 echo "$RESULT"
