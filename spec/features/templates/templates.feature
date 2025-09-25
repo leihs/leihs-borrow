@@ -63,6 +63,7 @@ Feature: Templates
     # Template detail
     When I click on the card with title "Recommendation of the day"
     Then I see the page title "Template"
+    And I sleep "0.1"
     And the page subtitle is "Recommendation of the day"
     And I see "Items"
     And I see the following models:
