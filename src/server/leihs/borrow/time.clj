@@ -1,12 +1,12 @@
 (ns leihs.borrow.time
-  (:require [leihs.core.settings :refer [settings!]]
+  (:require [leihs.core.settings :refer [settings]]
             [taoensso.timbre :refer [debug info warn error spy]]
             [leihs.core.db :as db]
             java-time)
   (:import [java.time.format DateTimeFormatter]))
 
 (defn time-zone [tx]
-  (-> (settings! tx [:time_zone])
+  (-> (settings tx [:time_zone])
       :time_zone
       java.util.TimeZone/getTimeZone))
 

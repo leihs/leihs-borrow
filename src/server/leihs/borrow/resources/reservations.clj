@@ -18,7 +18,7 @@
             [leihs.core.core :refer [raise presence]]
             [leihs.core.db :as db]
             [leihs.borrow.database.helpers :as database]
-            [leihs.core.settings :refer [settings!]]
+            [leihs.core.settings :refer [settings]]
             [taoensso.timbre :refer [debug info warn error spy]]))
 
 (doseq [s [::inventory_pool_id ::start_date ::end_date]]
@@ -203,7 +203,7 @@
 
 (defn valid-until-sql [tx]
   [[:raw (str "reservations.updated_at + interval '"
-              (:timeout_minutes (settings! tx [:timeout_minutes]))
+              (:timeout_minutes (settings tx [:timeout_minutes]))
               " minutes'"
               " AS updated_at")]])
 

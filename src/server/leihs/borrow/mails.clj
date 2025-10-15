@@ -6,7 +6,7 @@
    [honey.sql.helpers :as sql]
 
    [leihs.core.db :as db]
-   [leihs.core.settings :refer [settings!]]
+   [leihs.core.settings :refer [settings]]
    [wet.core :as wet]
    [leihs.borrow.resources.delegations :refer [delegation?]]
    [leihs.borrow.resources.languages :as lang]
@@ -138,4 +138,4 @@
                          (->> (jdbc-query tx))
                          first)]
            ; order
-           (send-received tx (settings! tx) order)))
+           (send-received tx (settings tx) order)))

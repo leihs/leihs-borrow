@@ -15,7 +15,7 @@
             [leihs.borrow.time :as time :refer [past-date?]]
             [leihs.borrow.database.helpers :as database]
             [leihs.core.db :as db]
-            [leihs.core.settings :refer [settings!]]
+            [leihs.core.settings :refer [settings]]
             [logbug.debug :as debug]
             [taoensso.timbre :refer [debug info warn error spy]])
   (:import java.time.format.DateTimeFormatter))
@@ -357,7 +357,7 @@
     (when-not (empty? (rs/broken tx user-id reservations))
       (throw (ex-info "Some combination of start/end date and pool has become invalid." {})))
     (when-not lending-terms-accepted
-      (when (-> (settings! tx [:lending_terms_acceptance_required_for_order])
+      (when (-> (settings tx [:lending_terms_acceptance_required_for_order])
                 :lending_terms_acceptance_required_for_order)
         (throw (ex-info "Lending terms need to be accepted" {}))))
     (let [uuid (-> (sql/insert-into :customer_orders)

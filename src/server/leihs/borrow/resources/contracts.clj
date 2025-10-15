@@ -10,7 +10,7 @@
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.database.helpers :as database]
-            [leihs.core.settings :refer [settings!]]))
+            [leihs.core.settings :refer [settings]]))
 
 (defn base-sqlmap [tx user-id]
   (-> (sql/select-distinct :contracts.*)
@@ -56,7 +56,7 @@
               (apply sql/order-by sqlmap (helpers/treat-order-arg order-by :contracts))))))
 
 (defn print-url [{{tx :tx} :request} _ {:keys [id inventory-pool-id]}]
-  (str (:external_base_url (settings! tx))
+  (str (:external_base_url (settings tx))
        "/manage/" inventory-pool-id
        "/contracts/" id))
 

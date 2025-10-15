@@ -5,7 +5,7 @@
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [hugsql.core :as hugsql]
             [leihs.core.db :as db]
-            [leihs.core.settings :refer [settings!]]
+            [leihs.core.settings :refer [settings]]
             [leihs.borrow.resources.legacy-availability.changes :as ch]
             [leihs.borrow.resources.legacy-availability.core :as c]
             [java-time :as t]))
