@@ -10,9 +10,9 @@
 
 (def dict-path :borrow.terms.weekdays)
 
-(def formats {:de-CH {:default "dd.MM.YYYY"
+(def formats {:de-CH {:default "dd.MM.yyyy"
                       :short "dd.MM"}
-              :en-GB {:default "dd/MM/YYYY"
+              :en-GB {:default "dd/MM/yyyy"
                       :short "dd/MM"}})
 
 (defn fallbacked [tx locale]
