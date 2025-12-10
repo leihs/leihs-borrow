@@ -654,349 +654,349 @@
                                            :en-GB " ({count} overdue)"
                                            :fr-CH " ({count} en retard)"}}}}}
 
-              :rental-show {:page-title {:de-CH "Bestellung" :en-GB "Order" :fr-CH "Commande"}
-                            :message-403 {:de-CH "Diese Bestellung ist für das aktuelle Profil nicht sichtbar"
-                                          :en-GB "This order is not visible for the current profile"
-                                          :fr-CH "Cette commande n’est pas visible pour le profil actuel"}
-                            :state {:de-CH "Status" :en-GB "State" :fr-CH "Statut"}
-                            :cancel-action-label {:de-CH "Bestellung stornieren"
-                                                  :en-GB "Cancel order"
-                                                  :fr-CH "Annuler la commande"}
-                            :purpose {:de-CH "Zweck" :en-GB "Purpose" :fr-CH "But"}
-                            :contact-details {:de-CH "Kontaktdaten" :en-GB "Contact details" :fr-CH "Coordonnées"}
-                            :pools-section-title {:de-CH "Inventarparks" :en-GB "Inventory pools" :fr-CH "Pools d’inventaire"}
-                            :items-section-title {:de-CH "Gegenstände" :en-GB "Items" :fr-CH "Éléments"}
-                            :documents-section-title {:de-CH "Dokumente" :en-GB "Documents" :fr-CH "Documents"}
-                            :user-or-delegation-section-title {:de-CH "Bestellung für"
-                                                               :en-GB "Order for"
-                                                               :fr-CH "Commande pour"}
+    :rental-show {:page-title {:de-CH "Bestellung" :en-GB "Order" :fr-CH "Commande"}
+                  :message-403 {:de-CH "Diese Bestellung ist für das aktuelle Profil nicht sichtbar"
+                                :en-GB "This order is not visible for the current profile"
+                                :fr-CH "Cette commande n’est pas visible pour le profil actuel"}
+                  :state {:de-CH "Status" :en-GB "State" :fr-CH "Statut"}
+                  :cancel-action-label {:de-CH "Bestellung stornieren"
+                                        :en-GB "Cancel order"
+                                        :fr-CH "Annuler la commande"}
+                  :purpose {:de-CH "Zweck" :en-GB "Purpose" :fr-CH "But"}
+                  :contact-details {:de-CH "Kontaktdaten" :en-GB "Contact details" :fr-CH "Coordonnées"}
+                  :pools-section-title {:de-CH "Inventarparks" :en-GB "Inventory pools" :fr-CH "Pools d’inventaire"}
+                  :items-section-title {:de-CH "Gegenstände" :en-GB "Items" :fr-CH "Éléments"}
+                  :documents-section-title {:de-CH "Dokumente" :en-GB "Documents" :fr-CH "Documents"}
+                  :user-or-delegation-section-title {:de-CH "Bestellung für"
+                                                     :en-GB "Order for"
+                                                     :fr-CH "Commande pour"}
 
-                            :reservation-line
-                            {:title {:de-CH "{itemCount}× {itemName}"
-                                     :en-GB "{itemCount}× {itemName}"
-                                     :fr-CH "{itemCount}× {itemName}"}
-                             :duration-days {:de-CH "{totalDays, plural,
+                  :reservation-line
+                  {:title {:de-CH "{itemCount}× {itemName}"
+                           :en-GB "{itemCount}× {itemName}"
+                           :fr-CH "{itemCount}× {itemName}"}
+                   :duration-days {:de-CH "{totalDays, plural,
                                              =1 {# Tag}
                                              other {# Tage}}"
-                                             :en-GB "{totalDays, plural,
+                                   :en-GB "{totalDays, plural,
                                              =1 {# day}
                                              other {# days}}"
-                                             :fr-CH "{totalDays, plural,
+                                   :fr-CH "{totalDays, plural,
                                              =1 {# jour}
                                              other {# jours}}"}
-                             :overdue {:de-CH "überfällig" :en-GB "overdue" :fr-CH "en retard"}
-                             :option {:de-CH "Option" :en-GB "Option" :fr-CH "Option"}}
+                   :overdue {:de-CH "überfällig" :en-GB "overdue" :fr-CH "en retard"}
+                   :option {:de-CH "Option" :en-GB "Option" :fr-CH "Option"}}
 
-                            :reservation-status-label {:DRAFT {:de-CH "DRAFT" :en-GB "DRAFT" :fr-CH "DRAFT"}
-                                                       :UNSUBMITTED {:de-CH "UNSUBMITTED" :en-GB "UNSUBMITTED" :fr-CH "Non soumis"}
-                                                       :SUBMITTED {:de-CH "In Genehmigung" :en-GB "In approval" :fr-CH "En approbation"}
-                                                       :APPROVED {:de-CH "Abholung" :en-GB "Pick up" :fr-CH "Retrait"}
-                                                       :REJECTED {:de-CH "Abgelehnt" :en-GB "Rejected" :fr-CH "Refusé"}
-                                                       :SIGNED {:de-CH "Rückgabe" :en-GB "Return" :fr-CH "Retour"}
-                                                       :CLOSED {:de-CH "Zurückgebracht" :en-GB "Returned" :fr-CH "Retourné"}
-                                                       :CANCELED {:de-CH "Storniert" :en-GB "Canceled" :fr-CH "Annulé"}
-                                                       :EXPIRED-UNAPPROVED {:de-CH "Abgelaufen (nicht genehmigt)"
-                                                                            :en-GB "Expired (not approved)"
-                                                                            :fr-CH "Expiré (non approuvé)"}
-                                                       :EXPIRED {:de-CH "Abgelaufen (nicht abgeholt)"
-                                                                 :en-GB "Expired (not picked up)"
-                                                                 :fr-CH "Expiré (non retiré)"}}
+                  :reservation-status-label {:DRAFT {:de-CH "DRAFT" :en-GB "DRAFT" :fr-CH "DRAFT"}
+                                             :UNSUBMITTED {:de-CH "UNSUBMITTED" :en-GB "UNSUBMITTED" :fr-CH "Non soumis"}
+                                             :SUBMITTED {:de-CH "In Genehmigung" :en-GB "In approval" :fr-CH "En approbation"}
+                                             :APPROVED {:de-CH "Abholung" :en-GB "Pick up" :fr-CH "Retrait"}
+                                             :REJECTED {:de-CH "Abgelehnt" :en-GB "Rejected" :fr-CH "Refusé"}
+                                             :SIGNED {:de-CH "Rückgabe" :en-GB "Return" :fr-CH "Retour"}
+                                             :CLOSED {:de-CH "Zurückgebracht" :en-GB "Returned" :fr-CH "Retourné"}
+                                             :CANCELED {:de-CH "Storniert" :en-GB "Canceled" :fr-CH "Annulé"}
+                                             :EXPIRED-UNAPPROVED {:de-CH "Abgelaufen (nicht genehmigt)"
+                                                                  :en-GB "Expired (not approved)"
+                                                                  :fr-CH "Expiré (non approuvé)"}
+                                             :EXPIRED {:de-CH "Abgelaufen (nicht abgeholt)"
+                                                       :en-GB "Expired (not picked up)"
+                                                       :fr-CH "Expiré (non retiré)"}}
 
-                            :in-x-days {:de-CH "{days, plural,
+                  :in-x-days {:de-CH "{days, plural,
                                       =0 {heute}
                                       =1 {morgen}
                                       other {in # Tagen}}"
-                                        :en-GB "{days, plural,
+                              :en-GB "{days, plural,
                                       =0 {today}
                                       =1 {tomorrow}
                                       other {in # days}}"
-                                        :fr-CH "{days, plural,
+                              :fr-CH "{days, plural,
                                       =0 {aujourd’hui}
                                       =1 {demain}
                                       other {dans # jours}}"}
 
-                            :cancellation-dialog {:title {:de-CH "Bestellung stornieren"
-                                                          :en-GB "Cancel order"
-                                                          :fr-CH "Annuler la commande"}
-                                                  :confirm {:de-CH "Stornieren"
-                                                            :en-GB "Cancel order"
-                                                            :fr-CH "Confirmer l’annulation"}
-                                                  :cancel {:de-CH "Abbrechen"
-                                                           :en-GB "Abort"
-                                                           :fr-CH "Annuler"}}
+                  :cancellation-dialog {:title {:de-CH "Bestellung stornieren"
+                                                :en-GB "Cancel order"
+                                                :fr-CH "Annuler la commande"}
+                                        :confirm {:de-CH "Stornieren"
+                                                  :en-GB "Cancel order"
+                                                  :fr-CH "Confirmer l’annulation"}
+                                        :cancel {:de-CH "Abbrechen"
+                                                 :en-GB "Abort"
+                                                 :fr-CH "Annuler"}}
 
-                            :repeat-order {:repeat-action-label {:de-CH "Bestellung wiederholen"
-                                                                 :en-GB "Repeat order"
-                                                                 :fr-CH "Répéter la commande"}
-                                           :dialog {:title {:de-CH "Gegenstände hinzufügen"
-                                                            :en-GB "Add items"
-                                                            :fr-CH "Ajouter des éléments"}
-                                                    :info {:de-CH "{count, plural,
+                  :repeat-order {:repeat-action-label {:de-CH "Bestellung wiederholen"
+                                                       :en-GB "Repeat order"
+                                                       :fr-CH "Répéter la commande"}
+                                 :dialog {:title {:de-CH "Gegenstände hinzufügen"
+                                                  :en-GB "Add items"
+                                                  :fr-CH "Ajouter des éléments"}
+                                          :info {:de-CH "{count, plural,
                                                          =1 {Ein Gegenstand wird zum Warenkorb hinzugefügt.}
                                                          other {# Gegenstände werden zum Warenkorb hinzugefügt.}}"
-                                                           :en-GB "{count, plural,
+                                                 :en-GB "{count, plural,
                                                          =1 {One item will be added to the cart.}
                                                          other {# items will be added to the cart.}}"
-                                                           :fr-CH "{count, plural,
+                                                 :fr-CH "{count, plural,
                                                          =1 {Un élément sera ajouté au panier.}
                                                          other {# éléments seront ajoutés au panier.}}"}
-                                                    :error-only-options {:de-CH "Optionen können nur durch die Verleihstelle hinzugefügt werden."
-                                                                         :en-GB "Options can only be added by the lending desk."
-                                                                         :fr-CH "Les options ne peuvent être ajoutées que par le service de prêt."}
+                                          :error-only-options {:de-CH "Optionen können nur durch die Verleihstelle hinzugefügt werden."
+                                                               :en-GB "Options can only be added by the lending desk."
+                                                               :fr-CH "Les options ne peuvent être ajoutées que par le service de prêt."}
 
-                                                    :warning-some-options {:de-CH "{count, plural,
+                                          :warning-some-options {:de-CH "{count, plural,
                                                          =1 {Hinweis: Eine Option kann nur durch die Verleihstelle hinzugefügt werden.}
                                                          other {Hinweis: # Optionen können nur durch die Verleihstelle hinzugefügt werden.}}"
-                                                                           :en-GB "{count, plural,
+                                                                 :en-GB "{count, plural,
                                                          =1 {Please note: One option can only be added by the lending desk.}
                                                          other {Please note: # options can only be added by the lending desk.}}"
-                                                                           :fr-CH "{count, plural,
+                                                                 :fr-CH "{count, plural,
                                                          =1 {Remarque : Une option ne peut être ajoutée que par le service de prêt.}
                                                          other {Remarque : # options ne peuvent être ajoutées que par le service de prêt.}}"}
 
-                                                    :info-multi-pool {:de-CH "Öffnungszeiten werden nicht angezeigt, wenn Gegenstände aus mehreren Inventarparks enthalten sind. Die Verfügbarkeiten können nach dem Hinzufügen im Warenkorb geprüft werden."
-                                                                      :en-GB "Opening hours are not displayed when items from multiple inventory pools are included. Availability can be checked in the shopping cart after adding the items."
-                                                                      :fr-CH "Les heures d’ouverture ne sont pas affichées lorsqu’il y a des éléments provenant de plusieurs pools. Les disponibilités peuvent être vérifiées dans le panier après ajout."}
+                                          :info-multi-pool {:de-CH "Öffnungszeiten werden nicht angezeigt, wenn Gegenstände aus mehreren Inventarparks enthalten sind. Die Verfügbarkeiten können nach dem Hinzufügen im Warenkorb geprüft werden."
+                                                            :en-GB "Opening hours are not displayed when items from multiple inventory pools are included. Availability can be checked in the shopping cart after adding the items."
+                                                            :fr-CH "Les heures d’ouverture ne sont pas affichées lorsqu’il y a des éléments provenant de plusieurs pools. Les disponibilités peuvent être vérifiées dans le panier après ajout."}
 
-                                                    :timespan {:de-CH "Zeitraum" :en-GB "Time span" :fr-CH "Période"}
-                                                    :undefined {:de-CH "Unbestimmt" :en-GB "undefined" :fr-CH "Indéfini"}
-                                                    :from {:de-CH "Von" :en-GB "From" :fr-CH "De"}
-                                                    :until {:de-CH "Bis" :en-GB "Until" :fr-CH "À"}
-                                                    :order-for {:de-CH "Bestellung für" :en-GB "Order for" :fr-CH "Commande pour"}
-                                                    :cancel {:de-CH "Abbrechen" :en-GB "Cancel" :fr-CH "Annuler"}
-                                                    :submit {:de-CH "Hinzufügen" :en-GB "Add" :fr-CH "Ajouter"}}
+                                          :timespan {:de-CH "Zeitraum" :en-GB "Time span" :fr-CH "Période"}
+                                          :undefined {:de-CH "Unbestimmt" :en-GB "undefined" :fr-CH "Indéfini"}
+                                          :from {:de-CH "Von" :en-GB "From" :fr-CH "De"}
+                                          :until {:de-CH "Bis" :en-GB "Until" :fr-CH "À"}
+                                          :order-for {:de-CH "Bestellung für" :en-GB "Order for" :fr-CH "Commande pour"}
+                                          :cancel {:de-CH "Abbrechen" :en-GB "Cancel" :fr-CH "Annuler"}
+                                          :submit {:de-CH "Hinzufügen" :en-GB "Add" :fr-CH "Ajouter"}}
 
-                                           :success-notification {:title {:de-CH "Gegenstände hinzugefügt"
-                                                                          :en-GB "Items added"
-                                                                          :fr-CH "Éléments ajoutés"}
-                                                                  :message {:de-CH "{count, plural,
+                                 :success-notification {:title {:de-CH "Gegenstände hinzugefügt"
+                                                                :en-GB "Items added"
+                                                                :fr-CH "Éléments ajoutés"}
+                                                        :message {:de-CH "{count, plural,
                                                                           =1 {# Gegenstand wurde zum Warenkorb hinzugefügt und kann nun dort überprüft werden.}
                                                                           other {# Gegenstände wurden zum Warenkorb hinzugefügt und können nun dort überprüft werden.}}"
-                                                                            :en-GB "{count, plural,
+                                                                  :en-GB "{count, plural,
                                                                           =1 {# item was added to the cart and can be reviewed/edited there.}
                                                                           other {# items were added to the cart and can be reviewed/edited there.}}"
-                                                                            :fr-CH "{count, plural,
+                                                                  :fr-CH "{count, plural,
                                                                           =1 {# élément a été ajouté au panier et peut y être vérifié.}
                                                                           other {# éléments ont été ajoutés au panier et peuvent y être vérifiés.}}"}
-                                                                  :confirm {:de-CH "Zum Warenkorb"
-                                                                            :en-GB "Go to cart"
-                                                                            :fr-CH "Aller au panier"}}}}
-              :shopping-cart {:title {:en-GB "Cart"
-                                      :de-CH "Warenkorb"
-                                      :fr-CH "Panier"}
-                              :edit {:en-GB "Edit"
-                                     :de-CH "Editieren"
-                                     :fr-CH "Éditer"}
-                              :draft {:title {:en-GB "Draft"
-                                              :de-CH "Draft"
-                                              :fr-CH "Brouillon"}
-                                      :add-to-cart {:en-GB "Add to cart"
-                                                    :de-CH "Add to cart"
-                                                    :fr-CH "Ajouter au panier"}
-                                      :delete {:en-GB "Delete draft"
-                                               :de-CH "Delete draft"
-                                               :fr-CH "Supprimer le brouillon"}
-                                      :empty {:en-GB "Your draft is empty"
-                                              :de-CH "Your draft is empty"
-                                              :fr-CH "Votre brouillon est vide"}}
-                              :countdown {:section-title {:en-GB "Status"
-                                                          :de-CH "Status"
-                                                          :fr-CH "Statut"}
-                                          :time-limit {:en-GB "Time limit"
-                                                       :de-CH "Zeitlimit"
-                                                       :fr-CH "Limite de temps"}
-                                          :time-left {:en-GB "{minutesLeft, plural,
+                                                        :confirm {:de-CH "Zum Warenkorb"
+                                                                  :en-GB "Go to cart"
+                                                                  :fr-CH "Aller au panier"}}}}
+    :shopping-cart {:title {:en-GB "Cart"
+                            :de-CH "Warenkorb"
+                            :fr-CH "Panier"}
+                    :edit {:en-GB "Edit"
+                           :de-CH "Editieren"
+                           :fr-CH "Éditer"}
+                    :draft {:title {:en-GB "Draft"
+                                    :de-CH "Draft"
+                                    :fr-CH "Brouillon"}
+                            :add-to-cart {:en-GB "Add to cart"
+                                          :de-CH "Add to cart"
+                                          :fr-CH "Ajouter au panier"}
+                            :delete {:en-GB "Delete draft"
+                                     :de-CH "Delete draft"
+                                     :fr-CH "Supprimer le brouillon"}
+                            :empty {:en-GB "Your draft is empty"
+                                    :de-CH "Your draft is empty"
+                                    :fr-CH "Votre brouillon est vide"}}
+                    :countdown {:section-title {:en-GB "Status"
+                                                :de-CH "Status"
+                                                :fr-CH "Statut"}
+                                :time-limit {:en-GB "Time limit"
+                                             :de-CH "Zeitlimit"
+                                             :fr-CH "Limite de temps"}
+                                :time-left {:en-GB "{minutesLeft, plural,
                                                     =1 {# minute left}
                                                     other {# minutes left}
                                                     }"
-                                                      :de-CH "{minutesLeft, plural,
+                                            :de-CH "{minutesLeft, plural,
                                                     =1 {Noch eine Minute übrig}
                                                     other {Noch # Minuten übrig}
                                                     }"
-                                                      :fr-CH "{minutesLeft, plural,
+                                            :fr-CH "{minutesLeft, plural,
                                                     =1 {Il reste # minute}
                                                     other {Il reste # minutes}
                                                     }"}
-                                          :time-left-last-minute {:en-GB "Less than one minute left"
-                                                                  :de-CH "Weniger als eine Minute übrig"
-                                                                  :fr-CH "Il reste moins d’une minute"}
-                                          :no-valid-items {:en-GB "No valid items"
-                                                           :de-CH "Keine gültigen Gegenstände"
-                                                           :fr-CH "Aucun élément valide"}
-                                          :expired {:en-GB "Expired"
-                                                    :de-CH "Abgelaufen"
-                                                    :fr-CH "Expiré"}
-                                          :reset {:en-GB "Reset time limit"
-                                                  :de-CH "Zeitlimit zurückstellen"
-                                                  :fr-CH "Réinitialiser la limite de temps"}}
-                              :delegation {:section-title {:de-CH "Bestellung für"
-                                                           :en-GB "Order for"
-                                                           :fr-CH "Commande pour"}}
-                              :line {:section-title {:en-GB "Items"
-                                                     :de-CH "Gegenstände"
-                                                     :fr-CH "Éléments"}
-                                     :total {:en-GB "Total"
-                                             :de-CH "Total"
-                                             :fr-CH "Total"}
-                                     :total-models {:en-GB "Model(s)"
-                                                    :de-CH "Modell(e)"
-                                                    :fr-CH "Modèle(s)"}
-                                     :total-items {:en-GB "Item(s)"
-                                                   :de-CH "Gegenstand/Gegenstände"
-                                                   :fr-CH "Élément(s)"}
-                                     :from {:en-GB "from"
-                                            :de-CH "aus"
-                                            :fr-CH "de"}
-                                     :first-pickup {:en-GB "First pickup"
-                                                    :de-CH "Erste Abholung"
-                                                    :fr-CH "Premier retrait"}
-                                     :last-return {:en-GB "last return"
-                                                   :de-CH "letzte Rückgabe"
-                                                   :fr-CH "Dernier retour"}
-                                     :invalid-items-warning {:en-GB "{invalidItemsCount, plural,
+                                :time-left-last-minute {:en-GB "Less than one minute left"
+                                                        :de-CH "Weniger als eine Minute übrig"
+                                                        :fr-CH "Il reste moins d’une minute"}
+                                :no-valid-items {:en-GB "No valid items"
+                                                 :de-CH "Keine gültigen Gegenstände"
+                                                 :fr-CH "Aucun élément valide"}
+                                :expired {:en-GB "Expired"
+                                          :de-CH "Abgelaufen"
+                                          :fr-CH "Expiré"}
+                                :reset {:en-GB "Reset time limit"
+                                        :de-CH "Zeitlimit zurückstellen"
+                                        :fr-CH "Réinitialiser la limite de temps"}}
+                    :delegation {:section-title {:de-CH "Bestellung für"
+                                                 :en-GB "Order for"
+                                                 :fr-CH "Commande pour"}}
+                    :line {:section-title {:en-GB "Items"
+                                           :de-CH "Gegenstände"
+                                           :fr-CH "Éléments"}
+                           :total {:en-GB "Total"
+                                   :de-CH "Total"
+                                   :fr-CH "Total"}
+                           :total-models {:en-GB "Model(s)"
+                                          :de-CH "Modell(e)"
+                                          :fr-CH "Modèle(s)"}
+                           :total-items {:en-GB "Item(s)"
+                                         :de-CH "Gegenstand/Gegenstände"
+                                         :fr-CH "Élément(s)"}
+                           :from {:en-GB "from"
+                                  :de-CH "aus"
+                                  :fr-CH "de"}
+                           :first-pickup {:en-GB "First pickup"
+                                          :de-CH "Erste Abholung"
+                                          :fr-CH "Premier retrait"}
+                           :last-return {:en-GB "last return"
+                                         :de-CH "letzte Rückgabe"
+                                         :fr-CH "Dernier retour"}
+                           :invalid-items-warning {:en-GB "{invalidItemsCount, plural,
                                                            =1 {# invalid item}
                                                            other {# invalid items}}"
-                                                             :de-CH "{invalidItemsCount, plural,
+                                                   :de-CH "{invalidItemsCount, plural,
                                                            =1 {# Gegenstand ungültig}
                                                            other {# Gegenstände ungültig}}"
-                                                             :fr-CH "{invalidItemsCount, plural,
+                                                   :fr-CH "{invalidItemsCount, plural,
                                                            =1 {# élément invalide}
                                                            other {# éléments invalides}}"}
-                                     :duration-days {:de-CH "{totalDays, plural,
+                           :duration-days {:de-CH "{totalDays, plural,
                                                                         =1 {# Tag}
                                                                         other {# Tage}}"
-                                                     :en-GB "{totalDays, plural,
+                                           :en-GB "{totalDays, plural,
                                                                         =1 {# day}
                                                                         other {# days}}"
-                                                     :fr-CH "{totalDays, plural,
+                                           :fr-CH "{totalDays, plural,
                                                                         =1 {# jour}
                                                                         other {# jours}}"}}
-                              :edit-dialog {:dialog-title {:en-GB "Edit reservation"
-                                                           :de-CH "Reservation bearbeiten"
-                                                           :fr-CH "Modifier la réservation"}
-                                            :delete-reservation {:en-GB "Remove reservation"
-                                                                 :de-CH "Reservation entfernen"
-                                                                 :fr-CH "Supprimer la réservation"}
-                                            :cancel {:en-GB "Cancel" :de-CH "Abbrechen" :fr-CH "Annuler"}
-                                            :confirm {:en-GB "Confirm" :de-CH "Bestätigen" :fr-CH "Confirmer"}}
-                              :confirm-order {:en-GB "Send order"
-                                              :de-CH "Bestellung abschicken"
-                                              :fr-CH "Envoyer la commande"}
-                              :delete-order {:en-GB "Delete cart"
-                                             :de-CH "Warenkorb löschen"
-                                             :fr-CH "Supprimer le panier"}
-                              :order-overview {:en-GB "Cart"
-                                               :de-CH "Warenkorb"
-                                               :fr-CH "Panier"}
-                              :empty-order {:en-GB "No items added"
-                                            :de-CH "Noch keine Gegenstände hinzugefügt"
-                                            :fr-CH "Aucun élément ajouté"}
-                              :borrow-items {:en-GB "Go to catalog"
-                                             :de-CH "Hier geht's zum Katalog"
-                                             :fr-CH "Aller au catalogue"}
-                              :confirm-dialog {:dialog-title {:en-GB "Send order"
-                                                              :de-CH "Bestellung abschicken"
-                                                              :fr-CH "Envoyer la commande"}
-                                               :title {:en-GB "Title" :de-CH "Titel" :fr-CH "Titre"}
-                                               :title-hint {:en-GB "As a reference for you"
-                                                            :de-CH "Als Referenz für dich"
-                                                            :fr-CH "Comme référence pour vous"}
-                                               :purpose {:en-GB "Purpose" :de-CH "Zweck" :fr-CH "But"}
-                                               :purpose-hint {:en-GB "For the inventory pool"
-                                                              :de-CH "Für den Inventarpark"
-                                                              :fr-CH "Pour le pool d’inventaire"}
-                                               :contact-details {:en-GB "Contact details"
-                                                                 :de-CH "Kontaktdaten"
-                                                                 :fr-CH "Coordonnées"}
-                                               :contact-details-hint {:en-GB "The indication of a telephone number is recommended"
-                                                                      :de-CH "Die Angabe einer Telefonnummer ist empfohlen"
-                                                                      :fr-CH "Il est recommandé d’indiquer un numéro de téléphone"}
-                                               :lending-terms {:en-GB "Lending terms"
-                                                               :de-CH "Ausleihbedingungen"
-                                                               :fr-CH "Conditions de prêt"}
-                                               :i-accept {:en-GB "I accept the lending terms"
-                                                          :de-CH "Ich akzeptiere die Ausleihbedingungen"
-                                                          :fr-CH "J’accepte les conditions de prêt"}
-                                               :cancel {:en-GB "Cancel" :de-CH "Abbrechen" :fr-CH "Annuler"}
-                                               :confirm {:en-GB "Send" :de-CH "Abschicken" :fr-CH "Envoyer"}}
-                              :order-success-notification {:title {:en-GB "Order submitted"
-                                                                   :de-CH "Bestellung übermittelt"
-                                                                   :fr-CH "Commande envoyée"}
-                                                           :order-submitted {:en-GB "Order was submitted but still needs to be approved!"
-                                                                             :de-CH "Die Bestellung wurde übermittelt, muss aber noch genehmigt werden!"
-                                                                             :fr-CH "La commande a été envoyée mais doit encore être approuvée !"}}
-                              :delete-dialog {:dialog-title {:en-GB "Delete cart"
-                                                             :de-CH "Warenkorb löschen"
-                                                             :fr-CH "Supprimer le panier"}
-                                              :really-delete-order {:en-GB "Really remove all reservations?"
-                                                                    :de-CH "Wirklich alle Reservationen entfernen?"
-                                                                    :fr-CH "Voulez-vous vraiment supprimer toutes les réservations ?"}
-                                              :cancel {:en-GB "Cancel"
-                                                       :de-CH "Abbrechen"
-                                                       :fr-CH "Annuler"}
-                                              :confirm {:en-GB "Delete"
-                                                        :de-CH "Löschen"
-                                                        :fr-CH "Supprimer"}}}
+                    :edit-dialog {:dialog-title {:en-GB "Edit reservation"
+                                                 :de-CH "Reservation bearbeiten"
+                                                 :fr-CH "Modifier la réservation"}
+                                  :delete-reservation {:en-GB "Remove reservation"
+                                                       :de-CH "Reservation entfernen"
+                                                       :fr-CH "Supprimer la réservation"}
+                                  :cancel {:en-GB "Cancel" :de-CH "Abbrechen" :fr-CH "Annuler"}
+                                  :confirm {:en-GB "Confirm" :de-CH "Bestätigen" :fr-CH "Confirmer"}}
+                    :confirm-order {:en-GB "Send order"
+                                    :de-CH "Bestellung abschicken"
+                                    :fr-CH "Envoyer la commande"}
+                    :delete-order {:en-GB "Delete cart"
+                                   :de-CH "Warenkorb löschen"
+                                   :fr-CH "Supprimer le panier"}
+                    :order-overview {:en-GB "Cart"
+                                     :de-CH "Warenkorb"
+                                     :fr-CH "Panier"}
+                    :empty-order {:en-GB "No items added"
+                                  :de-CH "Noch keine Gegenstände hinzugefügt"
+                                  :fr-CH "Aucun élément ajouté"}
+                    :borrow-items {:en-GB "Go to catalog"
+                                   :de-CH "Hier geht's zum Katalog"
+                                   :fr-CH "Aller au catalogue"}
+                    :confirm-dialog {:dialog-title {:en-GB "Send order"
+                                                    :de-CH "Bestellung abschicken"
+                                                    :fr-CH "Envoyer la commande"}
+                                     :title {:en-GB "Title" :de-CH "Titel" :fr-CH "Titre"}
+                                     :title-hint {:en-GB "As a reference for you"
+                                                  :de-CH "Als Referenz für dich"
+                                                  :fr-CH "Comme référence pour vous"}
+                                     :purpose {:en-GB "Purpose" :de-CH "Zweck" :fr-CH "But"}
+                                     :purpose-hint {:en-GB "For the inventory pool"
+                                                    :de-CH "Für den Inventarpark"
+                                                    :fr-CH "Pour le pool d’inventaire"}
+                                     :contact-details {:en-GB "Contact details"
+                                                       :de-CH "Kontaktdaten"
+                                                       :fr-CH "Coordonnées"}
+                                     :contact-details-hint {:en-GB "The indication of a telephone number is recommended"
+                                                            :de-CH "Die Angabe einer Telefonnummer ist empfohlen"
+                                                            :fr-CH "Il est recommandé d’indiquer un numéro de téléphone"}
+                                     :lending-terms {:en-GB "Lending terms"
+                                                     :de-CH "Ausleihbedingungen"
+                                                     :fr-CH "Conditions de prêt"}
+                                     :i-accept {:en-GB "I accept the lending terms"
+                                                :de-CH "Ich akzeptiere die Ausleihbedingungen"
+                                                :fr-CH "J’accepte les conditions de prêt"}
+                                     :cancel {:en-GB "Cancel" :de-CH "Abbrechen" :fr-CH "Annuler"}
+                                     :confirm {:en-GB "Send" :de-CH "Abschicken" :fr-CH "Envoyer"}}
+                    :order-success-notification {:title {:en-GB "Order submitted"
+                                                         :de-CH "Bestellung übermittelt"
+                                                         :fr-CH "Commande envoyée"}
+                                                 :order-submitted {:en-GB "Order was submitted but still needs to be approved!"
+                                                                   :de-CH "Die Bestellung wurde übermittelt, muss aber noch genehmigt werden!"
+                                                                   :fr-CH "La commande a été envoyée mais doit encore être approuvée !"}}
+                    :delete-dialog {:dialog-title {:en-GB "Delete cart"
+                                                   :de-CH "Warenkorb löschen"
+                                                   :fr-CH "Supprimer le panier"}
+                                    :really-delete-order {:en-GB "Really remove all reservations?"
+                                                          :de-CH "Wirklich alle Reservationen entfernen?"
+                                                          :fr-CH "Voulez-vous vraiment supprimer toutes les réservations ?"}
+                                    :cancel {:en-GB "Cancel"
+                                             :de-CH "Abbrechen"
+                                             :fr-CH "Annuler"}
+                                    :confirm {:en-GB "Delete"
+                                              :de-CH "Löschen"
+                                              :fr-CH "Supprimer"}}}
 
-              :templates {:index {:title {:de-CH "Vorlagen" :en-GB "Templates" :fr-CH "Modèles"}
-                                  :no-templates-for-current-profile {:de-CH "Für das aktuelle Profil sind keine Vorlagen verfügbar"
-                                                                     :en-GB "No templates available for the current profile"
-                                                                     :fr-CH "Aucun modèle disponible pour le profil actuel"}}
-                          :show {:title {:de-CH "Vorlage" :en-GB "Template" :fr-CH "Modèle"}
-                                 :items {:de-CH "Gegenstände" :en-GB "Items" :fr-CH "Éléments"}
-                                 :item-title {:de-CH "{itemCount}× {itemName}"
-                                              :en-GB "{itemCount}× {itemName}"
-                                              :fr-CH "{itemCount}× {itemName}"}
-                                 :template-not-available {:de-CH "Diese Vorlage ist für das aktuelle Profil nicht verfügbar"
-                                                          :en-GB "This template is not available for the current profile"
-                                                          :fr-CH "Ce modèle n’est pas disponible pour le profil actuel"}
-                                 :user-suspended {:de-CH "Zugang zu {poolName} gesperrt"
-                                                  :en-GB "Access to {poolName} is suspended"
-                                                  :fr-CH "Accès à {poolName} suspendu"}
-                                 :some-items-not-available {:de-CH "Die Gegenstände in grauer Schrift sind für das aktuelle Profil nicht reservierbar"
-                                                            :en-GB "The items shown in grey font are not reservable for the current profile"
-                                                            :fr-CH "Les éléments affichés en gris ne sont pas réservables pour le profil actuel"}
-                                 :no-items-available {:de-CH "Diese Vorlage enthält keine Gegenstände, welche für das aktuelle Profil reservierbar sind"
-                                                      :en-GB "This template does not contain any items that can be reserved for the current profile"
-                                                      :fr-CH "Ce modèle ne contient aucun élément réservable pour le profil actuel"}
-                                 :apply-button-label {:de-CH "Gegenstände bestellen"
-                                                      :en-GB "Order items"
-                                                      :fr-CH "Commander les éléments"}}
-                          :apply {:dialog {:title {:de-CH "Gegenstände hinzufügen"
-                                                   :en-GB "Add items"
-                                                   :fr-CH "Ajouter des éléments"}
-                                           :info {:de-CH "{count, plural, 
+    :templates {:index {:title {:de-CH "Vorlagen" :en-GB "Templates" :fr-CH "Modèles"}
+                        :no-templates-for-current-profile {:de-CH "Für das aktuelle Profil sind keine Vorlagen verfügbar"
+                                                           :en-GB "No templates available for the current profile"
+                                                           :fr-CH "Aucun modèle disponible pour le profil actuel"}}
+                :show {:title {:de-CH "Vorlage" :en-GB "Template" :fr-CH "Modèle"}
+                       :items {:de-CH "Gegenstände" :en-GB "Items" :fr-CH "Éléments"}
+                       :item-title {:de-CH "{itemCount}× {itemName}"
+                                    :en-GB "{itemCount}× {itemName}"
+                                    :fr-CH "{itemCount}× {itemName}"}
+                       :template-not-available {:de-CH "Diese Vorlage ist für das aktuelle Profil nicht verfügbar"
+                                                :en-GB "This template is not available for the current profile"
+                                                :fr-CH "Ce modèle n’est pas disponible pour le profil actuel"}
+                       :user-suspended {:de-CH "Zugang zu {poolName} gesperrt"
+                                        :en-GB "Access to {poolName} is suspended"
+                                        :fr-CH "Accès à {poolName} suspendu"}
+                       :some-items-not-available {:de-CH "Die Gegenstände in grauer Schrift sind für das aktuelle Profil nicht reservierbar"
+                                                  :en-GB "The items shown in grey font are not reservable for the current profile"
+                                                  :fr-CH "Les éléments affichés en gris ne sont pas réservables pour le profil actuel"}
+                       :no-items-available {:de-CH "Diese Vorlage enthält keine Gegenstände, welche für das aktuelle Profil reservierbar sind"
+                                            :en-GB "This template does not contain any items that can be reserved for the current profile"
+                                            :fr-CH "Ce modèle ne contient aucun élément réservable pour le profil actuel"}
+                       :apply-button-label {:de-CH "Gegenstände bestellen"
+                                            :en-GB "Order items"
+                                            :fr-CH "Commander les éléments"}}
+                :apply {:dialog {:title {:de-CH "Gegenstände hinzufügen"
+                                         :en-GB "Add items"
+                                         :fr-CH "Ajouter des éléments"}
+                                 :info {:de-CH "{count, plural, 
                                                          =1 {Ein Gegenstand wird zum Warenkorb hinzugefügt.}
                                                          other {# Gegenstände werden zum Warenkorb hinzugefügt.}}"
-                                                  :en-GB "{count, plural, 
+                                        :en-GB "{count, plural, 
                                                          =1 {One item will be added to the cart.}
                                                          other {# items will be added to the cart.}}"
-                                                  :fr-CH "{count, plural,
+                                        :fr-CH "{count, plural,
                                                          =1 {Un élément sera ajouté au panier.}
                                                          other {# éléments seront ajoutés au panier.}}"}
-                                           :error-no-items {:de-CH "Keine Gegenstände gefunden"
-                                                            :en-GB "No items found"
-                                                            :fr-CH "Aucun élément trouvé"}
-                                           :timespan {:de-CH "Zeitraum" :en-GB "Time span" :fr-CH "Période"}
-                                           :undefined {:de-CH "Unbestimmt" :en-GB "undefined" :fr-CH "Indéfini"}
-                                           :from {:de-CH "Von" :en-GB "From" :fr-CH "De"}
-                                           :until {:de-CH "Bis" :en-GB "Until" :fr-CH "À"}
-                                           :order-for {:de-CH "Bestellung für" :en-GB "Order for" :fr-CH "Commande pour"}
-                                           :pool {:de-CH "Inventarpark" :en-GB "Inventory pool" :fr-CH "Pool d’inventaire"}
-                                           :cancel {:de-CH "Abbrechen" :en-GB "Cancel" :fr-CH "Annuler"}
-                                           :submit {:de-CH "Hinzufügen" :en-GB "Add" :fr-CH "Ajouter"}}
-                                  :success-notification {:title {:de-CH "Gegenstände hinzugefügt"
-                                                                 :en-GB "Items added"
-                                                                 :fr-CH "Éléments ajoutés"}
-                                                         :message {:de-CH "{count, plural, 
+                                 :error-no-items {:de-CH "Keine Gegenstände gefunden"
+                                                  :en-GB "No items found"
+                                                  :fr-CH "Aucun élément trouvé"}
+                                 :timespan {:de-CH "Zeitraum" :en-GB "Time span" :fr-CH "Période"}
+                                 :undefined {:de-CH "Unbestimmt" :en-GB "undefined" :fr-CH "Indéfini"}
+                                 :from {:de-CH "Von" :en-GB "From" :fr-CH "De"}
+                                 :until {:de-CH "Bis" :en-GB "Until" :fr-CH "À"}
+                                 :order-for {:de-CH "Bestellung für" :en-GB "Order for" :fr-CH "Commande pour"}
+                                 :pool {:de-CH "Inventarpark" :en-GB "Inventory pool" :fr-CH "Pool d’inventaire"}
+                                 :cancel {:de-CH "Abbrechen" :en-GB "Cancel" :fr-CH "Annuler"}
+                                 :submit {:de-CH "Hinzufügen" :en-GB "Add" :fr-CH "Ajouter"}}
+                        :success-notification {:title {:de-CH "Gegenstände hinzugefügt"
+                                                       :en-GB "Items added"
+                                                       :fr-CH "Éléments ajoutés"}
+                                               :message {:de-CH "{count, plural, 
                                                                           =1 {Ein Gegenstand wurde zum Warenkorb hinzugefügt und kann nun dort überprüft werden.}
                                                                           other {# Gegenstände wurden zum Warenkorb hinzugefügt und können nun dort überprüft werden.}}"
-                                                                   :en-GB "{count, plural, 
+                                                         :en-GB "{count, plural, 
                                                                           =1 {One item was added to the cart and can be reviewed/edited there.}
                                                                           other {# items were added to the cart and can be reviewed/edited there.}}"
-                                                                   :fr-CH "{count, plural,
+                                                         :fr-CH "{count, plural,
                                                                           =1 {Un élément a été ajouté au panier et peut maintenant y être vérifié.}
                                                                           other {# éléments ont été ajoutés au panier et peuvent maintenant y être vérifiés.}}"}
-                                                         :confirm {:de-CH "Zum Warenkorb"
-                                                                   :en-GB "Go to cart"
-                                                                   :fr-CH "Aller au panier"}}}}}})
+                                               :confirm {:de-CH "Zum Warenkorb"
+                                                         :en-GB "Go to cart"
+                                                         :fr-CH "Aller au panier"}}}}}})
