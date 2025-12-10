@@ -652,7 +652,7 @@
                                            :fr-CH " ({count} expiré)"}
                                  :OVERDUE {:de-CH " ({count} überfällig)"
                                            :en-GB " ({count} overdue)"
-                                           :fr-CH " ({count} en retard)"}}}}
+                                           :fr-CH " ({count} en retard)"}}}}}
 
               :rental-show {:page-title {:de-CH "Bestellung" :en-GB "Order" :fr-CH "Commande"}
                             :message-403 {:de-CH "Diese Bestellung ist für das aktuelle Profil nicht sichtbar"
@@ -999,4 +999,4 @@
                                                                           other {# éléments ont été ajoutés au panier et peuvent maintenant y être vérifiés.}}"}
                                                          :confirm {:de-CH "Zum Warenkorb"
                                                                    :en-GB "Go to cart"
-                                                                   :fr-CH "Aller au panier"}}}}}}})
+                                                                   :fr-CH "Aller au panier"}}}}}})
