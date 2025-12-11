@@ -704,10 +704,10 @@
                                                     =1 {Noch eine Minute übrig}
                                                     other {Noch # Minuten übrig}
                                                     }"}
-                                                    :fr-CH "{minutesLeft, plural,
+                                :fr-CH "{minutesLeft, plural,
                                                     =1 {# minute restante}
                                                     other {# minutes restantes}}"                                :time-left-last-minute {:en-GB "Less than one minute left"
-                                                        :de-CH "Weniger als eine Minute übrig" :fr-CH "Moins d'une minute restante"}
+                                                                                                                                         :de-CH "Weniger als eine Minute übrig" :fr-CH "Moins d'une minute restante"}
                                 :no-valid-items {:en-GB "No valid items"
                                                  :de-CH "Keine gültigen Gegenstände" :fr-CH "Aucun élément valide"}
                                 :expired {:en-GB "Expired"
