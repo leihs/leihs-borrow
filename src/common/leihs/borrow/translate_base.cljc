@@ -9,7 +9,7 @@
                 :de-CH :en-GB
                 :es :en-GB
                 :en-US :en-GB
-                :fr-CH :en-GB})
+                #_#_:fr-CH :en-GB})
 
 (def remove-first-char #(-> % str rest string/join))
 
