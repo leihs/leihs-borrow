@@ -2,12 +2,27 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd ../.. > /dev/null 2>&1 && pwd -P)"
-ASDF_PLUGIN=java
-ASDF_PLUGIN_URL=https://github.com/halcyon/asdf-java.git
 
 source $PROJECT_DIR/bin/env/project.sh
-source $PROJECT_DIR/bin/env/asdf-helper.bash
+source $PROJECT_DIR/bin/env/select-tool-versions-manager
 
-asdf-update-plugin
+case "$TOOL_VERSIONS_MANAGER" in
+  asdf|asdf-vm)
+    echo "Setting up java via asdf"
+    ASDF_PLUGIN=java
+    ASDF_PLUGIN_URL=https://github.com/halcyon/asdf-java.git
+    source $PROJECT_DIR/bin/env/asdf-helper.bash
+    asdf-update-plugin
+    asdf install java
+    ;;
+  mise)
+    echo "Setting up java via mise"
+    mise install java
+    ;;
+  *)
+    echo "ERROR: Unsupported TOOL_VERSIONS_MANAGER: $TOOL_VERSIONS_MANAGER"
+    exit 1
+    ;;
+esac
 
 # vi: ft=sh
