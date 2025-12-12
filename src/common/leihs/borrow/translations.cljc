@@ -145,9 +145,11 @@
   ; --- PER FEATURE TRANSLATIONS ---
 
     :catalog {:title {:en-GB "Catalog"
-                      :de-CH "Katalog"}
+                      :de-CH "Katalog"
+                      :fr-CH "Catalogue"}
               :categories {:en-GB "Categories"
-                           :de-CH "Kategorien"}
+                           :de-CH "Kategorien"
+                           :fr-CH "Catégories"}
               :no-reservable-items {:en-GB "No reservable items found"
                                     :de-CH "Keine reservierbaren Gegenstände gefunden"}
               :check-available-pools {:en-GB "Check available inventory pools"
@@ -703,11 +705,12 @@
                                             :de-CH "{minutesLeft, plural,
                                                     =1 {Noch eine Minute übrig}
                                                     other {Noch # Minuten übrig}
-                                                    }"}
-                                :fr-CH "{minutesLeft, plural,
+                                                    }"
+                                            :fr-CH "{minutesLeft, plural,
                                                     =1 {# minute restante}
-                                                    other {# minutes restantes}}"                                :time-left-last-minute {:en-GB "Less than one minute left"
-                                                                                                                                         :de-CH "Weniger als eine Minute übrig" :fr-CH "Moins d'une minute restante"}
+                                                    other {# minutes restantes}}"}
+                                :time-left-last-minute {:en-GB "Less than one minute left"
+                                                        :de-CH "Weniger als eine Minute übrig" :fr-CH "Moins d'une minute restante"}
                                 :no-valid-items {:en-GB "No valid items"
                                                  :de-CH "Keine gültigen Gegenstände" :fr-CH "Aucun élément valide"}
                                 :expired {:en-GB "Expired"
@@ -736,7 +739,10 @@
                                                    :de-CH "{invalidItemsCount, plural,
                                                            =1 {# Gegenstand ungültig}
                                                            other {# Gegenstände ungültig}
-                                                           }"}
+                                                           }"
+                                                   :fr-CH "{invalidItemsCount, plural,
+                                                           =1 {# élément non valide}
+                                                           other {# éléments non valides}}"}
                            :duration-days {:de-CH "{totalDays, plural,
                                                                         =1 {# Tag}
                                                                         other {# Tage}
@@ -744,45 +750,56 @@
                                            :en-GB "{totalDays, plural,
                                                                         =1 {# day}
                                                                         other {# days}
-                                                                      }"}}
-                    :edit-dialog {:dialog-title {:en-GB "Edit reservation" :de-CH "Reservation bearbeiten"}
-                                  :delete-reservation {:en-GB "Remove reservation" :de-CH "Reservation entfernen"}
-                                  :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
-                                  :confirm {:en-GB "Confirm" :de-CH "Bestätigen"}}
+                                                                      }"
+                                           :fr-CH "{totalDays, plural,
+                                                                        =1 {# jour}
+                                                                        other {# jours}}"}}
+                    :edit-dialog {:dialog-title {:en-GB "Edit reservation" :de-CH "Reservation bearbeiten" :fr-CH "Modifier la réservation"}
+                                  :delete-reservation {:en-GB "Remove reservation" :de-CH "Reservation entfernen" :fr-CH "Supprimer la réservation"}
+                                  :cancel {:en-GB "Cancel" :de-CH "Abbrechen" :fr-CH "Annuler"}
+                                  :confirm {:en-GB "Confirm" :de-CH "Bestätigen" :fr-CH "Confirmer"}}
                     :confirm-order {:en-GB "Send order"
-                                    :de-CH "Bestellung abschicken"}
+                                    :de-CH "Bestellung abschicken"
+                                    :fr-CH "Envoyer la demande"}
                     :delete-order {:en-GB "Delete cart"
-                                   :de-CH "Warenkorb löschen"}
+                                   :de-CH "Warenkorb löschen"
+                                   :fr-CH "Supprimer le panier"}
                     :order-overview {:en-GB "Cart"
-                                     :de-CH "Warenkorb"}
+                                     :de-CH "Warenkorb"
+                                     :fr-CH "Panier"}
                     :empty-order {:en-GB "No items added"
                                   :de-CH "Noch keine Gegenstände hinzugefügt"}
                     :borrow-items {:en-GB "Go to catalog"
                                    :de-CH "Hier geht's zum Katalog"}
-                    :confirm-dialog {:dialog-title {:en-GB "Send order" :de-CH "Bestellung abschicken"}
-                                     :title {:en-GB "Title" :de-CH "Titel"}
-                                     :title-hint {:en-GB "As a reference for you" :de-CH "Als Referenz für dich"}
-                                     :purpose {:en-GB "Purpose" :de-CH "Zweck"}
-                                     :purpose-hint {:en-GB "For the inventory pool" :de-CH "Für den Inventarpark"}
+                    :confirm-dialog {:dialog-title {:en-GB "Send order" :de-CH "Bestellung abschicken" :fr-CH "Envoyer la commande"}
+                                     :title {:en-GB "Title" :de-CH "Titel" :fr-CH "Titre"}
+                                     :title-hint {:en-GB "As a reference for you" :de-CH "Als Referenz für dich" :fr-CH "À titre de référence pour vous"}
+                                     :purpose {:en-GB "Purpose" :de-CH "Zweck" :fr-CH "Objet ou référence"}
+                                     :purpose-hint {:en-GB "For the inventory pool" :de-CH "Für den Inventarpark" :fr-CH "À l'attention du responsable de l'inventaire"}
                                      :contact-details {:en-GB "Contact details" :de-CH "Kontaktdaten"}
                                      :contact-details-hint {:en-GB "The indication of a telephone number is recommended"
                                                             :de-CH "Die Angabe einer Telefonnummer ist empfohlen"}
                                      :lending-terms {:en-GB "Lending terms" :de-CH "Ausleihbedingungen"}
                                      :i-accept {:en-GB "I accept the lending terms"
                                                 :de-CH "Ich akzeptiere die Ausleihbedingungen"}
-                                     :cancel {:en-GB "Cancel" :de-CH "Abbrechen"}
-                                     :confirm {:en-GB "Send" :de-CH "Abschicken"}}
-                    :order-success-notification {:title {:en-GB "Order submitted" :de-CH "Bestellung übermittelt"}
+                                     :cancel {:en-GB "Cancel" :de-CH "Abbrechen" :fr-CH "Annuler"}
+                                     :confirm {:en-GB "Send" :de-CH "Abschicken" :fr-CH "Envoyer"}}
+                    :order-success-notification {:title {:en-GB "Order submitted" :de-CH "Bestellung übermittelt" :fr-CH "Commande envoyée"}
                                                  :order-submitted {:en-GB "Order was submitted but still needs to be approved!"
-                                                                   :de-CH "Die Bestellung wurde übermittelt, muss aber noch genehmigt werden!"}}
+                                                                   :de-CH "Die Bestellung wurde übermittelt, muss aber noch genehmigt werden!"
+                                                                   :fr-CH "La commande a été envoyée mais doit encore être approuvée."}}
                     :delete-dialog {:dialog-title {:en-GB "Delete cart"
-                                                   :de-CH "Warenkorb löschen"}
+                                                   :de-CH "Warenkorb löschen"
+                                                   :fr-CH "Supprimer le panier"}
                                     :really-delete-order {:en-GB "Really remove all reservations?"
-                                                          :de-CH "Wirklich alle Reservationen entfernen?"}
+                                                          :de-CH "Wirklich alle Reservationen entfernen?"
+                                                          :fr-CH "Supprimer vraiment toutes les réservations ?"}
                                     :cancel {:en-GB "Cancel"
-                                             :de-CH "Abbrechen"}
+                                             :de-CH "Abbrechen"
+                                             :fr-CH "Annuler"}
                                     :confirm {:en-GB "Delete"
-                                              :de-CH "Löschen"}}}
+                                              :de-CH "Löschen"
+                                              :fr-CH "Supprimer"}}}
     :templates {:index {:title {:de-CH "Vorlagen" :en-GB "Templates" :fr-CH "Modèles"}
                         :no-templates-for-current-profile {:de-CH "Für das aktuelle Profil sind keine Vorlagen verfügbar"
                                                            :en-GB "No templates available for the current profile" :fr-CH "Aucun modèle disponible pour le profil actuel"}}
