@@ -11,23 +11,36 @@ import ActionButtonGroup from '../components/ActionButtonGroup'
 const BASE_CLASS = 'ui-user-profile'
 
 function UserProfilePage({ txt, user, delegations, contracts, onLogoutClick, ...restProps }) {
-  const { pageTitle, sectionUserData, sectionContracts, sectionDelegations, logout, noContracts } = txt
+  const {
+    pageTitle,
+    sectionUserData,
+    sectionContracts,
+    sectionDelegations,
+    logout,
+    noContracts,
+    emailField,
+    secondaryEmailField,
+    phoneField,
+    orgField,
+    orgIdField,
+    badgeIdField
+  } = txt
 
   const isLocalUser = user.organization === 'local'
 
   const userDataTable = [
-    ['Email', user.email],
-    user.secondaryEmail && ['Zweit-Email', user.secondaryEmail],
-    ['Telefon', user.phone],
+    [emailField, user.email],
+    user.secondaryEmail && [secondaryEmailField, user.secondaryEmail],
+    [phoneField, user.phone],
 
     ...(isLocalUser
       ? []
       : [
-          ['Organisation', user.organization],
-          ['ID', user.orgId]
+          [orgField, user.organization],
+          [orgIdField, user.orgId]
         ]),
 
-    user.badgeId && ['Badge-ID', user.badgeId]
+    user.badgeId && [badgeIdField, user.badgeId]
   ]
     .filter(Boolean)
     .map(([key, value]) => ({ key, value }))
@@ -98,7 +111,8 @@ UserProfilePage.propTypes = {
   user: PropTypes.object.isRequired,
   delegations: PropTypes.array.isRequired,
   contracts: PropTypes.array.isRequired,
-  onLogoutClick: PropTypes.func
+  onLogoutClick: PropTypes.func,
+  txt: PropTypes.any
 }
 
 export default UserProfilePage

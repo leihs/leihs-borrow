@@ -80,6 +80,12 @@
              :contracts contracts
              :txt {:pageTitle (t :title)
                    :sectionUserData (t :user-data)
+                   :emailField (t :fields.email)
+                   :secondaryEmailField (t :fields.secondary-email)
+                   :phoneField (t :fields.phone)
+                   :orgField (t :fields.org)
+                   :orgIdField (t :fields.org-id)
+                   :badgeIdField (t :fields.badge-id)
                    :sectionContracts (t :!borrow.terms.contracts)
                    :sectionDelegations (t :!borrow.terms.delegations)
                    :logout (t :!borrow.logout)

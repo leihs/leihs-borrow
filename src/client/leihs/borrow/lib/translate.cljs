@@ -1,15 +1,14 @@
 (ns leihs.borrow.lib.translate
   (:require-macros [leihs.borrow.lib.translate])
-  (:require ["/borrow-ui" :as UI]
-            ["date-fns/locale" :as date-locale]
-            [leihs.borrow.translate-base :as t-base]
-            [cljs.test :refer-macros [deftest is testing run-tests]]
-            [clojure.string :as string]
-            [leihs.borrow.features.current-user.core :as current-user]
-            [leihs.borrow.lib.helpers :as h :refer [spy log format]]
-            [leihs.borrow.lib.re-frame :refer [dispatch-sync reg-sub reg-event-db reg-event-fx]]
-            [leihs.borrow.translations :as translations]
-            [re-frame.db :as db]))
+  (:require
+   ["/borrow-ui" :as UI]
+   ["date-fns/locale" :as date-locale]
+   [cljs.test :refer-macros [deftest is testing run-tests]]
+   [leihs.borrow.features.current-user.core :as current-user]
+   [leihs.borrow.lib.re-frame :refer [reg-sub]]
+   [leihs.borrow.translate-base :as t-base]
+   [leihs.borrow.translations :as translations]
+   [re-frame.db :as db]))
 
 (def ^:dynamic *default-path* "Default path to use for locating a key." nil)
 
@@ -18,6 +17,7 @@
          (fn [l _] (case l
                      :de-CH "de-CH"
                      :gsw-CH "de-CH"
+                     :fr-CH "fr-CH"
                      "en-GB")))
 
 (reg-sub ::date-locale
@@ -25,6 +25,7 @@
          (fn [l _] (case l
                      :de-CH date-locale/de
                      :gsw-CH date-locale/de
+                     :fr-CH date-locale/frCH
                      date-locale/enGB)))
 
 (defn translate [message locale values]

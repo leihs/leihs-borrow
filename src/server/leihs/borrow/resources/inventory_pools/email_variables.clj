@@ -13,7 +13,9 @@
 (def formats {:de-CH {:default "dd.MM.yyyy"
                       :short "dd.MM"}
               :en-GB {:default "dd/MM/yyyy"
-                      :short "dd/MM"}})
+                      :short "dd/MM"}
+              :fr-CH {:default "dd.MM.yyyy"
+                      :short "dd.MM"}})
 
 (defn fallbacked [tx locale]
   (if (contains? formats locale)
