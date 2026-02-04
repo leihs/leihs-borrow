@@ -1,6 +1,5 @@
 {:paths [:cljc-paths :resource-paths]
- :deps {
-        better-cond/better-cond {:mvn/version "2.1.5"}
+ :deps {better-cond/better-cond {:mvn/version "2.1.5"}
         clj-http/clj-http {:mvn/version "3.12.3"}
         clojure.java-time/clojure.java-time {:mvn/version "1.3.0"}
         com.flocktory/wet {:mvn/version "0.2.1"}
@@ -12,26 +11,27 @@
         org.clojure/data.generators {:mvn/version "1.0.0"}
         org.clojure/spec.alpha {:mvn/version "0.3.218"}
         org.threeten/threeten-extra {:mvn/version "1.7.2"}
-        threatgrid/ring-graphql-ui {:mvn/version "0.1.3"}
-        }
+        threatgrid/ring-graphql-ui {:mvn/version "0.1.3"}}
 
- :aliases {
-
-           :build {:deps
-                   {io.github.leihs/tools.build 
+ :aliases {:build {:deps
+                   {io.github.leihs/tools.build
                     {:git/tag "v0.9.5-leihs"
                      :git/sha "94a26a9"}}
                    :ns-default scripts.build}
 
            :cljfmt {:extra-deps {io.github.weavejester/cljfmt
                                  {:git/tag "0.11.2"
-                                  :sha "fb26b22f569724b05c93eb2502592dfc2de898c3"
-                                  }}
+                                  :sha "fb26b22f569724b05c93eb2502592dfc2de898c3"}}
                     :main-opts ["-m" "cljfmt.main"]}
 
            :cljc-paths ["src/server" "src/common" "shared-clj/src"]
 
-           :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.5.1109"} }
+           :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.5.1109"}}
                       :main-opts ["-m" "antq.core"]}
 
-           :resource-paths ["resources" "shared-clj/resources"]}}
+           :resource-paths ["resources" "shared-clj/resources"]
+
+           :clj-watson {:replace-deps
+                        {io.github.clj-holmes/clj-watson
+                         {:git/tag "v6.0.1" :git/sha "b520351"}}
+                        :main-opts ["-m" "clj-watson.cli"]}}}
