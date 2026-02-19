@@ -9,6 +9,11 @@ const baseConfig = {
   module: {
     rules: [
       {
+        test: /\.mjs$/,
+        include: /node_modules/,
+        resolve: { fullySpecified: false }
+      },
+      {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {

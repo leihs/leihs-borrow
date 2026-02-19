@@ -5,14 +5,7 @@ const config = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
-    {
-      name: '@storybook/addon-styling',
-      options: {
-        sass: {
-          implementation: require('sass')
-        }
-      }
-    }
+    '@storybook/addon-webpack5-compiler-babel'
   ],
   framework: {
     name: '@storybook/react-webpack5',
@@ -23,8 +16,12 @@ const config = {
   },
   staticDirs: ['../static'],
   webpackFinal: async (config, { configType }) => {
-    // Import SVG as React component instead as static asset
-    const filesRule = config.module.rules.find(r => r.test.test('.svg'))
+    config.module.rules.push({
+      test: /\.scss$/,
+      use: ['style-loader', 'css-loader', { loader: 'sass-loader', options: { implementation: require('sass') } }]
+    })
+
+    const filesRule = config.module.rules.find((r) => r.test.test('.svg'))
     filesRule.exclude = /\.svg$/
     config.module.rules.push({
       test: /\.svg$/,
