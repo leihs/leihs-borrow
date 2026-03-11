@@ -1,28 +1,13 @@
 {
   "scripts": {
-    "graphql": "graphql",
-    "graphql-schema-diff": "graphql-schema-diff",
     "shadow-cljs": "shadow-cljs"
   },
   "devDependencies": {
     "autolinker": "^3.15.0",
     "date-fns": "^2.28.0",
     "highlight.js": "^11.5.1",
-    "intl-messageformat": "^10.1.0",
-    "prettier": "^2.7.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "shadow-cljs": "^2.19.5"
-  },
-  "engines": {
-    "node": ">=14.17.0"
-  },
-  "prettier": {
-    "printWidth": 80,
-    "singleQuote": true,
-    "semi": false,
-    "trailingComma": "none",
-    "bracketSpacing": true,
-    "jsxBracketSameLine": false
   }
 }

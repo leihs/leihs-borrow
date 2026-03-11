@@ -1,22 +1,15 @@
 /** @type { import('@storybook/react-webpack5').StorybookConfig } */
 const config = {
-  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
-  addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-    {
-      name: '@storybook/addon-styling',
-      options: {
-        sass: {
-          implementation: require('sass')
-        }
-      }
-    }
-  ],
+  stories: ['../src/**/*.stories.@(js|jsx|ts|tsx)'],
+  addons: ['@storybook/addon-links', '@storybook/addon-essentials', '@storybook/addon-interactions'],
   framework: {
     name: '@storybook/react-webpack5',
-    options: {}
+    options: {
+      legacyRootApi: true
+    }
+  },
+  core: {
+    enableCrashReports: false
   },
   docs: {
     autodocs: 'tag'
@@ -30,6 +23,39 @@ const config = {
       test: /\.svg$/,
       use: ['@svgr/webpack']
     })
+
+    // SCSS support
+    config.module.rules.push({
+      test: /\.(scss)$/,
+      use: [
+        'style-loader',
+        'css-loader',
+        'postcss-loader',
+        {
+          loader: 'sass-loader',
+          options: {
+            sassOptions: {
+              quietDeps: true,
+              silenceDeprecations: ['import', 'global-builtin']
+            }
+          }
+        }
+      ]
+    })
+
+    // Ensure babel-loader transforms JSX in story files
+    config.module.rules.push({
+      test: /\.(js|jsx)$/,
+      exclude: /node_modules/,
+      use: ['babel-loader']
+    })
+
+    // Storybook bundles are large by nature — suppress size warnings
+    config.performance = { hints: false }
+
+    // Suppress React 18 hook warnings caused by storybook internals running against React 17
+    config.ignoreWarnings = [/export 'useInsertionEffect'/]
+
     return config
   }
 }

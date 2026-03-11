@@ -149,8 +149,8 @@ export default function Topnav({
                 {cartExpiringSoon
                   ? Math.max(0, cartRemainingMinutes) + '′'
                   : invalidCartItemCount > 0
-                  ? '!'
-                  : cartItemCount}
+                    ? '!'
+                    : cartItemCount}
               </span>
             </div>
           )}
