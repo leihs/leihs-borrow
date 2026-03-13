@@ -6,8 +6,10 @@ step "I see the page title :title" do |title|
 end
 
 step "the page subtitle is :subtitle" do |subtitle|
-  expect(@page).to be
-  expect(@page[:subtitle]).to eq subtitle
+  wait_until {
+    @page = get_ui_page_headings
+    @page[:subtitle] == subtitle
+  }
 end
 
 step "the calendar has finished loading" do

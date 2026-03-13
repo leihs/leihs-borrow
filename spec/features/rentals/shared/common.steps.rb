@@ -54,8 +54,10 @@ end
 # Override for the equally named step, but with date interpolation
 step "the page subtitle is :subtitle" do |subtitle|
   subtitle = interpolate_dates_short(subtitle)
-  expect(@page).to be
-  expect(@page[:subtitle]).to eq subtitle
+  wait_until {
+    @page = get_ui_page_headings
+    @page[:subtitle] == subtitle
+  }
 end
 
 step "I see the following status rows in the :name section:" do |section_name, table|
