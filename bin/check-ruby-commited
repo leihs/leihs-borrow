@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+cd $PROJECT_DIR
+./bin/env/ruby-setup
+
+# check that that repo has no uncommitted changes after setting up the ruby environment
+if [[ -n $(git status --porcelain) ]]; then
+  echo "Error: There are uncommitted changes in the repository:"
+  git status --porcelain
+  exit 1
+fi
+
+# vi: ft=sh
