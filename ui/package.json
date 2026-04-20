@@ -26,7 +26,7 @@
     "@babel/preset-env": "^7.22.9",
     "@babel/preset-react": "^7.22.5",
     "@fontsource/source-sans-pro": "^5.0.5",
-    "@leihs/calendar": "github:leihs/leihs-calendar#3.2.0",
+    "@leihs/calendar": "github:leihs/leihs-calendar#3.3.1",
     "@radix-ui/react-dropdown-menu": "~2.0.6",
     "@storybook/addon-essentials": "^8.6.18",
     "@storybook/addon-interactions": "^8.6.18",
