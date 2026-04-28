@@ -11,7 +11,9 @@
   "Used by the availability calculation."
   [tx model-id pool-id exclude-res-ids]
   (let [timeout-minutes (-> (settings tx [:timeout_minutes])
-                            :timeout_minutes)]
+                            :timeout_minutes
+                            (or 0)
+                            int)]
     (-> (sql/select :reservations.id,
                     :reservations.inventory_pool_id,
                     :reservations.model_id,

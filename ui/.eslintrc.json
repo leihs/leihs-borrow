@@ -7,9 +7,14 @@
   "parser": "@babel/eslint-parser",
   "plugins": ["prettier"],
   "extends": ["prettier", "eslint:recommended", "plugin:react/recommended"],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
   "rules": {
     "prettier/prettier": ["error"],
-    "react/prop-types": "warn"
+    "react/prop-types": "off"
   },
   "ignorePatterns": ["static/**", "dist/**", "storybook-static/**"]
 }
