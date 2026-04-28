@@ -226,11 +226,9 @@
 
         (or from until)
         (sql/where
-         [:raw
-          (format
-           "(unified_customer_orders.from_date, unified_customer_orders.until_date) OVERLAPS (%s, %s)"
-           (or (some->> from (format "'%s'")) "'1900-01-01'::date")
-           (or (some->> until (format "'%s'")) "'9999-12-31'::date"))])
+         [:and
+          [:<= :unified_customer_orders.from_date [:cast (or until "9999-12-31") :date]]
+          [:<= [:cast (or from "1900-01-01") :date] :unified_customer_orders.until_date]])
 
         (not (empty? pool-ids))
         (sql/where [(keyword "<@")

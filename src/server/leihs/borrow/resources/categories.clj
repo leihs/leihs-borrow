@@ -90,15 +90,22 @@
 (defn get-roots [{{tx :tx} :request user-id ::target-user/id}
                  {:keys [limit pool-ids]}
                  _]
-  (-> {:limit (cond->> (str limit) limit (str "LIMIT "))
-       :with-all-reservable-categories
-       (with-all-reservable-categories-snip
-         (cond-> {:user-id user-id}
-           (seq pool-ids)
-           (assoc :and-pool-ids (and-pool-ids-snip {:pool-ids pool-ids}))))
-       :category-tree-snip (category-tree-snip)}
-      reservable-root-categories-sqlvec
-      (->> (jdbc-query tx))))
+  (let [sqlvec
+        (-> {:with-all-reservable-categories
+             (with-all-reservable-categories-snip
+               (cond-> {:user-id user-id}
+                 (seq pool-ids)
+                 (assoc :and-pool-ids (and-pool-ids-snip {:pool-ids pool-ids}))))
+             :category-tree-snip (category-tree-snip)}
+            reservable-root-categories-sqlvec)
+        sqlvec
+        (if (some? limit)
+          (let [[query & params] sqlvec
+                safe-limit (-> limit int (max 0))]
+            (into [(str query " LIMIT ?")] (concat params [safe-limit])))
+          sqlvec)]
+    (-> sqlvec
+        (->> (jdbc-query tx)))))
 
 (defn get-children [{{tx :tx} :request user-id ::target-user/id}
                     {:keys [pool-ids]}

@@ -60,7 +60,7 @@ Feature: Rentals
       | 1        | DSLR Camera | Pool A | 1900-01-01 | ${Date.tomorrow}  | signed | 1900-01-01  |
     And a customer order with title "Order 3" and the following reservations exists for the user:
       | quantity | model       | pool   | start-date | relative-end-date  | state  | pickup-date |
-      | 1        | DSLR Camera | Pool A | 1900-01-01 | ${7.days.from_now} | signed | today       |
+      | 1        | DSLR Camera | Pool A | 1900-01-01 | ${7.days.from_now} | signed | ${Date.today} |
     And a customer order with title "Order 4" and the following reservations exists for the user:
       | quantity | model       | pool   | relative-start-date   | relative-end-date      | state    | pickup-date |
       | 1        | DSLR Camera | Pool A | ${9999.days.from_now} | ${10000.days.from_now} | approved |             |
