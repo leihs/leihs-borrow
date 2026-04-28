@@ -109,12 +109,12 @@
 
 (defn complies-with-max-reservation-time? [tx r]
   (-> (sql/select
-       [[:raw (format "CASE
-                         WHEN borrow_maximum_reservation_duration IS NOT NULL
-                         THEN '%s'::date - '%s'::date <= borrow_maximum_reservation_duration
-                         ELSE TRUE
-                       END"
-                      (:end_date r) (:start_date r))]
+       [[:case
+         [:is-not :borrow_maximum_reservation_duration nil]
+         [:<= [:- [:cast (:end_date r) :date]
+               [:cast (:start_date r) :date]]
+          :borrow_maximum_reservation_duration]
+         :else true]
         :result])
       (sql/from :inventory_pools)
       (sql/where [:= :inventory_pools.id (:inventory_pool_id r)])
@@ -202,10 +202,12 @@
        (with-invalid-availability context)))
 
 (defn valid-until-sql [tx]
-  [[:raw (str "reservations.updated_at + interval '"
-              (:timeout_minutes (settings tx [:timeout_minutes]))
-              " minutes'"
-              " AS updated_at")]])
+  (let [timeout-minutes (-> (settings tx [:timeout_minutes])
+                            :timeout_minutes
+                            (or 0)
+                            int)]
+    [[:raw (format "reservations.updated_at + interval '%d minutes' AS updated_at"
+                   timeout-minutes)]]))
 
 (defn touch! [tx ids]
   (-> (sql/update :reservations)
@@ -299,11 +301,9 @@
 
         (or from until)
         (sql/where
-         [:raw
-          (format
-           "(reservations.start_date, reservations.end_date) OVERLAPS (%s, %s)"
-           (or (some->> from (format "'%s'")) "'1900-01-01'::date")
-           (or (some->> until (format "'%s'")) "'9999-12-31'::date"))])
+         [:and
+          [:<= :reservations.start_date [:cast (or until "9999-12-31") :date]]
+          [:<= [:cast (or from "1900-01-01") :date] :reservations.end_date]])
 
         (seq pool-ids)
         (sql/where [:in :reservations.inventory_pool_id pool-ids])

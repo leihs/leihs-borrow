@@ -33,16 +33,13 @@ class Contract < Sequel::Model
           );
       SQL
     end
-
-    def self.update_with_disabled_triggers(id, column, value) # standard:disable Lint/NestedMethodDefinition
-      db_with_disabled_triggers do
-        database.run <<-SQL
-          UPDATE contracts SET #{column} = #{value} WHERE id = '#{id}'
-        SQL
-      end
-    end
-
     find(id: id)
+  end
+
+  def self.update_created_date(id, created_at)
+    db_with_disabled_triggers do
+      database[:contracts].where(id: id).update(created_at: created_at)
+    end
   end
 end
 

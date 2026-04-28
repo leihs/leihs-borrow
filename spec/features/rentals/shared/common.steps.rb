@@ -31,9 +31,8 @@ step "a customer order with title :title and the following reservations exists f
           end)
       end
       if h["pickup-date"].presence
-        db_with_disabled_triggers do
-          Contract.update_with_disabled_triggers(c.id, :created_at, "'#{h["pickup-date"]}'")
-        end
+        created_at = (h["pickup-date"] == "today") ? Date.today : Date.parse(h["pickup-date"])
+        Contract.update_created_date(c.id, created_at)
       end
       h["quantity"].to_i.times do
         FactoryBot.create(:reservation,
