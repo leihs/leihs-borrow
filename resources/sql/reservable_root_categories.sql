@@ -12,5 +12,4 @@ WHERE NOT EXISTS (
   WHERE model_group_links.child_id = model_groups.id
 )
 AND ARRAY( :snip:category-tree-snip ) && ARRAY( SELECT id from all_reservable_categories )
-:sql:limit
 ORDER BY model_groups.name ASC
