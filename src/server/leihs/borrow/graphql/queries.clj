@@ -19,6 +19,7 @@
    [leihs.borrow.resources.visits :as visits]
    [leihs.borrow.resources.templates :as templates]
    [leihs.borrow.resources.workdays :as workdays]
+   [leihs.borrow.resources.app-settings :as app-settings]
    [leihs.borrow.testing :as testing]))
 
 (def resolvers
@@ -50,6 +51,7 @@
    :language languages/get-one
    :languages languages/get-multiple
    :language-to-use languages/one-to-use
+   :app-settings app-settings/get-app-settings
    :members delegations/get-members
    :model models/get-one
    :model-availability models/get-availability
