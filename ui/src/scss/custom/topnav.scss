@@ -22,6 +22,21 @@
       flex: 87px 0 0;
       text-align: left;
     }
+
+    &--logo {
+      height: 100%;
+      @media (min-width: $burger-breakpoint) {
+        padding-right: 10px;
+      }
+    }
+  }
+
+  &__brand-logo {
+    margin-right: 0px;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 5px;
   }
 
   // --

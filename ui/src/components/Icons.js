@@ -4,6 +4,7 @@ export { default as MenuIcon } from '../../static/borrow-app-icons/menu.svg'
 export { default as MenuCloseIcon } from '../../static/borrow-app-icons/menu-close.svg'
 export { default as BagIcon } from '../../static/borrow-app-icons/cart.svg'
 export { default as UserIcon } from '../../static/borrow-app-icons/user.svg'
+export { default as HelpIcon } from '../../static/borrow-app-icons/help.svg'
 export { default as PowerOffIcon } from '../../static/borrow-app-icons/power-off.svg'
 import AppsIconSvg from '../../static/borrow-app-icons/apps.svg' // see below for re-export
 

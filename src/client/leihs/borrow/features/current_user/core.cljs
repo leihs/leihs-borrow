@@ -4,6 +4,7 @@
    [ajax.core :refer [POST]]
    [day8.re-frame.tracing :refer-macros [fn-traced]]
    [leihs.borrow.features.customer-orders.current-lendings-status :as current-lendings-status]
+   [leihs.borrow.features.app-settings.core :as app-settings]
    [leihs.borrow.features.languages.core :as languages]
    [leihs.borrow.lib.browser-storage :as browser-storage]
    [leihs.borrow.lib.errors :as errors]
@@ -34,7 +35,8 @@
           {:params {:query query
                     :variables {:includeDelegation (boolean delegation-id)
                                 :delegationId delegation-id
-                                :includeLanguages (nil? @last-fetched)}}
+                                :includeLanguages (nil? @last-fetched)
+                                :includeAppSettings (nil? @last-fetched)}}
            :headers leihs.borrow.lib.re-graph/headers
            :format :json
            :handler #(do
@@ -59,6 +61,7 @@
                         session-id (:session-id current-user-data)
                         ls-session-id (-> db :ls ::data :session-id)
                         languages-data (:languages data)
+                        app-settings-data (:app-settings data)
                         cart-data (-> current-user-data :user :unsubmitted-order)
                         current-lendings (:current-lendings data)]
                     (list (when (not= session-id ls-session-id)
@@ -71,6 +74,8 @@
                           [:leihs.borrow.features.shopping-cart.core/set cart-data]
                           (when (seq languages-data)
                             [::languages/set-languages languages-data])
+                          (when app-settings-data
+                            [::app-settings/set-app-settings app-settings-data])
                           [::current-lendings-status/set-current-lendings current-lendings]))})))
 
 (reg-event-db

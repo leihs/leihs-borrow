@@ -96,6 +96,8 @@
                                :locale {:type String}
                                :default {:type Boolean}
                                :active {:type Boolean}}}
+           :AppSettings {:fields {:logoLight {:type String}
+                                  :logoDark {:type String}}}
            :UserNavigationItem {:fields {:name {:type String}
                                          :url {:type String}}}
            :UserNavigation {:fields {:adminUrl {:type String}
@@ -458,6 +460,7 @@
                                    :orderBy {:type (list :InventoryPoolsOrderByInput)}}
                             :type (list :InventoryPool)}
            :languages {:resolve :languages :type (list :Language)}
+           :appSettings {:resolve :app-settings :type :AppSettings}
            :category {:args {:id {:type (non-null :UUID)}
                              :parentId {:type :UUID}}
                       :resolve :category
