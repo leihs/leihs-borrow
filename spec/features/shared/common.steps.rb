@@ -18,6 +18,10 @@ step "I click on :txt" do |txt|
   click_on txt
 end
 
+step "I click on model :name" do |name|
+  find(".ui-models-list-item", text: name).click
+end
+
 step "I check :txt" do |txt|
   check txt
 end

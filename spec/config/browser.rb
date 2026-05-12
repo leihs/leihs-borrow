@@ -18,11 +18,6 @@ raise "LEIHS_BORROW_HTTP_BASE_URL not set!" unless LEIHS_BORROW_HTTP_BASE_URL
 Capybara.app_host = LEIHS_BORROW_HTTP_BASE_URL
 
 Capybara.register_driver :firefox do |app|
-  Selenium::WebDriver::Remote::Capabilities.firefox(
-    # TODO: trust the cert used in container and remove this:
-    acceptInsecureCerts: true
-  )
-
   profile = Selenium::WebDriver::Firefox::Profile.new
   # TODO: configure language for locale testing
   # profile["intl.accept_languages"] = "en"
@@ -30,7 +25,9 @@ Capybara.register_driver :firefox do |app|
   opts = Selenium::WebDriver::Firefox::Options.new(
     binary: firefox_bin_path,
     profile: profile,
-    log_level: :trace
+    log_level: :trace,
+    # TODO: trust the cert used in container and remove this:
+    accept_insecure_certs: true
   )
 
   # NOTE: good for local dev

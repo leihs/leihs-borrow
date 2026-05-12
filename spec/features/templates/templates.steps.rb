@@ -63,7 +63,7 @@ end
 step "I see the following models:" do |table|
   models_list = find(".ui-models-list")
   model_items = models_list.all(".ui-square-image-grid-item")
-  captions = model_items.map { |item| item.find(".ui-caption", wait: false).text }
+  captions = model_items.map { |item| item.find(".ui-caption").text }
 
   expected_captions = table.hashes.map { |h| h["caption"] }
   expect(captions).to eq expected_captions

@@ -44,7 +44,7 @@ Feature: Borrow Entitlement
       | Normal Camera |
 
     # Normal Camera
-    When I click on "Normal Camera"
+    When I click on model "Normal Camera"
     And I click on "Add item"
     Then I see the text:
       """
@@ -56,7 +56,7 @@ Feature: Borrow Entitlement
     When I click on the burger menu
     And I click on "Catalog"
     And I click on "Film"
-    And I click on "Better Camera"
+    And I click on model "Better Camera"
     And I click on "Add item"
     Then I see the text:
       """
@@ -85,6 +85,7 @@ Feature: Borrow Entitlement
 
     When I enter "camera" in the main search field
     And I press the enter key
+    And I sleep "0.5"
     Then I see the following models:
       | caption       |
       | Better Camera |
@@ -92,7 +93,7 @@ Feature: Borrow Entitlement
       | Super Camera  |
 
     # Normal Camera
-    When I click on "Normal Camera"
+    When I click on model "Normal Camera"
     And I click on "Add item"
     Then I see the text:
       """
@@ -104,7 +105,7 @@ Feature: Borrow Entitlement
     When I click on the burger menu
     And I click on "Catalog"
     And I click on "Film"
-    And I click on "Better Camera"
+    And I click on model "Better Camera"
     And I click on "Add item"
     Then I see the text:
       """
@@ -116,7 +117,8 @@ Feature: Borrow Entitlement
     When I click on the burger menu
     And I click on "Catalog"
     And I click on "Film"
-    And I click on "Super Camera"
+    And I sleep "0.5"
+    And I click on model "Super Camera"
     And I click on "Add item"
     Then I see the text:
       """

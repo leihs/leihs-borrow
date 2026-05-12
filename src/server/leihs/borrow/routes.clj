@@ -94,7 +94,6 @@
    wrap-params
    wrap-multipart-params
    (status/wrap (path :status))
-   wrap-content-type
    (wrap-resource "public"
                   {:allow-symlinks? true
                    :cache-bust-paths ["/borrow/ui/borrow-ui.css"
@@ -102,6 +101,7 @@
                    :never-expire-paths [#".*fontawesome-[^\/]*\d+\.\d+\.\d+\/.*"
                                         #".+_[0-9a-f]{40}\..+"]
                    :enabled? true})
+   wrap-content-type
    (core-routing/wrap-resolve-handler html/html-handler)
    wrap-accept
    ring-exception/wrap))

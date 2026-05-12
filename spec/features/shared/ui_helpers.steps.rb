@@ -6,8 +6,10 @@ step "I see the page title :title" do |title|
 end
 
 step "the page subtitle is :subtitle" do |subtitle|
-  expect(@page).to be
-  expect(@page[:subtitle]).to eq subtitle
+  wait_until {
+    @page = get_ui_page_headings
+    @page[:subtitle] === subtitle
+  }
 end
 
 step "the calendar has finished loading" do
@@ -79,7 +81,7 @@ step "I click on the card with title :title" do |title|
 end
 
 step "I resize the window to mobile size" do
-  page.driver.browser.manage.window.resize_to(450, 600)
+  page.driver.browser.manage.window.resize_to(450, 750)
 end
 
 step "I click on the burger menu" do
