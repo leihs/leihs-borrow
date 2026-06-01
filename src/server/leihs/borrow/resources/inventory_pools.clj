@@ -9,7 +9,7 @@
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.inventory-pools.visits-restrictions :as restrict]
-            [leihs.borrow.resources.legacy-availability.changes :as ch]
+            [leihs.core.availability.changes :as ch]
             [leihs.borrow.resources.legacy-availability.booking-calendar :refer [get-visits-counts]]
             [leihs.borrow.resources.workdays :as workdays]
             [leihs.core.db :as db]

@@ -12,7 +12,7 @@
             [java-time :as jt :refer [before? local-date]]
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
-            [leihs.borrow.resources.legacy-availability.core :as av]
+            [leihs.core.availability.core :as av]
             [leihs.borrow.resources.categories.descendents :as descendents]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
