@@ -7,6 +7,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 export default function Topnav({
   brandName = 'Leihs',
   brandLinkProps = {},
+  brandLogoLight = null,
 
   cartItemCount,
   invalidCartItemCount = 0,
@@ -55,12 +56,11 @@ export default function Topnav({
           </span>
         )}
       </a>
-
       {/* Title ("Brand") */}
-      <a className="topnav__brand-link" {...brandLinkProps}>
-        {brandName}
+      <a className={cx('topnav__brand-link', { 'topnav__brand-link--logo': brandLogoLight })} {...brandLinkProps}>
+        {brandLogoLight && <img src={brandLogoLight} alt={`${brandName} Logo`} className="topnav__brand-logo" />}
+        {!brandLogoLight && brandName}
       </a>
-
       {/* Nav (for lg screen) */}
       {mainMenuItems.length > 0 && (
         <div className="topnav__main-menu">
@@ -76,7 +76,6 @@ export default function Topnav({
           ))}
         </div>
       )}
-
       {/* Buttons on the right hand side */}
       <div className="topnav__right-buttons">
         {/* App menu (dropdown) */}
@@ -185,7 +184,8 @@ function renderDropdownContent({ items = [], children, ...restProps }) {
 
 Topnav.propTypes = {
   /** Brand (app) name */
-  brandName: PropTypes.node,
+  brandName: PropTypes.string,
+  brandLogoLight: PropTypes.node,
   /** Props for the `a` element around the brand name */
   brandLinkProps: PropTypes.shape({}),
 

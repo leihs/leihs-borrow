@@ -2,6 +2,7 @@ query getCurrentUser(
   $includeDelegation: Boolean
   $delegationId: UUID
   $includeLanguages: Boolean
+  $includeAppSettings: Boolean
 ) {
   currentUser {
     user {
@@ -83,6 +84,10 @@ query getCurrentUser(
   languages @include(if: $includeLanguages) {
     name
     locale
+  }
+  appSettings @include(if: $includeAppSettings) {
+    logoLight
+    logoDark
   }
   currentLendings: reservations(
     metaState: CURRENT_LENDING

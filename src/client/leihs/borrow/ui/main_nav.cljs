@@ -12,6 +12,7 @@
             [leihs.borrow.features.languages.core :as languages]
             [leihs.borrow.features.languages.language-switch :as language-switch]
             [leihs.borrow.features.shopping-cart.core :as cart]
+            [leihs.borrow.features.app-settings.core :as app-settings]
             [leihs.borrow.lib.re-frame :refer [dispatch reg-event-db
                                                reg-event-fx reg-sub subscribe]]
             [leihs.borrow.lib.routing :as routing]
@@ -31,6 +32,10 @@
              (cond-> (-> cart :reservations count)
                pending-count
                (+ pending-count)))))
+
+(reg-sub ::app-settings
+         :<- [::app-settings/data]
+         identity)
 
 (reg-sub ::invalid-cart-item-count
          :<- [::cart/data]
@@ -94,9 +99,7 @@
   [:> UI/Components.Design.Menu.Link {:on-click #(dispatch [::set-current-menu nil]) :href href :isSelected is-selected} label])
 
 (defn- borrow-menu-items [lg-screen?]
-  (let [handler @(subscribe [:routing/current-handler])
-        user-nav @(subscribe [::user-nav])
-        documentation-url (:documentation-url user-nav)]
+  (let [handler @(subscribe [:routing/current-handler])]
     (filter some?
             [{:href (routing/path-for ::routes/home)
               :label (t :borrow/catalog)
@@ -113,10 +116,7 @@
               :selected (some #{handler} [::routes/models-favorites])}
              {:href (routing/path-for ::routes/inventory-pools-index)
               :label (t :borrow/pools)
-              :selected (some #{handler} [::routes/inventory-pools-index ::routes/inventory-pools-show])}
-             (when documentation-url
-               {:href documentation-url
-                :label (t :documentation)})])))
+              :selected (some #{handler} [::routes/inventory-pools-index ::routes/inventory-pools-show])}])))
 
 (defn- show-app-menu? [user-nav]
   (or (:admin-url user-nav)
@@ -156,11 +156,17 @@
         current-profile @(subscribe [::current-profile])
         changing-to-profile-id @(subscribe [::profile-switch/changing-to-id])
         languages @(subscribe [::languages/data])
-        locale-to-use @(subscribe [::current-user/locale-to-use])]
-    {:items [{:href (routing/path-for ::routes/current-user-show)
-              :label (reagent/as-element [:<> [:> UI/Components.Design.Icons.UserIcon] (t :user/current-user)])}
-             {:label (reagent/as-element [:<> [:> UI/Components.Design.Icons.PowerOffIcon] (t :user/logout)])
-              :as "button" :type "submit" :form "sign-out-form" :onClick true}]
+        locale-to-use @(subscribe [::current-user/locale-to-use])
+        user-nav @(subscribe [::user-nav])
+        documentation-url (:documentation-url user-nav)]
+    {:items (remove nil?
+                    [{:href (routing/path-for ::routes/current-user-show)
+                      :label (reagent/as-element [:<> [:> UI/Components.Design.Icons.UserIcon] (t :user/current-user)])}
+                     (when documentation-url
+                       {:href documentation-url
+                        :label (reagent/as-element [:<> [:> UI/Components.Design.Icons.HelpIcon] (t :documentation)])})
+                     {:label (reagent/as-element [:<> [:> UI/Components.Design.Icons.PowerOffIcon] (t :user/logout)])
+                      :as "button" :type "submit" :form "sign-out-form" :onClick true}])
      :children (reagent/as-element
                 [:<> {:key "other"}
                  ; logout form
@@ -211,9 +217,11 @@
           menu-data @(subscribe [::menu-data])
           current-menu (:current-menu menu-data)
           current-profile @(subscribe [::current-profile])
-          user-nav @(subscribe [::user-nav])]
+          user-nav @(subscribe [::user-nav])
+          app-settings @(subscribe [::app-settings])]
       [:> UI/Components.Design.Topnav
        {:brandName "Leihs"
+        :brandLogoLight (:logo-light app-settings)
         :brandLinkProps {:href (routing/path-for ::routes/home)}
         :mainMenuIsOpen (= current-menu "main")
         :mainMenuLinkProps {:on-click #(dispatch [::set-current-menu (when-not (= current-menu "main") "main")])
