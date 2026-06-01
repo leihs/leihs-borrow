@@ -3,28 +3,13 @@
    [java-time :as jt]
    [leihs.borrow.resources.holidays :as holidays]
    [leihs.borrow.resources.workdays :as workdays]
-   [leihs.core.core :refer [detect]]
+   [leihs.core.availability.pool :as pool]
    [taoensso.timbre :as timbre :refer [debug spy]]))
 
-(defn dates-range [start end]
-  (->> (jt/iterate jt/plus start (jt/days 1))
-       (take-while #(or (jt/before? % end) (= % end)))))
-
-(comment (dates-range (jt/local-date) (jt/local-date "2025-02-28")))
-
-(defn get-holiday [date pool]
-  (detect #(->> (dates-range (jt/local-date (:start_date %))
-                             (jt/local-date (:end_date %)))
-                (some #{date}))
-          (:holidays pool)))
-
-(defn working-day? [date pool]
-  (let [day-of-week (-> date
-                        .getDayOfWeek
-                        .toString
-                        .toLowerCase
-                        keyword)]
-    (day-of-week pool)))
+(def dates-range pool/dates-range)
+(def get-holiday pool/get-holiday)
+(def working-day? pool/working-day?)
+(def close-time? pool/close-time?)
 
 (defn orders-processing-day? [date pool]
   (let [orders-processing-day (-> date
@@ -34,11 +19,6 @@
                                   (str "_orders_processing")
                                   keyword)]
     (orders-processing-day pool)))
-
-(defn close-time? [date pool]
-  (let [date* (jt/local-date date)]
-    (or (not (working-day? date* pool))
-        (some? (get-holiday date* pool)))))
 
 (defn orders-processing? [date pool]
   (let [date* (jt/local-date date)]
