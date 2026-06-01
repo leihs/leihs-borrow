@@ -6,11 +6,6 @@
    [leihs.core.availability.pool :as pool]
    [taoensso.timbre :as timbre :refer [debug spy]]))
 
-(def dates-range pool/dates-range)
-(def get-holiday pool/get-holiday)
-(def working-day? pool/working-day?)
-(def close-time? pool/close-time?)
-
 (defn orders-processing-day? [date pool]
   (let [orders-processing-day (-> date
                                   .getDayOfWeek
@@ -23,7 +18,7 @@
 (defn orders-processing? [date pool]
   (let [date* (jt/local-date date)]
     (and (orders-processing-day? date* pool)
-         (if-let [holiday (get-holiday date* pool)]
+         (if-let [holiday (pool/get-holiday date* pool)]
            (:orders_processing holiday)
            true))))
 
@@ -37,7 +32,7 @@
       start-date
       (when (-> pool workdays/open-days empty? not)
         (loop [date start-date, in-advance 0]
-          (cond (close-time? date pool)
+          (cond (pool/close-time? date pool)
                 (recur (jt/plus date (jt/days 1))
                        (cond-> in-advance
                          (orders-processing? date pool)
@@ -62,11 +57,11 @@
 (defn start-date-restrictions [date-with-avail pool]
   (cond-> nil
     (-> date-with-avail :date jt/local-date
-        (working-day? pool)
+        (pool/working-day? pool)
         not)
     (conj :NON_WORKDAY)
 
-    (-> date-with-avail :date jt/local-date (get-holiday pool))
+    (-> date-with-avail :date jt/local-date (pool/get-holiday pool))
     (conj :HOLIDAY)
 
     (when-let [eppd (:earliest-possible-pickup-date pool)]
@@ -81,11 +76,11 @@
 (defn end-date-restrictions [date-with-avail pool]
   (cond-> nil
     (-> date-with-avail :date jt/local-date
-        (working-day? pool)
+        (pool/working-day? pool)
         not)
     (conj :NON_WORKDAY)
 
-    (-> date-with-avail :date jt/local-date (get-holiday pool))
+    (-> date-with-avail :date jt/local-date (pool/get-holiday pool))
     (conj :HOLIDAY)
 
     (visits-capacity-reached? (:date date-with-avail)
