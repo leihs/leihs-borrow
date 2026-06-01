@@ -6,8 +6,8 @@
             [hugsql.core :as hugsql]
             [leihs.core.db :as db]
             [leihs.core.settings :refer [settings]]
-            [leihs.borrow.resources.legacy-availability.changes :as ch]
-            [leihs.borrow.resources.legacy-availability.core :as c]
+            [leihs.core.availability.changes :as ch]
+            [leihs.core.availability.core :as c]
             [java-time :as t]))
 
 (hugsql/def-sqlvec-fns "sql/booking_calendar_visits.sql")
