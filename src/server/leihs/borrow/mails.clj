@@ -6,33 +6,16 @@
    [honey.sql.helpers :as sql]
 
    [leihs.core.db :as db]
+   [leihs.core.languages :as lang]
+   [leihs.core.mails :refer [get-tmpl log-mail-failure]]
    [leihs.core.settings :refer [settings]]
    [wet.core :as wet]
    [leihs.borrow.resources.delegations :refer [delegation?]]
-   [leihs.borrow.resources.languages :as lang]
    [leihs.borrow.resources.inventory-pools :as pools]
    [leihs.borrow.resources.inventory-pools.email-variables :as email-vars]
    [leihs.borrow.resources.orders.shared :as orders]
    [leihs.borrow.resources.users.shared :as users]
    [taoensso.timbre :refer [debug info warn error spy]]))
-
-(defn get-tmpl [tx name pool-id lang-locale]
-  (-> (sql/select :subject :body)
-      (sql/from :mail_templates)
-      (sql/where [:= :name name])
-      (sql/where [:= :inventory_pool_id pool-id])
-      (sql/where [:= :language_locale lang-locale])
-      sql-format
-      (->> (jdbc-query tx))
-      first))
-
-(defn log-mail-failure [recipient-id e]
-  (debug e)
-  (warn
-   (str "The following error happened while sending a notification email to user/pool "
-        recipient-id ": " (.getMessage e)
-        "\nThat means that the user/pool probably did not get the mail "
-        "and you need to contact the user/pool in a different way.")))
 
 (defn send-received [tx order settings]
   (let [inventory-pool (->> order
