@@ -7,7 +7,6 @@
                 [binaryage/devtools "1.0.7"]
                 [camel-snake-kebab "0.4.3"]
                 [cider/cider-nrepl "0.48.0"]
-                [clj-kondo "RELEASE"]
                 [cljs-ajax "0.8.4"]
                 [com.andrewmcveigh/cljs-time "0.5.2"]
                 [com.cemerick/url "0.1.1"]
