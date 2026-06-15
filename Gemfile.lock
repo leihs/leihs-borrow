@@ -137,7 +137,7 @@ GEM
     graphlient (0.7.0)
       faraday (~> 2.0)
       graphql-client
-    graphql (2.5.13)
+    graphql (2.6.3)
       base64
       fiber-storage
       logger
@@ -185,11 +185,9 @@ GEM
       monetize (~> 1.9)
       money (~> 6.13)
       railties (>= 3.0)
-    mustermann (3.0.4)
-      ruby2_keywords (~> 0.0.1)
     net-http (0.9.1)
       uri (>= 0.11.1)
-    net-imap (0.6.4)
+    net-imap (0.6.4.1)
       date
       net-protocol
     net-pop (0.1.2)
@@ -218,10 +216,6 @@ GEM
     public_suffix (7.0.5)
     racc (1.8.1)
     rack (3.2.6)
-    rack-protection (4.2.1)
-      base64 (>= 0.1.0)
-      logger (>= 1.6.0)
-      rack (>= 3.0.0, < 4)
     rack-session (2.1.2)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -295,7 +289,6 @@ GEM
       rubocop (>= 1.48.1, < 2.0)
       rubocop-ast (>= 1.31.1, < 2.0)
     ruby-progressbar (1.13.0)
-    ruby2_keywords (0.0.5)
     rubyzip (3.3.0)
     securerandom (0.4.1)
     selenium-webdriver (4.43.0)
@@ -305,13 +298,6 @@ GEM
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
     sequel (5.64.0)
-    sinatra (4.2.1)
-      logger (>= 1.6.0)
-      mustermann (~> 3.0)
-      rack (>= 3.0.0, < 4)
-      rack-protection (= 4.2.1)
-      rack-session (>= 2.0.0, < 3)
-      tilt (~> 2.0)
     standard (1.42.1)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.0)
@@ -325,7 +311,6 @@ GEM
       lint_roller (~> 1.1)
       rubocop-performance (~> 1.23.0)
     thor (1.5.0)
-    tilt (2.7.0)
     timeout (0.6.1)
     tsort (0.2.0)
     tzinfo (2.0.6)
@@ -367,7 +352,6 @@ DEPENDENCIES
   rspec
   selenium-webdriver (~> 4.10)
   sequel
-  sinatra
   standard
   turnip!
   uuidtools
