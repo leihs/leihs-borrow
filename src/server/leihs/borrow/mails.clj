@@ -56,7 +56,8 @@
                                          :from_address address
                                          :to_address address
                                          :subject (:subject tmpl)
-                                         :body email-body}])
+                                         :body email-body
+                                         :template "received"}])
                            sql-format
                            (->> (jdbc-execute! tx))))))
            (catch Exception e
@@ -107,7 +108,8 @@
                                     :from_address from-address
                                     :to_address to-address
                                     :subject (:subject tmpl)
-                                    :body email-body}])
+                                    :body email-body
+                                    :template "submitted"}])
                       sql-format
                       (->> (jdbc-execute! tx))))))
       (catch Exception e
