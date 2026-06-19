@@ -19,6 +19,30 @@
                      :git/sha "94a26a9"}}
                    :ns-default scripts.build}
 
+           :frontend {:deps
+                      {alandipert/storage-atom {:mvn/version "2.0.1"}
+                       better-cond/better-cond {:mvn/version "2.1.5"}
+                       binaryage/devtools {:mvn/version "1.0.7"}
+                       camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+                       cider/cider-nrepl {:mvn/version "0.48.0"}
+                       cljs-ajax/cljs-ajax {:mvn/version "0.8.4"}
+                       com.andrewmcveigh/cljs-time {:mvn/version "0.5.2"}
+                       com.cemerick/url {:mvn/version "0.1.1"}
+                       com.rpl/specter {:mvn/version "1.1.6"}
+                       day8.re-frame/http-fx {:mvn/version "0.2.4"}
+                       day8.re-frame/re-frame-10x {:mvn/version "1.11.0"}
+                       day8.re-frame/tracing {:mvn/version "0.6.2"}
+                       funcool/cuerdas {:mvn/version "2026.415"}
+                       mattinieminen/re-fill {:mvn/version "0.2.0"}
+                       noencore/noencore {:mvn/version "0.4.0"} ; (transitive dependency of cljs-http; enforce new version to avoid :redef warnings) 
+                       re-frame/re-frame {:mvn/version "1.4.4"}
+                       re-graph/re-graph {:mvn/version "0.1.17" :exclusions [re-graph.hato/re-graph.hato]}
+                       reagent/reagent {:mvn/version "1.3.0"}
+                       reagent-utils/reagent-utils {:mvn/version "0.3.8"}}
+                      :extra-deps {binaryage/devtools {:mvn/version "1.0.7"}
+                                   thheller/shadow-cljs {:mvn/version "3.4.11"}}
+                      :extra-paths ["src/client" "src/common" "ui/dist" "shared-clj/src"]}
+
            :cljfmt {:extra-deps {io.github.weavejester/cljfmt
                                  {:git/tag "0.11.2"
                                   :sha "fb26b22f569724b05c93eb2502592dfc2de898c3"}}
