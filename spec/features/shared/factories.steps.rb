@@ -190,6 +190,32 @@ step "there is an inventory pool :name" do |name|
   @pool = FactoryBot.create(:inventory_pool, name: name)
 end
 
+step "the inventory pool :name has the following details:" do |name, table|
+  pool = InventoryPool.find(name: name) || fail("Pool not found: #{name.inspect}")
+  data = table.rows_hash
+  updates = {}
+  updates[:contact] = data["contact"] if data.key?("contact")
+  updates[:description] = data["description"] if data.key?("description")
+  if data.key?("maximum reservation duration")
+    updates[:borrow_maximum_reservation_duration] = data["maximum reservation duration"].to_i
+  end
+  InventoryPool.where(id: pool.id).update(updates)
+end
+
+step "the inventory pool :name is closed on :weekday" do |name, weekday|
+  pool = InventoryPool.find(name: name) || fail("Pool not found: #{name.inspect}")
+  Workday.where(inventory_pool_id: pool.id).update(weekday.downcase.to_sym => false)
+end
+
+step "the inventory pool :name has a holiday :holiday_name from :start_date to :end_date" do |name, holiday_name, start_date, end_date|
+  pool = InventoryPool.find(name: name) || fail("Pool not found: #{name.inspect}")
+  FactoryBot.create(:holiday,
+    inventory_pool: pool,
+    name: holiday_name,
+    start_date: start_date,
+    end_date: end_date)
+end
+
 step "there is a model :name" do |name|
   FactoryBot.create(:leihs_model, product: name)
 end
