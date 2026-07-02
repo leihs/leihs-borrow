@@ -107,30 +107,31 @@
                      [:div.col (if (:open wday) (:info wday) (t :closed))]]))]]
 
          [:div.col-12.col-md.mb-5
-          [:> UI/Components.Design.Section {:id "holidays"
-                                            :collapsible false
-                                            :title (t :holidays.title)
-                                            :class "fw-bold"}
+          (when (-> pool :holidays seq)
+            [:> UI/Components.Design.Section {:id "holidays"
+                                              :collapsible false
+                                              :title (t :holidays.title)
+                                              :class "fw-bold"}
 
-           [:> UI/Components.Design.TruncateText {:max-height "140px"
-                                                  :translations {:more (t :show-remaining-holidays.more)
-                                                                 :hide (t :show-remaining-holidays.hide)}}
-            (doall (for [[index holiday] (map-indexed (fn [index item] [index item])
-                                                      (sort-by :start-date (:holidays pool)))]
-                     ^{:key index}
-                     [:div.row {:key index}
-                      [:div.col (:name holiday)]
-                      (let [start-date (-> holiday :start-date df/parseISO (df/format "P" #js {:locale locale}))
-                            end-date (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))]
-                        [:div.col
-                         (-> holiday :start-date df/parseISO (df/format "P" #js {:locale locale}))
-                         (when (not= start-date end-date)
-                           [:<>
-                            "–"
-                            (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))])])]))]]]]
+             [:> UI/Components.Design.TruncateText {:max-height "140px"
+                                                    :translations {:more (t :show-remaining-holidays.more)
+                                                                   :hide (t :show-remaining-holidays.hide)}}
+              (doall (for [[index holiday] (map-indexed (fn [index item] [index item])
+                                                        (sort-by :start-date (:holidays pool)))]
+                       ^{:key index}
+                       [:div.row {:key index}
+                        [:div.col (:name holiday)]
+                        (let [start-date (-> holiday :start-date df/parseISO (df/format "P" #js {:locale locale}))
+                              end-date (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))]
+                          [:div.col
+                           (-> holiday :start-date df/parseISO (df/format "P" #js {:locale locale}))
+                           (when (not= start-date end-date)
+                             [:<>
+                              "–"
+                              (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))])])]))]])]]
 
         [:div.d-grid.gap-5
          (when-let [description (some-> pool :description autolinker/link)]
            [:> UI/Components.Design.Section {:collapsible false :title (t :description)}
             [:div {:class "preserve-linebreaks text-break fw-bold decorate-links"
-                   :dangerouslySetInnerHTML {:__html description}}]])]])]))
+                   :dangerouslySetInnerHTML (r/unsafe-html description)}]])]])]))
