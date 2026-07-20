@@ -53,9 +53,4 @@
            :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.5.1109"}}
                       :main-opts ["-m" "antq.core"]}
 
-           :resource-paths ["resources" "shared-clj/resources"]
-
-           :clj-watson {:replace-deps
-                        {io.github.clj-holmes/clj-watson
-                         {:git/tag "v6.1.0" :git/sha "be98e4d"}}
-                        :main-opts ["-m" "clj-watson.cli"]}}}
+           :resource-paths ["resources" "shared-clj/resources"]}}
