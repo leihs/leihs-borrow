@@ -20,7 +20,11 @@
          :ReservationMetaStateEnum {:values [:CURRENT_LENDING]}
          :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED :CANCELED]}
          :WorkdayEnum {:values [:MONDAY :TUESDAY :WEDNESDAY :THURSDAY :FRIDAY :SATURDAY :SUNDAY]}
-         :startDateRestrictionEnum {:values [:NON_WORKDAY :HOLIDAY :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
+         :startDateRestrictionEnum {:values [:NON_WORKDAY
+                                             :HOLIDAY
+                                             :VISITS_CAPACITY_REACHED
+                                             :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE
+                                             :WITHIN_PICKUP_TRANSFER_BUFFER]}
          :endDateRestrictionEnum {:values [:NON_WORKDAY :HOLIDAY :VISITS_CAPACITY_REACHED]}}
 
  :interfaces {:Fulfillment {:fields {:fulfilledQuantity {:type (non-null Int)}
@@ -60,6 +64,8 @@
                                                          :resolve :has-reservable-items}
                                     :maximumReservationDuration {:type Int}
                                     :reservationAdvanceDays {:type Int}
+                                    :transferBufferBeforePickUp {:type Int}
+                                    :transferBufferAfterDropOff {:type Int}
                                     :availability {:args {:startDate {:type (non-null :Date)}
                                                           :endDate {:type (non-null :Date)}
                                                           :pickupLocationId {:type :UUID}}
