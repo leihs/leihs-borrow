@@ -22,26 +22,32 @@
            (:orders_processing holiday)
            true))))
 
-(defn earliest-possible-pickup-date [pool]
-  (let [start-date (jt/local-date)
-        reservation-advance-days (or (:reservation_advance_days pool) 0)
-        #_#_limit (jt/plus start-date (jt/years 1))]
-    (if (and (-> pool :holidays empty?)
-             (-> pool workdays/closed-days empty?)
-             (zero? reservation-advance-days))
-      start-date
-      (when (-> pool workdays/open-days empty? not)
-        (loop [date start-date, in-advance 0]
-          (cond (pool/close-time? date pool)
-                (recur (jt/plus date (jt/days 1))
-                       (cond-> in-advance
-                         (orders-processing? date pool)
-                         inc))
-                (and (not (zero? reservation-advance-days))
-                     (< in-advance reservation-advance-days))
-                (recur (jt/plus date (jt/days 1))
-                       (inc in-advance))
-                :else date))))))
+(defn earliest-possible-pickup-date
+  ([pool] (earliest-possible-pickup-date pool false))
+  ([pool alternative-pickup-location?]
+   (let [start-date (jt/local-date)
+         transfer-buffer-before-pick-up (if alternative-pickup-location?
+                                          (or (:transfer_buffer_before_pick_up pool) 0)
+                                          0)
+         reservation-advance-days (max (or (:reservation_advance_days pool) 0)
+                                       transfer-buffer-before-pick-up)
+         #_#_limit (jt/plus start-date (jt/years 1))]
+     (if (and (-> pool :holidays empty?)
+              (-> pool workdays/closed-days empty?)
+              (zero? reservation-advance-days))
+       start-date
+       (when (-> pool workdays/open-days empty? not)
+         (loop [date start-date, in-advance 0]
+           (cond (pool/close-time? date pool)
+                 (recur (jt/plus date (jt/days 1))
+                        (cond-> in-advance
+                          (orders-processing? date pool)
+                          inc))
+                 (and (not (zero? reservation-advance-days))
+                      (< in-advance reservation-advance-days))
+                 (recur (jt/plus date (jt/days 1))
+                        (inc in-advance))
+                 :else date)))))))
 
 (defn visits-capacity-reached? [date visits-count pool]
   (let [index (-> date
@@ -95,13 +101,15 @@
          :end-date-restrictions
          (end-date-restrictions date-with-avail pool)))
 
-(defn validate-dates [tx dates-with-avail pool]
-  (let [pool* (as-> pool <>
-                (assoc <>
-                       :holidays
-                       (holidays/get-by-pool-id tx (:id <>)))
-                (assoc <>
-                       :earliest-possible-pickup-date
-                       (earliest-possible-pickup-date <>)))]
-    (map #(validate-single-date % pool*)
-         dates-with-avail)))
+(defn validate-dates
+  ([tx dates-with-avail pool] (validate-dates tx dates-with-avail pool false))
+  ([tx dates-with-avail pool alternative-pickup-location?]
+   (let [pool* (as-> pool <>
+                 (assoc <>
+                        :holidays
+                        (holidays/get-by-pool-id tx (:id <>)))
+                 (assoc <>
+                        :earliest-possible-pickup-date
+                        (earliest-possible-pickup-date <> alternative-pickup-location?)))]
+     (map #(validate-single-date % pool*)
+          dates-with-avail))))

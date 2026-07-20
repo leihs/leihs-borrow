@@ -37,7 +37,9 @@
     :reservation_advance_days]
    :inventory_pools.borrow_maximum_reservation_duration
    [:inventory_pools.borrow_maximum_reservation_duration
-    :maximum_reservation_duration]])
+    :maximum_reservation_duration]
+   :inventory_pools.transfer_buffer_before_pick_up
+   :inventory_pools.transfer_buffer_after_drop_off])
 
 (def base-sqlmap
   (-> (apply sql/select select-fields)
@@ -145,7 +147,7 @@
 
 (defn get-availability
   [{{tx :tx} :request user-id ::target-user/id :as context}
-   {:keys [start-date end-date]}
+   {:keys [start-date end-date pickup-location-id]}
    {:keys [id]}]
   (let [start-date-jt (ch/local-date start-date)
         end-date-jt (ch/local-date end-date)
@@ -155,7 +157,7 @@
     (as-> date-range <>
       (map #(hash-map :date (str %)) <>)
       (mapv merge <> visits-count)
-      (restrict/validate-dates tx <> db-pool)
+      (restrict/validate-dates tx <> db-pool (some? pickup-location-id))
       (hash-map :dates <>))))
 
 ;#### debug ###################################################################
