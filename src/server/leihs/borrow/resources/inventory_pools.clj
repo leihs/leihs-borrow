@@ -157,7 +157,7 @@
     (as-> date-range <>
       (map #(hash-map :date (str %)) <>)
       (mapv merge <> visits-count)
-      (restrict/validate-dates tx <> db-pool (some? pickup-location-id))
+      (restrict/validate-dates tx <> db-pool pickup-location-id)
       (hash-map :dates <>))))
 
 ;#### debug ###################################################################

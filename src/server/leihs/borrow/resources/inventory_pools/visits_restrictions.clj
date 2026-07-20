@@ -26,11 +26,12 @@
   ([pool] (earliest-possible-pickup-date pool false))
   ([pool alternative-pickup-location?]
    (let [start-date (jt/local-date)
-         transfer-buffer-before-pick-up (if alternative-pickup-location?
-                                          (or (:transfer_buffer_before_pick_up pool) 0)
-                                          0)
+         transfer-buffer (:transfer_buffer_before_pick_up pool)
+         before-pick-up-days (if alternative-pickup-location?
+                               (or transfer-buffer 0)
+                               0)
          reservation-advance-days (max (or (:reservation_advance_days pool) 0)
-                                       transfer-buffer-before-pick-up)
+                                       before-pick-up-days)
          #_#_limit (jt/plus start-date (jt/years 1))]
      (if (and (-> pool :holidays empty?)
               (-> pool workdays/closed-days empty?)
@@ -110,6 +111,7 @@
                         (holidays/get-by-pool-id tx (:id <>)))
                  (assoc <>
                         :earliest-possible-pickup-date
-                        (earliest-possible-pickup-date <> alternative-pickup-location?)))]
+                        (earliest-possible-pickup-date
+                         <> alternative-pickup-location?)))]
      (map #(validate-single-date % pool*)
           dates-with-avail))))
