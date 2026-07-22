@@ -212,6 +212,19 @@ describe "orders" do
         to_address: user.email,
         from_address: inventory_pool_3.email,
         subject: "[leihs] Reservation abgeschickt")).to be
+
+      expect(Email.find(subject: "[leihs] Order received",
+        inventory_pool_id: inventory_pool_1.id,
+        source_pool_id: inventory_pool_1.id)).to be
+      expect(Email.find(subject: "[leihs] Order received",
+        inventory_pool_id: inventory_pool_3.id,
+        source_pool_id: inventory_pool_3.id)).to be
+      expect(Email.find(subject: "[leihs] Reservation abgeschickt",
+        from_address: inventory_pool_1.email,
+        source_pool_id: inventory_pool_1.id)).to be
+      expect(Email.find(subject: "[leihs] Reservation abgeschickt",
+        from_address: inventory_pool_3.email,
+        source_pool_id: inventory_pool_3.id)).to be
     end
 
     it "fails due to availability validation" do
