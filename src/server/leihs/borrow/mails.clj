@@ -57,7 +57,8 @@
                                          :to_address address
                                          :subject (:subject tmpl)
                                          :body email-body
-                                         :template "received"}])
+                                         :template "received"
+                                         :source_pool_id (:id pool)}])
                            sql-format
                            (->> (jdbc-execute! tx))))))
            (catch Exception e
@@ -109,7 +110,8 @@
                                     :to_address to-address
                                     :subject (:subject tmpl)
                                     :body email-body
-                                    :template "submitted"}])
+                                    :template "submitted"
+                                    :source_pool_id (:id inventory-pool)}])
                       sql-format
                       (->> (jdbc-execute! tx))))))
       (catch Exception e
