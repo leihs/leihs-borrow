@@ -85,6 +85,123 @@ describe "models connection" do
     })
   end
 
+  it "reservation with pickup location widens unavailability by transfer buffers" do
+    @inventory_pool.update(transfer_buffer_before_pick_up: 2,
+      transfer_buffer_after_drop_off: 2)
+
+    model = FactoryBot.create(
+      :leihs_model,
+      id: "c4f1b3a0-0c1a-4a1a-8a1a-0c1a4a1a8a1a"
+    )
+    FactoryBot.create(:item,
+      leihs_model: model,
+      responsible: @inventory_pool,
+      is_borrowable: true)
+
+    pickup_location = FactoryBot.create(:pickup_location,
+      inventory_pool: @inventory_pool)
+
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      pickup_location_id: pickup_location.id,
+      start_date: Date.today + 3.days,
+      end_date: Date.today + 4.days,
+      status: "approved")
+
+    q = ->(date) {
+      <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availableQuantityInDateRange(
+                  startDate: "#{date}",
+                  endDate: "#{date}"
+                )
+              }
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    expect_quantity = ->(date, quantity) {
+      result = query(q.call(date), @user.id)
+      expect_graphql_result(result, {
+        models: {
+          edges: [
+            {node: {id: model.id.to_s, availableQuantityInDateRange: quantity}}
+          ]
+        }
+      })
+    }
+
+    expect_quantity.call(Date.today, 1)
+    expect_quantity.call(Date.today + 1.day, 0)
+    expect_quantity.call(Date.today + 4.days, 0)
+    expect_quantity.call(Date.today + 6.days, 0)
+    expect_quantity.call(Date.today + 7.days, 1)
+  end
+
+  it "reservation without pickup location ignores transfer buffers" do
+    @inventory_pool.update(transfer_buffer_before_pick_up: 2,
+      transfer_buffer_after_drop_off: 2)
+
+    model = FactoryBot.create(
+      :leihs_model,
+      id: "d5f2c4b1-1d2b-5b2b-9b2b-1d2b5b2b9b2b"
+    )
+    FactoryBot.create(:item,
+      leihs_model: model,
+      responsible: @inventory_pool,
+      is_borrowable: true)
+
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      start_date: Date.today + 3.days,
+      end_date: Date.today + 4.days,
+      status: "approved")
+
+    q = ->(date) {
+      <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availableQuantityInDateRange(
+                  startDate: "#{date}",
+                  endDate: "#{date}"
+                )
+              }
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    expect_quantity = ->(date, quantity) {
+      result = query(q.call(date), @user.id)
+      expect_graphql_result(result, {
+        models: {
+          edges: [
+            {node: {id: model.id.to_s, availableQuantityInDateRange: quantity}}
+          ]
+        }
+      })
+    }
+
+    expect_quantity.call(Date.today + 1.day, 1)
+    expect_quantity.call(Date.today + 3.days, 0)
+    expect_quantity.call(Date.today + 4.days, 0)
+    expect_quantity.call(Date.today + 5.days, 1)
+  end
+
   context "start/end date restrictions" do
     let(:q) do
       @start ||= Date.today
@@ -101,7 +218,7 @@ describe "models connection" do
                   availability(
                     startDate: "#{@start}",
                     endDate: "#{@end}",
-                    inventoryPoolIds: ["#{@inventory_pool.id}"]
+                    inventoryPoolIds: ["#{@inventory_pool.id}"]#{@pickup_location_id ? %(,\n                    pickupLocationId: "#{@pickup_location_id}") : ""}
                   ) {
                     dates {
                       date
@@ -229,6 +346,114 @@ describe "models connection" do
           })
         end
       end
+    end
+
+    context "pickup location" do
+      before(:each) do
+        @model = FactoryBot.create(
+          :leihs_model,
+          id: "e6a3d5c2-2e3c-6c3c-ac3c-2e3c6c3cac3c"
+        )
+        FactoryBot.create(:item,
+          leihs_model: @model,
+          responsible: @inventory_pool,
+          is_borrowable: true)
+        @inventory_pool.update(borrow_reservation_advance_days: 1,
+          transfer_buffer_before_pick_up: 3)
+        @pickup_location_id =
+          FactoryBot.create(:pickup_location, inventory_pool: @inventory_pool).id
+      end
+
+      it "flags dates within the transfer buffer" do
+        @end ||= Date.today + 3.days
+        result = query(q, @user.id)
+
+        expect_graphql_result(result, {
+          models: {
+            edges: [
+              {node: {id: @model.id.to_s,
+                      availability: [{
+                        dates: [
+                          {date: "#{Date.today}T00:00:00Z",
+                           quantity: 1,
+                           startDateRestrictions: ["WITHIN_PICKUP_TRANSFER_BUFFER", "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                           endDateRestrictions: nil},
+                          {date: "#{Date.today + 1.day}T00:00:00Z",
+                           quantity: 1,
+                           startDateRestrictions: ["WITHIN_PICKUP_TRANSFER_BUFFER", "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                           endDateRestrictions: nil},
+                          {date: "#{Date.today + 2.days}T00:00:00Z",
+                           quantity: 1,
+                           startDateRestrictions: ["WITHIN_PICKUP_TRANSFER_BUFFER", "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                           endDateRestrictions: nil},
+                          {date: "#{Date.today + 3.days}T00:00:00Z",
+                           quantity: 1,
+                           startDateRestrictions: nil,
+                           endDateRestrictions: nil}
+                        ]
+                      }]}}
+            ]
+          }
+        })
+      end
+
+      it "does not apply the buffer when no pickup location is selected" do
+        @pickup_location_id = nil
+        @end ||= Date.today + 3.days
+        result = query(q, @user.id)
+
+        expect_graphql_result(result, {
+          models: {
+            edges: [
+              {node: {id: @model.id.to_s,
+                      availability: [{
+                        dates: [
+                          {date: "#{Date.today}T00:00:00Z",
+                           quantity: 1,
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                           endDateRestrictions: nil},
+                          {date: "#{Date.today + 1.day}T00:00:00Z",
+                           quantity: 1,
+                           startDateRestrictions: nil,
+                           endDateRestrictions: nil},
+                          {date: "#{Date.today + 2.days}T00:00:00Z",
+                           quantity: 1,
+                           startDateRestrictions: nil,
+                           endDateRestrictions: nil},
+                          {date: "#{Date.today + 3.days}T00:00:00Z",
+                           quantity: 1,
+                           startDateRestrictions: nil,
+                           endDateRestrictions: nil}
+                        ]
+                      }]}}
+            ]
+          }
+        })
+      end
+    end
+
+    it "exposes pool transfer buffer settings" do
+      @inventory_pool.update(transfer_buffer_before_pick_up: 2,
+        transfer_buffer_after_drop_off: 4)
+
+      q = <<-GRAPHQL
+        {
+          inventoryPool(id: "#{@inventory_pool.id}") {
+            id
+            transferBufferBeforePickUp
+            transferBufferAfterDropOff
+          }
+        }
+      GRAPHQL
+
+      result = query(q, @user.id)
+      expect_graphql_result(result, {
+        inventoryPool: {
+          id: @inventory_pool.id.to_s,
+          transferBufferBeforePickUp: 2,
+          transferBufferAfterDropOff: 4
+        }
+      })
     end
 
     it "maximum reservation duration" do
