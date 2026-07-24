@@ -350,12 +350,14 @@
                  (fn [line]
                    [(get-in line [:start-date])
                     (get-in line [:inventory-pool :id])
+                    (get-in line [:pickup-location :id])
                     (get-in line [:model :id])
                     (get-in line [:end-date])]))
                 (sort-by
                  (fn [[_ [line0]]]
                    [(get-in line0 [:start-date])
                     (get-in line0 [:inventory-pool :name])
+                    (or (get-in line0 [:pickup-location :name]) "")
                     (get-in line0 [:model :name])
                     (get-in line0 [:end-date])])))))
 
@@ -524,10 +526,8 @@
   (let [exemplar (first res-lines)
         model (:model exemplar)
         quantity (count res-lines)
-        pool-names (->> res-lines
-                        (map (comp :name :inventory-pool))
-                        distinct
-                        (clojure.string/join ", "))
+        location-name (or (get-in exemplar [:pickup-location :name])
+                          (get-in exemplar [:inventory-pool :name]))
         invalid? (every? invalid-res-ids (map :id res-lines))
         start-date (js/Date. (:start-date exemplar))
         end-date (js/Date. (:end-date exemplar))
@@ -543,7 +543,7 @@
        (:name model)]
 
       [:> UI/Components.Design.ListCard.Body
-       [:div pool-names]
+       [:div location-name]
        [:div {:class (when invalid? "text-danger")}
         (h/format-date-range start-date end-date date-locale)
         " (" (t :line.duration-days {:totalDays total-days}) ")"]]]]))

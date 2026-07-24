@@ -9,6 +9,10 @@ mutation refreshTimeout($userId: UUID) {
           id
           name
         }
+        pickupLocation {
+          id
+          name
+        }
         model {
           id
           name

@@ -80,6 +80,10 @@ fragment reservationProps on Reservation {
     id
     name
   }
+  pickupLocation {
+    id
+    name
+  }
   item {
     inventoryCode
   }

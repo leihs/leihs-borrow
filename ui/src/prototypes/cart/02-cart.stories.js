@@ -39,6 +39,10 @@ export default {
           pool: {
             id: '8bd16d45-056d-5590-bc7f-12849f034351',
             name: 'Ausleihe Toni-Areal'
+          },
+          pickupLocation: {
+            id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            name: 'Medienzentrums Hard'
           }
         },
         {
@@ -57,6 +61,10 @@ export default {
           pool: {
             id: '8bd16d45-056d-5590-bc7f-12849f034351',
             name: 'Ausleihe Toni-Areal'
+          },
+          pickupLocation: {
+            id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+            name: 'Medienzentrums Hard'
           }
         },
         {
@@ -118,12 +126,12 @@ export const cart = ({ order, onResetTimeLimitClick, onItemClick, onConfirmClick
 
         <Section title="Gegenstände" collapsible className="position-relative">
           <ListCard.Stack>
-            {order.models.map(({ reservation, model, pool }, i) => (
+            {order.models.map(({ reservation, model, pool, pickupLocation }, i) => (
               <ListCard key={i} onClick={() => onItemClick(reservation.id)}>
                 <ListCard.Title>
                   {reservation.quantity}x {model.name}
                 </ListCard.Title>
-                <ListCard.Body>{pool.name}</ListCard.Body>
+                <ListCard.Body>{(pickupLocation && pickupLocation.name) || pool.name}</ListCard.Body>
                 <ListCard.Foot>
                   <Badge colorClassName={reservation.isInvalid ? 'bg-danger' : undefined}>
                     {reservation.durationDays} Tage{' '}

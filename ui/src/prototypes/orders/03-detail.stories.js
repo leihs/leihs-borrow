@@ -50,13 +50,14 @@ export const detail = ({ order, onOrderCancelClick, onItemClick }) => {
 
         <Section title="Gegenstände" collapsible className="position-relative">
           <ListCard.Stack>
-            {order.models.map(({ reservation, model, pool }, i) => (
+            {order.models.map(({ reservation, model, pool, pickupLocation }, i) => (
               <ReservationCard
                 key={i}
                 img={<SquareImage />}
                 quantity={reservation.quantity}
                 modelName={model.name}
                 poolName={pool.name}
+                locationName={(pickupLocation && pickupLocation.name) || pool.name}
                 startDate={reservation.startDate}
                 endDate={reservation.endDate}
                 durationDays={reservation.durationDays}
@@ -136,6 +137,10 @@ const sampleOrder = {
       pool: {
         id: '8bd16d45-056d-5590-bc7f-12849f034351',
         name: 'Ausleihe Toni-Areal'
+      },
+      pickupLocation: {
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        name: 'Medienzentrum Muster'
       }
     },
     {
@@ -154,6 +159,10 @@ const sampleOrder = {
       pool: {
         id: '8bd16d45-056d-5590-bc7f-12849f034351',
         name: 'Ausleihe Toni-Areal'
+      },
+      pickupLocation: {
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        name: 'Medienzentrum Muster'
       }
     },
     {
