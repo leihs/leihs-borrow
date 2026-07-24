@@ -209,7 +209,7 @@ export function getOrderPanelMockData() {
   const inventoryPools = modelData.availability.map(x => x.inventoryPool)
   inventoryPools[0] = {
     ...inventoryPools[0],
-    defaultPickupLocationName: inventoryPools[0].name,
+    defaultPickupLocationName: 'Hauptlager',
     pickupLocations: [
       { id: 'pl-alt-2', name: 'Alternativer Abholort 2', description: 'Hintereingang' },
       { id: 'pl-alt-1', name: 'Alternativer Abholort 1', description: 'Empfang' }
@@ -217,7 +217,7 @@ export function getOrderPanelMockData() {
   }
   inventoryPools[1] = {
     ...inventoryPools[1],
-    defaultPickupLocationName: inventoryPools[1].name,
+    defaultPickupLocationName: null,
     pickupLocations: []
   }
   modelData.transportable = true

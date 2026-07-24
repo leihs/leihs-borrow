@@ -8,7 +8,7 @@ export const orderPanelTexts = {
     'pool-max-amount': { 'de-CH': '{pool} (max. {amount, number})' },
     'pool-max-amount-info': { 'de-CH': 'Maximal verfügbarer Bestand: {amount, number}' },
     'pickup-location': { 'de-CH': 'Abholort' },
-    'main-warehouse': { 'de-CH': '{pool}' },
+    'main-warehouse': { 'de-CH': 'Hauptstandort' },
     'not-transportable': {
       'de-CH': 'Abholung und Rückgabe nur am Hauptstandort des Inventarparks möglich.'
     },

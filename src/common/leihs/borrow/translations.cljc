@@ -64,7 +64,7 @@
              :pool-max-amount {:en-GB "{pool} (max. {amount, number})" :de-CH "{pool} (max. {amount, number})" :fr-CH "{pool} (max. {amount, number})"}
              :pool-max-amount-info {:en-GB  "Maximum available amount: {amount, number}" :de-CH "Maximal verfügbarer Bestand: {amount, number}" :fr-CH "Quantité maximale disponible : {amount, number}"}
              :pickup-location {:en-GB "Pickup location" :de-CH "Abholort" :fr-CH "Lieu de retrait"}
-             :main-warehouse {:en-GB "{pool}" :de-CH "{pool}" :fr-CH "{pool}"}
+             :main-warehouse {:en-GB "Main warehouse" :de-CH "Hauptstandort" :fr-CH "Site principal"}
              :not-transportable {:en-GB "Pickup and return only possible at the main location of the inventory pool."
                                  :de-CH "Abholung und Rückgabe nur am Hauptstandort des Inventarparks möglich."
                                  :fr-CH "Retrait et retour uniquement possibles au site principal du pool d'inventaire."}

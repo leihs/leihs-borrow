@@ -144,3 +144,6 @@ export const withPickupLocationDescription = () => (
   <OrderPanelStory initialPickupLocationId="pl-alt-1" title="Abholort mit Beschreibung" />
 )
 withPickupLocationDescription.storyName = 'Abholort with description'
+
+export const abholortLocationsOnly = () => <OrderPanelStory title="Abholort ohne Inventarpark-Namen" />
+abholortLocationsOnly.storyName = 'Abholort locations only (Hauptlager + alts)'

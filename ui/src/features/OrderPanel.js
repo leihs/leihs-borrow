@@ -191,10 +191,14 @@ const OrderPanel = ({
     const id = e.target.value
     const nextPool = inventoryPools.find(x => x.id === id)
     const nextLocations = sortedPickupLocations(nextPool?.pickupLocations)
-    const nextPickupLocationId =
-      isTransportable && nextLocations.some(loc => loc.id === selectedPickupLocationId)
+    const locationIdInPool = locId => locId && nextLocations.some(loc => loc.id === locId)
+    const nextPickupLocationId = isTransportable
+      ? locationIdInPool(selectedPickupLocationId)
         ? selectedPickupLocationId
-        : null
+        : locationIdInPool(initialPickupLocationId)
+          ? initialPickupLocationId
+          : null
+      : null
     setSelectedPoolId(id)
     setSelectedPickupLocationId(nextPickupLocationId)
     onInventoryPoolChange({
@@ -249,9 +253,7 @@ const OrderPanel = ({
   } = dependentState
 
   const mainWarehouseLabel =
-    selectedPool.defaultPickupLocationName ||
-    t(label, 'main-warehouse', locale, { pool: selectedPool.name }) ||
-    selectedPool.name
+    selectedPool.defaultPickupLocationName || t(label, 'main-warehouse', locale)
 
   const selectedPickupLocationDescription =
     resolvedPickupLocationId &&
@@ -321,6 +323,7 @@ const OrderPanel = ({
               {t(label, 'pickup-location', locale)}
             </label>
             <select
+              key={selectedPoolId}
               name="pickup-location-id"
               id="pickup-location-id"
               value={resolvedPickupLocationId || ''}
