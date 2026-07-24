@@ -139,3 +139,8 @@ export const prefilledPickupLocation = () => (
   <OrderPanelStory initialPickupLocationId="pl-alt-1" />
 )
 prefilledPickupLocation.storyName = 'Prefill from catalog filter'
+
+export const withPickupLocationDescription = () => (
+  <OrderPanelStory initialPickupLocationId="pl-alt-1" title="Abholort mit Beschreibung" />
+)
+withPickupLocationDescription.storyName = 'Abholort with description'

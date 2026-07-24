@@ -27,7 +27,7 @@
    [leihs.borrow.features.shopping-cart.core :as cart]
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.model-show.availability :as availability]
-   [leihs.core.core :refer [dissoc-in flip]]
+   [leihs.core.core :refer [dissoc-in flip presence]]
    [leihs.borrow.lib.prefs :as prefs]
    ["autolinker" :as autolinker]))
 
@@ -94,11 +94,14 @@
                    (h/date-format-day start-of-current-month)
                    (h/date-format-day fetch-until-date)]}))))
 
+(defn filter-pickup-location-id [db]
+  (-> db :routing/routing :bidi-match :query-params :pickup-location-id presence))
+
 (defn active-pickup-location-id [db]
   (let [order-panel (get-in db [::data :order-panel])]
     (if (:is-open? order-panel)
       (:pickup-location-id order-panel)
-      (get-in db [:ls ::filter-modal/options :pickup-location-id]))))
+      (filter-pickup-location-id db))))
 
 (defn availability-query-vars [db model-id user-id start-date end-date]
   (let [pool-ids (pool-ids-with-reservable-quantity db model-id)
@@ -206,10 +209,11 @@
 
 (reg-event-db
  ::open-order-panel
- (fn-traced [db]
+ (fn-traced [db [_ _user-id filters]]
    (assoc-in db [::data :order-panel]
              {:is-open? true
-              :pickup-location-id (get-in db [:ls ::filter-modal/options :pickup-location-id])})))
+              :pickup-location-id (or (some-> filters :pickup-location-id presence)
+                                      (filter-pickup-location-id db))})))
 
 (reg-event-db
  ::close-order-panel

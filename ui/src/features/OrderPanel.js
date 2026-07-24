@@ -253,6 +253,10 @@ const OrderPanel = ({
     t(label, 'main-warehouse', locale, { pool: selectedPool.name }) ||
     selectedPool.name
 
+  const selectedPickupLocationDescription =
+    resolvedPickupLocationId &&
+    poolPickupLocations.find(loc => loc.id === resolvedPickupLocationId)?.description
+
   function renderDay(day) {
     const isoDate = formatISO(day, { representation: 'date' })
     const nofAvailable = showDayQuants && day >= today ? maxQuantityByDay[isoDate] : undefined
@@ -330,6 +334,9 @@ const OrderPanel = ({
                 </option>
               ))}
             </select>
+            {selectedPickupLocationDescription && (
+              <div className="mt-2 preserve-linebreaks text-break">{selectedPickupLocationDescription}</div>
+            )}
           </Section>
         )}
 
