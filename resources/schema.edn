@@ -66,6 +66,9 @@
                                     :reservationAdvanceDays {:type Int}
                                     :transferBufferBeforePickUp {:type Int}
                                     :transferBufferAfterDropOff {:type Int}
+                                    :defaultPickupLocationName {:type String}
+                                    :pickupLocations {:type (list :PickupLocation)
+                                                      :resolve :pickup-locations}
                                     :availability {:args {:startDate {:type (non-null :Date)}
                                                           :endDate {:type (non-null :Date)}
                                                           :pickupLocationId {:type :UUID}}
@@ -77,6 +80,9 @@
                                                :resolve :holidays}
                                     :workdays {:type (list :Workday)
                                                :resolve :workdays}}}
+           :PickupLocation {:fields {:id {:type (non-null :UUID)}
+                                     :name {:type (non-null String)}
+                                     :description {:type String}}}
            :Holiday {:fields {:startDate {:type :Date}
                               :endDate {:type :Date}
                               :name {:type (non-null String)}}}

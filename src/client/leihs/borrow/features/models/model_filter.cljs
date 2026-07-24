@@ -12,6 +12,8 @@
             [leihs.core.core :refer [presence remove-blanks]]
             [reagent.core :as r]))
 
+(def indent "\u00A0\u00A0")
+
 (defn default-dispatch-fn [query-params]
   (dispatch [:routing/navigate
              [::routes/models {:query-params query-params}]]))
@@ -23,7 +25,7 @@
 (reg-sub ::options
          (fn [db _]
            ; NOTE: maybe this list should be somewhere in constants?
-           (let [known-filter-keys [:term :pool-id :only-available :start-date :end-date :quantity]]
+           (let [known-filter-keys [:term :pool-id :pickup-location-id :only-available :start-date :end-date :quantity]]
              (->> db
                   :routing/routing :bidi-match :query-params
                   ((fn [h] (update-vals (select-keys h known-filter-keys) #(or % ""))))))))
@@ -37,6 +39,22 @@
          :<- [::current-user/current-profile]
          (fn [current-profile _]
            (:suspensions current-profile)))
+
+(defn pool-option [{:keys [id name]}]
+  {:type :pool :id id :label name})
+
+(defn pickup-location-option [pool-id {:keys [id name]}]
+  {:type :pickup-location
+   :id id
+   :pool-id pool-id
+   :label (str indent name)})
+
+(defn pool-and-pickup-location-options [pools]
+  (mapcat (fn [{:keys [id] :as pool}]
+            (cons (pool-option pool)
+                  (map #(pickup-location-option id %)
+                       (:pickup-locations pool))))
+          pools))
 
 (defn model-search-filter-texts []
   (clj->js (get-in translations/dict [:borrow :filter])))
@@ -55,15 +73,26 @@
               pools-with-reservable-items @(subscribe [::pools-with-reservable-items])
               suspensions @(subscribe [::suspensions])
 
-            ; pools
               selected-pool-id (-> saved-filters :pool-id (or ""))
-              is-unselectable-pool (not-any? #{selected-pool-id} (concat [""] (map #(:id %) pools-with-reservable-items)))
-              user-suspended-in-pool? (->> suspensions (some #(= selected-pool-id (-> % :inventory-pool :id))))
+              selected-pickup-location-id (-> saved-filters :pickup-location-id presence)
+              selected-option-id (or selected-pickup-location-id selected-pool-id)
+              effective-pool-id selected-pool-id
+              selectable-option-ids (->> pools-with-reservable-items
+                                        pool-and-pickup-location-options
+                                        (map :id)
+                                        set)
+              is-unselectable-pool (and (presence selected-option-id)
+                                        (not (contains? selectable-option-ids selected-option-id)))
+              user-suspended-in-pool? (->> suspensions
+                                           (some #(= effective-pool-id (-> % :inventory-pool :id))))
               available-filters {:pools (concat
                                          [{:id "" :label (t :all-pools-option-label)}]
-                                         (when is-unselectable-pool [{:id selected-pool-id :label (t :invalid-pool-option-label)}])
-                                         (map (fn [{:keys [id name]}] {:type :pool :id id :label name}) pools-with-reservable-items))}
-              selected-pool (first (filter #(= (:id %) selected-pool-id) (:pools available-filters)))
+                                         (when is-unselectable-pool
+                                           [{:id selected-option-id
+                                             :label (t :invalid-pool-option-label)}])
+                                         (pool-and-pickup-location-options pools-with-reservable-items))}
+              selected-pool (first (filter #(= (:id %) selected-option-id)
+                                           (:pools available-filters)))
 
               current-search-term (saved-filters :term)
               current-filters (-> saved-filters
@@ -73,15 +102,30 @@
                                   clj->js)
 
               on-submit-term #(dispatch-fn (assoc saved-filters :term %))
-              on-change-pool #(dispatch-fn (if-let [pool-id (presence %)]
-                                             (assoc saved-filters :pool-id pool-id)
-                                             (dissoc saved-filters :pool-id)))
+              on-change-pool (fn [option-id]
+                               (dispatch-fn
+                                (if-let [option-id (presence option-id)]
+                                  (let [option (->> (:pools available-filters)
+                                                    (filter #(= (:id %) option-id))
+                                                    first)]
+                                    (if (= (:type option) :pickup-location)
+                                      (-> saved-filters
+                                          (assoc :pool-id (:pool-id option))
+                                          (assoc :pickup-location-id (:id option)))
+                                      (-> saved-filters
+                                          (assoc :pool-id option-id)
+                                          (dissoc :pickup-location-id))))
+                                  (-> saved-filters
+                                      (dissoc :pool-id)
+                                      (dissoc :pickup-location-id)))))
               on-apply-availability #(dispatch-fn (remove-blanks (merge saved-filters %)))
               on-clear-filter (fn [filter-to-clear]
                                 (dispatch-fn
                                  (case (.-type filter-to-clear)
                                    "term" (dissoc saved-filters :term)
-                                   "pool" (dissoc saved-filters :pool-id)
+                                   "pool" (-> saved-filters
+                                              (dissoc :pool-id)
+                                              (dissoc :pickup-location-id))
                                    "onlyAvailable" (dissoc saved-filters :only-available))))]
 
           [:<>
@@ -94,7 +138,7 @@
               date-locale])
 
            [:> UI/Components.ModelSearchFilter
-            {:key (str selected-pool-id (:term saved-filters)) ; force update of controlled inputs
+            {:key (str selected-option-id (:term saved-filters)) ; force update of controlled inputs
              :availableFilters available-filters
              :currentFilters current-filters
              :onTriggerAvailability show!

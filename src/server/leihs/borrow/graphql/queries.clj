@@ -7,6 +7,7 @@
    [leihs.borrow.resources.holidays :as holidays]
    [leihs.borrow.resources.images :as images]
    [leihs.borrow.resources.inventory-pools :as inventory-pools]
+   [leihs.borrow.resources.pickup-locations :as pickup-locations]
    [leihs.borrow.resources.items :as items]
    [leihs.borrow.resources.languages :as languages]
    [leihs.borrow.resources.models :as models]
@@ -61,6 +62,7 @@
    :orders-connection orders/get-connection
    :overdue-rental-quantity orders/overdue-rental-quantity
    :pickup-fulfillment visits/pickup-fulfillment
+   :pickup-locations pickup-locations/get-multiple
    :pool-availability inventory-pools/get-availability
    :pool-order orders/get-one-by-pool
    :pool-orders orders/get-multiple-by-pool
