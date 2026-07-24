@@ -6,6 +6,7 @@ mutation updateReservations(
   $quantity: Int!
   $userId: UUID
   $poolIds: [UUID!]
+  $pickupLocationId: UUID
 ) {
   deleteReservationLines(ids: $ids)
   createReservation(
@@ -15,6 +16,7 @@ mutation updateReservations(
     quantity: $quantity
     userId: $userId
     inventoryPoolIds: $poolIds
+    pickupLocationId: $pickupLocationId
     excludeReservationIds: $ids
   ) {
     id
@@ -22,9 +24,14 @@ mutation updateReservations(
       id
       name
     }
+    pickupLocation {
+      id
+      name
+    }
     model {
       id
       name
+      transportable
       images {
         id
         imageUrl

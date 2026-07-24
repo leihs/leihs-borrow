@@ -10,9 +10,14 @@ query getShoppingCart($userId: UUID) {
             id
             name
           }
+          pickupLocation {
+            id
+            name
+          }
           model {
             id
             name
+            transportable
             images {
               id
               imageUrl

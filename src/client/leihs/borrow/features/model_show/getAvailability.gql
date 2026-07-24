@@ -5,6 +5,7 @@ query getAvailability(
   $userId: UUID
   $poolIds: [UUID!]
   $excludeReservationIds: [UUID!]
+  $pickupLocationId: UUID
 ) {
   model(userId: $userId, id: $modelId) {
     availability(
@@ -12,6 +13,7 @@ query getAvailability(
       endDate: $endDate
       inventoryPoolIds: $poolIds
       excludeReservationIds: $excludeReservationIds
+      pickupLocationId: $pickupLocationId
     ) {
       inventoryPool {
         id

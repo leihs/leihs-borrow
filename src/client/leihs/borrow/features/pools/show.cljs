@@ -131,6 +131,15 @@
                               (-> holiday :end-date df/parseISO (df/format "P" #js {:locale locale}))])])]))]])]]
 
         [:div.d-grid.gap-5
+         (when (seq (:pickup-locations pool))
+           [:> UI/Components.Design.Section {:collapsible false
+                                             :title (t :pickup-locations.title)
+                                             :class "fw-bold"}
+            (doall (for [loc (:pickup-locations pool)]
+                     ^{:key (:id loc)}
+                     [:div.row.mb-3
+                      [:div.col (:name loc)]
+                      [:div.col.preserve-linebreaks (:description loc)]]))])
          (when-let [description (some-> pool :description autolinker/link)]
            [:> UI/Components.Design.Section {:collapsible false :title (t :description)}
             [:div {:class "preserve-linebreaks text-break fw-bold decorate-links"

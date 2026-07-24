@@ -7,9 +7,16 @@ const dateInfoPropType = PropTypes.shape({
   startDateRestrictions: PropTypes.any
 })
 
+const pickupLocationPropType = PropTypes.shape({
+  id: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  description: PropTypes.string
+})
+
 const modelDataPropType = PropTypes.shape({
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
+  transportable: PropTypes.bool,
   availability: PropTypes.arrayOf(
     PropTypes.shape({
       inventoryPool: PropTypes.shape({
@@ -57,7 +64,9 @@ const OrderPanelPropTypes = {
       name: PropTypes.string.isRequired,
       totalReservableQuantity: PropTypes.number,
       userHasNoAccess: PropTypes.bool,
-      userIsSuspended: PropTypes.bool
+      userIsSuspended: PropTypes.bool,
+      defaultPickupLocationName: PropTypes.string,
+      pickupLocations: PropTypes.arrayOf(pickupLocationPropType)
     }).isRequired
   ).isRequired,
   /** initially selected pool */
@@ -65,7 +74,12 @@ const OrderPanelPropTypes = {
   /** callback, when selected pool changes */
   onInventoryPoolChange: PropTypes.func,
 
-  /** callback, submits user selection. arguments: `{startDate, endDate, quantity, poolId}` */
+  /** initially selected alternative pickup location (null / undefined = main warehouse) */
+  initialPickupLocationId: PropTypes.string,
+  /** callback when selected pickup location changes */
+  onPickupLocationChange: PropTypes.func,
+
+  /** callback, submits user selection. arguments: `{startDate, endDate, quantity, poolId, pickupLocationId}` */
   onSubmit: PropTypes.func.isRequired,
   /** function which is called initially and on each form value change with true (valid) or false (invalid)  */
   onValidate: PropTypes.func,

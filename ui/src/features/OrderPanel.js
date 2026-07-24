@@ -44,6 +44,9 @@ const OrderPanel = ({
   initialInventoryPoolId,
   onInventoryPoolChange = noop,
   //
+  initialPickupLocationId,
+  onPickupLocationChange = noop,
+  //
   initialShowDayQuants = false,
   onShowDayQuantsChange = noop,
   //
@@ -54,12 +57,17 @@ const OrderPanel = ({
   txt = {}
 }) => {
   const { label } = txt
+  const isTransportable = modelData.transportable !== false
+  const anyPoolHasPickupLocations = inventoryPools.some(pool => pool.pickupLocations?.length > 0)
 
   const today = startOfDay(now ? now : new Date())
   const maxDate = maxDateTotal ? startOfDay(maxDateTotal) : addMonths(today, 20 * 12)
 
   const [quantity, setQuantity] = useState(initialQuantity)
   const [selectedPoolId, setSelectedPoolId] = useState(initialInventoryPoolId || inventoryPools?.[0]?.id || 'NO_POOLS')
+  const [selectedPickupLocationId, setSelectedPickupLocationId] = useState(
+    isTransportable ? initialPickupLocationId || null : null
+  )
   const [selectedRange, setSelectedRange] = useState({
     startDate: initialStartDate ? startOfDay(initialStartDate) : today,
     endDate: initialEndDate ? startOfDay(initialEndDate) : addDays(today, 1)
@@ -76,6 +84,13 @@ const OrderPanel = ({
       isSurrogate: true
     }
     const selectablePools = poolFromList ? inventoryPools : [selectedPool, ...inventoryPools]
+    const poolPickupLocations = sortedPickupLocations(selectedPool.pickupLocations)
+    const showPickupLocationSelect =
+      anyPoolHasPickupLocations && isTransportable && poolPickupLocations.length > 0
+    const resolvedPickupLocationId =
+      showPickupLocationSelect && poolPickupLocations.some(loc => loc.id === selectedPickupLocationId)
+        ? selectedPickupLocationId
+        : null
 
     // Get availability data for selected pool
     const { availability } = modelData
@@ -107,6 +122,9 @@ const OrderPanel = ({
     setDependentState({
       selectablePools,
       selectedPool,
+      poolPickupLocations,
+      showPickupLocationSelect,
+      resolvedPickupLocationId,
       poolAvailability,
       disabledDates,
       disabledStartDates,
@@ -116,7 +134,19 @@ const OrderPanel = ({
     })
 
     onValidate(validationResult.isValid)
-  }, [quantity, selectedPoolId, selectedRange, modelData, maxDateTotal, maxDateLoaded, inventoryPools, locale])
+  }, [
+    quantity,
+    selectedPoolId,
+    selectedPickupLocationId,
+    selectedRange,
+    modelData,
+    maxDateTotal,
+    maxDateLoaded,
+    inventoryPools,
+    locale,
+    anyPoolHasPickupLocations,
+    isTransportable
+  ])
 
   // Validation
   function validate(selectedPool, poolAvailability) {
@@ -159,8 +189,25 @@ const OrderPanel = ({
 
   function changeInventoryPool(e) {
     const id = e.target.value
+    const nextPool = inventoryPools.find(x => x.id === id)
+    const nextLocations = sortedPickupLocations(nextPool?.pickupLocations)
+    const nextPickupLocationId =
+      isTransportable && nextLocations.some(loc => loc.id === selectedPickupLocationId)
+        ? selectedPickupLocationId
+        : null
     setSelectedPoolId(id)
-    onInventoryPoolChange({ ...stateForCallbacks(), poolId: id })
+    setSelectedPickupLocationId(nextPickupLocationId)
+    onInventoryPoolChange({
+      ...stateForCallbacks(),
+      poolId: id,
+      pickupLocationId: nextPickupLocationId
+    })
+  }
+
+  function changePickupLocation(e) {
+    const id = e.target.value || null
+    setSelectedPickupLocationId(id)
+    onPickupLocationChange({ ...stateForCallbacks(), pickupLocationId: id })
   }
 
   function changeDateRange(range) {
@@ -172,7 +219,8 @@ const OrderPanel = ({
     startDate: selectedRange.startDate,
     endDate: selectedRange.endDate,
     quantity,
-    poolId: selectedPoolId
+    poolId: selectedPoolId,
+    pickupLocationId: dependentState?.resolvedPickupLocationId ?? selectedPickupLocationId
   })
 
   function handleCalendarNavigate(newDate) {
@@ -190,12 +238,20 @@ const OrderPanel = ({
   const {
     selectablePools,
     selectedPool,
+    poolPickupLocations,
+    showPickupLocationSelect,
+    resolvedPickupLocationId,
     disabledDates,
     disabledStartDates,
     disabledEndDates,
     maxQuantityByDay,
     validationResult
   } = dependentState
+
+  const mainWarehouseLabel =
+    selectedPool.defaultPickupLocationName ||
+    t(label, 'main-warehouse', locale, { pool: selectedPool.name }) ||
+    selectedPool.name
 
   function renderDay(day) {
     const isoDate = formatISO(day, { representation: 'date' })
@@ -244,11 +300,38 @@ const OrderPanel = ({
           {validationResult.poolError ? (
             <Warning className="mt-2">{validationResult.poolError}</Warning>
           ) : (
-            <InfoMessage className="mt-2">
-              {t(label, 'pool-max-amount-info', locale, { amount: selectedPool.totalReservableQuantity })}
-            </InfoMessage>
+            <>
+              <InfoMessage className="mt-2">
+                {t(label, 'pool-max-amount-info', locale, { amount: selectedPool.totalReservableQuantity })}
+              </InfoMessage>
+              {!isTransportable && anyPoolHasPickupLocations && (
+                <InfoMessage className="mt-2">{t(label, 'not-transportable', locale)}</InfoMessage>
+              )}
+            </>
           )}
         </Section>
+
+        {showPickupLocationSelect && !validationResult.poolError && (
+          <Section title={t(label, 'pickup-location', locale)}>
+            <label htmlFor="pickup-location-id" className="visually-hidden">
+              {t(label, 'pickup-location', locale)}
+            </label>
+            <select
+              name="pickup-location-id"
+              id="pickup-location-id"
+              value={resolvedPickupLocationId || ''}
+              onChange={changePickupLocation}
+              className="form-select"
+            >
+              <option value="">{mainWarehouseLabel}</option>
+              {poolPickupLocations.map(({ id, name }) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </Section>
+        )}
 
         {!validationResult.poolError && (
           <Let title={t(label, 'timespan', locale)}>
@@ -319,6 +402,10 @@ const OrderPanel = ({
 OrderPanel.displayName = 'OrderPanel'
 OrderPanel.propTypes = orderPanelPropTypes
 export default OrderPanel
+
+function sortedPickupLocations(pickupLocations) {
+  return [...(pickupLocations || [])].sort((a, b) => a.name.localeCompare(b.name))
+}
 
 function getDateRangePickerConstraints(poolAvailability, today, wantedQuantity) {
   const { dates } = poolAvailability

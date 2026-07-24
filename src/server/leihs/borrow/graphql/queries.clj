@@ -62,6 +62,7 @@
    :orders-connection orders/get-connection
    :overdue-rental-quantity orders/overdue-rental-quantity
    :pickup-fulfillment visits/pickup-fulfillment
+   :pickup-location pickup-locations/get-one
    :pickup-locations pickup-locations/get-multiple
    :pool-availability inventory-pools/get-availability
    :pool-order orders/get-one-by-pool
