@@ -23,8 +23,7 @@
          :startDateRestrictionEnum {:values [:NON_WORKDAY
                                              :HOLIDAY
                                              :VISITS_CAPACITY_REACHED
-                                             :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE
-                                             :WITHIN_PICKUP_TRANSFER_BUFFER]}
+                                             :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
          :endDateRestrictionEnum {:values [:NON_WORKDAY :HOLIDAY :VISITS_CAPACITY_REACHED]}}
 
  :interfaces {:Fulfillment {:fields {:fulfilledQuantity {:type (non-null Int)}
@@ -246,9 +245,11 @@
            :Property {:fields {:id {:type (non-null :UUID)}
                                :key {:type (non-null String)}
                                :value {:type (non-null String)}}}
-           :InventoryPoolAvailability {:fields {:dates {:type (list :DayData)}}}
+           :InventoryPoolAvailability {:fields {:dates {:type (list :DayData)}
+                                                :earliestPossiblePickupDate {:type :Date}}}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
-                                                     :dates {:type (list :DayDataWithQuantity)}}}
+                                                     :dates {:type (list :DayDataWithQuantity)}
+                                                     :earliestPossiblePickupDate {:type :Date}}}
            :TotalReservableQuantity {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                               :quantity {:type (non-null Int)}}}
            :Attachment {:fields {:id {:type (non-null :UUID)}

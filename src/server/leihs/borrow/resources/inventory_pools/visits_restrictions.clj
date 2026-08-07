@@ -50,14 +50,6 @@
                         (inc in-advance))
                  :else date)))))))
 
-(defn transfer-buffer-binding?
-  "True when the transfer buffer, not reservation-advance-days,
-  is why earliest-possible-pickup-date was pushed out."
-  [pool alternative-pickup-location?]
-  (and alternative-pickup-location?
-       (>= (or (:transfer_buffer_before_pick_up pool) 0)
-           (or (:reservation_advance_days pool) 0))))
-
 (defn visits-capacity-reached? [date visits-count pool]
   (let [index (-> date
                   jt/local-date
@@ -82,11 +74,6 @@
     (when-let [eppd (:earliest-possible-pickup-date pool)]
       (jt/before? (jt/local-date (:date date-with-avail)) eppd))
     (conj :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE)
-
-    (and (:transfer-buffer-binding? pool)
-         (when-let [eppd (:earliest-possible-pickup-date pool)]
-           (jt/before? (jt/local-date (:date date-with-avail)) eppd)))
-    (conj :WITHIN_PICKUP_TRANSFER_BUFFER)
 
     (visits-capacity-reached? (:date date-with-avail)
                               (:visits_count date-with-avail)
@@ -125,10 +112,6 @@
                  (assoc <>
                         :earliest-possible-pickup-date
                         (earliest-possible-pickup-date
-                         <> alternative-pickup-location?))
-                 (assoc <>
-                        :transfer-buffer-binding?
-                        (transfer-buffer-binding?
                          <> alternative-pickup-location?)))]
-     (map #(validate-single-date % pool*)
-          dates-with-avail))))
+     {:dates (map #(validate-single-date % pool*) dates-with-avail)
+      :earliest-possible-pickup-date (:earliest-possible-pickup-date pool*)})))

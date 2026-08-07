@@ -157,8 +157,7 @@
     (as-> date-range <>
       (map #(hash-map :date (str %)) <>)
       (mapv merge <> visits-count)
-      (restrict/validate-dates tx <> db-pool pickup-location-id)
-      (hash-map :dates <>))))
+      (restrict/validate-dates tx <> db-pool pickup-location-id))))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)

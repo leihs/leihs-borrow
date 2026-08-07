@@ -349,6 +349,38 @@ describe "models connection" do
     end
 
     context "pickup location" do
+      let(:q) do
+        @start ||= Date.today
+        @end ||= Date.tomorrow
+
+        <<-GRAPHQL
+            {
+              models(
+                ids: ["#{@model.id}"]
+              ) {
+                edges {
+                  node {
+                    id
+                    availability(
+                      startDate: "#{@start}",
+                      endDate: "#{@end}",
+                      inventoryPoolIds: ["#{@inventory_pool.id}"]#{@pickup_location_id ? %(,\n                      pickupLocationId: "#{@pickup_location_id}") : ""}
+                    ) {
+                      earliestPossiblePickupDate
+                      dates {
+                        date
+                        quantity
+                        startDateRestrictions
+                        endDateRestrictions
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        GRAPHQL
+      end
+
       before(:each) do
         @model = FactoryBot.create(
           :leihs_model,
@@ -364,7 +396,7 @@ describe "models connection" do
           FactoryBot.create(:pickup_location, inventory_pool: @inventory_pool).id
       end
 
-      it "flags dates within the transfer buffer" do
+      it "extends earliest possible pickup date for alternative pickup location" do
         @end ||= Date.today + 3.days
         result = query(q, @user.id)
 
@@ -373,18 +405,19 @@ describe "models connection" do
             edges: [
               {node: {id: @model.id.to_s,
                       availability: [{
+                        earliestPossiblePickupDate: "#{Date.today + 3.days}T00:00:00Z",
                         dates: [
                           {date: "#{Date.today}T00:00:00Z",
                            quantity: 1,
-                           startDateRestrictions: ["WITHIN_PICKUP_TRANSFER_BUFFER", "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
                            endDateRestrictions: nil},
                           {date: "#{Date.today + 1.day}T00:00:00Z",
                            quantity: 1,
-                           startDateRestrictions: ["WITHIN_PICKUP_TRANSFER_BUFFER", "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
                            endDateRestrictions: nil},
                           {date: "#{Date.today + 2.days}T00:00:00Z",
                            quantity: 1,
-                           startDateRestrictions: ["WITHIN_PICKUP_TRANSFER_BUFFER", "BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
                            endDateRestrictions: nil},
                           {date: "#{Date.today + 3.days}T00:00:00Z",
                            quantity: 1,
@@ -407,6 +440,7 @@ describe "models connection" do
             edges: [
               {node: {id: @model.id.to_s,
                       availability: [{
+                        earliestPossiblePickupDate: "#{Date.today + 1.day}T00:00:00Z",
                         dates: [
                           {date: "#{Date.today}T00:00:00Z",
                            quantity: 1,

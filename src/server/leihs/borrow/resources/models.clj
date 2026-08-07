@@ -212,10 +212,10 @@
                                 pool-id
                                 user-id
                                 (:id value)
-                                (or exclude-reservation-ids []))]
+                                (or exclude-reservation-ids []))
+                 validated (restrict/validate-dates tx (:dates avail) pool pickup-location-id)]
              (-> avail
-                 (update :dates
-                         #(restrict/validate-dates tx % pool pickup-location-id))
+                 (merge validated)
                  (assoc :inventory-pool pool))))
          pools)))
 
