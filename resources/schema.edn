@@ -468,7 +468,8 @@
                            :onlyAvailable {:type Boolean}
                            :quantity {:type :Int}
                            :userId {:type :UUID}
-                           :poolIds {:type (list (non-null :UUID))}}
+                           :poolIds {:type (list (non-null :UUID))}
+                           :transportableOnly {:type Boolean}}
                     :type :ModelsConnection
                     :resolve :models-connection}
            :inventoryPool {:resolve :inventory-pool

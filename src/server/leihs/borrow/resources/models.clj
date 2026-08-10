@@ -242,7 +242,8 @@
            search-term
            unscope-reservable
            pool-ids
-           is-favorited]}
+           is-favorited
+           transportable-only]}
    value]
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
@@ -255,6 +256,8 @@
         (sql/where [:in :models.id ids]))
       (cond-> search-term
         (merge-search-conditions search-term))
+      (cond-> transportable-only
+        (sql/where [:= :models.transportable true]))
       (cond-> (not (nil? is-favorited))
         (-> (sql/left-join :favorite_models
                            [:and
