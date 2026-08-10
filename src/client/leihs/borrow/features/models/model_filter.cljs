@@ -78,9 +78,9 @@
               selected-option-id (or selected-pickup-location-id selected-pool-id)
               effective-pool-id selected-pool-id
               selectable-option-ids (->> pools-with-reservable-items
-                                        pool-and-pickup-location-options
-                                        (map :id)
-                                        set)
+                                         pool-and-pickup-location-options
+                                         (map :id)
+                                         set)
               is-unselectable-pool (and (presence selected-option-id)
                                         (not (contains? selectable-option-ids selected-option-id)))
               user-suspended-in-pool? (->> suspensions

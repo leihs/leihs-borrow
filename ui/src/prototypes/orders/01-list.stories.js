@@ -158,8 +158,7 @@ const currentLendingsWithoutPickupLocations = [
   },
   {
     quantity: '1',
-    modelName:
-      'Arri HMI 400w Pocket Par mit Softbox Chimera XS Video Pro 40x55cm (Arri HMI 400w Pocket Par)',
+    modelName: 'Arri HMI 400w Pocket Par mit Softbox Chimera XS Video Pro 40x55cm (Arri HMI 400w Pocket Par)',
     inventoryCode: 'INV61969',
     poolName: 'WSL-Ausleihe',
     startDate: '21.10.',
@@ -205,8 +204,7 @@ const currentLendingsWithPickupLocations = [
   },
   {
     quantity: '1',
-    modelName:
-      'Arri HMI 400w Pocket Par mit Softbox Chimera XS Video Pro 40x55cm (Arri HMI 400w Pocket Par)',
+    modelName: 'Arri HMI 400w Pocket Par mit Softbox Chimera XS Video Pro 40x55cm (Arri HMI 400w Pocket Par)',
     inventoryCode: 'INV61969',
     poolName: 'WSL-Ausleihe',
     startDate: '21.10.',

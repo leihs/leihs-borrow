@@ -85,8 +85,7 @@ const OrderPanel = ({
     }
     const selectablePools = poolFromList ? inventoryPools : [selectedPool, ...inventoryPools]
     const poolPickupLocations = sortedPickupLocations(selectedPool.pickupLocations)
-    const showPickupLocationSelect =
-      anyPoolHasPickupLocations && isTransportable && poolPickupLocations.length > 0
+    const showPickupLocationSelect = anyPoolHasPickupLocations && isTransportable && poolPickupLocations.length > 0
     const resolvedPickupLocationId =
       showPickupLocationSelect && poolPickupLocations.some(loc => loc.id === selectedPickupLocationId)
         ? selectedPickupLocationId
@@ -252,8 +251,7 @@ const OrderPanel = ({
     validationResult
   } = dependentState
 
-  const mainWarehouseLabel =
-    selectedPool.defaultPickupLocationName || t(label, 'main-warehouse', locale)
+  const mainWarehouseLabel = selectedPool.defaultPickupLocationName || t(label, 'main-warehouse', locale)
 
   function renderDay(day) {
     const isoDate = formatISO(day, { representation: 'date' })

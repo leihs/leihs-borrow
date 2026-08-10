@@ -32,7 +32,7 @@ Feature: Shopping Cart - Editing Reservations
       | 1× Tripod      | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)   |
 
     When I click on the card with title "1× DSLR Camera"
-    And I see the "Edit reservation" dialog
+    And I see the "DSLR Camera" dialog
     And I see a form inside the dialog
     Then the form has exactly these fields:
       | label                         | value              |
@@ -56,7 +56,7 @@ Feature: Shopping Cart - Editing Reservations
     And the form has no error message
 
     When I click on "Confirm"
-    And the "Edit reservation" dialog has closed
+    And the "DSLR Camera" dialog has closed
     And I sleep "0.5"
     Then I see the following lines in the "Items" section:
       | title          | body                                                                     |
@@ -93,9 +93,9 @@ Feature: Shopping Cart - Editing Reservations
       | 1× Tripod      | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)   |
 
     When I click on the card with title "1× DSLR Camera"
-    And I see the "Edit reservation" dialog
+    And I see the "DSLR Camera" dialog
     And I click on "Remove reservation"
-    And the "Edit reservation" dialog has closed
+    And the "DSLR Camera" dialog has closed
     And I sleep "0.5"
     Then I see the following lines in the "Items" section:
       | title     | body                                                                   |

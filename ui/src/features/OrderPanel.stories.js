@@ -18,12 +18,7 @@ export default {
   }
 }
 
-function OrderPanelStory({
-  modelDataOverrides = {},
-  inventoryPoolsOverride,
-  initialPickupLocationId,
-  title
-}) {
+function OrderPanelStory({ modelDataOverrides = {}, inventoryPoolsOverride, initialPickupLocationId, title }) {
   const now = new Date(FAKE_STYLEGUIDE_TIME)
   const {
     modelData: baseModelData,
@@ -136,17 +131,11 @@ export const noPickupLocations = () => {
 }
 noPickupLocations.storyName = 'Without pickup locations'
 
-export const prefilledPickupLocation = () => (
-  <OrderPanelStory initialPickupLocationId="pl-alt-1" />
-)
+export const prefilledPickupLocation = () => <OrderPanelStory initialPickupLocationId="pl-alt-1" />
 prefilledPickupLocation.storyName = 'Prefill from catalog filter'
 
-export const withPickupLocationsMoreDetails = () => (
-  <OrderPanelStory initialPickupLocationId="pl-alt-1" />
-)
+export const withPickupLocationsMoreDetails = () => <OrderPanelStory initialPickupLocationId="pl-alt-1" />
 withPickupLocationsMoreDetails.storyName = 'Pickup location with more-details link'
 
-export const pickupLocationsOnly = () => (
-  <OrderPanelStory title="Pickup location without inventory pool names" />
-)
+export const pickupLocationsOnly = () => <OrderPanelStory title="Pickup location without inventory pool names" />
 pickupLocationsOnly.storyName = 'Pickup location locations only (Hauptlager + alts)'

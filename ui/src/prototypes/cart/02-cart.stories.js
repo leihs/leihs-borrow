@@ -190,9 +190,7 @@ function CartPage({ order, onResetTimeLimitClick, onItemClick, onConfirmClick, o
                 <ListCard.Title>
                   {reservation.quantity}x {model.name}
                 </ListCard.Title>
-                <ListCard.Body>
-                  {(pickupLocation && pickupLocation.name) || pool.name}
-                </ListCard.Body>
+                <ListCard.Body>{(pickupLocation && pickupLocation.name) || pool.name}</ListCard.Body>
                 <ListCard.Foot>
                   <Badge colorClassName={reservation.isInvalid ? 'bg-danger' : undefined}>
                     {reservation.durationDays} Tage{' '}

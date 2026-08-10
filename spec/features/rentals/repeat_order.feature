@@ -72,9 +72,9 @@ Feature: Rentals - Show - Repeat order
       """
 
     And I click on the card with title "1× Elefant"
-    And I see the "Edit reservation" dialog
+    And I see the "Elefant" dialog
     And I click on "Remove reservation"
-    And the "Edit reservation" dialog has closed
+    And the "Elefant" dialog has closed
     And I sleep "0.5"
     And I click on "Send order"
     And I enter "Order 1 (again)" in the "Title" field
