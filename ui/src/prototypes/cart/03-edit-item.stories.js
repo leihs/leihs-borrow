@@ -19,10 +19,10 @@ export default {
   }
 }
 
-export const editItem = ({ onSubmit, onCancel, onRemoveClick }) => {
-  const { modelData, inventoryPools, maxDateLoaded } = getOrderPanelMockData()
+function EditItemDialog({ onSubmit, onCancel, onRemoveClick, inventoryPools }) {
+  const { modelData, maxDateLoaded } = getOrderPanelMockData()
   return (
-    <ModalDialog title="Gegenstand bearbeiten" shown>
+    <ModalDialog title={modelData.name} shown>
       <ModalDialog.Body>
         <div className="d-grid gap-4">
           <OrderPanel
@@ -52,3 +52,32 @@ export const editItem = ({ onSubmit, onCancel, onRemoveClick }) => {
     </ModalDialog>
   )
 }
+
+export const editItem = ({ onSubmit, onCancel, onRemoveClick }) => {
+  const { inventoryPools } = getOrderPanelMockData()
+  return (
+    <EditItemDialog
+      onSubmit={onSubmit}
+      onCancel={onCancel}
+      onRemoveClick={onRemoveClick}
+      inventoryPools={inventoryPools.map(pool => ({
+        ...pool,
+        pickupLocations: []
+      }))}
+    />
+  )
+}
+editItem.storyName = 'Without pickup locations'
+
+export const editItemWithPickupLocations = ({ onSubmit, onCancel, onRemoveClick }) => {
+  const { inventoryPools } = getOrderPanelMockData()
+  return (
+    <EditItemDialog
+      onSubmit={onSubmit}
+      onCancel={onCancel}
+      onRemoveClick={onRemoveClick}
+      inventoryPools={inventoryPools}
+    />
+  )
+}
+editItemWithPickupLocations.storyName = 'With pickup locations'

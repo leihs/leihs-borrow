@@ -7,6 +7,12 @@ query getDelegation($id: UUID!) {
       name
       maximumReservationDuration
       hasReservableItems
+      defaultPickupLocationName
+      pickupLocations {
+        id
+        name
+        description
+      }
     }
     suspensions {
       inventoryPool {

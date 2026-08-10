@@ -151,39 +151,41 @@ export default function DateRangePicker({
 
   return (
     <div className={cx('date-range-picker ui-date-range-picker', className)} {...restProps}>
-      <div className="mb-3">
-        <LabelInside>
-          <InputComponent
-            ref={startDateInput}
-            name="startDate"
-            id="startDate"
-            className={cx('form-control calendar-indicator', { 'is-invalid': startDateInvalid })}
-            defaultValue={dateFormatter(selectedRange.startDate)}
-            onBlur={handleInputBlur}
-            onFocus={handleInputFocus}
-            onKeyPress={e => e.key === 'Enter' && handleInputBlur(e)}
-            placeholder={txt.placeholderFrom}
-            autoComplete="off"
-          />
-          <label htmlFor="startDate">{txt.from}</label>
-        </LabelInside>
-      </div>
-      <div className="mb-3">
-        <LabelInside>
-          <InputComponent
-            ref={endDateInput}
-            name="endDate"
-            id="endDate"
-            className={cx('form-control calendar-indicator', { 'is-invalid': endDateInvalid })}
-            defaultValue={dateFormatter(selectedRange.endDate)}
-            onBlur={handleInputBlur}
-            onFocus={handleInputFocus}
-            onKeyPress={e => e.key === 'Enter' && handleInputBlur(e)}
-            placeholder={txt.placeholderUntil}
-            autoComplete="off"
-          />
-          <label htmlFor="endDate">{txt.until}</label>
-        </LabelInside>
+      <div className="d-flex gap-3 mb-3">
+        <div className="flex-fill" style={{ minWidth: 0 }}>
+          <LabelInside>
+            <InputComponent
+              ref={startDateInput}
+              name="startDate"
+              id="startDate"
+              className={cx('form-control calendar-indicator', { 'is-invalid': startDateInvalid })}
+              defaultValue={dateFormatter(selectedRange.startDate)}
+              onBlur={handleInputBlur}
+              onFocus={handleInputFocus}
+              onKeyPress={e => e.key === 'Enter' && handleInputBlur(e)}
+              placeholder={txt.placeholderFrom}
+              autoComplete="off"
+            />
+            <label htmlFor="startDate">{txt.from}</label>
+          </LabelInside>
+        </div>
+        <div className="flex-fill" style={{ minWidth: 0 }}>
+          <LabelInside>
+            <InputComponent
+              ref={endDateInput}
+              name="endDate"
+              id="endDate"
+              className={cx('form-control calendar-indicator', { 'is-invalid': endDateInvalid })}
+              defaultValue={dateFormatter(selectedRange.endDate)}
+              onBlur={handleInputBlur}
+              onFocus={handleInputFocus}
+              onKeyPress={e => e.key === 'Enter' && handleInputBlur(e)}
+              placeholder={txt.placeholderUntil}
+              autoComplete="off"
+            />
+            <label htmlFor="endDate">{txt.until}</label>
+          </LabelInside>
+        </div>
       </div>
       <div className={cx('leihs-calendar')}>
         <DateRange

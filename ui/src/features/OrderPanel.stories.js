@@ -18,15 +18,24 @@ export default {
   }
 }
 
-export const orderPanel = () => {
+function OrderPanelStory({
+  modelDataOverrides = {},
+  inventoryPoolsOverride,
+  initialPickupLocationId,
+  title
+}) {
   const now = new Date(FAKE_STYLEGUIDE_TIME)
   const {
-    modelData,
-    inventoryPools,
+    modelData: baseModelData,
+    inventoryPools: basePools,
     initialInventoryPoolId,
     maxDateLoaded: initialMaxDateLoaded,
     spec
   } = getOrderPanelMockData()
+
+  const modelData = { ...baseModelData, ...modelDataOverrides }
+  const inventoryPools = inventoryPoolsOverride || basePools
+  const dialogTitle = title || modelData.name
 
   const [isValid, setIsValid] = useState()
   const [maxDateLoaded, setMaxDateLoaded] = useState(initialMaxDateLoaded)
@@ -46,7 +55,7 @@ export const orderPanel = () => {
   }
 
   return (
-    <ModalDialog title="Gegenstand hinzufügen" className="ui-booking-calendar" shown>
+    <ModalDialog title={dialogTitle} className="ui-booking-calendar" shown>
       <ModalDialog.Body>
         <OrderPanel
           modelData={modelData}
@@ -66,6 +75,8 @@ export const orderPanel = () => {
           inventoryPools={inventoryPools}
           initialInventoryPoolId={initialInventoryPoolId}
           onInventoryPoolChange={action('pool-change')}
+          initialPickupLocationId={initialPickupLocationId}
+          onPickupLocationChange={action('pickup-location-change')}
           //
           onSubmit={action('submit')}
           onValidate={setIsValid}
@@ -101,4 +112,41 @@ export const orderPanel = () => {
   )
 }
 
+export const orderPanel = () => <OrderPanelStory />
 orderPanel.storyName = 'OrderPanel'
+
+export const withPickupLocations = () => <OrderPanelStory />
+withPickupLocations.storyName = 'With pickup locations'
+
+export const notTransportable = () => (
+  <OrderPanelStory modelDataOverrides={{ transportable: false, name: '4K-Videokamera Sony FDR-AX53' }} />
+)
+notTransportable.storyName = 'Not transportable'
+
+export const noPickupLocations = () => {
+  const { inventoryPools } = getOrderPanelMockData()
+  return (
+    <OrderPanelStory
+      inventoryPoolsOverride={inventoryPools.map(pool => ({
+        ...pool,
+        pickupLocations: []
+      }))}
+    />
+  )
+}
+noPickupLocations.storyName = 'Without pickup locations'
+
+export const prefilledPickupLocation = () => (
+  <OrderPanelStory initialPickupLocationId="pl-alt-1" />
+)
+prefilledPickupLocation.storyName = 'Prefill from catalog filter'
+
+export const withPickupLocationsMoreDetails = () => (
+  <OrderPanelStory initialPickupLocationId="pl-alt-1" />
+)
+withPickupLocationsMoreDetails.storyName = 'Pickup location with more-details link'
+
+export const pickupLocationsOnly = () => (
+  <OrderPanelStory title="Pickup location without inventory pool names" />
+)
+pickupLocationsOnly.storyName = 'Pickup location locations only (Hauptlager + alts)'

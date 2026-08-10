@@ -79,6 +79,11 @@ fragment reservationProps on Reservation {
   inventoryPool {
     id
     name
+    defaultPickupLocationName
+  }
+  pickupLocation {
+    id
+    name
   }
   item {
     inventoryCode

@@ -63,6 +63,14 @@
              :pool {:en-GB "Inventory pool" :de-CH "Inventarpark" :fr-CH "Pool d'inventaire"}
              :pool-max-amount {:en-GB "{pool} (max. {amount, number})" :de-CH "{pool} (max. {amount, number})" :fr-CH "{pool} (max. {amount, number})"}
              :pool-max-amount-info {:en-GB  "Maximum available amount: {amount, number}" :de-CH "Maximal verfügbarer Bestand: {amount, number}" :fr-CH "Quantité maximale disponible : {amount, number}"}
+             :pickup-location {:en-GB "Pickup location" :de-CH "Abholort" :fr-CH "Lieu de retrait"}
+             :pickup-locations-more-details {:en-GB "More details about the alternative pickup locations"
+                                             :de-CH "Mehr Details zu den alternativen Abholorten"
+                                             :fr-CH "Plus de détails sur les lieux de retrait alternatifs"}
+             :main-warehouse {:en-GB "Main warehouse" :de-CH "Hauptstandort" :fr-CH "Site principal"}
+             :not-transportable {:en-GB "Pickup and return only possible at the main location of the inventory pool."
+                                 :de-CH "Abholung und Rückgabe nur am Hauptstandort des Inventarparks möglich."
+                                 :fr-CH "Retrait et retour uniquement possibles au site principal du pool d'inventaire."}
              :user-delegation {:en-GB "Order for" :de-CH "Bestellung für" :fr-CH "Commande pour"}
              :timespan {:en-GB "Time span" :de-CH "Zeitraum" :fr-CH "Période"}
              :from {:en-GB "From" :de-CH "Von" :fr-CH "De"}
@@ -454,6 +462,9 @@
                 :holidays {:title {:en-GB "Holidays"
                                    :de-CH "Feiertage"
                                    :fr-CH "Jours fériés"}}
+                :pickup-locations {:title {:en-GB "Alternative pickup locations"
+                                           :de-CH "Alternative Abholorte"
+                                           :fr-CH "Lieux de retrait alternatifs"}}
                 :show-remaining-holidays {:more {:en-GB "Show remaining"
                                                  :de-CH "Restliche Feiertage anzeigen"
                                                  :fr-CH "Afficher les jours restants"}

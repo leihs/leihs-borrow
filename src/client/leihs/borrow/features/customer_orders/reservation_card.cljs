@@ -41,7 +41,9 @@
         total-days (+ 1 (date-fns/differenceInCalendarDays actual-end-date start-date))
         title (t :reservation-line.title {:itemCount quantity, :itemName name})
         inventory-code (-> reservation :item :inventory-code)
-        pool-name (-> reservation :inventory-pool :name)
+        location-name (or (-> reservation :pickup-location :name)
+                          (-> reservation :inventory-pool :default-pickup-location-name)
+                          (-> reservation :inventory-pool :name))
         imgSrc (or (get-in model [:cover-image :image-url])
                    (get-in model [:images 0 :image-url]))]
     [:<>
@@ -58,7 +60,7 @@
          [status-info status start-date actual-end-date now]]]]
 
       [:> UI/Components.Design.ListCard.Body
-       [:div pool-name]
+       [:div (or location-name "\u00a0")]
        [:div
         (h/format-date-range start-date actual-end-date date-locale)
         " (" (t :reservation-line.duration-days {:totalDays total-days}) ")"]]

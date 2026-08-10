@@ -8,6 +8,11 @@ mutation refreshTimeout($userId: UUID) {
         inventoryPool {
           id
           name
+          defaultPickupLocationName
+        }
+        pickupLocation {
+          id
+          name
         }
         model {
           id

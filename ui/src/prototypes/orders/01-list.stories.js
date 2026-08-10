@@ -17,7 +17,49 @@ export default {
   argTypes: {}
 }
 
-export const list = ({ ordersByBasicState }) => {
+const indent = '\u00A0\u00A0'
+
+const orderSearchFilterPropsWithoutPickupLocations = {
+  ...orderSearchFilterProps,
+  availableFilters: {
+    pools: [
+      { id: '', label: 'Alle Inventarparks' },
+      { id: 'pool-toni', label: 'Ausleihe Toni-Areal' },
+      { id: 'pool-wsl', label: 'WSL-Ausleihe' }
+    ]
+  }
+}
+
+const orderSearchFilterPropsWithPickupLocations = {
+  ...orderSearchFilterProps,
+  availableFilters: {
+    pools: [
+      { id: '', label: 'Alle Inventarparks' },
+      { id: 'pool-toni', type: 'pool', label: 'Ausleihe Toni-Areal' },
+      {
+        id: 'loc-1',
+        type: 'pickupLocation',
+        poolId: 'pool-toni',
+        label: `${indent}Pickup Location #1`
+      },
+      {
+        id: 'loc-2',
+        type: 'pickupLocation',
+        poolId: 'pool-toni',
+        label: `${indent}Pickup Location #2`
+      },
+      {
+        id: 'loc-3',
+        type: 'pickupLocation',
+        poolId: 'pool-toni',
+        label: `${indent}Pickup Location #3`
+      },
+      { id: 'pool-wsl', type: 'pool', label: 'WSL-Ausleihe' }
+    ]
+  }
+}
+
+function OrdersList({ ordersByBasicState, filterProps, currentLendings }) {
   const openOrders = ordersByBasicState.find(x => x.basicState.key === 'open').orders
   const closedOrders = ordersByBasicState.find(x => x.basicState.key === 'closed').orders
   return (
@@ -25,7 +67,7 @@ export const list = ({ ordersByBasicState }) => {
       <PageLayout.Header title="Bestellungen"></PageLayout.Header>
 
       <div className="d-grid gap-4">
-        <OrderSearchFilter {...orderSearchFilterProps} />
+        <OrderSearchFilter {...filterProps} />
 
         <div className="responsive-tab-combo">
           <div>
@@ -40,61 +82,15 @@ export const list = ({ ordersByBasicState }) => {
                 <span>
                   Aktuelle Ausleihen{' '}
                   <CircleBadge variant="secondary" inline>
-                    4
+                    {currentLendings.length}
                   </CircleBadge>
                 </span>
               }
             >
               <ListCard.Stack>
-                <ReservationCard
-                  img={<SquareImage />}
-                  quantity="1"
-                  modelName="4K-Videokamera Sony PXW-Z90"
-                  inventoryCode="P-AUS476488"
-                  poolName="Ausleihe Toni-Areal"
-                  startDate="15.10."
-                  endDate="20.1.2024"
-                  durationDays="6"
-                  statusInfo={<span className="text-danger">Rückgabe überfällig</span>}
-                  onClick={() => {}}
-                />
-                <ReservationCard
-                  img={<SquareImage />}
-                  quantity="1"
-                  modelName="4K-Videokamera Sony PXW-Z90"
-                  inventoryCode="P-AUS476488"
-                  poolName="Ausleihe Toni-Areal"
-                  startDate="15.10."
-                  endDate="20.1.2024"
-                  durationDays="6"
-                  delegationName="Delegation TZ-DDE-Cast/Audioviselle Medien"
-                  statusInfo={<span className="text-warning">Rückgabe morgen</span>}
-                  onClick={() => {}}
-                />
-                <ReservationCard
-                  img={<SquareImage />}
-                  quantity="1"
-                  modelName="Arri HMI 400w Pocket Par mit Softbox Chimera XS Video Pro 40x55cm (Arri HMI 400w Pocket Par)"
-                  inventoryCode="INV61969"
-                  poolName="Ausleihe Toni-Areal"
-                  startDate="21.10."
-                  endDate="23.1.2024"
-                  durationDays="3"
-                  statusInfo={<span className="text-primary">Abholung morgen</span>}
-                  onClick={() => {}}
-                />
-                <ReservationCard
-                  img={<SquareImage />}
-                  quantity="1"
-                  modelName="Stativ Manfrotto 298 B"
-                  inventoryCode="INV39722"
-                  poolName="Ausleihe Toni-Areal"
-                  startDate="26.10."
-                  endDate="29.11.2024"
-                  durationDays="3"
-                  statusInfo={<span className="">Abholung in 5 Tagen</span>}
-                  onClick={() => {}}
-                />
+                {currentLendings.map((lending, i) => (
+                  <ReservationCard key={i} img={<SquareImage />} onClick={() => {}} {...lending} />
+                ))}
               </ListCard.Stack>
             </Tab>
             <Tab
@@ -137,6 +133,116 @@ export const list = ({ ordersByBasicState }) => {
     </PageLayoutMock>
   )
 }
+
+const currentLendingsWithoutPickupLocations = [
+  {
+    quantity: '1',
+    modelName: '4K-Videokamera Sony PXW-Z90',
+    inventoryCode: 'P-AUS476488',
+    poolName: 'Ausleihe Toni-Areal',
+    startDate: '15.10.',
+    endDate: '20.1.2024',
+    durationDays: '6',
+    statusInfo: <span className="text-danger">Rückgabe überfällig</span>
+  },
+  {
+    quantity: '1',
+    modelName: '4K-Videokamera Sony PXW-Z90',
+    inventoryCode: 'P-AUS476488',
+    poolName: 'Ausleihe Toni-Areal',
+    startDate: '15.10.',
+    endDate: '20.1.2024',
+    durationDays: '6',
+    delegationName: 'Delegation TZ-DDE-Cast/Audioviselle Medien',
+    statusInfo: <span className="text-warning">Rückgabe morgen</span>
+  },
+  {
+    quantity: '1',
+    modelName:
+      'Arri HMI 400w Pocket Par mit Softbox Chimera XS Video Pro 40x55cm (Arri HMI 400w Pocket Par)',
+    inventoryCode: 'INV61969',
+    poolName: 'WSL-Ausleihe',
+    startDate: '21.10.',
+    endDate: '23.1.2024',
+    durationDays: '3',
+    statusInfo: <span className="text-primary">Abholung morgen</span>
+  },
+  {
+    quantity: '1',
+    modelName: 'Stativ Manfrotto 298 B',
+    inventoryCode: 'INV39722',
+    poolName: 'WSL-Ausleihe',
+    startDate: '26.10.',
+    endDate: '29.11.2024',
+    durationDays: '3',
+    statusInfo: <span className="">Abholung in 5 Tagen</span>
+  }
+]
+
+const currentLendingsWithPickupLocations = [
+  {
+    quantity: '1',
+    modelName: '4K-Videokamera Sony PXW-Z90',
+    inventoryCode: 'P-AUS476488',
+    poolName: 'Ausleihe Toni-Areal',
+    locationName: 'Default-PickupLocation',
+    startDate: '15.10.',
+    endDate: '20.1.2024',
+    durationDays: '6',
+    statusInfo: <span className="text-danger">Rückgabe überfällig</span>
+  },
+  {
+    quantity: '1',
+    modelName: '4K-Videokamera Sony PXW-Z90',
+    inventoryCode: 'P-AUS476488',
+    poolName: 'Ausleihe Toni-Areal',
+    locationName: 'Pickup Location #1',
+    startDate: '15.10.',
+    endDate: '20.1.2024',
+    durationDays: '6',
+    delegationName: 'Delegation TZ-DDE-Cast/Audioviselle Medien',
+    statusInfo: <span className="text-warning">Rückgabe morgen</span>
+  },
+  {
+    quantity: '1',
+    modelName:
+      'Arri HMI 400w Pocket Par mit Softbox Chimera XS Video Pro 40x55cm (Arri HMI 400w Pocket Par)',
+    inventoryCode: 'INV61969',
+    poolName: 'WSL-Ausleihe',
+    startDate: '21.10.',
+    endDate: '23.1.2024',
+    durationDays: '3',
+    statusInfo: <span className="text-primary">Abholung morgen</span>
+  },
+  {
+    quantity: '1',
+    modelName: 'Stativ Manfrotto 298 B',
+    inventoryCode: 'INV39722',
+    poolName: 'WSL-Ausleihe',
+    startDate: '26.10.',
+    endDate: '29.11.2024',
+    durationDays: '3',
+    statusInfo: <span className="">Abholung in 5 Tagen</span>
+  }
+]
+
+export const list = ({ ordersByBasicState }) => (
+  <OrdersList
+    ordersByBasicState={ordersByBasicState}
+    filterProps={orderSearchFilterPropsWithoutPickupLocations}
+    currentLendings={currentLendingsWithoutPickupLocations}
+  />
+)
+list.storyName = 'Without pickup locations'
+
+export const listWithPickupLocations = ({ ordersByBasicState }) => (
+  <OrdersList
+    ordersByBasicState={ordersByBasicState}
+    filterProps={orderSearchFilterPropsWithPickupLocations}
+    currentLendings={currentLendingsWithPickupLocations}
+  />
+)
+listWithPickupLocations.storyName = 'With pickup locations'
 
 const ordersByBasicState = [
   {
@@ -275,5 +381,9 @@ const ordersByBasicState = [
 ]
 
 list.args = {
+  ordersByBasicState
+}
+
+listWithPickupLocations.args = {
   ordersByBasicState
 }

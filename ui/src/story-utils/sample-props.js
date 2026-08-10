@@ -207,6 +207,20 @@ export function getOrderPanelMockData() {
       dates: modelData.availability[0].dates
     })
   const inventoryPools = modelData.availability.map(x => x.inventoryPool)
+  inventoryPools[0] = {
+    ...inventoryPools[0],
+    defaultPickupLocationName: 'Hauptlager',
+    pickupLocations: [
+      { id: 'pl-alt-2', name: 'Pickup Location #2', description: 'Hintereingang' },
+      { id: 'pl-alt-1', name: 'Pickup Location #1', description: 'Empfang' }
+    ]
+  }
+  inventoryPools[1] = {
+    ...inventoryPools[1],
+    defaultPickupLocationName: null,
+    pickupLocations: []
+  }
+  modelData.transportable = true
   const userDelegations = [
     { id: '2216bad8-36d3-4719-9d1e-a9c26d23045c', name: 'Normin Normalo (persönlich)' },
     { id: '879280bd-3840-48dd-bae4-7fb121ca446a', type: 'delegation', name: 'Movie Production Team' },

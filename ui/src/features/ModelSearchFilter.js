@@ -73,7 +73,7 @@ export default function ModelSearchFilter({
                 tabIndex="2"
               >
                 {availablePools.map(pool => (
-                  <option key={pool.id} value={pool.id}>
+                  <option key={pool.id} value={pool.id} data-type={pool.type}>
                     {pool.label}
                   </option>
                 ))}

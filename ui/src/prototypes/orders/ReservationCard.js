@@ -8,6 +8,7 @@ export default function ReservationCard({
   modelName,
   inventoryCode,
   poolName,
+  locationName,
   startDate,
   endDate,
   durationDays,
@@ -28,7 +29,7 @@ export default function ReservationCard({
         </div>
       </ListCard.Title>
       <ListCard.Body>
-        <div>{poolName}</div>
+        <div>{locationName || poolName}</div>
         <div>
           {`${startDate} – ${endDate}`} ({durationDays} Tage)
         </div>
