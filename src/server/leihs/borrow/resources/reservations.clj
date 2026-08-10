@@ -13,6 +13,8 @@
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.inventory-pools :as pools]
             [leihs.borrow.resources.models :as models]
+            [leihs.borrow.resources.models.core :as models.core]
+            [leihs.borrow.resources.pickup-locations :as pickup-locations]
             [leihs.borrow.resources.workdays :as workdays]
             [leihs.borrow.time :as time]
             [leihs.core.core :refer [raise presence]]
@@ -390,7 +392,7 @@
   [{{tx :tx {auth-user-id :id} :authenticated-entity} :request
     user-id ::target-user/id
     :as context}
-   {:keys [model-id start-date end-date quantity]
+   {:keys [model-id start-date end-date quantity pickup-location-id]
     [pool-id] :inventory-pool-ids
     exclude-reservation-ids :exclude-reservation-ids
     :or {exclude-reservation-ids []}
@@ -402,6 +404,11 @@
                  (map :id)
                  (some #{pool-id}))
     (raise "Not allowed to create reservation in this pool."))
+  (when pickup-location-id
+    (when-not (pickup-locations/belongs-to-pool? tx pickup-location-id pool-id)
+      (raise "Pickup location does not belong to the selected inventory pool."))
+    (when-not (:transportable (models.core/get-one-by-id tx model-id))
+      (raise "Model is not transportable to an alternative pickup location.")))
   (let [available-quantity (models/available-quantity-in-date-range
                             context
                             {:inventory-pool-ids [pool-id]
@@ -419,7 +426,9 @@
                        :delegated_user_id (when (not= auth-user-id user-id) auth-user-id)
                        :status "unsubmitted"
                        :created_at (time/now tx)
-                       :updated_at (time/now tx)))
+                       :updated_at (time/now tx))
+                (cond-> pickup-location-id
+                  (assoc :pickup_location_id pickup-location-id)))
         created-rs (-> (sql/insert-into :reservations)
                        (sql/values (->> row repeat (take quantity)))
                        (as-> <> (apply sql/returning <> columns))

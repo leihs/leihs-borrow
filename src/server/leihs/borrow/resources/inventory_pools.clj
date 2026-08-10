@@ -39,7 +39,8 @@
    [:inventory_pools.borrow_maximum_reservation_duration
     :maximum_reservation_duration]
    :inventory_pools.transfer_buffer_before_pick_up
-   :inventory_pools.transfer_buffer_after_drop_off])
+   :inventory_pools.transfer_buffer_after_drop_off
+   :inventory_pools.default_pickup_location_name])
 
 (def base-sqlmap
   (-> (apply sql/select select-fields)
