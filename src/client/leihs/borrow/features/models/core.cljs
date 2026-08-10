@@ -31,6 +31,7 @@
         start-date (:start-date filters)
         end-date (:end-date filters)
         pool-id (:pool-id filters)
+        pickup-location-id (:pickup-location-id filters)
         quantity (:quantity filters)
         only-available (:only-available filters)
         dates-valid? (<= start-date end-date)] ; if somehow end is before start, ignore it instead of error
@@ -46,7 +47,9 @@
       (when dates-valid? only-available)
       (assoc :onlyAvailable only-available)
       pool-id
-      (assoc :poolIds [pool-id]))))
+      (assoc :poolIds [pool-id])
+      pickup-location-id
+      (assoc :transportableOnly true))))
 
 (def BOOLEANS #{:only-available})
 (def INTEGERS #{:quantity})

@@ -11,6 +11,7 @@ query getModels(
   $quantity: Int
   $userId: UUID
   $poolIds: [UUID!]
+  $transportableOnly: Boolean
 ) {
   models(
     searchTerm: $searchTerm
@@ -22,6 +23,7 @@ query getModels(
     poolIds: $poolIds
     categoryId: $categoryId
     isFavorited: $isFavorited
+    transportableOnly: $transportableOnly
   ) {
     edges {
       node {
