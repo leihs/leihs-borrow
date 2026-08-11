@@ -20,6 +20,7 @@ query getAvailability(
         name
         maximumReservationDuration
         reservationAdvanceDays
+        transferBufferBeforePickUp
         holidays {
           startDate
           endDate

@@ -64,6 +64,7 @@
                     "name": "Videopool",
                     "totalReservableQuantity": 5,
                     "reservationAdvanceDays": 1,
+                    "transferBufferBeforePickUp": 3,
                     "holidays": [
                       {
                         "startDate": "2020-04-10T00:00:00Z",

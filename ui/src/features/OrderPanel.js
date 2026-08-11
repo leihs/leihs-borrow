@@ -116,7 +116,7 @@ const OrderPanel = ({
     const maxQuantityByDay = getMaxQuantityByDay(poolAvailability)
 
     // Validation
-    const validationResult = validate(selectedPool, poolAvailability)
+    const validationResult = validate(selectedPool, poolAvailability, resolvedPickupLocationId)
 
     setDependentState({
       selectablePools,
@@ -148,7 +148,7 @@ const OrderPanel = ({
   ])
 
   // Validation
-  function validate(selectedPool, poolAvailability) {
+  function validate(selectedPool, poolAvailability, pickupLocationId) {
     const poolError = validatePool(selectedPool, locale, txt.validate)
     if (poolError) {
       return { poolError }
@@ -161,7 +161,8 @@ const OrderPanel = ({
       quantity,
       locale,
       dateLocale,
-      txt.validate
+      txt.validate,
+      Boolean(pickupLocationId)
     )
     if (dateRangeErrors && dateRangeErrors.length > 0) {
       return { dateRangeErrors: [...dateRangeErrors] }
@@ -175,7 +176,11 @@ const OrderPanel = ({
 
   function submit(e) {
     e.preventDefault()
-    const validationResult = validate(dependentState.selectedPool, dependentState.poolAvailability)
+    const validationResult = validate(
+      dependentState.selectedPool,
+      dependentState.poolAvailability,
+      dependentState.resolvedPickupLocationId
+    )
     if (validationResult.isValid) {
       onSubmit(stateForCallbacks())
     }
@@ -458,11 +463,20 @@ export const validateDateRange = (
   wantedQuantity,
   locale,
   dateLocale,
-  txt
+  txt,
+  alternativePickupLocationSelected = false
 ) => {
   const { startDate, endDate } = selectedRange
   const { dates, inventoryPool } = poolAvailability
-  const { reservationAdvanceDays, maximumReservationDuration, holidays = [] } = inventoryPool
+  const {
+    reservationAdvanceDays,
+    transferBufferBeforePickUp,
+    maximumReservationDuration,
+    holidays = []
+  } = inventoryPool
+  const earliestPickupDays = alternativePickupLocationSelected
+    ? Math.max(reservationAdvanceDays || 0, transferBufferBeforePickUp || 0)
+    : reservationAdvanceDays || 0
 
   const basicValidityMessage = (() => {
     // Ensure that a valid quantity is given (the quantity field also has its own validator, so this is an exceptional case)
@@ -517,7 +531,7 @@ export const validateDateRange = (
         return t(txt, txtPoolClosed, locale, { startDate }) + t(txt, 'pool-closed-max-visits', locale)
       } else if (isRestrictedBy('BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE')) {
         // (This case should have been prevented by the future-only rule above)
-        return t(txt, 'start-date-not-before', locale, { days: reservationAdvanceDays })
+        return t(txt, 'start-date-not-before', locale, { days: earliestPickupDays })
       }
     }
   })()
