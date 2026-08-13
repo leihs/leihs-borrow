@@ -146,6 +146,147 @@ describe "models connection" do
     expect_quantity.call(Date.today + 7.days, 1)
   end
 
+  it "two reservations with pickup location get combined transfer buffer between them" do
+    @inventory_pool.update(transfer_buffer_before_pick_up: 2,
+      transfer_buffer_after_drop_off: 2)
+
+    model = FactoryBot.create(
+      :leihs_model,
+      id: "a1b1c1d1-0c1a-4a1a-8a1a-0c1a4a1a8a1a"
+    )
+    FactoryBot.create(:item,
+      leihs_model: model,
+      responsible: @inventory_pool,
+      is_borrowable: true)
+
+    pickup_location = FactoryBot.create(:pickup_location,
+      inventory_pool: @inventory_pool)
+
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      pickup_location_id: pickup_location.id,
+      start_date: Date.today,
+      end_date: Date.today + 2.days,
+      status: "approved")
+
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      pickup_location_id: pickup_location.id,
+      start_date: Date.today + 7.days,
+      end_date: Date.today + 9.days,
+      status: "approved")
+
+    q = ->(date) {
+      <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availableQuantityInDateRange(
+                  startDate: "#{date}",
+                  endDate: "#{date}"
+                )
+              }
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    expect_quantity = ->(date, quantity) {
+      result = query(q.call(date), @user.id)
+      expect_graphql_result(result, {
+        models: {
+          edges: [
+            {node: {id: model.id.to_s, availableQuantityInDateRange: quantity}}
+          ]
+        }
+      })
+    }
+
+    # reservation A: today .. today+2, after-buffer -> unavailable through today+4
+    expect_quantity.call(Date.today + 3.days, 0)
+    expect_quantity.call(Date.today + 4.days, 0)
+    # combined buffer gap (4 days: today+3..today+6) before B's before-buffer window starts
+    expect_quantity.call(Date.today + 5.days, 0)
+    expect_quantity.call(Date.today + 6.days, 0)
+    # reservation B: today+7 .. today+9, before-buffer -> unavailable from today+5,
+    # after-buffer -> unavailable through today+11
+    expect_quantity.call(Date.today + 7.days, 0)
+    expect_quantity.call(Date.today + 9.days, 0)
+    expect_quantity.call(Date.today + 11.days, 0)
+    expect_quantity.call(Date.today + 12.days, 1)
+  end
+
+  it "availableQuantityInDateRange respects buffer for a prospective alternative-location booking" do
+    @inventory_pool.update(transfer_buffer_before_pick_up: 2,
+      transfer_buffer_after_drop_off: 2)
+
+    model = FactoryBot.create(
+      :leihs_model,
+      id: "b2c2d2e2-0c1a-4a1a-8a1a-0c1a4a1a8a1a"
+    )
+    FactoryBot.create(:item,
+      leihs_model: model,
+      responsible: @inventory_pool,
+      is_borrowable: true)
+
+    pickup_location = FactoryBot.create(:pickup_location,
+      inventory_pool: @inventory_pool)
+
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      pickup_location_id: pickup_location.id,
+      start_date: Date.today + 1.day,
+      end_date: Date.today + 3.days,
+      status: "approved")
+
+    q = ->(date, pickup_location_id) {
+      <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availableQuantityInDateRange(
+                  startDate: "#{date}",
+                  endDate: "#{date}",
+                  pickupLocationId: "#{pickup_location_id}"
+                )
+              }
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    expect_quantity = ->(date, pickup_location_id, quantity) {
+      result = query(q.call(date, pickup_location_id), @user.id)
+      expect_graphql_result(result, {
+        models: {
+          edges: [
+            {node: {id: model.id.to_s, availableQuantityInDateRange: quantity}}
+          ]
+        }
+      })
+    }
+
+    # existing reservation's own after-buffer already blocks through today+5
+    # a NEW alternative-location booking starting today+6 would also need its
+    # own 2-day before-buffer (today+4..+5), which overlaps the still-blocked
+    # today+5 -> today+6 must be blocked too; earliest legal start is today+8
+    expect_quantity.call(Date.today + 6.days, pickup_location.id, 0)
+    expect_quantity.call(Date.today + 7.days, pickup_location.id, 0)
+    expect_quantity.call(Date.today + 8.days, pickup_location.id, 1)
+  end
+
   it "reservation without pickup location ignores transfer buffers" do
     @inventory_pool.update(transfer_buffer_before_pick_up: 2,
       transfer_buffer_after_drop_off: 2)

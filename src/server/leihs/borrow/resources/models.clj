@@ -176,7 +176,7 @@
 (defn merge-available-quantities
   [models
    {{tx :tx} :request user-id ::target-user/id :as context}
-   {:keys [start-date end-date inventory-pool-ids] :as args}
+   {:keys [start-date end-date inventory-pool-ids pickup-location-id] :as args}
    value]
   (let [pool-ids (relevant-pool-ids tx user-id start-date end-date inventory-pool-ids)]
     (map #(assoc %
@@ -191,7 +191,9 @@
                                                                      user-id
                                                                      start-date
                                                                      end-date
-                                                                     pool-ids)))
+                                                                     pool-ids
+                                                                     nil
+                                                                     pickup-location-id)))
          models)))
 
 (defn get-availability
