@@ -6,7 +6,8 @@
   "// update notes": [
     "@radix-ui/react-dropdown-menu: pinned at ^2.0.x — v2.1+ requires react 18 at runtime",
     "react: pinned at v17 — cljs reagent is incompatible with react 18. Unblock by upgrading reagent first.",
-    "storybook: pinned at ^8.x — v9 officially dropped react 17. Unblock by upgrading react/reagent first."
+    "storybook: pinned at ^8.x — v9 officially dropped react 17. Unblock by upgrading react/reagent first.",
+    "postcss: pinned at 8.5.23, see docs/issues/20260810-postcss-bom-issue.md"
   ],
   "scripts": {
     "storybook": "storybook dev -p 6006 --no-open",
@@ -71,7 +72,8 @@
     },
     "tar": ">=7.5.8",
     "@babel/runtime": ">=7.26.10",
-    "esbuild": ">=0.28.1"
+    "esbuild": ">=0.28.1",
+    "postcss": "8.5.23"
   },
   "browserslist": {
     "production": [
