@@ -214,8 +214,7 @@
                                 pool-id
                                 user-id
                                 (:id value)
-                                (or exclude-reservation-ids [])
-                                pickup-location-id)
+                                (or exclude-reservation-ids []))
                  validated (restrict/validate-dates tx (:dates avail) pool pickup-location-id)]
              (-> avail
                  (merge validated)

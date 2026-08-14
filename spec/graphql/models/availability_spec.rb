@@ -354,6 +354,161 @@ describe "models connection" do
     expect_quantity.call(Date.today + 8.days, pickup_location.id, 1)
   end
 
+  it "a second prospective booking still needs its own before-buffer gap" do
+    @inventory_pool.update(transfer_buffer_before_pick_up: 2,
+      transfer_buffer_after_drop_off: 3)
+
+    Workday.find(inventory_pool_id: @inventory_pool.id)
+      .update(saturday: false, saturday_orders_processing: false,
+        sunday: false, sunday_orders_processing: false)
+
+    [2, 4, 7, 9, 11].each do |day|
+      FactoryBot.create(:holiday,
+        inventory_pool: @inventory_pool,
+        start_date: "2026-09-#{day}",
+        end_date: "2026-09-#{day}",
+        orders_processing: true)
+    end
+
+    model = FactoryBot.create(
+      :leihs_model,
+      id: "f6a6b6c6-0c1a-4a1a-8a1a-0c1a4a1a8a1a"
+    )
+    2.times do
+      FactoryBot.create(:item,
+        leihs_model: model,
+        responsible: @inventory_pool,
+        is_borrowable: true)
+    end
+
+    pickup_location = FactoryBot.create(:pickup_location,
+      inventory_pool: @inventory_pool)
+
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      pickup_location_id: pickup_location.id,
+      start_date: "2026-09-14",
+      end_date: "2026-09-15",
+      status: "approved")
+
+    q = ->(start_date, end_date) {
+      <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availableQuantityInDateRange(
+                  startDate: "#{start_date}",
+                  endDate: "#{end_date}",
+                  pickupLocationId: "#{pickup_location.id}"
+                )
+              }
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    expect_quantity = ->(start_date, end_date, quantity) {
+      result = query(q.call(start_date, end_date), @user.id)
+      expect_graphql_result(result, {
+        models: {
+          edges: [
+            {node: {id: model.id.to_s, availableQuantityInDateRange: quantity}}
+          ]
+        }
+      })
+    }
+
+    # first reservation's own buffer blocks through 09-18; a second booking
+    # starting 09-19 doesn't leave enough of its own before-buffer gap
+    # (needs 2 orders-processing days, only 09-16..09-18 are free), so it's
+    # blocked too; 09-21 leaves enough gap and is free
+    expect_quantity.call("2026-09-19", "2026-09-21", 0)
+    expect_quantity.call("2026-09-21", "2026-09-23", 1)
+  end
+
+  it "booking calendar shows buffer from existing reservations only, not per query-day widening" do
+    @inventory_pool.update(transfer_buffer_before_pick_up: 2,
+      transfer_buffer_after_drop_off: 3)
+
+    Workday.find(inventory_pool_id: @inventory_pool.id)
+      .update(saturday: false, saturday_orders_processing: false,
+        sunday: false, sunday_orders_processing: false)
+
+    [2, 4, 7, 9, 11].each do |day|
+      FactoryBot.create(:holiday,
+        inventory_pool: @inventory_pool,
+        start_date: "2026-09-#{day}",
+        end_date: "2026-09-#{day}",
+        orders_processing: true)
+    end
+
+    model = FactoryBot.create(
+      :leihs_model,
+      id: "d4e4f4a4-0c1a-4a1a-8a1a-0c1a4a1a8a1a"
+    )
+    2.times do
+      FactoryBot.create(:item,
+        leihs_model: model,
+        responsible: @inventory_pool,
+        is_borrowable: true)
+    end
+
+    pickup_location = FactoryBot.create(:pickup_location,
+      inventory_pool: @inventory_pool)
+
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      pickup_location_id: pickup_location.id,
+      start_date: "2026-09-14",
+      end_date: "2026-09-15",
+      status: "approved")
+
+    q = <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availability(
+                  startDate: "2026-09-01",
+                  endDate: "2026-09-23",
+                  inventoryPoolIds: ["#{@inventory_pool.id}"],
+                  pickupLocationId: "#{pickup_location.id}"
+                ) {
+                  dates {
+                    date
+                    quantity
+                  }
+                }
+              }
+            }
+          }
+        }
+    GRAPHQL
+
+    result = query(q, @user.id)
+    dates = result[:data][:models][:edges][0][:node][:availability][0][:dates]
+    quantities = dates.map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
+
+    # only 2026-09-10 .. 2026-09-18 (the reservation's own buffered window:
+    # 2 orders-processing days before 09-14, through 3 orders-processing
+    # days after 09-15, per the pool's holidays/weekend config) are reduced
+    # to 1; everything else stays at the full quantity of 2, regardless of
+    # holidays/weekends elsewhere in the queried range
+    (1..23).each do |day|
+      date = format("2026-09-%02d", day)
+      expected = (day >= 10 && day <= 18) ? 1 : 2
+      expect(quantities[date]).to eq(expected), "expected #{date} to be #{expected}, got #{quantities[date]}"
+    end
+  end
+
   it "reservation without pickup location ignores transfer buffers" do
     @inventory_pool.update(transfer_buffer_before_pick_up: 2,
       transfer_buffer_after_drop_off: 2)
@@ -638,7 +793,7 @@ describe "models connection" do
         })
       end
 
-      it "booking calendar respects buffer for a prospective alternative-location booking" do
+      it "booking calendar quantity reflects only the reservation's own buffered window" do
         @inventory_pool.update(transfer_buffer_before_pick_up: 2,
           transfer_buffer_after_drop_off: 2)
 
@@ -651,6 +806,8 @@ describe "models connection" do
           end_date: Date.today + 3.days,
           status: "approved")
 
+        # reservation's own window (start-2 clamped to today, end+2) is
+        # today..today+5; today+6..+8 are outside it and stay at full quantity
         @start = Date.today + 6.days
         @end = Date.today + 8.days
         result = query(q, @user.id)
@@ -663,11 +820,11 @@ describe "models connection" do
                         earliestPossiblePickupDate: "#{Date.today + 2.days}T00:00:00Z",
                         dates: [
                           {date: "#{Date.today + 6.days}T00:00:00Z",
-                           quantity: 0,
+                           quantity: 1,
                            startDateRestrictions: nil,
                            endDateRestrictions: nil},
                           {date: "#{Date.today + 7.days}T00:00:00Z",
-                           quantity: 0,
+                           quantity: 1,
                            startDateRestrictions: nil,
                            endDateRestrictions: nil},
                           {date: "#{Date.today + 8.days}T00:00:00Z",
