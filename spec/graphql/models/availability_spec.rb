@@ -431,7 +431,7 @@ describe "models connection" do
     expect_quantity.call("2026-09-21", "2026-09-23", 1)
   end
 
-  it "booking calendar shows buffer from existing reservations only, not per query-day widening" do
+  it "booking calendar widens per day backward only, as a prospective start" do
     @inventory_pool.update(transfer_buffer_before_pick_up: 2,
       transfer_buffer_after_drop_off: 3)
 
@@ -497,16 +497,39 @@ describe "models connection" do
     dates = result[:data][:models][:edges][0][:node][:availability][0][:dates]
     quantities = dates.map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
 
-    # only 2026-09-10 .. 2026-09-18 (the reservation's own buffered window:
-    # 2 orders-processing days before 09-14, through 3 orders-processing
-    # days after 09-15, per the pool's holidays/weekend config) are reduced
-    # to 1; everything else stays at the full quantity of 2, regardless of
-    # holidays/weekends elsewhere in the queried range
-    (1..23).each do |day|
-      date = format("2026-09-%02d", day)
-      expected = (day >= 10 && day <= 18) ? 1 : 2
-      expect(quantities[date]).to eq(expected), "expected #{date} to be #{expected}, got #{quantities[date]}"
-    end
+    # 09-10 .. 09-13 are reduced by the reservation's own before-buffer (2
+    # orders-processing days backward from its 09-14 start); 09-14/15 are the
+    # reservation itself; 09-16 .. 09-22 are reduced because each of those
+    # days, checked as a prospective start for a NEW alt-location booking,
+    # needs its own 2-day before-buffer, and stepping back from them lands
+    # within the reservation's after-drop-off tail (which itself runs
+    # through 09-18: 3 orders-processing days from 09-15). 09-23 is the
+    # first day whose own backward buffer clears that tail entirely.
+    expect(quantities).to eq(
+      "2026-09-01" => 2,
+      "2026-09-02" => 2, # holiday
+      "2026-09-03" => 2,
+      "2026-09-04" => 2, # holiday
+      "2026-09-05" => 2, # weekend
+      "2026-09-06" => 2, # weekend
+      "2026-09-07" => 2, # holiday
+      "2026-09-08" => 2,
+      "2026-09-09" => 2, # holiday
+      "2026-09-10" => 1, # before-buffer starts
+      "2026-09-11" => 1, # holiday
+      "2026-09-12" => 1, # weekend
+      "2026-09-13" => 1, # weekend
+      "2026-09-14" => 1, # reservation start
+      "2026-09-15" => 1, # reservation end
+      "2026-09-16" => 1,
+      "2026-09-17" => 1,
+      "2026-09-18" => 1, # after-buffer ends
+      "2026-09-19" => 1, # weekend, but own before-buffer reaches back into it
+      "2026-09-20" => 1, # weekend, but own before-buffer reaches back into it
+      "2026-09-21" => 1,
+      "2026-09-22" => 1, # last day still reaching back into the tail
+      "2026-09-23" => 2  # first day clear of it
+    )
   end
 
   it "reservation without pickup location ignores transfer buffers" do
@@ -793,7 +816,7 @@ describe "models connection" do
         })
       end
 
-      it "booking calendar quantity reflects only the reservation's own buffered window" do
+      it "booking calendar widens each day backward by its own before-buffer" do
         @inventory_pool.update(transfer_buffer_before_pick_up: 2,
           transfer_buffer_after_drop_off: 2)
 
@@ -807,7 +830,9 @@ describe "models connection" do
           status: "approved")
 
         # reservation's own window (start-2 clamped to today, end+2) is
-        # today..today+5; today+6..+8 are outside it and stay at full quantity
+        # today..today+5; today+6 and +7, checked as a prospective start,
+        # step back 2 days into that window (today+4 and today+5), so stay
+        # reduced; today+8 steps back to today+6, clear of it
         @start = Date.today + 6.days
         @end = Date.today + 8.days
         result = query(q, @user.id)
@@ -820,11 +845,11 @@ describe "models connection" do
                         earliestPossiblePickupDate: "#{Date.today + 2.days}T00:00:00Z",
                         dates: [
                           {date: "#{Date.today + 6.days}T00:00:00Z",
-                           quantity: 1,
+                           quantity: 0,
                            startDateRestrictions: nil,
                            endDateRestrictions: nil},
                           {date: "#{Date.today + 7.days}T00:00:00Z",
-                           quantity: 1,
+                           quantity: 0,
                            startDateRestrictions: nil,
                            endDateRestrictions: nil},
                           {date: "#{Date.today + 8.days}T00:00:00Z",
