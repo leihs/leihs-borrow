@@ -6,22 +6,6 @@
    [leihs.core.availability.pool :as pool]
    [taoensso.timbre :as timbre :refer [debug spy]]))
 
-(defn orders-processing-day? [date pool]
-  (let [orders-processing-day (-> date
-                                  .getDayOfWeek
-                                  .toString
-                                  .toLowerCase
-                                  (str "_orders_processing")
-                                  keyword)]
-    (orders-processing-day pool)))
-
-(defn orders-processing? [date pool]
-  (let [date* (jt/local-date date)]
-    (and (orders-processing-day? date* pool)
-         (if-let [holiday (pool/get-holiday date* pool)]
-           (:orders_processing holiday)
-           true))))
-
 (defn earliest-possible-pickup-date
   ([pool] (earliest-possible-pickup-date pool false))
   ([pool alternative-pickup-location?]
@@ -42,7 +26,7 @@
            (cond (pool/close-time? date pool)
                  (recur (jt/plus date (jt/days 1))
                         (cond-> in-advance
-                          (orders-processing? date pool)
+                          (pool/orders-processing? date pool)
                           inc))
                  (and (not (zero? reservation-advance-days))
                       (< in-advance reservation-advance-days))

@@ -223,6 +223,73 @@ describe "models connection" do
     expect_quantity.call(Date.today + 12.days, 1)
   end
 
+  it "transfer buffer counts only orders-processing days, skipping closed non-processing ones" do
+    @inventory_pool.update(transfer_buffer_before_pick_up: 0,
+      transfer_buffer_after_drop_off: 2)
+
+    closed_day = (Date.today + 2.days).strftime("%A").downcase
+    Workday.find(inventory_pool_id: @inventory_pool.id)
+      .update("#{closed_day}": false, "#{closed_day}_orders_processing": false)
+
+    model = FactoryBot.create(
+      :leihs_model,
+      id: "c3d3e3f3-0c1a-4a1a-8a1a-0c1a4a1a8a1a"
+    )
+    FactoryBot.create(:item,
+      leihs_model: model,
+      responsible: @inventory_pool,
+      is_borrowable: true)
+
+    pickup_location = FactoryBot.create(:pickup_location,
+      inventory_pool: @inventory_pool)
+
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      pickup_location_id: pickup_location.id,
+      start_date: Date.today,
+      end_date: Date.today + 1.day,
+      status: "approved")
+
+    q = ->(date) {
+      <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availableQuantityInDateRange(
+                  startDate: "#{date}",
+                  endDate: "#{date}"
+                )
+              }
+            }
+          }
+        }
+      GRAPHQL
+    }
+
+    expect_quantity = ->(date, quantity) {
+      result = query(q.call(date), @user.id)
+      expect_graphql_result(result, {
+        models: {
+          edges: [
+            {node: {id: model.id.to_s, availableQuantityInDateRange: quantity}}
+          ]
+        }
+      })
+    }
+
+    # end_date today+1, after-buffer 2 orders-processing days, but today+2 is
+    # closed and non-processing, so it doesn't count -> buffer extends through
+    # today+4 instead of the raw-calendar today+3
+    expect_quantity.call(Date.today + 2.days, 0)
+    expect_quantity.call(Date.today + 3.days, 0)
+    expect_quantity.call(Date.today + 4.days, 0)
+    expect_quantity.call(Date.today + 5.days, 1)
+  end
+
   it "availableQuantityInDateRange respects buffer for a prospective alternative-location booking" do
     @inventory_pool.update(transfer_buffer_before_pick_up: 2,
       transfer_buffer_after_drop_off: 2)
