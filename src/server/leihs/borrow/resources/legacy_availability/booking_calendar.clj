@@ -24,7 +24,7 @@
        booking-calendar-visits-sqlvec
        (jdbc-query tx)))
 
-(defn get [tx start-date end-date pool-id user-id model-id exclude-res-ids]
+(defn get [tx start-date end-date pool-id user-id model-id exclude-res-ids pickup-location-id]
   (let [today (ch/local-date)
         start-date-jt (ch/local-date start-date)
         start-date-jt* (if (t/before? start-date-jt today) today start-date-jt)
@@ -34,17 +34,22 @@
         changes-dates-between-start-and-end-date (filter #(and (t/before? start-date-jt* %)
                                                                (t/before? % end-date-jt))
                                                          changes-dates)
-        dates-pairs (as-> changes-dates-between-start-and-end-date <> ; [3 5]
-                      (cons start-date-jt* <>) ; [1 3 5]
-                      (vec <>)
-                      (conj <> end-date-jt) ; [1 3 5 7]
-                      (mapv #(vector %1 %2) <> (drop 1 (cycle <>))) ; [[1 3] [3 5] [5 7] [7 1]]
-                      (butlast <>) ; [[1 3] [3 5] [5 7]]
-                      (map (fn [[d1 d2]]
-                             [d1 (if (= end-date-jt d2)
-                                   d2
-                                   (t/minus d2 (t/days 1)))])
-                           <>)) ; [[1 2] [3 4] [5 6]]
+        ;; pickup-location-id widens per query day, not a changes change-point,
+        ;; so trade segment batching for per-day correctness here
+        dates-pairs (if pickup-location-id
+                      (->> (ch/explode-date-range start-date-jt* end-date-jt)
+                           (map (fn [d] [d d])))
+                      (as-> changes-dates-between-start-and-end-date <> ; [3 5]
+                        (cons start-date-jt* <>) ; [1 3 5]
+                        (vec <>)
+                        (conj <> end-date-jt) ; [1 3 5 7]
+                        (mapv #(vector %1 %2) <> (drop 1 (cycle <>))) ; [[1 3] [3 5] [5 7] [7 1]]
+                        (butlast <>) ; [[1 3] [3 5] [5 7]]
+                        (map (fn [[d1 d2]]
+                               [d1 (if (= end-date-jt d2)
+                                     d2
+                                     (t/minus d2 (t/days 1)))])
+                             <>))) ; [[1 2] [3 4] [5 6]]
         result-1 (->> dates-pairs
                       (map (fn [[from-date to-date]]
                              (let [quantity (c/maximum-available-in-pool-and-period-summed-for-groups
@@ -54,7 +59,8 @@
                                              from-date
                                              to-date
                                              pool-id
-                                             exclude-res-ids)]
+                                             exclude-res-ids
+                                             pickup-location-id)]
                                (->> (ch/explode-date-range from-date to-date)
                                     (map #(hash-map :date (str %) :quantity quantity :visits_count 0))))))
                       flatten)
@@ -80,4 +86,4 @@
         start-date (str (ch/local-date))
         end-date (str (t/plus (ch/local-date) (t/days 30)))]
    ; (get-visits-counts tx start-date end-date pool-id)
-    (get tx start-date end-date pool-id user-id model-id nil)))
+    (get tx start-date end-date pool-id user-id model-id nil nil)))

@@ -571,6 +571,49 @@ describe "models connection" do
         })
       end
 
+      it "booking calendar respects buffer for a prospective alternative-location booking" do
+        @inventory_pool.update(transfer_buffer_before_pick_up: 2,
+          transfer_buffer_after_drop_off: 2)
+
+        FactoryBot.create(:reservation,
+          leihs_model: @model,
+          user: @user2,
+          inventory_pool: @inventory_pool,
+          pickup_location_id: @pickup_location_id,
+          start_date: Date.today + 1.day,
+          end_date: Date.today + 3.days,
+          status: "approved")
+
+        @start = Date.today + 6.days
+        @end = Date.today + 8.days
+        result = query(q, @user.id)
+
+        expect_graphql_result(result, {
+          models: {
+            edges: [
+              {node: {id: @model.id.to_s,
+                      availability: [{
+                        earliestPossiblePickupDate: "#{Date.today + 2.days}T00:00:00Z",
+                        dates: [
+                          {date: "#{Date.today + 6.days}T00:00:00Z",
+                           quantity: 0,
+                           startDateRestrictions: nil,
+                           endDateRestrictions: nil},
+                          {date: "#{Date.today + 7.days}T00:00:00Z",
+                           quantity: 0,
+                           startDateRestrictions: nil,
+                           endDateRestrictions: nil},
+                          {date: "#{Date.today + 8.days}T00:00:00Z",
+                           quantity: 1,
+                           startDateRestrictions: nil,
+                           endDateRestrictions: nil}
+                        ]
+                      }]}}
+            ]
+          }
+        })
+      end
+
       it "does not apply the buffer when no pickup location is selected" do
         @pickup_location_id = nil
         @end ||= Date.today + 3.days
