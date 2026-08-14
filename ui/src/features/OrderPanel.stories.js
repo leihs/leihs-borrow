@@ -107,7 +107,17 @@ function OrderPanelStory({ modelDataOverrides = {}, inventoryPoolsOverride, init
   )
 }
 
-export const orderPanel = () => <OrderPanelStory />
+function withoutPickupLocations(pools) {
+  return pools.map(pool => ({
+    ...pool,
+    pickupLocations: []
+  }))
+}
+
+export const orderPanel = () => {
+  const { inventoryPools } = getOrderPanelMockData()
+  return <OrderPanelStory inventoryPoolsOverride={withoutPickupLocations(inventoryPools)} />
+}
 orderPanel.storyName = 'OrderPanel'
 
 export const withPickupLocations = () => <OrderPanelStory />
@@ -117,25 +127,3 @@ export const notTransportable = () => (
   <OrderPanelStory modelDataOverrides={{ transportable: false, name: '4K-Videokamera Sony FDR-AX53' }} />
 )
 notTransportable.storyName = 'Not transportable'
-
-export const noPickupLocations = () => {
-  const { inventoryPools } = getOrderPanelMockData()
-  return (
-    <OrderPanelStory
-      inventoryPoolsOverride={inventoryPools.map(pool => ({
-        ...pool,
-        pickupLocations: []
-      }))}
-    />
-  )
-}
-noPickupLocations.storyName = 'Without pickup locations'
-
-export const prefilledPickupLocation = () => <OrderPanelStory initialPickupLocationId="pl-alt-1" />
-prefilledPickupLocation.storyName = 'Prefill from catalog filter'
-
-export const withPickupLocationsMoreDetails = () => <OrderPanelStory initialPickupLocationId="pl-alt-1" />
-withPickupLocationsMoreDetails.storyName = 'Pickup location with more-details link'
-
-export const pickupLocationsOnly = () => <OrderPanelStory title="Pickup location without inventory pool names" />
-pickupLocationsOnly.storyName = 'Pickup location locations only (Hauptlager + alts)'

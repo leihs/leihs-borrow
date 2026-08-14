@@ -151,7 +151,7 @@ export default function DateRangePicker({
 
   return (
     <div className={cx('date-range-picker ui-date-range-picker', className)} {...restProps}>
-      <div className="d-flex gap-3 mb-3">
+      <div className="d-flex flex-column flex-sm-row gap-2 mb-3">
         <div className="flex-fill" style={{ minWidth: 0 }}>
           <LabelInside>
             <InputComponent
