@@ -354,26 +354,33 @@ describe "models connection" do
     expect_quantity.call(Date.today + 8.days, pickup_location.id, 1)
   end
 
-  it "a second prospective booking still needs its own before-buffer gap" do
+  # Common setup for the two holiday-clustering specs below, built entirely
+  # from Date.today + offset so the specs never depend on the actual
+  # calendar date they happen to run on. The two "weekend" weekdays are
+  # picked dynamically (whichever real weekdays offsets 4/5 fall on from
+  # today) so a plain Workday closed-day pair recurs every 7 days from
+  # there on, exactly like a real Sat/Sun weekend would.
+  def setup_holiday_clustering_scenario
+    today = Date.today
+    weekend_day1 = (today + 4.days).strftime("%A").downcase
+    weekend_day2 = (today + 5.days).strftime("%A").downcase
+
     @inventory_pool.update(transfer_buffer_before_pick_up: 2,
       transfer_buffer_after_drop_off: 3)
 
     Workday.find(inventory_pool_id: @inventory_pool.id)
-      .update(saturday: false, saturday_orders_processing: false,
-        sunday: false, sunday_orders_processing: false)
+      .update("#{weekend_day1}": false, "#{weekend_day1}_orders_processing": false,
+        "#{weekend_day2}": false, "#{weekend_day2}_orders_processing": false)
 
-    [2, 4, 7, 9, 11].each do |day|
+    [1, 3, 6, 8, 10].each do |offset|
       FactoryBot.create(:holiday,
         inventory_pool: @inventory_pool,
-        start_date: "2026-09-#{day}",
-        end_date: "2026-09-#{day}",
+        start_date: today + offset.days,
+        end_date: today + offset.days,
         orders_processing: true)
     end
 
-    model = FactoryBot.create(
-      :leihs_model,
-      id: "f6a6b6c6-0c1a-4a1a-8a1a-0c1a4a1a8a1a"
-    )
+    model = FactoryBot.create(:leihs_model)
     2.times do
       FactoryBot.create(:item,
         leihs_model: model,
@@ -389,9 +396,15 @@ describe "models connection" do
       user: @user2,
       inventory_pool: @inventory_pool,
       pickup_location_id: pickup_location.id,
-      start_date: "2026-09-14",
-      end_date: "2026-09-15",
+      start_date: today + 13.days,
+      end_date: today + 14.days,
       status: "approved")
+
+    [today, model, pickup_location]
+  end
+
+  it "a second prospective booking still needs its own before-buffer gap" do
+    today, model, pickup_location = setup_holiday_clustering_scenario
 
     q = ->(start_date, end_date) {
       <<-GRAPHQL
@@ -423,52 +436,17 @@ describe "models connection" do
       })
     }
 
-    # first reservation's own buffer blocks through 09-18; a second booking
-    # starting 09-19 doesn't leave enough of its own before-buffer gap
-    # (needs 2 orders-processing days, only 09-16..09-18 are free), so it's
-    # blocked too; 09-21 leaves enough gap and is free
-    expect_quantity.call("2026-09-19", "2026-09-21", 0)
-    expect_quantity.call("2026-09-21", "2026-09-23", 1)
+    # first reservation's own buffer blocks through today+17; a second
+    # booking starting today+18 doesn't leave enough of its own
+    # before-buffer gap (needs 2 orders-processing days, only
+    # today+15..today+17 are free), so it's blocked too; today+20 leaves
+    # enough gap and is free
+    expect_quantity.call((today + 18.days).to_s, (today + 20.days).to_s, 0)
+    expect_quantity.call((today + 20.days).to_s, (today + 22.days).to_s, 1)
   end
 
   it "booking calendar widens per day backward only, as a prospective start" do
-    @inventory_pool.update(transfer_buffer_before_pick_up: 2,
-      transfer_buffer_after_drop_off: 3)
-
-    Workday.find(inventory_pool_id: @inventory_pool.id)
-      .update(saturday: false, saturday_orders_processing: false,
-        sunday: false, sunday_orders_processing: false)
-
-    [2, 4, 7, 9, 11].each do |day|
-      FactoryBot.create(:holiday,
-        inventory_pool: @inventory_pool,
-        start_date: "2026-09-#{day}",
-        end_date: "2026-09-#{day}",
-        orders_processing: true)
-    end
-
-    model = FactoryBot.create(
-      :leihs_model,
-      id: "d4e4f4a4-0c1a-4a1a-8a1a-0c1a4a1a8a1a"
-    )
-    2.times do
-      FactoryBot.create(:item,
-        leihs_model: model,
-        responsible: @inventory_pool,
-        is_borrowable: true)
-    end
-
-    pickup_location = FactoryBot.create(:pickup_location,
-      inventory_pool: @inventory_pool)
-
-    FactoryBot.create(:reservation,
-      leihs_model: model,
-      user: @user2,
-      inventory_pool: @inventory_pool,
-      pickup_location_id: pickup_location.id,
-      start_date: "2026-09-14",
-      end_date: "2026-09-15",
-      status: "approved")
+    today, model, pickup_location = setup_holiday_clustering_scenario
 
     q = <<-GRAPHQL
         {
@@ -477,8 +455,8 @@ describe "models connection" do
               node {
                 id
                 availability(
-                  startDate: "2026-09-01",
-                  endDate: "2026-09-23",
+                  startDate: "#{today}",
+                  endDate: "#{today + 22.days}",
                   inventoryPoolIds: ["#{@inventory_pool.id}"],
                   pickupLocationId: "#{pickup_location.id}"
                 ) {
@@ -497,38 +475,39 @@ describe "models connection" do
     dates = result[:data][:models][:edges][0][:node][:availability][0][:dates]
     quantities = dates.map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
 
-    # 09-10 .. 09-13 are reduced by the reservation's own before-buffer (2
-    # orders-processing days backward from its 09-14 start); 09-14/15 are the
-    # reservation itself; 09-16 .. 09-22 are reduced because each of those
-    # days, checked as a prospective start for a NEW alt-location booking,
-    # needs its own 2-day before-buffer, and stepping back from them lands
-    # within the reservation's after-drop-off tail (which itself runs
-    # through 09-18: 3 orders-processing days from 09-15). 09-23 is the
-    # first day whose own backward buffer clears that tail entirely.
+    # today+9 .. today+12 are reduced by the reservation's own before-buffer
+    # (2 orders-processing days backward from its today+13 start);
+    # today+13/14 are the reservation itself; today+15 .. today+21 are
+    # reduced because each of those days, checked as a prospective start for
+    # a NEW alt-location booking, needs its own 2-day before-buffer, and
+    # stepping back from them lands within the reservation's after-drop-off
+    # tail (which itself runs through today+17: 3 orders-processing days
+    # from today+14). today+22 is the first day whose own backward buffer
+    # clears that tail entirely.
     expect(quantities).to eq(
-      "2026-09-01" => 2,
-      "2026-09-02" => 2, # holiday
-      "2026-09-03" => 2,
-      "2026-09-04" => 2, # holiday
-      "2026-09-05" => 2, # weekend
-      "2026-09-06" => 2, # weekend
-      "2026-09-07" => 2, # holiday
-      "2026-09-08" => 2,
-      "2026-09-09" => 2, # holiday
-      "2026-09-10" => 1, # before-buffer starts
-      "2026-09-11" => 1, # holiday
-      "2026-09-12" => 1, # weekend
-      "2026-09-13" => 1, # weekend
-      "2026-09-14" => 1, # reservation start
-      "2026-09-15" => 1, # reservation end
-      "2026-09-16" => 1,
-      "2026-09-17" => 1,
-      "2026-09-18" => 1, # after-buffer ends
-      "2026-09-19" => 1, # weekend, but own before-buffer reaches back into it
-      "2026-09-20" => 1, # weekend, but own before-buffer reaches back into it
-      "2026-09-21" => 1,
-      "2026-09-22" => 1, # last day still reaching back into the tail
-      "2026-09-23" => 2  # first day clear of it
+      (today + 0.days).to_s => 2,
+      (today + 1.days).to_s => 2, # holiday
+      (today + 2.days).to_s => 2,
+      (today + 3.days).to_s => 2, # holiday
+      (today + 4.days).to_s => 2, # weekend
+      (today + 5.days).to_s => 2, # weekend
+      (today + 6.days).to_s => 2, # holiday
+      (today + 7.days).to_s => 2,
+      (today + 8.days).to_s => 2, # holiday
+      (today + 9.days).to_s => 1, # before-buffer starts
+      (today + 10.days).to_s => 1, # holiday
+      (today + 11.days).to_s => 1, # weekend
+      (today + 12.days).to_s => 1, # weekend
+      (today + 13.days).to_s => 1, # reservation start
+      (today + 14.days).to_s => 1, # reservation end
+      (today + 15.days).to_s => 1,
+      (today + 16.days).to_s => 1,
+      (today + 17.days).to_s => 1, # after-buffer ends
+      (today + 18.days).to_s => 1, # weekend, but own before-buffer reaches back into it
+      (today + 19.days).to_s => 1, # weekend, but own before-buffer reaches back into it
+      (today + 20.days).to_s => 1,
+      (today + 21.days).to_s => 1, # last day still reaching back into the tail
+      (today + 22.days).to_s => 2  # first day clear of it
     )
   end
 
