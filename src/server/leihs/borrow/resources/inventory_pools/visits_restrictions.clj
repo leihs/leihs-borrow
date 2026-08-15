@@ -23,16 +23,14 @@
        start-date
        (when (-> pool workdays/open-days empty? not)
          (loop [date start-date, in-advance 0]
-           (cond (pool/close-time? date pool)
-                 (recur (jt/plus date (jt/days 1))
-                        (cond-> in-advance
-                          (pool/orders-processing? date pool)
-                          inc))
-                 (and (not (zero? reservation-advance-days))
-                      (< in-advance reservation-advance-days))
-                 (recur (jt/plus date (jt/days 1))
-                        (inc in-advance))
-                 :else date)))))))
+           (if (or (and (not (zero? reservation-advance-days))
+                        (< in-advance reservation-advance-days))
+                   (pool/close-time? date pool))
+             (recur (jt/plus date (jt/days 1))
+                    (cond-> in-advance
+                      (pool/orders-processing? date pool)
+                      inc))
+             date)))))))
 
 (defn visits-capacity-reached? [date visits-count pool]
   (let [index (-> date
