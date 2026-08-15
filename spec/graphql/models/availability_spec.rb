@@ -445,6 +445,81 @@ describe "models connection" do
     expect_quantity.call((today + 20.days).to_s, (today + 22.days).to_s, 1)
   end
 
+  it "booking calendar can show a day as available for an end date that the real range check rejects" do
+    today, model, pickup_location = setup_holiday_clustering_scenario
+
+    # a second, separate reservation far enough from the first one that
+    # nothing else overlaps it directly
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      pickup_location_id: pickup_location.id,
+      quantity: 1,
+      start_date: today + 2.days,
+      end_date: today + 7.days,
+      status: "approved")
+
+    calendar_q = <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availability(
+                  startDate: "#{today}",
+                  endDate: "#{today + 7.days}",
+                  inventoryPoolIds: ["#{@inventory_pool.id}"],
+                  pickupLocationId: "#{pickup_location.id}"
+                ) {
+                  dates {
+                    date
+                    quantity
+                  }
+                }
+              }
+            }
+          }
+        }
+    GRAPHQL
+
+    calendar_result = query(calendar_q, @user.id)
+    dates = calendar_result[:data][:models][:edges][0][:node][:availability][0][:dates]
+    calendar_quantity_at_end_date =
+      dates.find { |d| d[:date][0, 10] == (today + 7.days).to_s }[:quantity]
+
+    # the calendar checks this day only as a prospective START (backward-only),
+    # so it doesn't see that its own forward after-buffer would reach into
+    # the first reservation's before-buffer window -- it shows full stock
+    expect(calendar_quantity_at_end_date).to eq(1)
+
+    range_q = <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availableQuantityInDateRange(
+                  startDate: "#{today + 4.days}",
+                  endDate: "#{today + 7.days}",
+                  pickupLocationId: "#{pickup_location.id}"
+                )
+              }
+            }
+          }
+        }
+    GRAPHQL
+
+    range_result = query(range_q, @user.id)
+    real_range_quantity =
+      range_result[:data][:models][:edges][0][:node][:availableQuantityInDateRange]
+
+    # but a genuine booking ending on this day needs its own forward
+    # after-buffer too, which does reach into that window -- the real,
+    # both-direction check correctly rejects what the calendar showed as free
+    expect(real_range_quantity).to eq(0)
+  end
+
   it "booking calendar widens per day backward only, as a prospective start" do
     today, model, pickup_location = setup_holiday_clustering_scenario
 
@@ -785,53 +860,6 @@ describe "models connection" do
                            startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
                            endDateRestrictions: nil},
                           {date: "#{Date.today + 3.days}T00:00:00Z",
-                           quantity: 1,
-                           startDateRestrictions: nil,
-                           endDateRestrictions: nil}
-                        ]
-                      }]}}
-            ]
-          }
-        })
-      end
-
-      it "booking calendar widens each day backward by its own before-buffer" do
-        @inventory_pool.update(transfer_buffer_before_pick_up: 2,
-          transfer_buffer_after_drop_off: 2)
-
-        FactoryBot.create(:reservation,
-          leihs_model: @model,
-          user: @user2,
-          inventory_pool: @inventory_pool,
-          pickup_location_id: @pickup_location_id,
-          start_date: Date.today + 1.day,
-          end_date: Date.today + 3.days,
-          status: "approved")
-
-        # reservation's own window (start-2 clamped to today, end+2) is
-        # today..today+5; today+6 and +7, checked as a prospective start,
-        # step back 2 days into that window (today+4 and today+5), so stay
-        # reduced; today+8 steps back to today+6, clear of it
-        @start = Date.today + 6.days
-        @end = Date.today + 8.days
-        result = query(q, @user.id)
-
-        expect_graphql_result(result, {
-          models: {
-            edges: [
-              {node: {id: @model.id.to_s,
-                      availability: [{
-                        earliestPossiblePickupDate: "#{Date.today + 2.days}T00:00:00Z",
-                        dates: [
-                          {date: "#{Date.today + 6.days}T00:00:00Z",
-                           quantity: 0,
-                           startDateRestrictions: nil,
-                           endDateRestrictions: nil},
-                          {date: "#{Date.today + 7.days}T00:00:00Z",
-                           quantity: 0,
-                           startDateRestrictions: nil,
-                           endDateRestrictions: nil},
-                          {date: "#{Date.today + 8.days}T00:00:00Z",
                            quantity: 1,
                            startDateRestrictions: nil,
                            endDateRestrictions: nil}
