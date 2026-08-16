@@ -29,7 +29,10 @@
         start-date-jt (ch/local-date start-date)
         start-date-jt* (if (t/before? start-date-jt today) today start-date-jt)
         end-date-jt (ch/local-date end-date)
-        changes (ch/main tx model-id pool-id exclude-res-ids)
+        ;; fetched once, reused below instead of refetching per segment/day
+        context (c/fetch-context tx model-id user-id pool-id exclude-res-ids
+                                 pickup-location-id)
+        changes (:changes context)
         changes-dates (sort (map first changes))
         changes-dates-between-start-and-end-date (filter #(and (t/before? start-date-jt* %)
                                                                (t/before? % end-date-jt))
@@ -54,22 +57,10 @@
         result-1 (->> dates-pairs
                       (map (fn [[from-date to-date]]
                              (let [quantity (if pickup-location-id
-                                              (c/maximum-available-for-prospective-start-summed-for-groups
-                                               tx
-                                               model-id
-                                               user-id
-                                               from-date
-                                               pool-id
-                                               exclude-res-ids
-                                               pickup-location-id)
-                                              (c/maximum-available-in-pool-and-period-summed-for-groups
-                                               tx
-                                               model-id
-                                               user-id
-                                               from-date
-                                               to-date
-                                               pool-id
-                                               exclude-res-ids))]
+                                              (c/available-quantity-for-prospective-start
+                                               context from-date)
+                                              (c/available-quantity-in-range
+                                               context from-date to-date))]
                                (->> (ch/explode-date-range from-date to-date)
                                     (map #(hash-map :date (str %) :quantity quantity :visits_count 0))))))
                       flatten)
