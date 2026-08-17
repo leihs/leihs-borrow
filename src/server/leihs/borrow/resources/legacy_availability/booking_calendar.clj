@@ -57,7 +57,7 @@
         result-1 (->> dates-pairs
                       (map (fn [[from-date to-date]]
                              (let [quantity (if pickup-location-id
-                                              (c/available-quantity-for-prospective-start
+                                              (c/available-quantity-for-prospective-day
                                                context from-date)
                                               (c/available-quantity-in-range
                                                context from-date to-date))]

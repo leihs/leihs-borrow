@@ -445,7 +445,78 @@ describe "models connection" do
     expect_quantity.call((today + 20.days).to_s, (today + 22.days).to_s, 1)
   end
 
-  it "booking calendar can show a day as available for an end date that the real range check rejects" do
+  it "booking calendar checks both directions per day, not just backward" do
+    today = Date.today
+
+    @inventory_pool.update(transfer_buffer_before_pick_up: 1,
+      transfer_buffer_after_drop_off: 1)
+
+    model = FactoryBot.create(:leihs_model, id: "f5a5b5c5-0c1a-4a1a-8a1a-0c1a4a1a8a1a")
+    FactoryBot.create(:item, leihs_model: model, responsible: @inventory_pool,
+      is_borrowable: true)
+
+    pickup_location = FactoryBot.create(:pickup_location,
+      inventory_pool: @inventory_pool)
+
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      pickup_location_id: pickup_location.id,
+      quantity: 1,
+      start_date: today + 5.days,
+      end_date: today + 6.days,
+      status: "approved")
+
+    q = <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availability(
+                  startDate: "#{today}",
+                  endDate: "#{today + 10.days}",
+                  inventoryPoolIds: ["#{@inventory_pool.id}"],
+                  pickupLocationId: "#{pickup_location.id}"
+                ) {
+                  dates {
+                    date
+                    quantity
+                  }
+                }
+              }
+            }
+          }
+        }
+    GRAPHQL
+
+    result = query(q, @user.id)
+    dates = result[:data][:models][:edges][0][:node][:availability][0][:dates]
+    quantities = dates.map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
+
+    # +4 (existing reservation's own before-buffer) and +7 (its own
+    # after-buffer) were already correctly reduced by the backward-only
+    # check alone; +8 too (a potential new booking's own before-buffer
+    # reaching back into +7). +3 is the new case: a potential new booking
+    # ending on +3 would need its own after-buffer clear through +4, which
+    # is already occupied -- only caught by also checking forward.
+    expect(quantities).to eq(
+      (today + 0.days).to_s => 1,
+      (today + 1.days).to_s => 1,
+      (today + 2.days).to_s => 1,
+      (today + 3.days).to_s => 0,
+      (today + 4.days).to_s => 0,
+      (today + 5.days).to_s => 0,
+      (today + 6.days).to_s => 0,
+      (today + 7.days).to_s => 0,
+      (today + 8.days).to_s => 0,
+      (today + 9.days).to_s => 1,
+      (today + 10.days).to_s => 1
+    )
+  end
+
+  it "booking calendar agrees with the real range check for a day only valid as a start, not an end" do
     today, model, pickup_location = setup_holiday_clustering_scenario
 
     # a second, separate reservation far enough from the first one that
@@ -488,10 +559,11 @@ describe "models connection" do
     calendar_quantity_at_end_date =
       dates.find { |d| d[:date][0, 10] == (today + 7.days).to_s }[:quantity]
 
-    # the calendar checks this day only as a prospective START (backward-only),
-    # so it doesn't see that its own forward after-buffer would reach into
-    # the first reservation's before-buffer window -- it shows full stock
-    expect(calendar_quantity_at_end_date).to eq(1)
+    # a genuine booking ending on this day would need its own forward
+    # after-buffer, which reaches into the first reservation's before-buffer
+    # window -- the calendar's own forward (prospective-end) check catches
+    # this too, agreeing with the real range check below
+    expect(calendar_quantity_at_end_date).to eq(0)
 
     range_q = <<-GRAPHQL
         {
@@ -514,9 +586,6 @@ describe "models connection" do
     real_range_quantity =
       range_result[:data][:models][:edges][0][:node][:availableQuantityInDateRange]
 
-    # but a genuine booking ending on this day needs its own forward
-    # after-buffer too, which does reach into that window -- the real,
-    # both-direction check correctly rejects what the calendar showed as free
     expect(real_range_quantity).to eq(0)
   end
 
@@ -550,25 +619,27 @@ describe "models connection" do
     dates = result[:data][:models][:edges][0][:node][:availability][0][:dates]
     quantities = dates.map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
 
-    # today+9 .. today+12 are reduced by the reservation's own before-buffer
-    # (2 orders-processing days backward from its today+13 start);
-    # today+13/14 are the reservation itself; today+15 .. today+21 are
-    # reduced because each of those days, checked as a prospective start for
-    # a NEW alt-location booking, needs its own 2-day before-buffer, and
-    # stepping back from them lands within the reservation's after-drop-off
-    # tail (which itself runs through today+17: 3 orders-processing days
-    # from today+14). today+22 is the first day whose own backward buffer
-    # clears that tail entirely.
+    # today+0..+2 are fully clear. From today+3 on, each day is checked both
+    # as a prospective start (backward, own before-buffer) and a prospective
+    # end (forward, own after-buffer) for a hypothetical new alt-location
+    # booking, min'd together -- today+3's own forward check alone already
+    # reaches into today+9 (the reservation's before-buffer start), so the
+    # reduced window starts there rather than at today+9 as it would with
+    # only the backward check. today+9..+12 (before-buffer), +13/+14
+    # (the reservation itself), +15..+17 (after-buffer) and +18..+21 (a new
+    # booking's own before-buffer reaching back into that tail) round out an
+    # unbroken reduced stretch through today+21; today+22 is the first day
+    # clear both ways.
     expect(quantities).to eq(
       (today + 0.days).to_s => 2,
       (today + 1.days).to_s => 2, # holiday
       (today + 2.days).to_s => 2,
-      (today + 3.days).to_s => 2, # holiday
-      (today + 4.days).to_s => 2, # weekend
-      (today + 5.days).to_s => 2, # weekend
-      (today + 6.days).to_s => 2, # holiday
-      (today + 7.days).to_s => 2,
-      (today + 8.days).to_s => 2, # holiday
+      (today + 3.days).to_s => 1, # holiday; own forward check reaches into the before-buffer zone
+      (today + 4.days).to_s => 1, # weekend
+      (today + 5.days).to_s => 1, # weekend
+      (today + 6.days).to_s => 1, # holiday
+      (today + 7.days).to_s => 1,
+      (today + 8.days).to_s => 1, # holiday
       (today + 9.days).to_s => 1, # before-buffer starts
       (today + 10.days).to_s => 1, # holiday
       (today + 11.days).to_s => 1, # weekend
@@ -582,7 +653,7 @@ describe "models connection" do
       (today + 19.days).to_s => 1, # weekend, but own before-buffer reaches back into it
       (today + 20.days).to_s => 1,
       (today + 21.days).to_s => 1, # last day still reaching back into the tail
-      (today + 22.days).to_s => 2  # first day clear of it
+      (today + 22.days).to_s => 2  # first day clear both ways
     )
   end
 
