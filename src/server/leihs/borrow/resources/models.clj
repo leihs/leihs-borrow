@@ -22,6 +22,7 @@
              restrict]
             [leihs.borrow.resources.legacy-availability.booking-calendar :as cal]
             [leihs.borrow.resources.models.core :refer [base-sqlmap]]
+            [leihs.borrow.resources.pickup-locations :as pickup-locations]
             [leihs.core.core :refer [presence]]
             [wharf.core :refer [transform-keys]])
   (:import java.time.format.DateTimeFormatter))
@@ -201,8 +202,7 @@
    {:keys [start-date
            end-date
            inventory-pool-ids
-           exclude-reservation-ids
-           pickup-location-id]}
+           exclude-reservation-ids]}
    value]
   (let [pools (pools/get-multiple context {:ids inventory-pool-ids} nil)]
     (map (fn [{pool-id :id}]
@@ -215,11 +215,28 @@
                                 user-id
                                 (:id value)
                                 (or exclude-reservation-ids [])
-                                pickup-location-id)
-                 validated (restrict/validate-dates tx (:dates avail) pool pickup-location-id)]
+                                nil)
+                 validated (restrict/validate-dates tx (:dates avail) pool)
+                 first-alt-location-id (some-> (pickup-locations/get-by-pool-id tx pool-id)
+                                               first
+                                               :id)
+                 alt-validated (when first-alt-location-id
+                                 (let [alt-avail (cal/get tx
+                                                          start-date
+                                                          end-date
+                                                          pool-id
+                                                          user-id
+                                                          (:id value)
+                                                          (or exclude-reservation-ids [])
+                                                          first-alt-location-id)]
+                                   (restrict/validate-dates tx (:dates alt-avail) pool true)))]
              (-> avail
                  (merge validated)
-                 (assoc :inventory-pool pool))))
+                 (assoc :inventory-pool pool)
+                 (cond-> alt-validated
+                   (assoc :dates-for-alt-locations (:dates alt-validated)
+                          :earliest-possible-pickup-date-for-alt-locations
+                          (:earliest-possible-pickup-date alt-validated))))))
          pools)))
 
 (defn from-compatibles [sqlmap value user-id pool-ids unscope-reservable]

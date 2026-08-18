@@ -84,19 +84,13 @@
        (map :id)
        (some presence)))
 
-(defn availability-mode [pickup-location-id]
-  (if pickup-location-id :alt :main))
-
-(defn availability-query-vars [db model-id user-id start-date end-date mode]
-  (let [pool-ids (pool-ids-with-reservable-quantity db model-id)
-        alt-pickup-id (first-alt-pickup-location-id db)]
-    (cond-> {:modelId model-id
-             :userId user-id
-             :poolIds pool-ids
-             :startDate start-date
-             :endDate end-date}
-      (and (= mode :alt) alt-pickup-id)
-      (assoc :pickupLocationId alt-pickup-id))))
+(defn availability-query-vars [db model-id user-id start-date end-date]
+  (let [pool-ids (pool-ids-with-reservable-quantity db model-id)]
+    {:modelId model-id
+     :userId user-id
+     :poolIds pool-ids
+     :startDate start-date
+     :endDate end-date}))
 
 (defn mark-availability-mode-ready [model mode]
   (let [pending (disj (or (:availability-pending model) #{}) mode)]
@@ -122,22 +116,17 @@
          start-of-current-month (datefn/startOfMonth now)
          fetch-until-date (-> initial-end-date
                               availability/with-future-buffer)
-         alt-pickup-id (first-alt-pickup-location-id db)
-         pending (cond-> #{:main}
-                   alt-pickup-id (conj :alt))
          start-day (h/date-format-day start-of-current-month)
          end-day (h/date-format-day fetch-until-date)]
      (if errors
        {:db (assoc-in db [::errors @model-id] errors)}
        {:db (assoc-in db [:ls ::data @model-id]
                       (-> (:model data)
-                          (assoc :availability-pending pending
+                          (assoc :availability-pending #{:main}
                                  :availability-ready? false
                                  :availability-modes {}
                                  :availability [])))
-        :dispatch-n (cond-> [[::fetch-availability user-id start-day end-day :main]]
-                      alt-pickup-id
-                      (conj [::fetch-availability user-id start-day end-day :alt]))}))))
+        :dispatch-n [[::fetch-availability user-id start-day end-day :main]]}))))
 
 (reg-event-fx
  ::fetch-availability
@@ -163,7 +152,7 @@
        {:db (assoc-in db (conj mode-path :fetching-until-date) end-date)
         :dispatch [::re-graph/query
                    (rc/inline "leihs/borrow/features/model_show/getAvailability.gql")
-                   (availability-query-vars db model-id user-id start-date end-or-max-date mode)
+                   (availability-query-vars db model-id user-id start-date end-or-max-date)
                    [::on-fetched-availability end-date mode]]}))))
 
 (reg-event-db
@@ -366,22 +355,17 @@
                        :endDate
                        datefn/parseISO
                        availability/with-future-buffer
-                       h/date-format-day)
-           alt-pickup-id (first-alt-pickup-location-id db)
-           pending (cond-> #{:main}
-                     alt-pickup-id (conj :alt))]
+                       h/date-format-day)]
        {:db (-> db
                 (dissoc-in [:ls ::cart/data :pending-count])
                 (update-in [:ls ::data @model-id]
                            #(merge % {:availability []
                                       :availability-modes {}
-                                      :availability-pending pending
+                                      :availability-pending #{:main}
                                       :availability-ready? false}))
                 (assoc-in [::data :order-panel] {:success? true}))
-        :dispatch-n (cond-> [[::timeout/refresh]
-                             [::fetch-availability user-id start-day end-day :main]]
-                      alt-pickup-id
-                      (conj [::fetch-availability user-id start-day end-day :alt]))}))))
+        :dispatch-n [[::timeout/refresh]
+                     [::fetch-availability user-id start-day end-day :main]]}))))
 
 (defn order-panel
   [model filters shown?]
@@ -401,11 +385,14 @@
             order-panel-data @(subscribe [::order-panel-data])
             active-pickup-location-id (or (:pickup-location-id order-panel-data)
                                           (:pickup-location-id filters))
-            mode (availability-mode active-pickup-location-id)
-            mode-state (get-in model [:availability-modes mode])
-            panel-availability (or (:availability mode-state)
-                                   (:availability model)
-                                   [])
+            mode-state (get-in model [:availability-modes :main])
+            raw-availability (or (:availability mode-state)
+                                 (:availability model)
+                                 [])
+            panel-availability (if active-pickup-location-id
+                                 (map #(assoc % :dates (or (:dates-for-alt-locations %) (:dates %)))
+                                      raw-availability)
+                                 raw-availability)
             fetched-until-date (some-> (or (:fetched-until-date mode-state)
                                            (:fetched-until-date model))
                                        js/Date.

@@ -477,10 +477,9 @@ describe "models connection" do
                 availability(
                   startDate: "#{today}",
                   endDate: "#{today + 10.days}",
-                  inventoryPoolIds: ["#{@inventory_pool.id}"],
-                  pickupLocationId: "#{pickup_location.id}"
+                  inventoryPoolIds: ["#{@inventory_pool.id}"]
                 ) {
-                  dates {
+                  datesForAltLocations {
                     date
                     quantity
                   }
@@ -492,7 +491,7 @@ describe "models connection" do
     GRAPHQL
 
     result = query(q, @user.id)
-    dates = result[:data][:models][:edges][0][:node][:availability][0][:dates]
+    dates = result[:data][:models][:edges][0][:node][:availability][0][:datesForAltLocations]
     quantities = dates.map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
 
     # +4 (existing reservation's own before-buffer) and +7 (its own
@@ -540,10 +539,9 @@ describe "models connection" do
                 availability(
                   startDate: "#{today}",
                   endDate: "#{today + 7.days}",
-                  inventoryPoolIds: ["#{@inventory_pool.id}"],
-                  pickupLocationId: "#{pickup_location.id}"
+                  inventoryPoolIds: ["#{@inventory_pool.id}"]
                 ) {
-                  dates {
+                  datesForAltLocations {
                     date
                     quantity
                   }
@@ -555,7 +553,7 @@ describe "models connection" do
     GRAPHQL
 
     calendar_result = query(calendar_q, @user.id)
-    dates = calendar_result[:data][:models][:edges][0][:node][:availability][0][:dates]
+    dates = calendar_result[:data][:models][:edges][0][:node][:availability][0][:datesForAltLocations]
     calendar_quantity_at_end_date =
       dates.find { |d| d[:date][0, 10] == (today + 7.days).to_s }[:quantity]
 
@@ -590,7 +588,7 @@ describe "models connection" do
   end
 
   it "booking calendar widens per day backward only, as a prospective start" do
-    today, model, pickup_location = setup_holiday_clustering_scenario
+    today, model = setup_holiday_clustering_scenario
 
     q = <<-GRAPHQL
         {
@@ -601,10 +599,9 @@ describe "models connection" do
                 availability(
                   startDate: "#{today}",
                   endDate: "#{today + 22.days}",
-                  inventoryPoolIds: ["#{@inventory_pool.id}"],
-                  pickupLocationId: "#{pickup_location.id}"
+                  inventoryPoolIds: ["#{@inventory_pool.id}"]
                 ) {
-                  dates {
+                  datesForAltLocations {
                     date
                     quantity
                   }
@@ -616,7 +613,7 @@ describe "models connection" do
     GRAPHQL
 
     result = query(q, @user.id)
-    dates = result[:data][:models][:edges][0][:node][:availability][0][:dates]
+    dates = result[:data][:models][:edges][0][:node][:availability][0][:datesForAltLocations]
     quantities = dates.map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
 
     # today+0..+3 are fully clear. From today+4 on, each day is checked both
@@ -864,7 +861,7 @@ describe "models connection" do
     context "pickup location" do
       let(:q) do
         @start ||= Date.today
-        @end ||= Date.tomorrow
+        @end ||= Date.today + 3.days
 
         <<-GRAPHQL
             {
@@ -877,10 +874,17 @@ describe "models connection" do
                     availability(
                       startDate: "#{@start}",
                       endDate: "#{@end}",
-                      inventoryPoolIds: ["#{@inventory_pool.id}"]#{@pickup_location_id ? %(,\n                      pickupLocationId: "#{@pickup_location_id}") : ""}
+                      inventoryPoolIds: ["#{@inventory_pool.id}"]
                     ) {
                       earliestPossiblePickupDate
+                      earliestPossiblePickupDateForAltLocations
                       dates {
+                        date
+                        quantity
+                        startDateRestrictions
+                        endDateRestrictions
+                      }
+                      datesForAltLocations {
                         date
                         quantity
                         startDateRestrictions
@@ -905,77 +909,135 @@ describe "models connection" do
           is_borrowable: true)
         @inventory_pool.update(borrow_reservation_advance_days: 1,
           transfer_buffer_before_pick_up: 3)
-        @pickup_location_id =
-          FactoryBot.create(:pickup_location, inventory_pool: @inventory_pool).id
       end
 
-      it "extends earliest possible pickup date for alternative pickup location" do
-        @end ||= Date.today + 3.days
-        result = query(q, @user.id)
+      context "when pool has a pickup location" do
+        before(:each) do
+          FactoryBot.create(:pickup_location, inventory_pool: @inventory_pool)
+        end
 
-        expect_graphql_result(result, {
-          models: {
-            edges: [
-              {node: {id: @model.id.to_s,
-                      availability: [{
-                        earliestPossiblePickupDate: "#{Date.today + 3.days}T00:00:00Z",
-                        dates: [
-                          {date: "#{Date.today}T00:00:00Z",
-                           quantity: 1,
-                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
-                           endDateRestrictions: nil},
-                          {date: "#{Date.today + 1.day}T00:00:00Z",
-                           quantity: 1,
-                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
-                           endDateRestrictions: nil},
-                          {date: "#{Date.today + 2.days}T00:00:00Z",
-                           quantity: 1,
-                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
-                           endDateRestrictions: nil},
-                          {date: "#{Date.today + 3.days}T00:00:00Z",
-                           quantity: 1,
-                           startDateRestrictions: nil,
-                           endDateRestrictions: nil}
-                        ]
-                      }]}}
-            ]
-          }
-        })
+        it "dates uses main (no buffer), datesForAltLocations extends earliest possible pickup date" do
+          result = query(q, @user.id)
+
+          expect_graphql_result(result, {
+            models: {
+              edges: [
+                {node: {id: @model.id.to_s,
+                        availability: [{
+                          earliestPossiblePickupDate: "#{Date.today + 1.day}T00:00:00Z",
+                          earliestPossiblePickupDateForAltLocations: "#{Date.today + 3.days}T00:00:00Z",
+                          dates: [
+                            {date: "#{Date.today}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 1.day}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: nil,
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 2.days}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: nil,
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 3.days}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: nil,
+                             endDateRestrictions: nil}
+                          ],
+                          datesForAltLocations: [
+                            {date: "#{Date.today}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 1.day}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 2.days}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 3.days}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: nil,
+                             endDateRestrictions: nil}
+                          ]
+                        }]}}
+              ]
+            }
+          })
+        end
       end
 
-      it "does not apply the buffer when no pickup location is selected" do
-        @pickup_location_id = nil
-        @end ||= Date.today + 3.days
-        result = query(q, @user.id)
+      context "when pool has no pickup locations" do
+        let(:q_no_alt) do
+          <<-GRAPHQL
+              {
+                models(ids: ["#{@model.id}"]) {
+                  edges {
+                    node {
+                      id
+                      availability(
+                        startDate: "#{Date.today}",
+                        endDate: "#{Date.today + 3.days}",
+                        inventoryPoolIds: ["#{@inventory_pool.id}"]
+                      ) {
+                        earliestPossiblePickupDate
+                        earliestPossiblePickupDateForAltLocations
+                        dates {
+                          date
+                          quantity
+                          startDateRestrictions
+                          endDateRestrictions
+                        }
+                        datesForAltLocations {
+                          date
+                          quantity
+                          startDateRestrictions
+                          endDateRestrictions
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          GRAPHQL
+        end
 
-        expect_graphql_result(result, {
-          models: {
-            edges: [
-              {node: {id: @model.id.to_s,
-                      availability: [{
-                        earliestPossiblePickupDate: "#{Date.today + 1.day}T00:00:00Z",
-                        dates: [
-                          {date: "#{Date.today}T00:00:00Z",
-                           quantity: 1,
-                           startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
-                           endDateRestrictions: nil},
-                          {date: "#{Date.today + 1.day}T00:00:00Z",
-                           quantity: 1,
-                           startDateRestrictions: nil,
-                           endDateRestrictions: nil},
-                          {date: "#{Date.today + 2.days}T00:00:00Z",
-                           quantity: 1,
-                           startDateRestrictions: nil,
-                           endDateRestrictions: nil},
-                          {date: "#{Date.today + 3.days}T00:00:00Z",
-                           quantity: 1,
-                           startDateRestrictions: nil,
-                           endDateRestrictions: nil}
-                        ]
-                      }]}}
-            ]
-          }
-        })
+        it "datesForAltLocations is nil and dates uses main (no buffer)" do
+          result = query(q_no_alt, @user.id)
+
+          expect_graphql_result(result, {
+            models: {
+              edges: [
+                {node: {id: @model.id.to_s,
+                        availability: [{
+                          earliestPossiblePickupDate: "#{Date.today + 1.day}T00:00:00Z",
+                          earliestPossiblePickupDateForAltLocations: nil,
+                          dates: [
+                            {date: "#{Date.today}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 1.day}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: nil,
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 2.days}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: nil,
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 3.days}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: nil,
+                             endDateRestrictions: nil}
+                          ],
+                          datesForAltLocations: nil
+                        }]}}
+              ]
+            }
+          })
+        end
       end
     end
 

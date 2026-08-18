@@ -95,18 +95,16 @@
          model (:model edit-mode)
          exclude-reservation-ids (map :id (:res-lines edit-mode))
          pool-ids (pool-ids-with-reservable-quantity db)
-         pickup-location-id (:pickup-location-id edit-mode)
          start-date-exceeds-max? (> (js/Date. start-date) max-date)
          end-or-max-date (if (> (js/Date. end-date) max-date)
                            (h/date-format-day max-date)
                            end-date)
-         query-vars (cond-> {:modelId (:id model)
-                             :userId user-id
-                             :poolIds pool-ids
-                             :startDate start-date
-                             :endDate end-or-max-date
-                             :excludeReservationIds exclude-reservation-ids}
-                      pickup-location-id (assoc :pickupLocationId pickup-location-id))]
+         query-vars {:modelId (:id model)
+                     :userId user-id
+                     :poolIds pool-ids
+                     :startDate start-date
+                     :endDate end-or-max-date
+                     :excludeReservationIds exclude-reservation-ids}]
      (cond
        (empty? pool-ids)
        {:db (assoc-in db [::edit-mode :availability] [])}
@@ -120,22 +118,10 @@
                    query-vars
                    [::on-fetched-availability end-date]]}))))
 
-(reg-event-fx
+(reg-event-db
  ::refetch-availability-for-pickup-location
- (fn-traced [{:keys [db]} [_ pickup-location-id]]
-   (let [now (js/Date.)
-         edit-mode (get-in db [::edit-mode])
-         end-date (or (some-> edit-mode :fetched-until-date js/Date.)
-                      (availability/with-future-buffer now))]
-     {:db (-> db
-              (assoc-in [::edit-mode :pickup-location-id] pickup-location-id)
-              (update-in [::edit-mode]
-                         #(merge % {:availability []
-                                    :fetched-until-date nil
-                                    :fetching-until-date nil})))
-      :dispatch [::fetch-availability
-                 (h/date-format-day (date-fns/startOfMonth now))
-                 (h/date-format-day end-date)]})))
+ (fn-traced [db [_ pickup-location-id]]
+   (assoc-in db [::edit-mode :pickup-location-id] pickup-location-id)))
 
 (reg-event-fx
  ::on-fetched-availability
@@ -411,7 +397,12 @@
             user-id (:user-id edit-mode-data)
             model (:model edit-mode-data)
             loading? (nil? (:availability edit-mode-data))
-            availability (or (:availability edit-mode-data) [])
+            pickup-location-id (:pickup-location-id edit-mode-data)
+            raw-availability (or (:availability edit-mode-data) [])
+            availability (if pickup-location-id
+                           (map #(assoc % :dates (or (:dates-for-alt-locations %) (:dates %)))
+                                raw-availability)
+                           raw-availability)
             start-date (date-fns/parseISO (:start-date edit-mode-data))
             end-date (date-fns/parseISO (:end-date edit-mode-data))
             quantity (:quantity edit-mode-data)
