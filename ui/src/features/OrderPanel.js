@@ -333,6 +333,16 @@ const OrderPanel = ({
                 </option>
               ))}
             </select>
+            <InfoMessage className="mt-2">
+              <a
+                className="decorate-links"
+                href={`/borrow/inventory-pools/${selectedPoolId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t(label, 'pickup-locations-more-details', locale)}
+              </a>
+            </InfoMessage>
           </Section>
         )}
 
