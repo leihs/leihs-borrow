@@ -619,23 +619,25 @@ describe "models connection" do
     dates = result[:data][:models][:edges][0][:node][:availability][0][:dates]
     quantities = dates.map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
 
-    # today+0..+2 are fully clear. From today+3 on, each day is checked both
+    # today+0..+3 are fully clear. From today+4 on, each day is checked both
     # as a prospective start (backward, own before-buffer) and a prospective
     # end (forward, own after-buffer) for a hypothetical new alt-location
-    # booking, min'd together -- today+3's own forward check alone already
+    # booking, min'd together -- today+4's own forward check alone already
     # reaches into today+9 (the reservation's before-buffer start), so the
     # reduced window starts there rather than at today+9 as it would with
     # only the backward check. today+9..+12 (before-buffer), +13/+14
     # (the reservation itself), +15..+17 (after-buffer) and +18..+21 (a new
-    # booking's own before-buffer reaching back into that tail) round out an
-    # unbroken reduced stretch through today+21; today+22 is the first day
-    # clear both ways.
+    # booking's own before-buffer landing on the weekend right at +18/+19,
+    # which bridges through to the still-reduced +17 rather than leaving that
+    # weekend as a free pocket nothing is ever transferring through) round
+    # out an unbroken reduced stretch through today+21; today+22 is the
+    # first day clear both ways.
     expect(quantities).to eq(
       (today + 0.days).to_s => 2,
       (today + 1.days).to_s => 2, # holiday
       (today + 2.days).to_s => 2,
-      (today + 3.days).to_s => 1, # holiday; own forward check reaches into the before-buffer zone
-      (today + 4.days).to_s => 1, # weekend
+      (today + 3.days).to_s => 2, # holiday
+      (today + 4.days).to_s => 1, # weekend; own forward check reaches into the before-buffer zone
       (today + 5.days).to_s => 1, # weekend
       (today + 6.days).to_s => 1, # holiday
       (today + 7.days).to_s => 1,
@@ -652,8 +654,8 @@ describe "models connection" do
       (today + 18.days).to_s => 1, # weekend, but own before-buffer reaches back into it
       (today + 19.days).to_s => 1, # weekend, but own before-buffer reaches back into it
       (today + 20.days).to_s => 1,
-      (today + 21.days).to_s => 1, # last day still reaching back into the tail
-      (today + 22.days).to_s => 2  # first day clear both ways
+      (today + 21.days).to_s => 1, # lands on the weekend, bridged back to the after-buffer tail
+      (today + 22.days).to_s => 2 # first day clear both ways
     )
   end
 
