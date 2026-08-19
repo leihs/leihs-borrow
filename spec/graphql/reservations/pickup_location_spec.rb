@@ -73,6 +73,7 @@ describe "createReservation with pickupLocationId" do
   end
 
   it "creates reservation with pickup location belonging to the pool" do
+    inventory_pool.update(enable_alternative_pickup_locations: true)
     location = FactoryBot.create(
       :pickup_location,
       inventory_pool: inventory_pool,
@@ -88,7 +89,36 @@ describe "createReservation with pickupLocationId" do
     )
   end
 
+  it "rejects pickup location when alternative pickup locations are not enabled" do
+    location = FactoryBot.create(
+      :pickup_location,
+      inventory_pool: inventory_pool,
+      name: "Alpha Site"
+    )
+
+    result = query(mutation, user.id, base_vars(pickupLocationId: location.id))
+    expect(result[:data][:createReservation]).to be_nil
+    expect(result[:errors].first[:message]).to eq \
+      "Alternative pickup locations are not enabled for the selected inventory pool."
+  end
+
+  it "rejects an inactive pickup location" do
+    inventory_pool.update(enable_alternative_pickup_locations: true)
+    location = FactoryBot.create(
+      :pickup_location,
+      inventory_pool: inventory_pool,
+      name: "Alpha Site",
+      active: false
+    )
+
+    result = query(mutation, user.id, base_vars(pickupLocationId: location.id))
+    expect(result[:data][:createReservation]).to be_nil
+    expect(result[:errors].first[:message]).to eq \
+      "Pickup location does not belong to the selected inventory pool."
+  end
+
   it "rejects pickup location from another pool" do
+    inventory_pool.update(enable_alternative_pickup_locations: true)
     other_pool = FactoryBot.create(:inventory_pool)
     location = FactoryBot.create(
       :pickup_location,
@@ -103,6 +133,7 @@ describe "createReservation with pickupLocationId" do
   end
 
   it "rejects alternative pickup location when model is not transportable" do
+    inventory_pool.update(enable_alternative_pickup_locations: true)
     model.update(transportable: false)
     location = FactoryBot.create(
       :pickup_location,

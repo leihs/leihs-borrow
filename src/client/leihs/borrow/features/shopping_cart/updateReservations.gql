@@ -24,6 +24,7 @@ mutation updateReservations(
       id
       name
       defaultPickupLocationName
+      enableAlternativePickupLocations
     }
     pickupLocation {
       id

@@ -405,6 +405,9 @@
                  (some #{pool-id}))
     (raise "Not allowed to create reservation in this pool."))
   (when pickup-location-id
+    (when-not (pools/enable-alternative-pickup-locations? tx pool-id)
+      (raise (str "Alternative pickup locations are not enabled"
+                 " for the selected inventory pool.")))
     (when-not (pickup-locations/belongs-to-pool? tx pickup-location-id pool-id)
       (raise "Pickup location does not belong to the selected inventory pool."))
     (when-not (:transportable (models.core/get-one-by-id tx model-id))

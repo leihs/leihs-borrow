@@ -9,6 +9,7 @@ mutation refreshTimeout($userId: UUID) {
           id
           name
           defaultPickupLocationName
+          enableAlternativePickupLocations
         }
         pickupLocation {
           id

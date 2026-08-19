@@ -518,10 +518,12 @@
         model (:model exemplar)
         quantity (count res-lines)
         loading? @(subscribe [::loading])
-        location-name (or (get-in exemplar [:pickup-location :name])
-                          (get-in exemplar [:inventory-pool :default-pickup-location-name])
-                          (when-not loading?
-                            (get-in exemplar [:inventory-pool :name])))
+        pool (:inventory-pool exemplar)
+        location-name (if (:enable-alternative-pickup-locations pool)
+                        (or (get-in exemplar [:pickup-location :name])
+                            (:default-pickup-location-name pool))
+                        (when-not loading?
+                          (:name pool)))
         invalid? (every? invalid-res-ids (map :id res-lines))
         start-date (js/Date. (:start-date exemplar))
         end-date (js/Date. (:end-date exemplar))

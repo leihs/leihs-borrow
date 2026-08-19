@@ -40,7 +40,8 @@
     :maximum_reservation_duration]
    :inventory_pools.transfer_buffer_before_pick_up
    :inventory_pools.transfer_buffer_after_drop_off
-   :inventory_pools.default_pickup_location_name])
+   :inventory_pools.default_pickup_location_name
+   :inventory_pools.enable_alternative_pickup_locations])
 
 (def base-sqlmap
   (-> (apply sql/select select-fields)
@@ -64,6 +65,16 @@
       (accessible-to-user-condition user-id)
       sql-format
       (->> (jdbc-query tx))))
+
+(defn enable-alternative-pickup-locations? [tx pool-id]
+  (-> (sql/select :enable_alternative_pickup_locations)
+      (sql/from :inventory_pools)
+      (sql/where [:= :id pool-id])
+      sql-format
+      (->> (jdbc-query tx))
+      first
+      :enable_alternative_pickup_locations
+      boolean))
 
 (defn to-reserve-from [tx user-id start-date end-date]
   (->> {:user-id user-id, :start-date start-date, :end-date end-date}

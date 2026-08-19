@@ -6,12 +6,15 @@
 (def columns [:pickup_locations.id
               :pickup_locations.name
               :pickup_locations.description
-              :pickup_locations.inventory_pool_id])
+              :pickup_locations.inventory_pool_id
+              :pickup_locations.active])
 
 (defn base-sqlmap [pool-id]
   (-> (apply sql/select columns)
       (sql/from :pickup_locations)
-      (sql/where [:= :inventory_pool_id pool-id])
+      (sql/where [:and
+                  [:= :inventory_pool_id pool-id]
+                  [:= :active true]])
       (sql/order-by :name)))
 
 (defn get-by-pool-id [tx pool-id]
@@ -29,8 +32,12 @@
         (->> (jdbc-query tx))
         first)))
 
-(defn get-multiple [{{tx :tx} :request} _ {pool-id :id}]
-  (get-by-pool-id tx pool-id))
+(defn get-multiple
+  [{{tx :tx} :request} _
+   {pool-id :id enabled? :enable-alternative-pickup-locations}]
+  (if enabled?
+    (get-by-pool-id tx pool-id)
+    []))
 
 (defn get-one [{{tx :tx} :request} _ {:keys [pickup-location-id]}]
   (get-by-id tx pickup-location-id))
@@ -42,7 +49,8 @@
          (sql/from :pickup_locations)
          (sql/where [:and
                      [:= :id pickup-location-id]
-                     [:= :inventory_pool_id pool-id]])
+                     [:= :inventory_pool_id pool-id]
+                     [:= :active true]])
          sql-format
          (->> (jdbc-query tx))
          first

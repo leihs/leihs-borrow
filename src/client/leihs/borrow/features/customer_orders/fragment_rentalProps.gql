@@ -80,6 +80,7 @@ fragment reservationProps on Reservation {
     id
     name
     defaultPickupLocationName
+    enableAlternativePickupLocations
   }
   pickupLocation {
     id

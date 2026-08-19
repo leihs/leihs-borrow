@@ -41,9 +41,11 @@
         total-days (+ 1 (date-fns/differenceInCalendarDays actual-end-date start-date))
         title (t :reservation-line.title {:itemCount quantity, :itemName name})
         inventory-code (-> reservation :item :inventory-code)
-        location-name (or (-> reservation :pickup-location :name)
-                          (-> reservation :inventory-pool :default-pickup-location-name)
-                          (-> reservation :inventory-pool :name))
+        pool (:inventory-pool reservation)
+        location-name (if (:enable-alternative-pickup-locations pool)
+                        (or (-> reservation :pickup-location :name)
+                            (:default-pickup-location-name pool))
+                        (:name pool))
         imgSrc (or (get-in model [:cover-image :image-url])
                    (get-in model [:images 0 :image-url]))]
     [:<>

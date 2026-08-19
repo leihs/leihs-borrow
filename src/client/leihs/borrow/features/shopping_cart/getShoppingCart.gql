@@ -10,6 +10,7 @@ query getShoppingCart($userId: UUID) {
             id
             name
             defaultPickupLocationName
+            enableAlternativePickupLocations
           }
           pickupLocation {
             id

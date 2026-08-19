@@ -66,6 +66,7 @@
                                     :transferBufferBeforePickUp {:type Int}
                                     :transferBufferAfterDropOff {:type Int}
                                     :defaultPickupLocationName {:type String}
+                                    :enableAlternativePickupLocations {:type (non-null Boolean)}
                                     :pickupLocations {:type (list :PickupLocation)
                                                       :resolve :pickup-locations}
                                     :availability {:args {:startDate {:type (non-null :Date)}
@@ -80,7 +81,8 @@
                                                :resolve :workdays}}}
            :PickupLocation {:fields {:id {:type (non-null :UUID)}
                                      :name {:type (non-null String)}
-                                     :description {:type String}}}
+                                     :description {:type String}
+                                     :active {:type (non-null Boolean)}}}
            :Holiday {:fields {:startDate {:type :Date}
                               :endDate {:type :Date}
                               :name {:type (non-null String)}}}
