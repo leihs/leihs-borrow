@@ -12,6 +12,9 @@
             [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as rs]
+            [leihs.borrow.resources.inventory-pools :as pools]
+            [leihs.borrow.resources.pickup-locations :as pickup-locations]
+            [leihs.borrow.resources.models.core :as models.core]
             [leihs.borrow.time :as time :refer [past-date?]]
             [leihs.borrow.database.helpers :as database]
             [leihs.core.db :as db]
@@ -420,7 +423,16 @@
         (->> (jdbc/execute! tx)))
     (get-one-by-id tx user-id id)))
 
-(defn get-repeated-res [r user-id delegated-user-id start-date end-date now]
+(defn- usable-pickup-location-id
+  "Return pickup_location_id only if still valid for create rules; else nil."
+  [tx {:keys [inventory_pool_id pickup_location_id model_id]}]
+  (when (and pickup_location_id
+             (pools/enable-alternative-pickup-locations? tx inventory_pool_id)
+             (pickup-locations/belongs-to-pool? tx pickup_location_id inventory_pool_id)
+             (:transportable (models.core/get-one-by-id tx model_id)))
+    pickup_location_id))
+
+(defn get-repeated-res [tx r user-id delegated-user-id start-date end-date now]
   (cond-> {:inventory_pool_id (:inventory_pool_id r)
            :user_id user-id
            :delegated_user_id delegated-user-id
@@ -432,7 +444,7 @@
            :end_date [:cast end-date :date]
            :created_at now
            :updated_at now}
-    (:pickup_location_id r)
+    (usable-pickup-location-id tx r)
     (assoc :pickup_location_id (:pickup_location_id r))))
 
 (defn repeat-order
@@ -444,7 +456,7 @@
         delegated-user-id (when (not= auth-user-id user-id) auth-user-id)
         new-reservations (->> reservations
                               (filter #(boolean (:model_id %)))
-                              (map #(get-repeated-res % user-id delegated-user-id start-date end-date (time/now tx))))
+                              (map #(get-repeated-res tx % user-id delegated-user-id start-date end-date (time/now tx))))
         created-rs (-> (sql/insert-into :reservations)
                        (sql/values new-reservations)
                        (as-> <> (apply sql/returning <> rs/columns))

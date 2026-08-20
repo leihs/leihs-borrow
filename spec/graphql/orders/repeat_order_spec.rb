@@ -112,4 +112,46 @@ describe "repeatOrder" do
     expect(reservations.count).to eq 1
     expect(reservations.first[:pickupLocation]).to be_nil
   end
+
+  it "drops pickup_location_id when alternative pickup locations are no longer enabled" do
+    inventory_pool.update(enable_alternative_pickup_locations: true)
+    location = FactoryBot.create(
+      :pickup_location,
+      inventory_pool: inventory_pool,
+      name: "Alt Site"
+    )
+    customer_order = FactoryBot.create(:order, user: user, title: "Original Alt")
+    pool_order = FactoryBot.create(
+      :pool_order,
+      order: customer_order,
+      user: user,
+      inventory_pool: inventory_pool,
+      state: "approved"
+    )
+    FactoryBot.create(
+      :reservation,
+      user: user,
+      inventory_pool: inventory_pool,
+      leihs_model: model,
+      status: "approved",
+      order_id: pool_order.id,
+      pickup_location_id: location.id,
+      start_date: Date.today - 10,
+      end_date: Date.today - 8
+    )
+
+    inventory_pool.update(enable_alternative_pickup_locations: false)
+
+    result = query(mutation, user.id, {
+      id: customer_order.id,
+      startDate: Date.tomorrow.strftime,
+      endDate: (Date.tomorrow + 1.day).strftime,
+      userId: user.id
+    })
+
+    expect(result[:errors]).to be_nil
+    reservations = result.dig(:data, :repeatOrder)
+    expect(reservations.count).to eq 1
+    expect(reservations.first[:pickupLocation]).to be_nil
+  end
 end

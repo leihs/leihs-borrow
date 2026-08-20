@@ -171,10 +171,10 @@
                             (map #(hash-map :date (str %)) <>)
                             (mapv merge <> visits-count))
         main-validated (restrict/validate-dates tx dates-with-visits db-pool)
-        first-alt-location-id (some-> (pickup-locations/get-by-pool-id tx id)
-                                      first
-                                      :id)
-        alt-validated (when first-alt-location-id
+        alt-locations (when (enable-alternative-pickup-locations? tx id)
+                        (pickup-locations/get-by-pool-id tx id))
+        has-alt-locations? (seq alt-locations)
+        alt-validated (when has-alt-locations?
                         (restrict/validate-dates tx dates-with-visits db-pool true))]
     (cond-> main-validated
       alt-validated
