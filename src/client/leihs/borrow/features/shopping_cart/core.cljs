@@ -410,14 +410,23 @@
 
             ; Transformators for the pools list
             flatten-pool (fn [{{id :id name :name} :inventory-pool quantity :quantity}]
-                           (let [from-profile (->> (:inventory-pools current-profile)
+                           (let [from-availability (->> raw-availability
+                                                        (map :inventory-pool)
+                                                        (filter #(= (:id %) id))
+                                                        first)
+                                 from-profile (->> (:inventory-pools current-profile)
                                                    (filter #(= (:id %) id))
                                                    first)]
                              {:id id
                               :name name
                               :total-reservable-quantity quantity
-                              :pickup-locations (:pickup-locations from-profile)
-                              :default-pickup-location-name (:default-pickup-location-name from-profile)}))
+                              :pickup-locations (or (:pickup-locations from-profile)
+                                                    (:pickup-locations from-availability))
+                              :default-pickup-location-name (or (:default-pickup-location-name from-profile)
+                                                                (:default-pickup-location-name from-availability))
+                              :enable-alternative-pickup-locations
+                              (or (:enable-alternative-pickup-locations from-profile)
+                                  (:enable-alternative-pickup-locations from-availability))}))
             has-items-or-is-selected (fn [selected-pool-id pool]
                                        (or (> (:total-reservable-quantity pool) 0)
                                            (= (:id pool) selected-pool-id)))

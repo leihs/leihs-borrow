@@ -280,9 +280,15 @@
          (fn [pool]
            (let [from-profile (get profile-pools-by-id (:id pool))]
              (-> pool
-                 (assoc :pickup-locations (:pickup-locations from-profile))
+                 (assoc :pickup-locations
+                        (or (:pickup-locations from-profile)
+                            (:pickup-locations pool)))
                  (assoc :default-pickup-location-name
-                        (:default-pickup-location-name from-profile)))))
+                        (or (:default-pickup-location-name from-profile)
+                            (:default-pickup-location-name pool)))
+                 (assoc :enable-alternative-pickup-locations
+                        (or (:enable-alternative-pickup-locations from-profile)
+                            (:enable-alternative-pickup-locations pool))))))
          assoc-suspension
          (fn [pool]
            (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id))

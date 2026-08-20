@@ -11,5 +11,9 @@ mutation repeatOrder(
     userId: $userId
   ) {
     id
+    pickupLocation {
+      id
+      name
+    }
   }
 }

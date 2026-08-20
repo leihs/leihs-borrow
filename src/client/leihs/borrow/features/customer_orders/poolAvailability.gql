@@ -1,9 +1,9 @@
-query poolAvailability($id: UUID!, $startDate: Date, $endDate: Date) {
-  inventoryPool(id: $id) {
+query poolsAvailability($ids: [UUID!], $startDate: Date, $endDate: Date, $includeAltDates: Boolean!) {
+  inventoryPools(ids: $ids) {
     id
-    name
     maximumReservationDuration
     reservationAdvanceDays
+    transferBufferBeforePickUp
     holidays {
       startDate
       endDate
@@ -11,6 +11,11 @@ query poolAvailability($id: UUID!, $startDate: Date, $endDate: Date) {
     }
     availability(startDate: $startDate, endDate: $endDate) {
       dates {
+        date
+        startDateRestrictions
+        endDateRestrictions
+      }
+      datesForAltLocations @include(if: $includeAltDates) {
         date
         startDateRestrictions
         endDateRestrictions
