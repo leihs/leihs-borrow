@@ -258,18 +258,22 @@ export function getOrderPanelMockData() {
   }
 
   const inventoryPools = modelData.availability.map(x => x.inventoryPool)
+  // Both pools share "Empfang" (different ids) so pool-switch can match by name.
   inventoryPools[0] = {
     ...inventoryPools[0],
     defaultPickupLocationName: 'Hauptlager',
     pickupLocations: [
       { id: 'pl-alt-2', name: 'Pickup Location #2', description: 'Hintereingang' },
-      { id: 'pl-alt-1', name: 'Pickup Location #1', description: 'Empfang' }
+      { id: 'pl-empfang-pool1', name: 'Empfang', description: 'Empfang Toni' }
     ]
   }
   inventoryPools[1] = {
     ...inventoryPools[1],
     defaultPickupLocationName: 'Hauptlager',
-    pickupLocations: [{ id: 'pl-pool2-1', name: 'Pool 2 Site A', description: 'Lager' }]
+    pickupLocations: [
+      { id: 'pl-pool2-site-a', name: 'Pool 2 Site A', description: 'Lager' },
+      { id: 'pl-empfang-pool2', name: 'Empfang', description: 'Empfang AVS' }
+    ]
   }
   modelData.transportable = true
   const userDelegations = [

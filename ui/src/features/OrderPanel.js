@@ -194,19 +194,13 @@ const OrderPanel = ({
   function changeInventoryPool(e) {
     const id = e.target.value
     const nextPool = inventoryPools.find(x => x.id === id)
-    const nextLocations = sortedPickupLocations(nextPool?.pickupLocations)
-    const locationIdInPool = locId => locId && nextLocations.some(loc => loc.id === locId)
-    // Keep alt-location mode across pool switches so buffer-aware calendars stay comparable.
-    // Same location UUID is reused when it belongs to the new pool; otherwise pick the first
-    // location of the new pool. Hauptlager (null) stays when the user had Hauptlager selected
-    // or the new pool has no pickup locations.
-    const nextPickupLocationId = (() => {
-      if (!isTransportable) return null
-      if (locationIdInPool(selectedPickupLocationId)) return selectedPickupLocationId
-      if (selectedPickupLocationId) return nextLocations[0]?.id || null
-      if (locationIdInPool(initialPickupLocationId)) return initialPickupLocationId
-      return null
-    })()
+    const previousPool = inventoryPools.find(x => x.id === selectedPoolId)
+    const nextPickupLocationId = resolvePickupLocationOnPoolChange({
+      isTransportable,
+      selectedPickupLocationId,
+      previousPool,
+      nextPool
+    })
     setSelectedPoolId(id)
     setSelectedPickupLocationId(nextPickupLocationId)
     onInventoryPoolChange({
@@ -422,6 +416,31 @@ export default OrderPanel
 
 function sortedPickupLocations(pickupLocations) {
   return [...(pickupLocations || [])].sort((a, b) => a.name.localeCompare(b.name))
+}
+
+/**
+ * Resolve which pickup location to select after switching inventory pools.
+ * Location ids are pool-scoped (never shared across pools); only names can match.
+ * Priority: Hauptlager stays → same name → keep alt (first of new pool) → Hauptlager.
+ */
+export function resolvePickupLocationOnPoolChange({
+  isTransportable,
+  selectedPickupLocationId,
+  previousPool,
+  nextPool
+}) {
+  if (!isTransportable) return null
+  // Hauptlager selected → stay on Hauptlager after pool switch
+  if (!selectedPickupLocationId) return null
+
+  const nextLocations = sortedPickupLocations(nextPool?.pickupLocations)
+  const previousLocations = previousPool?.pickupLocations || []
+  const previousLocation = previousLocations.find(loc => loc.id === selectedPickupLocationId)
+  if (previousLocation?.name) {
+    const nameMatch = nextLocations.find(loc => loc.name === previousLocation.name)
+    if (nameMatch) return nameMatch.id
+  }
+  return nextLocations[0]?.id || null
 }
 
 function getDateRangePickerConstraints(poolAvailability, today, wantedQuantity) {
