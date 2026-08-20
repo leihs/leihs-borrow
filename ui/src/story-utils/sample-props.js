@@ -207,7 +207,9 @@ export function getOrderPanelMockData() {
     i < 3
       ? {
           ...d,
-          startDateRestrictions: [...new Set([...(d.startDateRestrictions || []), 'BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE'])]
+          startDateRestrictions: [
+            ...new Set([...(d.startDateRestrictions || []), 'BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE'])
+          ]
         }
       : d
   )
@@ -216,7 +218,9 @@ export function getOrderPanelMockData() {
     i < 2
       ? {
           ...d,
-          startDateRestrictions: [...new Set([...(d.startDateRestrictions || []), 'BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE'])]
+          startDateRestrictions: [
+            ...new Set([...(d.startDateRestrictions || []), 'BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE'])
+          ]
         }
       : d
   )

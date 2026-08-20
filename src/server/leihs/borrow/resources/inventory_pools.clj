@@ -11,6 +11,7 @@
             [leihs.borrow.resources.inventory-pools.visits-restrictions :as restrict]
             [leihs.core.availability.changes :as ch]
             [leihs.borrow.resources.legacy-availability.booking-calendar :refer [get-visits-counts]]
+            [leihs.borrow.resources.pickup-locations :as pickup-locations]
             [leihs.borrow.resources.workdays :as workdays]
             [leihs.core.db :as db]
             [taoensso.timbre :refer [debug info warn error spy]]))
@@ -165,11 +166,21 @@
         end-date-jt (ch/local-date end-date)
         date-range (ch/explode-date-range start-date-jt end-date-jt)
         db-pool (get-by-id tx id) #_"due to casing of the keys needed for validate-dates"
-        visits-count (get-visits-counts tx start-date end-date (:id db-pool))]
-    (as-> date-range <>
-      (map #(hash-map :date (str %)) <>)
-      (mapv merge <> visits-count)
-      (restrict/validate-dates tx <> db-pool))))
+        visits-count (get-visits-counts tx start-date end-date (:id db-pool))
+        dates-with-visits (as-> date-range <>
+                            (map #(hash-map :date (str %)) <>)
+                            (mapv merge <> visits-count))
+        main-validated (restrict/validate-dates tx dates-with-visits db-pool)
+        first-alt-location-id (some-> (pickup-locations/get-by-pool-id tx id)
+                                      first
+                                      :id)
+        alt-validated (when first-alt-location-id
+                        (restrict/validate-dates tx dates-with-visits db-pool true))]
+    (cond-> main-validated
+      alt-validated
+      (assoc :dates-for-alt-locations (:dates alt-validated)
+             :earliest-possible-pickup-date-for-alt-locations
+             (:earliest-possible-pickup-date alt-validated)))))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)

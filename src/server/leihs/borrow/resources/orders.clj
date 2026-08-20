@@ -421,17 +421,19 @@
     (get-one-by-id tx user-id id)))
 
 (defn get-repeated-res [r user-id delegated-user-id start-date end-date now]
-  {:inventory_pool_id (:inventory_pool_id r)
-   :user_id user-id
-   :delegated_user_id delegated-user-id
-   :type (:type r)
-   :status "unsubmitted"
-   :model_id (:model_id r)
-   :quantity (:quantity r)
-   :start_date [:cast start-date :date]
-   :end_date [:cast end-date :date]
-   :created_at now
-   :updated_at now})
+  (cond-> {:inventory_pool_id (:inventory_pool_id r)
+           :user_id user-id
+           :delegated_user_id delegated-user-id
+           :type (:type r)
+           :status "unsubmitted"
+           :model_id (:model_id r)
+           :quantity (:quantity r)
+           :start_date [:cast start-date :date]
+           :end_date [:cast end-date :date]
+           :created_at now
+           :updated_at now}
+    (:pickup_location_id r)
+    (assoc :pickup_location_id (:pickup_location_id r))))
 
 (defn repeat-order
   [{{tx :tx {auth-user-id :id} :authenticated-entity} :request

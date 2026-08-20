@@ -255,7 +255,9 @@
                                :key {:type (non-null String)}
                                :value {:type (non-null String)}}}
            :InventoryPoolAvailability {:fields {:dates {:type (list :DayData)}
-                                                :earliestPossiblePickupDate {:type :Date}}}
+                                                :datesForAltLocations {:type (list :DayData)}
+                                                :earliestPossiblePickupDate {:type :Date}
+                                                :earliestPossiblePickupDateForAltLocations {:type :Date}}}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                                      :dates {:type (list :DayDataWithQuantity)}
                                                      :datesForAltLocations {:type (list :DayDataWithQuantity)}
@@ -479,7 +481,8 @@
                            :args {:id {:type (non-null :UUID)}}
                            :type :InventoryPool}
            :inventoryPools {:resolve :inventory-pools
-                            :args {:userId {:type :UUID}
+                            :args {:ids {:type (list (non-null :UUID))}
+                                   :userId {:type :UUID}
                                    :orderBy {:type (list :InventoryPoolsOrderByInput)}}
                             :type (list :InventoryPool)}
            :languages {:resolve :languages :type (list :Language)}
