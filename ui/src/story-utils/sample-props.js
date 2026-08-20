@@ -201,11 +201,62 @@ export function getOrderPanelMockData() {
   //         and availability data should have several pools!
   //         re-use and tranform example data for now…
   const FAKE_SECOND_POOL_ID = '53f78fc0-2b0b-4f67-a207-b08d2a3c47b2'
+  const primaryDates = modelData.availability[0].dates
+  // Simulate datesForAltLocations with a wider earliest-pickup window (buffer 3).
+  const altDatesBuffer3 = primaryDates.map((d, i) =>
+    i < 3
+      ? {
+          ...d,
+          startDateRestrictions: [...new Set([...(d.startDateRestrictions || []), 'BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE'])]
+        }
+      : d
+  )
+  // Narrower alt window for buffer 2 (only first 2 days restricted beyond main).
+  const altDatesBuffer2 = primaryDates.map((d, i) =>
+    i < 2
+      ? {
+          ...d,
+          startDateRestrictions: [...new Set([...(d.startDateRestrictions || []), 'BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE'])]
+        }
+      : d
+  )
+
+  modelData.availability[0] = {
+    ...modelData.availability[0],
+    inventoryPool: {
+      ...modelData.availability[0].inventoryPool,
+      transferBufferBeforePickUp: 3,
+      reservationAdvanceDays: 1
+    },
+    datesForAltLocations: altDatesBuffer3
+  }
+
   modelData.availability.length < 2 &&
     modelData.availability.push({
-      inventoryPool: { id: FAKE_SECOND_POOL_ID, name: 'Ein anderer Inventarpark', totalReservableQuantity: 3 },
-      dates: modelData.availability[0].dates
+      inventoryPool: {
+        id: FAKE_SECOND_POOL_ID,
+        name: 'Ein anderer Inventarpark',
+        totalReservableQuantity: 3,
+        transferBufferBeforePickUp: 2,
+        reservationAdvanceDays: 1,
+        holidays: []
+      },
+      dates: primaryDates,
+      datesForAltLocations: altDatesBuffer2
     })
+
+  if (modelData.availability[1] && !modelData.availability[1].datesForAltLocations) {
+    modelData.availability[1] = {
+      ...modelData.availability[1],
+      inventoryPool: {
+        ...modelData.availability[1].inventoryPool,
+        transferBufferBeforePickUp: 2,
+        reservationAdvanceDays: 1
+      },
+      datesForAltLocations: altDatesBuffer2
+    }
+  }
+
   const inventoryPools = modelData.availability.map(x => x.inventoryPool)
   inventoryPools[0] = {
     ...inventoryPools[0],
@@ -217,8 +268,8 @@ export function getOrderPanelMockData() {
   }
   inventoryPools[1] = {
     ...inventoryPools[1],
-    defaultPickupLocationName: null,
-    pickupLocations: []
+    defaultPickupLocationName: 'Hauptlager',
+    pickupLocations: [{ id: 'pl-pool2-1', name: 'Pool 2 Site A', description: 'Lager' }]
   }
   modelData.transportable = true
   const userDelegations = [

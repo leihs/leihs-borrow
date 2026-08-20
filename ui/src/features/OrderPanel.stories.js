@@ -123,6 +123,30 @@ orderPanel.storyName = 'OrderPanel'
 export const withPickupLocations = () => <OrderPanelStory />
 withPickupLocations.storyName = 'With pickup locations'
 
+/** Simulates CLJS swap: dates := datesForAltLocations when an alt location is selected. */
+function withAltDatesSwapped(modelData) {
+  return {
+    ...modelData,
+    availability: modelData.availability.map(entry => ({
+      ...entry,
+      dates: entry.datesForAltLocations || entry.dates
+    }))
+  }
+}
+
+export const withDifferentTransferBuffers = () => {
+  const { modelData, inventoryPools } = getOrderPanelMockData()
+  return (
+    <OrderPanelStory
+      title="Pool switch keeps alt location (buffer 3 → 2)"
+      modelDataOverrides={withAltDatesSwapped(modelData)}
+      inventoryPoolsOverride={inventoryPools}
+      initialPickupLocationId={inventoryPools[0].pickupLocations[0].id}
+    />
+  )
+}
+withDifferentTransferBuffers.storyName = 'Different transfer buffers (pool switch)'
+
 export const notTransportable = () => (
   <OrderPanelStory modelDataOverrides={{ transportable: false, name: '4K-Videokamera Sony FDR-AX53' }} />
 )

@@ -196,13 +196,17 @@ const OrderPanel = ({
     const nextPool = inventoryPools.find(x => x.id === id)
     const nextLocations = sortedPickupLocations(nextPool?.pickupLocations)
     const locationIdInPool = locId => locId && nextLocations.some(loc => loc.id === locId)
-    const nextPickupLocationId = isTransportable
-      ? locationIdInPool(selectedPickupLocationId)
-        ? selectedPickupLocationId
-        : locationIdInPool(initialPickupLocationId)
-          ? initialPickupLocationId
-          : null
-      : null
+    // Keep alt-location mode across pool switches so buffer-aware calendars stay comparable.
+    // Same location UUID is reused when it belongs to the new pool; otherwise pick the first
+    // location of the new pool. Hauptlager (null) stays when the user had Hauptlager selected
+    // or the new pool has no pickup locations.
+    const nextPickupLocationId = (() => {
+      if (!isTransportable) return null
+      if (locationIdInPool(selectedPickupLocationId)) return selectedPickupLocationId
+      if (selectedPickupLocationId) return nextLocations[0]?.id || null
+      if (locationIdInPool(initialPickupLocationId)) return initialPickupLocationId
+      return null
+    })()
     setSelectedPoolId(id)
     setSelectedPickupLocationId(nextPickupLocationId)
     onInventoryPoolChange({

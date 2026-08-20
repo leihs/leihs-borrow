@@ -73,17 +73,6 @@
 (defn filter-pickup-location-id [db]
   (-> db :routing/routing :bidi-match :query-params :pickup-location-id presence))
 
-(defn get-current-profile [db]
-  (or (get-in db [:ls :leihs.borrow.features.current-user.core/data :current-delegation])
-      (get-in db [:ls :leihs.borrow.features.current-user.core/data :user])))
-
-(defn first-alt-pickup-location-id [db]
-  (->> (get-current-profile db)
-       :inventory-pools
-       (mapcat :pickup-locations)
-       (map :id)
-       (some presence)))
-
 (defn availability-query-vars [db model-id user-id start-date end-date]
   (let [pool-ids (pool-ids-with-reservable-quantity db model-id)]
     {:modelId model-id
