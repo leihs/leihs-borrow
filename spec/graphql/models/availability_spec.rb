@@ -365,7 +365,8 @@ describe "models connection" do
     weekend_day1 = (today + 4.days).strftime("%A").downcase
     weekend_day2 = (today + 5.days).strftime("%A").downcase
 
-    @inventory_pool.update(transfer_buffer_before_pick_up: 2,
+    @inventory_pool.update(enable_alternative_pickup_locations: true,
+      transfer_buffer_before_pick_up: 2,
       transfer_buffer_after_drop_off: 3)
 
     Workday.find(inventory_pool_id: @inventory_pool.id)
@@ -448,7 +449,8 @@ describe "models connection" do
   it "booking calendar checks both directions per day, not just backward" do
     today = Date.today
 
-    @inventory_pool.update(transfer_buffer_before_pick_up: 1,
+    @inventory_pool.update(enable_alternative_pickup_locations: true,
+      transfer_buffer_before_pick_up: 1,
       transfer_buffer_after_drop_off: 1)
 
     model = FactoryBot.create(:leihs_model, id: "f5a5b5c5-0c1a-4a1a-8a1a-0c1a4a1a8a1a")
@@ -907,8 +909,11 @@ describe "models connection" do
           leihs_model: @model,
           responsible: @inventory_pool,
           is_borrowable: true)
-        @inventory_pool.update(borrow_reservation_advance_days: 1,
-          transfer_buffer_before_pick_up: 3)
+        @inventory_pool.update(
+          enable_alternative_pickup_locations: true,
+          borrow_reservation_advance_days: 1,
+          transfer_buffer_before_pick_up: 3
+        )
       end
 
       context "when pool has a pickup location" do
@@ -938,6 +943,63 @@ describe "models connection" do
                             {date: "#{Date.today + 2.days}T00:00:00Z",
                              quantity: 1,
                              startDateRestrictions: nil,
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 3.days}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: nil,
+                             endDateRestrictions: nil}
+                          ],
+                          datesForAltLocations: [
+                            {date: "#{Date.today}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 1.day}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 2.days}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 3.days}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: nil,
+                             endDateRestrictions: nil}
+                          ]
+                        }]}}
+              ]
+            }
+          })
+        end
+
+        it "when advance days exceed buffer, both series use advance days (max)" do
+          @inventory_pool.update(
+            borrow_reservation_advance_days: 3,
+            transfer_buffer_before_pick_up: 1
+          )
+
+          result = query(q, @user.id)
+
+          expect_graphql_result(result, {
+            models: {
+              edges: [
+                {node: {id: @model.id.to_s,
+                        availability: [{
+                          earliestPossiblePickupDate: "#{Date.today + 3.days}T00:00:00Z",
+                          earliestPossiblePickupDateForAltLocations: "#{Date.today + 3.days}T00:00:00Z",
+                          dates: [
+                            {date: "#{Date.today}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 1.day}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
+                             endDateRestrictions: nil},
+                            {date: "#{Date.today + 2.days}T00:00:00Z",
+                             quantity: 1,
+                             startDateRestrictions: ["BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE"],
                              endDateRestrictions: nil},
                             {date: "#{Date.today + 3.days}T00:00:00Z",
                              quantity: 1,
