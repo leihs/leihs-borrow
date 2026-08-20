@@ -139,28 +139,14 @@ export const withDifferentTransferBuffers = () => {
   const empfangPool1 = inventoryPools[0].pickupLocations.find(loc => loc.name === 'Empfang')
   return (
     <OrderPanelStory
-      title="Pool switch: match Empfang by name (buffer 3 → 2)"
+      title="Select Empfang → switch pool → Empfang matched by name (buffer 3 → 2)"
       modelDataOverrides={withAltDatesSwapped(modelData)}
       inventoryPoolsOverride={inventoryPools}
       initialPickupLocationId={empfangPool1.id}
     />
   )
 }
-withDifferentTransferBuffers.storyName = 'Different transfer buffers (pool switch)'
-
-export const withPickupNameMatchOnPoolSwitch = () => {
-  const { modelData, inventoryPools } = getOrderPanelMockData()
-  const empfangPool1 = inventoryPools[0].pickupLocations.find(loc => loc.name === 'Empfang')
-  return (
-    <OrderPanelStory
-      title="Select Empfang → switch pool → Empfang on new pool is auto-selected"
-      modelDataOverrides={withAltDatesSwapped(modelData)}
-      inventoryPoolsOverride={inventoryPools}
-      initialPickupLocationId={empfangPool1.id}
-    />
-  )
-}
-withPickupNameMatchOnPoolSwitch.storyName = 'Pickup name match on pool switch'
+withDifferentTransferBuffers.storyName = 'Pickup name match on pool switch (buffers)'
 
 export const notTransportable = () => (
   <OrderPanelStory modelDataOverrides={{ transportable: false, name: '4K-Videokamera Sony FDR-AX53' }} />

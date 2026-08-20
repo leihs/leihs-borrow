@@ -287,8 +287,10 @@
                         (or (:default-pickup-location-name from-profile)
                             (:default-pickup-location-name pool)))
                  (assoc :enable-alternative-pickup-locations
-                        (or (:enable-alternative-pickup-locations from-profile)
-                            (:enable-alternative-pickup-locations pool))))))
+                        ;; Prefer availability (just fetched); `or` would treat false as missing.
+                        (if (some? (:enable-alternative-pickup-locations pool))
+                          (:enable-alternative-pickup-locations pool)
+                          (:enable-alternative-pickup-locations from-profile))))))
          assoc-suspension
          (fn [pool]
            (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id))

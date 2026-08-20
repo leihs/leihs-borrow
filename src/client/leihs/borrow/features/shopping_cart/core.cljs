@@ -425,8 +425,10 @@
                               :default-pickup-location-name (or (:default-pickup-location-name from-profile)
                                                                 (:default-pickup-location-name from-availability))
                               :enable-alternative-pickup-locations
-                              (or (:enable-alternative-pickup-locations from-profile)
-                                  (:enable-alternative-pickup-locations from-availability))}))
+                              ;; Prefer availability (just fetched); `or` would treat false as missing.
+                              (if (some? (:enable-alternative-pickup-locations from-availability))
+                                (:enable-alternative-pickup-locations from-availability)
+                                (:enable-alternative-pickup-locations from-profile))}))
             has-items-or-is-selected (fn [selected-pool-id pool]
                                        (or (> (:total-reservable-quantity pool) 0)
                                            (= (:id pool) selected-pool-id)))

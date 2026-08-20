@@ -22,6 +22,8 @@
 
 ;; TODO: error handling
 
+;; Known limitation: if any model line uses an alt pickup, the whole dialog
+;; validates against alt (stricter) buffers — mixed Hauptlager+alt orders included.
 (defn- reservations-use-alt-pickup? [reservations]
   (->> reservations
        (filter #(and (:model %) (not (:option %))))
@@ -37,7 +39,8 @@
          use-alt-dates? (reservations-use-alt-pickup? reservations)
          start-date (date-fns/startOfMonth (js/Date.))
          end-date (date-fns/addYears start-date 1)]
-     (if (seq pool-ids)
+     ;; Calendar UX is single-pool only; skip the availability query otherwise.
+     (if (= 1 (count pool-ids))
        {:dispatch [::re-graph/query
                    (str
                     (rc/inline "leihs/borrow/features/customer_orders/poolAvailability.gql"))

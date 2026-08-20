@@ -421,7 +421,8 @@ function sortedPickupLocations(pickupLocations) {
 /**
  * Resolve which pickup location to select after switching inventory pools.
  * Location ids are pool-scoped (never shared across pools); only names can match.
- * Priority: Hauptlager stays → same name → keep alt (first of new pool) → Hauptlager.
+ * Priority: Hauptlager stays → same name on next pool → first sorted alt of next pool
+ * (keeps alt/buffer mode) → Hauptlager only if the next pool has no locations.
  */
 export function resolvePickupLocationOnPoolChange({
   isTransportable,
@@ -449,7 +450,7 @@ function getDateRangePickerConstraints(poolAvailability, today, wantedQuantity) 
   return {
     disabledDates: getDates(x => x.quantity < wantedQuantity && x.parsedDate >= today),
     disabledStartDates: getDates(x => x.startDateRestrictions && x.startDateRestrictions.length > 0),
-    disabledEndDates: getDates(x => x.endDateRestrictions && x.startDateRestrictions.length > 0)
+    disabledEndDates: getDates(x => x.endDateRestrictions && x.endDateRestrictions.length > 0)
   }
 }
 
