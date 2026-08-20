@@ -30,6 +30,22 @@
        (some #(-> % :pickup-location :id))
        boolean))
 
+;; Alt pickup lead time: max(reservationAdvanceDays, transferBufferBeforePickUp).
+;; Multi-pool + alt: take the max of that per-pool value.
+(defn- earliest-pickup-days-for-alt [pools]
+  (->> pools
+       (map (fn [p]
+              (max (or (:reservation-advance-days p) 0)
+                   (or (:transfer-buffer-before-pick-up p) 0))))
+       (reduce max 0)))
+
+(defn- days-before-min-date [today min-date]
+  (loop [d today
+         acc []]
+    (if (date-fns/isBefore d min-date)
+      (recur (date-fns/addDays d 1) (conj acc d))
+      acc)))
+
 (reg-event-fx
  ::open-repeat-dialog
  (fn-traced [{:keys [db]} [_ rental]]
@@ -37,34 +53,56 @@
          reservations (:reservations rental)
          pool-ids (->> reservations (map #(-> % :inventory-pool :id)) distinct)
          use-alt-dates? (reservations-use-alt-pickup? reservations)
+         single-pool? (= 1 (count pool-ids))
          start-date (date-fns/startOfMonth (js/Date.))
-         end-date (date-fns/addYears start-date 1)]
-     ;; Calendar UX is single-pool only; skip the availability query otherwise.
-     (if (= 1 (count pool-ids))
+         end-date (date-fns/addYears start-date 1)
+         dialog-loading {:loading? true :use-alt-dates? use-alt-dates?}
+         dialog-bare {:show true :use-alt-dates? use-alt-dates?}]
+     ;; Single-pool: full calendar. Multi-pool + alt: light settings for buffer lead time.
+     ;; Multi-pool Hauptlager: no query (info message only).
+     (cond
+       single-pool?
        {:dispatch [::re-graph/query
                    (str
                     (rc/inline "leihs/borrow/features/customer_orders/poolAvailability.gql"))
                    {:ids pool-ids
                     :startDate start-date
                     :endDate end-date
+                    :includeDates true
                     :includeAltDates use-alt-dates?}
                    [::on-open-repeat-dialog order-id use-alt-dates?]]
-        :db (-> db (assoc-in [::data :repeat-dialog] {:loading? true
-                                                      :use-alt-dates? use-alt-dates?}))}
-       {:db (-> db (assoc-in [::data :repeat-dialog] {:show true
-                                                      :use-alt-dates? use-alt-dates?}))}))))
+        :db (assoc-in db [::data :repeat-dialog] dialog-loading)}
+
+       use-alt-dates?
+       {:dispatch [::re-graph/query
+                   (str
+                    (rc/inline "leihs/borrow/features/customer_orders/poolAvailability.gql"))
+                   {:ids pool-ids
+                    :startDate start-date
+                    :endDate end-date
+                    :includeDates false
+                    :includeAltDates false}
+                   [::on-open-repeat-dialog order-id use-alt-dates?]]
+        :db (assoc-in db [::data :repeat-dialog] dialog-loading)}
+
+       :else
+       {:db (assoc-in db [::data :repeat-dialog] dialog-bare)}))))
 
 (reg-event-db
  ::on-open-repeat-dialog
  (fn-traced [db [_ _ use-alt-dates? {:keys [data errors]}]]
-   (let [pools (->> data :inventory-pools)]
+   (let [pools (->> data :inventory-pools)
+         single-pool? (= 1 (count pools))]
      (-> db
          #_(cond-> errors (assoc-in [::errors order-id] errors))
-         (assoc-in [::data :repeat-dialog] {:show true
-                                            :use-alt-dates? use-alt-dates?
-                                            ;; Keep single-pool calendar UX when only one pool.
-                                            :pool (when (= 1 (count pools))
-                                                    (first pools))})))))
+         (assoc-in [::data :repeat-dialog]
+                   (cond-> {:show true
+                            :use-alt-dates? use-alt-dates?}
+                     single-pool?
+                     (assoc :pool (first pools))
+                     (and (not single-pool?) use-alt-dates?)
+                     (assoc :earliest-pickup-days
+                            (earliest-pickup-days-for-alt pools))))))))
 
 (reg-event-db
  ::close-repeat-dialog
@@ -153,7 +191,7 @@
         selected-range (reagent/atom {:startDate today :endDate (date-fns/addDays today 1)})
         validation-result (reagent/atom {:valid? true})
         validated-for-key (reagent/atom nil)
-        validate! (fn [start-date end-date pool use-alt-dates?]
+        validate! (fn [start-date end-date pool use-alt-dates? earliest-days]
                     (reset!
                      validation-result
                      (cond
@@ -161,26 +199,35 @@
                        {:valid? false}
                        (> start-date end-date)
                        {:valid? false :date-messages [(t :dialog.validation.start-after-end)]}
+                       (and (nil? pool)
+                            (pos? (or earliest-days 0))
+                            (date-fns/isBefore start-date
+                                               (date-fns/addDays today earliest-days)))
+                       {:valid? false
+                        :date-messages [(t :!borrow.order-panel.validate.start-date-not-before
+                                           {:days earliest-days})]}
                        :else
-                       (let [availability-messages
-                             (UI/validateDateRange
-                              #js {:startDate start-date :endDate end-date}
-                              today
-                              max-date
-                              (get-pool-availability-js pool use-alt-dates?)
-                              1
-                              text-locale
-                              date-locale
-                              (clj->js (get-in translations/dict [:borrow :order-panel :validate]))
-                              (boolean use-alt-dates?))]
-                         (if (seq availability-messages)
-                           {:valid? false :date-messages availability-messages}
-                           {:valid? true})))))
-        change-selected-range (fn [r pool use-alt-dates?]
+                       (if-not pool
+                         {:valid? true}
+                         (let [availability-messages
+                               (UI/validateDateRange
+                                #js {:startDate start-date :endDate end-date}
+                                today
+                                max-date
+                                (get-pool-availability-js pool use-alt-dates?)
+                                1
+                                text-locale
+                                date-locale
+                                (clj->js (get-in translations/dict [:borrow :order-panel :validate]))
+                                (boolean use-alt-dates?))]
+                           (if (seq availability-messages)
+                             {:valid? false :date-messages availability-messages}
+                             {:valid? true}))))))
+        change-selected-range (fn [r pool use-alt-dates? earliest-days]
                                 (let [start-date (-> r .-startDate)
                                       end-date (-> r .-endDate)]
                                   (reset! selected-range {:startDate start-date :endDate end-date})
-                                  (validate! start-date end-date pool use-alt-dates?)))
+                                  (validate! start-date end-date pool use-alt-dates? earliest-days)))
         get-quantity (fn [reservations filter-pred]
                        (->> reservations (filter filter-pred) (map :quantity) (reduce +)))]
     (fn [rental reservations user-id date-locale]
@@ -192,21 +239,36 @@
             options-quantity (get-quantity reservations #(-> % :option))
             models-quantity (get-quantity reservations #(-> % :option not))
             pool (-> dialog-data :pool)
-            validation-key (when pool [(:id pool) use-alt-dates?])
+            earliest-days (:earliest-pickup-days dialog-data)
+            min-date (if pool
+                       today
+                       (date-fns/addDays today (or earliest-days 0)))
+            validation-key (cond
+                             pool [(:id pool) use-alt-dates?]
+                             (some? earliest-days) [:multi earliest-days use-alt-dates?]
+                             :else nil)
             _ (when-not (:show dialog-data)
                 (reset! validated-for-key nil))
-            _ (when (and pool
+            _ (when (and validation-key
                          (not= validation-key @validated-for-key))
                 (reset! validated-for-key validation-key)
-                (validate! (:startDate @selected-range)
-                           (:endDate @selected-range)
-                           pool
-                           use-alt-dates?))
-            calendar-availability-props (if pool
-                                          {:disabledStartDates (get-disabled-dates pool use-alt-dates? :start-date-restrictions)
-                                           :disabledEndDates (get-disabled-dates pool use-alt-dates? :end-date-restrictions)
-                                           :className (when (not (:valid? @validation-result)) "invalid-date-range")}
-                                          {})]
+                (let [start (:startDate @selected-range)
+                      end (:endDate @selected-range)
+                      start* (if (date-fns/isBefore start min-date) min-date start)
+                      end* (if (or (date-fns/isBefore end start*)
+                                   (date-fns/isBefore end min-date))
+                             (date-fns/addDays start* 1)
+                             end)]
+                  (when (or (not= start start*) (not= end end*))
+                    (reset! selected-range {:startDate start* :endDate end*}))
+                  (validate! start* end* pool use-alt-dates? earliest-days)))
+            calendar-availability-props
+            (cond-> {:className (when (not (:valid? @validation-result)) "invalid-date-range")}
+              pool
+              (assoc :disabledStartDates (get-disabled-dates pool use-alt-dates? :start-date-restrictions)
+                     :disabledEndDates (get-disabled-dates pool use-alt-dates? :end-date-restrictions))
+              (and (nil? pool) (pos? (or earliest-days 0)))
+              (assoc :disabledStartDates (days-before-min-date today min-date)))]
         (if-not (-> dialog-data :show)
           nil
           [:> UI/Components.Design.ModalDialog
@@ -222,7 +284,8 @@
                                  (validate! (:startDate @selected-range)
                                             (:endDate @selected-range)
                                             pool
-                                            use-alt-dates?)
+                                            use-alt-dates?
+                                            earliest-days)
                                  (when (and (-> e .-target .checkValidity) (:valid? @validation-result))
                                    (dispatch [::mutate
                                               {:id rental-id
@@ -256,8 +319,8 @@
                                   :placeholderFrom (t :dialog.undefined)
                                   :placeholderUntil (t :dialog.undefined)}
                             :selected-range @selected-range
-                            :onChange #(change-selected-range % pool use-alt-dates?)
-                            :min-date today
+                            :onChange #(change-selected-range % pool use-alt-dates? earliest-days)
+                            :min-date min-date
                             :max-date max-date})]
                    (when-let [messages (-> @validation-result :date-messages seq)]
                      (doall
