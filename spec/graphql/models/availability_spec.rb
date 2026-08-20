@@ -366,7 +366,8 @@ describe "models connection" do
     weekend_day2 = (today + 5.days).strftime("%A").downcase
 
     @inventory_pool.update(transfer_buffer_before_pick_up: 2,
-      transfer_buffer_after_drop_off: 3)
+      transfer_buffer_after_drop_off: 3,
+      enable_alternative_pickup_locations: true)
 
     Workday.find(inventory_pool_id: @inventory_pool.id)
       .update("#{weekend_day1}": false, "#{weekend_day1}_orders_processing": false,
@@ -449,7 +450,8 @@ describe "models connection" do
     today = Date.today
 
     @inventory_pool.update(transfer_buffer_before_pick_up: 1,
-      transfer_buffer_after_drop_off: 1)
+      transfer_buffer_after_drop_off: 1,
+      enable_alternative_pickup_locations: true)
 
     model = FactoryBot.create(:leihs_model, id: "f5a5b5c5-0c1a-4a1a-8a1a-0c1a4a1a8a1a")
     FactoryBot.create(:item, leihs_model: model, responsible: @inventory_pool,
@@ -911,8 +913,9 @@ describe "models connection" do
           transfer_buffer_before_pick_up: 3)
       end
 
-      context "when pool has a pickup location" do
+      context "when pool has a pickup location and the feature is enabled" do
         before(:each) do
+          @inventory_pool.update(enable_alternative_pickup_locations: true)
           FactoryBot.create(:pickup_location, inventory_pool: @inventory_pool)
         end
 
@@ -1032,6 +1035,53 @@ describe "models connection" do
                              startDateRestrictions: nil,
                              endDateRestrictions: nil}
                           ],
+                          datesForAltLocations: nil
+                        }]}}
+              ]
+            }
+          })
+        end
+      end
+
+      context "when pool has a pickup location but the feature is disabled" do
+        let(:q_disabled) do
+          <<-GRAPHQL
+              {
+                models(ids: ["#{@model.id}"]) {
+                  edges {
+                    node {
+                      id
+                      availability(
+                        startDate: "#{Date.today}",
+                        endDate: "#{Date.today + 3.days}",
+                        inventoryPoolIds: ["#{@inventory_pool.id}"]
+                      ) {
+                        earliestPossiblePickupDateForAltLocations
+                        datesForAltLocations {
+                          date
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          GRAPHQL
+        end
+
+        before(:each) do
+          @inventory_pool.update(enable_alternative_pickup_locations: false)
+          FactoryBot.create(:pickup_location, inventory_pool: @inventory_pool)
+        end
+
+        it "ignores the pickup location and returns nil for alt-location fields" do
+          result = query(q_disabled, @user.id)
+
+          expect_graphql_result(result, {
+            models: {
+              edges: [
+                {node: {id: @model.id.to_s,
+                        availability: [{
+                          earliestPossiblePickupDateForAltLocations: nil,
                           datesForAltLocations: nil
                         }]}}
               ]

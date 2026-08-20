@@ -217,9 +217,12 @@
                                 (or exclude-reservation-ids [])
                                 nil)
                  validated (restrict/validate-dates tx (:dates avail) pool)
-                 first-alt-location-id (some-> (pickup-locations/get-by-pool-id tx pool-id)
-                                               first
-                                               :id)
+                 alt-enabled? (:enable_alternative_pickup_locations pool)
+                 first-alt-location-id (when alt-enabled?
+                                         (some-> (pickup-locations/get-by-pool-id
+                                                  tx pool-id)
+                                                 first
+                                                 :id))
                  alt-validated (when first-alt-location-id
                                  (let [alt-avail (cal/get tx
                                                           start-date
