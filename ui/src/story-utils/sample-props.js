@@ -191,42 +191,8 @@ export const orderSearchFilterProps = {
 }
 
 export function getOrderPanelMockData() {
-  const mock = require('../../static/api-examples/features/borrow/calendar.feature/1_1_1_Model_reservation_calendar_.json')
-  const spec = mock.spec
-  const apiData = mock.result.data
-  const modelData = apiData.models.edges.map(edg => edg.node)[0]
-  modelData.name = 'Audio-Mischpult Behringer XENYX Q1204USB'
-
-  // FIXME: pools should come from a seperate query,
-  //         and availability data should have several pools!
-  //         re-use and tranform example data for now…
-  const FAKE_SECOND_POOL_ID = '53f78fc0-2b0b-4f67-a207-b08d2a3c47b2'
-  modelData.availability.length < 2 &&
-    modelData.availability.push({
-      inventoryPool: { id: FAKE_SECOND_POOL_ID, name: 'Ein anderer Inventarpark', totalReservableQuantity: 3 },
-      dates: modelData.availability[0].dates
-    })
+  const { modelData, userDelegations } = require('./calendar-mock-data')
   const inventoryPools = modelData.availability.map(x => x.inventoryPool)
-  inventoryPools[0] = {
-    ...inventoryPools[0],
-    defaultPickupLocationName: 'Hauptlager',
-    pickupLocations: [
-      { id: 'pl-alt-2', name: 'Pickup Location #2', description: 'Hintereingang' },
-      { id: 'pl-alt-1', name: 'Pickup Location #1', description: 'Empfang' }
-    ]
-  }
-  inventoryPools[1] = {
-    ...inventoryPools[1],
-    defaultPickupLocationName: null,
-    pickupLocations: []
-  }
-  modelData.transportable = true
-  const userDelegations = [
-    { id: '2216bad8-36d3-4719-9d1e-a9c26d23045c', name: 'Normin Normalo (persönlich)' },
-    { id: '879280bd-3840-48dd-bae4-7fb121ca446a', type: 'delegation', name: 'Movie Production Team' },
-    { id: '30d1f5a3-1402-406c-8d36-0b400c5a83f0', type: 'delegation', name: 'Teaching Photography' }
-  ]
-
   const availabilityDates = modelData.availability[0].dates
   return {
     modelData,
@@ -234,7 +200,6 @@ export function getOrderPanelMockData() {
     inventoryPools,
     initialInventoryPoolId: inventoryPools[0].id,
     minDateLoaded: parseISO(availabilityDates[0].date),
-    maxDateLoaded: parseISO(availabilityDates[availabilityDates.length - 1].date),
-    spec
+    maxDateLoaded: parseISO(availabilityDates[availabilityDates.length - 1].date)
   }
 }

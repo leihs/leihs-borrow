@@ -19,6 +19,12 @@ query getAvailability(
         maximumReservationDuration
         reservationAdvanceDays
         transferBufferBeforePickUp
+        defaultPickupLocationName
+        pickupLocations {
+          id
+          name
+          description
+        }
         holidays {
           startDate
           endDate

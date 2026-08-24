@@ -27,7 +27,7 @@
    [leihs.borrow.features.shopping-cart.core :as cart]
    [leihs.borrow.features.shopping-cart.timeout :as timeout]
    [leihs.borrow.features.model-show.availability :as availability]
-   [leihs.core.core :refer [dissoc-in flip presence]]
+   [leihs.core.core :refer [dissoc-in flip]]
    [leihs.borrow.lib.prefs :as prefs]
    ["autolinker" :as autolinker]))
 
@@ -70,36 +70,6 @@
          (filter #(-> % :quantity (> 0)))
          (map #(-> % :inventory-pool :id)))))
 
-(defn filter-pickup-location-id [db]
-  (-> db :routing/routing :bidi-match :query-params :pickup-location-id presence))
-
-(defn get-current-profile [db]
-  (or (get-in db [:ls :leihs.borrow.features.current-user.core/data :current-delegation])
-      (get-in db [:ls :leihs.borrow.features.current-user.core/data :user])))
-
-(defn first-alt-pickup-location-id [db]
-  (->> (get-current-profile db)
-       :inventory-pools
-       (mapcat :pickup-locations)
-       (map :id)
-       (some presence)))
-
-(defn availability-query-vars [db model-id user-id start-date end-date]
-  (let [pool-ids (pool-ids-with-reservable-quantity db model-id)]
-    {:modelId model-id
-     :userId user-id
-     :poolIds pool-ids
-     :startDate start-date
-     :endDate end-date}))
-
-(defn mark-availability-mode-ready [model mode]
-  (let [pending (disj (or (:availability-pending model) #{}) mode)]
-    (-> model
-        (assoc :availability-pending pending)
-        (assoc :availability-ready? (empty? pending))
-        ;; Keep a convenient copy of main-warehouse availability for page-level checks.
-        (assoc :availability (get-in model [:availability-modes :main :availability] [])))))
-
 (reg-event-fx
  ::on-fetched-data
  (fn-traced [{:keys [db]} [_ {:keys [data errors]}]]
@@ -115,99 +85,80 @@
                               (datefn/addDays initial-start-date 1))
          start-of-current-month (datefn/startOfMonth now)
          fetch-until-date (-> initial-end-date
-                              availability/with-future-buffer)
-         start-day (h/date-format-day start-of-current-month)
-         end-day (h/date-format-day fetch-until-date)]
+                              availability/with-future-buffer)]
      (if errors
        {:db (assoc-in db [::errors @model-id] errors)}
-       {:db (assoc-in db [:ls ::data @model-id]
-                      (-> (:model data)
-                          (assoc :availability-pending #{:main}
-                                 :availability-ready? false
-                                 :availability-modes {}
-                                 :availability [])))
-        :dispatch-n [[::fetch-availability user-id start-day end-day :main]]}))))
+       {:db (assoc-in db [:ls ::data @model-id] (:model data))
+        :dispatch [::fetch-availability
+                   user-id
+                   (h/date-format-day start-of-current-month)
+                   (h/date-format-day fetch-until-date)]}))))
 
 (reg-event-fx
  ::fetch-availability
- (fn-traced [{:keys [db]} [_ user-id start-date end-date mode]]
-   (let [mode (or mode :main)
-         model-id @model-id
+ (fn-traced [{:keys [db]} [_ user-id start-date end-date]]
+   (let [model-id @model-id
          pool-ids (pool-ids-with-reservable-quantity db model-id)
          start-date-exceeds-max? (> (js/Date. start-date) max-date)
          end-or-max-date (if (> (js/Date. end-date) max-date)
                            (h/date-format-day max-date)
-                           end-date)
-         mode-path [:ls ::data model-id :availability-modes mode]]
+                           end-date)]
      (cond
        (empty? pool-ids)
        {:db (update-in db [:ls ::data model-id]
-                       #(-> %
-                            (assoc-in [:availability-modes mode :availability] [])
-                            (mark-availability-mode-ready mode)))}
+                       #(merge %
+                               {:availability []
+                                :availability-ready? true}))}
        start-date-exceeds-max?
-       {:db (update-in db mode-path
+       {:db (update-in db [:ls ::data model-id]
                        #(availability/set-loading-as-ended % end-date false))}
        :else
-       {:db (assoc-in db (conj mode-path :fetching-until-date) end-date)
+       {:db (assoc-in db
+                      [:ls ::data model-id :fetching-until-date]
+                      end-date)
         :dispatch [::re-graph/query
                    (rc/inline "leihs/borrow/features/model_show/getAvailability.gql")
-                   (availability-query-vars db model-id user-id start-date end-or-max-date)
-                   [::on-fetched-availability end-date mode]]}))))
-
-(reg-event-db
- ::set-order-panel-pickup-location
- (fn-traced [db [_ pickup-location-id]]
-   (assoc-in db [::data :order-panel :pickup-location-id] pickup-location-id)))
+                   {:modelId model-id
+                    :userId user-id
+                    :poolIds pool-ids
+                    :startDate start-date
+                    :endDate end-or-max-date}
+                   [::on-fetched-availability end-date]]}))))
 
 (reg-event-fx
  ::on-fetched-availability
  (fn-traced [{:keys [db]}
-             [_ end-date mode {{{new-availability :availability} :model} :data
-                               errors :errors}]]
-   (let [mode-path [:ls ::data @model-id :availability-modes mode]]
-     (if errors
-       {:db (update-in db mode-path
-                       #(availability/set-loading-as-ended % end-date false))
-        :dispatch [::errors/add-many errors]}
-       {:db (-> db
-                (update-in mode-path
-                           #(-> (or % {})
-                                (availability/update-availability new-availability)
-                                (availability/set-loading-as-ended end-date true)))
-                (update-in [:ls ::data @model-id]
-                           #(mark-availability-mode-ready % mode)))}))))
+             [_  end-date {{{new-availability :availability} :model} :data
+                           errors :errors}]]
+   (if errors
+     {:db (update-in db [:ls ::data @model-id]
+                     #(availability/set-loading-as-ended % end-date false))
+      :dispatch [::errors/add-many errors]}
+     {:db (-> db
+              (update-in [:ls ::data @model-id]
+                         #(-> %
+                              (availability/update-availability new-availability)
+                              (availability/set-loading-as-ended end-date true)
+                              (assoc :availability-ready? true))))})))
 
 (reg-event-fx
  ::ensure-availability-fetched-until
  (fn-traced [{:keys [db]} [_ user-id requested-date]]
    (let [model (get-in db [:ls ::data @model-id])
-         modes (keys (:availability-modes model))
-         dispatches
-         (keep (fn [mode]
-                 (let [mode-state (get-in model [:availability-modes mode])
-                       max-fetched-or-fetching
-                       (js/Date. (or (:fetching-until-date mode-state)
-                                     (:fetched-until-date mode-state)))
-                       range-start (datefn/addDays max-fetched-or-fetching 1)
-                       range-end (availability/with-future-buffer requested-date)]
-                   (when (datefn/isAfter requested-date max-fetched-or-fetching)
-                     [::fetch-availability
-                      user-id
-                      (-> range-start h/date-format-day)
-                      (-> range-end h/date-format-day)
-                      mode])))
-               modes)]
-     (when (seq dispatches)
-       {:dispatch-n dispatches}))))
+         max-fetched-or-fetching (js/Date. (or (:fetching-until-date model) (:fetched-until-date model)))
+         range-start (datefn/addDays max-fetched-or-fetching 1)
+         range-end (availability/with-future-buffer requested-date)]
+     (when (datefn/isAfter requested-date max-fetched-or-fetching)
+       {:dispatch [::fetch-availability
+                   user-id
+                   (-> range-start h/date-format-day)
+                   (-> range-end h/date-format-day)]}))))
 
 (reg-event-db
  ::clear-availability
  (fn-traced [db _]
    (update-in db [:ls ::data @model-id]
               #(merge % {:availability []
-                         :availability-modes {}
-                         :availability-pending nil
                          :availability-ready? false}))))
 
 (reg-event-fx
@@ -224,11 +175,8 @@
 
 (reg-event-db
  ::open-order-panel
- (fn-traced [db [_ _user-id filters]]
-   (assoc-in db [::data :order-panel]
-             {:is-open? true
-              :pickup-location-id (or (some-> filters :pickup-location-id presence)
-                                      (filter-pickup-location-id db))})))
+ (fn-traced [db]
+   (assoc-in db [::data :order-panel] {:is-open? true})))
 
 (reg-event-db
  ::close-order-panel
@@ -275,58 +223,23 @@
    [(rf/subscribe [::model-data id])
     (rf/subscribe [::current-profile])])
  (fn [[model current-profile] _]
-   (let [profile-pools-by-id (->> (:inventory-pools current-profile)
-                                  (map (juxt :id identity))
-                                  (into {}))
-         assoc-reservable-quantity
-         (fn [pool]
-           (assoc pool
-                  :total-reservable-quantity
-                  (->> model
-                       :total-reservable-quantities
-                       (filter #(-> % :inventory-pool :id (= (:id pool))))
-                       first
-                       :quantity)))
-         assoc-pickup-locations
-         (fn [pool]
-           (let [from-profile (get profile-pools-by-id (:id pool))]
-             (-> pool
-                 (assoc :pickup-locations (:pickup-locations from-profile))
-                 (assoc :default-pickup-location-name
-                        (:default-pickup-location-name from-profile)))))
-         assoc-suspension
-         (fn [pool]
-           (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id))
-                                     (:suspensions current-profile))]
-             (merge pool
-                    (when is-suspended? {:user-is-suspended true}))))
-         main-availability (get-in model [:availability-modes :main :availability]
-                                   (:availability model))
-         pools-from-quants
-         (->> model
-              :total-reservable-quantities
-              (filter #(-> % :quantity pos?))
-              (map (fn [{{pool-id :id} :inventory-pool :as quant}]
-                     (let [from-profile (get profile-pools-by-id pool-id)
-                           from-availability (->> main-availability
-                                                  (map :inventory-pool)
-                                                  (filter #(= (:id %) pool-id))
-                                                  first)]
-                       (merge from-availability
-                              from-profile
-                              {:id pool-id}
-                              (select-keys (:inventory-pool quant) [:id :name])))))
-              (remove #(nil? (:id %))))
-         pools (if (seq pools-from-quants)
-                 pools-from-quants
-                 (->> main-availability
-                      (map :inventory-pool)
-                      (remove nil?)))]
-     (->> pools
+   (letfn [(assoc-reservable-quantity [pool]
+             (assoc pool
+                    :total-reservable-quantity
+                    (->> model
+                         :total-reservable-quantities
+                         (filter #(-> % :inventory-pool :id (= (:id pool))))
+                         first
+                         :quantity)))
+           (assoc-suspension [pool]
+             (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id)) (:suspensions current-profile))]
+               (merge pool
+                      (when is-suspended? {:user-is-suspended true}))))]
+     (->> model
+          :availability
+          (map :inventory-pool)
           (map assoc-reservable-quantity)
-          (map assoc-pickup-locations)
-          (map assoc-suspension)
-          (filter #(pos? (or (:total-reservable-quantity %) 0)))))))
+          (map assoc-suspension)))))
 
 (reg-event-fx
  ::model-create-reservation
@@ -349,23 +262,19 @@
               (dissoc-in [:ls ::cart/data :pending-count])
               (assoc-in [::data :order-panel :is-saving?] false))
       :dispatch [::errors/add-many errors]}
-     (let [now (js/Date.)
-           start-day (-> now datefn/startOfMonth h/date-format-day)
-           end-day (-> args
-                       :endDate
-                       datefn/parseISO
-                       availability/with-future-buffer
-                       h/date-format-day)]
-       {:db (-> db
-                (dissoc-in [:ls ::cart/data :pending-count])
-                (update-in [:ls ::data @model-id]
-                           #(merge % {:availability []
-                                      :availability-modes {}
-                                      :availability-pending #{:main}
-                                      :availability-ready? false}))
-                (assoc-in [::data :order-panel] {:success? true}))
-        :dispatch-n [[::timeout/refresh]
-                     [::fetch-availability user-id start-day end-day :main]]}))))
+     {:dispatch-n (list [::clear-availability]
+                        [::fetch-availability
+                         user-id
+                         (-> (js/Date.)
+                             datefn/startOfMonth
+                             h/date-format-day)
+                         (-> args
+                             :endDate
+                             datefn/parseISO
+                             availability/with-future-buffer
+                             h/date-format-day)]
+                        [::timeout/refresh]
+                        [::order-success data])})))
 
 (defn order-panel
   [model filters shown?]
@@ -382,27 +291,15 @@
             initial-start-date (or filter-start-date now)
             initial-end-date (or filter-end-date
                                  (datefn/addDays initial-start-date 1))
-            order-panel-data @(subscribe [::order-panel-data])
-            active-pickup-location-id (or (:pickup-location-id order-panel-data)
-                                          (:pickup-location-id filters))
-            mode-state (get-in model [:availability-modes :main])
-            raw-availability (or (:availability mode-state)
-                                 (:availability model)
-                                 [])
-            panel-availability (if active-pickup-location-id
-                                 (map #(assoc % :dates (or (:dates-for-alt-locations %) (:dates %)))
-                                      raw-availability)
-                                 raw-availability)
-            fetched-until-date (some-> (or (:fetched-until-date mode-state)
-                                           (:fetched-until-date model))
-                                       js/Date.
-                                       datefn/endOfDay)
+            fetched-until-date (-> model
+                                   :fetched-until-date
+                                   js/Date.
+                                   datefn/endOfDay)
             show-day-quants @(subscribe [::prefs/show-day-quants])
             on-show-day-quants-change #(dispatch [::prefs/set-show-day-quants %])
             user-id (:id current-profile)
             pools @(subscribe [::inventory-pools (:id model)])
             availability-ready? (:availability-ready? model)
-            is-saving? (:is-saving? order-panel-data)
             on-cancel #(dispatch [::close-order-panel])
             on-submit (fn [jsargs]
                         (let [args (js->clj jsargs :keywordize-keys true)]
@@ -415,21 +312,9 @@
                                               :userId user-id}
                                        (:pickupLocationId args)
                                        (assoc :pickupLocationId (:pickupLocationId args)))])))
-            on-pickup-location-change
-            (fn [jsargs]
-              (let [args (js->clj jsargs :keywordize-keys true)]
-                (dispatch [::set-order-panel-pickup-location
-                           (:pickupLocationId args)])))
-            on-inventory-pool-change
-            (fn [jsargs]
-              (let [args (js->clj jsargs :keywordize-keys true)
-                    next-pickup (:pickupLocationId args)]
-                (when (not= next-pickup (:pickup-location-id order-panel-data))
-                  (dispatch [::set-order-panel-pickup-location next-pickup]))))
             on-validate (fn [v] (reset! form-valid? v))
-            model-data (-> model
-                           (assoc :availability panel-availability)
-                           h/camel-case-keys)]
+            order-panel-data @(subscribe [::order-panel-data])
+            is-saving? (:is-saving? order-panel-data)]
 
         (when availability-ready?
           [:> UI/Components.Design.ModalDialog {:shown shown?
@@ -453,14 +338,12 @@
                                  (dispatch [::ensure-availability-fetched-until user-id end-date])))
               :initialInventoryPoolId (:pool-id filters)
               :initialPickupLocationId (:pickup-location-id filters)
-              :onInventoryPoolChange on-inventory-pool-change
-              :onPickupLocationChange on-pickup-location-change
               :inventoryPools (map h/camel-case-keys pools)
               :initialShowDayQuants (or show-day-quants false)
               :onShowDayQuantsChange on-show-day-quants-change
               :onSubmit on-submit
               :onValidate on-validate
-              :modelData model-data
+              :modelData (h/camel-case-keys model)
               :locale text-locale
               :dateLocale date-locale
               :txt (cart/order-panel-texts)}]]

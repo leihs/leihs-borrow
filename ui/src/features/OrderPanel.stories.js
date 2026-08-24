@@ -24,8 +24,7 @@ function OrderPanelStory({ modelDataOverrides = {}, inventoryPoolsOverride, init
     modelData: baseModelData,
     inventoryPools: basePools,
     initialInventoryPoolId,
-    maxDateLoaded: initialMaxDateLoaded,
-    spec
+    maxDateLoaded: initialMaxDateLoaded
   } = getOrderPanelMockData()
 
   const modelData = { ...baseModelData, ...modelDataOverrides }
@@ -88,10 +87,6 @@ function OrderPanelStory({ modelDataOverrides = {}, inventoryPoolsOverride, init
           <details>
             <summary className="text-monospace">mock data used</summary>
             <pre>{JSON.stringify(modelData, 0, 2)}</pre>
-          </details>
-          <details>
-            <summary className="text-monospace">mock data from spec</summary>
-            <pre>{JSON.stringify(spec, 0, 2)}</pre>
           </details>
         </div>
       </ModalDialog.Body>

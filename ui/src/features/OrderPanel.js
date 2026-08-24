@@ -84,7 +84,7 @@ const OrderPanel = ({
       isSurrogate: true
     }
     const selectablePools = poolFromList ? inventoryPools : [selectedPool, ...inventoryPools]
-    const poolPickupLocations = sortedPickupLocations(selectedPool.pickupLocations)
+    const poolPickupLocations = selectedPool.pickupLocations
     const showPickupLocationSelect = anyPoolHasPickupLocations && isTransportable && poolPickupLocations.length > 0
     const resolvedPickupLocationId =
       showPickupLocationSelect && poolPickupLocations.some(loc => loc.id === selectedPickupLocationId)
@@ -98,9 +98,10 @@ const OrderPanel = ({
       if (!tmp) {
         return { inventoryPool: selectedPool, dates: [] }
       }
+      const rawDates = resolvedPickupLocationId ? tmp.datesForAltLocations : tmp.dates
       return {
         ...tmp,
-        dates: tmp.dates.map(x => ({
+        dates: rawDates.map(x => ({
           ...x,
           parsedDate: parseISO(x.date)
         }))
@@ -194,7 +195,7 @@ const OrderPanel = ({
   function changeInventoryPool(e) {
     const id = e.target.value
     const nextPool = inventoryPools.find(x => x.id === id)
-    const nextLocations = sortedPickupLocations(nextPool?.pickupLocations)
+    const nextLocations = nextPool?.pickupLocations || []
     const locationIdInPool = locId => locId && nextLocations.some(loc => loc.id === locId)
     const nextPickupLocationId = isTransportable
       ? locationIdInPool(selectedPickupLocationId)
@@ -313,43 +314,42 @@ const OrderPanel = ({
           )}
         </Section>
 
-        {showPickupLocationSelect && !validationResult.poolError && (
-          <Section title={t(label, 'pickup-location', locale)}>
-            <label htmlFor="pickup-location-id" className="visually-hidden">
-              {t(label, 'pickup-location', locale)}
-            </label>
-            <select
-              key={selectedPoolId}
-              name="pickup-location-id"
-              id="pickup-location-id"
-              value={resolvedPickupLocationId || ''}
-              onChange={changePickupLocation}
-              className="form-select"
-            >
-              <option value="">{mainWarehouseLabel}</option>
-              {poolPickupLocations.map(({ id, name }) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </select>
-            <InfoMessage className="mt-2">
-              <a
-                className="decorate-links"
-                href={`/borrow/inventory-pools/${selectedPoolId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t(label, 'pickup-locations-more-details', locale)}
-              </a>
-            </InfoMessage>
-          </Section>
-        )}
-
         {!validationResult.poolError && (
           <Let title={t(label, 'timespan', locale)}>
             {({ title }) => (
               <div className="d-grid gap-4">
+                {showPickupLocationSelect && (
+                  <Section title={t(label, 'pickup-location', locale)}>
+                    <label htmlFor="pickup-location-id" className="visually-hidden">
+                      {t(label, 'pickup-location', locale)}
+                    </label>
+                    <select
+                      key={selectedPoolId}
+                      name="pickup-location-id"
+                      id="pickup-location-id"
+                      value={resolvedPickupLocationId || ''}
+                      onChange={changePickupLocation}
+                      className="form-select"
+                    >
+                      <option value="">{mainWarehouseLabel}</option>
+                      {poolPickupLocations.map(({ id, name }) => (
+                        <option key={id} value={id}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                    <InfoMessage className="mt-2">
+                      <a
+                        className="decorate-links"
+                        href={`/borrow/inventory-pools/${selectedPoolId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {t(label, 'pickup-locations-more-details', locale)}
+                      </a>
+                    </InfoMessage>
+                  </Section>
+                )}
                 <Section title={t(label, 'quantity', locale)}>
                   <label htmlFor="quantity" className="visually-hidden">
                     {t(label, 'quantity', locale)}
@@ -415,10 +415,6 @@ const OrderPanel = ({
 OrderPanel.displayName = 'OrderPanel'
 OrderPanel.propTypes = orderPanelPropTypes
 export default OrderPanel
-
-function sortedPickupLocations(pickupLocations) {
-  return [...(pickupLocations || [])].sort((a, b) => a.name.localeCompare(b.name))
-}
 
 function getDateRangePickerConstraints(poolAvailability, today, wantedQuantity) {
   const { dates } = poolAvailability
