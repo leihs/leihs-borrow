@@ -336,6 +336,9 @@ Feature: Rentals - Show - Status
       | user | 1        | Elefant | Pool A | ${Date.yesterday}   | ${Date.yesterday} | signed |
       | user | 1        | Elefant | Pool A | ${Date.yesterday}   | ${Date.tomorrow}  | signed |
       | user | 1        | Elefant | Pool A | ${Date.yesterday}   | ${Date.yesterday} | closed |
+    And a customer order with title "Dropped off at pickup location" and the following reservations exists for the user:
+      | user | quantity | model   | pool   | relative-start-date | relative-end-date | state  | dropped-off-at-pickup-location |
+      | user | 1        | Elefant | Pool A | ${Date.yesterday}   | ${Date.yesterday} | signed | yes                            |
 
     And I log in as the user
 
@@ -366,3 +369,15 @@ Feature: Rentals - Show - Status
       | 1× Elefant\nReturn overdue  | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
       | 1× Elefant\nReturned        | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |
       | 1× Elefant\nReturn tomorrow | Pool A\n${format_date_range_short(Date.yesterday, Date.tomorrow)} (3 days) |
+
+    # -----------------------------------
+    When I visit "/borrow/rentals/?tab=open-orders"
+    And I click on the card with title "Dropped off at pickup location"
+    And I see the page title "Dropped off at pickup location"
+
+    Then I see the following status rows in the "State" section:
+      | title              | progressbar | info |
+      | All items returned |             |      |
+    And I see the following lines in the "Items" section:
+      | title                | body                                                                       |
+      | 1× Elefant\nReturned | Pool A\n${format_date_range_short(Date.yesterday, Date.yesterday)} (1 day) |

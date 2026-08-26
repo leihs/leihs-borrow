@@ -315,6 +315,7 @@
                                   :endDate {:type (non-null :Date)}
                                   :returnedDate {:type :Date}
                                   :actualEndDate {:type (non-null :Date)}
+                                  :sentBackToMainLocationAt {:type :DateTime}
                                   :createdAt {:type (non-null :DateTime)}
                                   :updatedAt {:type (non-null :DateTime)}}}
            :PoolOrder {:fields {:id {:type (non-null :UUID)}

@@ -58,7 +58,8 @@
                              (past-date? (:end_date %)))
                        rs)
         overdue? (some #(and (-> % :status (= "signed"))
-                             (past-date? (:end_date %)))
+                             (past-date? (:end_date %))
+                             (nil? (:sent_back_to_main_location_at %)))
                        rs)
         states (-> row
                    :reservation_states
@@ -100,6 +101,7 @@
       (sql/where [:in :id reservation-ids])
       (sql/where [:= :reservations.status "signed"])
       (sql/where [:> [:raw "CURRENT_DATE"] :reservations.end_date])
+      (sql/where [:= :reservations.sent_back_to_main_location_at nil])
       sql-format
       (->> (jdbc-query tx)
            (map :quantity)
@@ -204,7 +206,8 @@
                   (sql/where [:= :reservations.id
                               [:any [:array [:unified_customer_orders.reservation_ids]]]])
                   (sql/where [:= :reservations.status "signed"])
-                  (sql/where [:> [:raw "CURRENT_DATE"] :reservations.end_date]))])))
+                  (sql/where [:> [:raw "CURRENT_DATE"] :reservations.end_date])
+                  (sql/where [:= :reservations.sent_back_to_main_location_at nil]))])))
 
 (defn get-connection-sql-map
   [{{tx :tx} :request user-id ::target-user/id}

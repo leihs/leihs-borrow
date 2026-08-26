@@ -537,6 +537,59 @@ describe "rental details" do
     end
   end
 
+  context "pickup location drop-off" do
+    let(:q) do
+      <<~GQL
+        query customerOrderShow($id: UUID!) {
+          rental(id: $id) {
+            id
+            refinedRentalState
+            overdueQuantity
+            returnFulfillment {
+              fulfilledQuantity
+              toFulfillQuantity
+            }
+          }
+        }
+      GQL
+    end
+
+    example "counts as returned, not overdue" do
+      pool_order = FactoryBot.create(:pool_order,
+        order: order,
+        user: user,
+        inventory_pool: inventory_pool_1,
+        state: "approved")
+
+      open_contract = Contract.create_with_disabled_triggers(
+        "1a4c1e0a-6e29-4c1a-8e0a-1a4c1e0a6e29",
+        user.id,
+        inventory_pool_1.id,
+        "open"
+      )
+
+      FactoryBot.create(:reservation,
+        user: user,
+        inventory_pool: inventory_pool_1,
+        contract: open_contract,
+        order: pool_order,
+        status: "signed",
+        start_date: Date.today - 2.days,
+        end_date: Date.yesterday,
+        leihs_model: model_1,
+        item: model_1.items.first,
+        sent_back_to_main_location_at: DateTime.now)
+
+      vars = {id: order.id}
+      result = query(q, user.id, vars).deep_symbolize_keys
+      rental = result.dig(:data, :rental)
+
+      expect(rental[:refinedRentalState]).to eq ["TO_RETURN"]
+      expect(rental[:overdueQuantity]).to eq 0
+      expect(rental[:returnFulfillment]).to eq({fulfilledQuantity: 1, toFulfillQuantity: 1})
+    end
+  end
+
   context "expired reservations considered as closed" do
     let(:q) do
       <<~GQL

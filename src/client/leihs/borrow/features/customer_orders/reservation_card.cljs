@@ -9,16 +9,17 @@
 
 (set-default-translate-path :borrow.rental-show)
 
-(defn status-info [status start-date actual-end-date now]
-  (let [days-to-action (some->
+(defn status-info [status start-date actual-end-date sent-back-to-main-location-at now]
+  (let [sent-back? (and (= "SIGNED" status) (some? sent-back-to-main-location-at))
+        days-to-action (some->
                         (cond (= "SIGNED" status) actual-end-date
                               (= "APPROVED" status) start-date)
                         (date-fns/differenceInCalendarDays now))
         is-end-date-past? (date-fns/isAfter (js/Date.) (date-fns/addDays actual-end-date 1))
         expired-unapproved? (and (= status "SUBMITTED") is-end-date-past?)
         expired? (and (= status "APPROVED") is-end-date-past?)
-        actionable? (and days-to-action (not expired-unapproved?) (not expired?))
-        refined-status (cond expired-unapproved? "EXPIRED-UNAPPROVED" expired? "EXPIRED" :else status)]
+        actionable? (and days-to-action (not expired-unapproved?) (not expired?) (not sent-back?))
+        refined-status (cond sent-back? "CLOSED" expired-unapproved? "EXPIRED-UNAPPROVED" expired? "EXPIRED" :else status)]
     [:div {:class (cond
                     (not actionable?) ""
                     (< days-to-action 0) "text-danger"
@@ -38,6 +39,7 @@
         status (:status reservation)
         start-date (js/Date. (:start-date reservation))
         actual-end-date (js/Date. (:actual-end-date reservation)) ;; equals end_date, or returned_date when present
+        sent-back-to-main-location-at (:sent-back-to-main-location-at reservation)
         total-days (+ 1 (date-fns/differenceInCalendarDays actual-end-date start-date))
         title (t :reservation-line.title {:itemCount quantity, :itemName name})
         inventory-code (-> reservation :item :inventory-code)
@@ -59,7 +61,7 @@
          title (when inventory-code [:span " (" inventory-code ")"])
          (when option [:span " (" (t :reservation-line.option) ")"])]
         [:div.text-nowrap.d-none.d-md-block
-         [status-info status start-date actual-end-date now]]]]
+         [status-info status start-date actual-end-date sent-back-to-main-location-at now]]]]
 
       [:> UI/Components.Design.ListCard.Body
        [:div (or location-name "\u00a0")]
@@ -67,4 +69,4 @@
         (h/format-date-range start-date actual-end-date date-locale)
         " (" (t :reservation-line.duration-days {:totalDays total-days}) ")"]]
       [:> UI/Components.Design.ListCard.Foot {:class "fw-bold d-md-none"}
-       [status-info status start-date actual-end-date now]]]]))
+       [status-info status start-date actual-end-date sent-back-to-main-location-at now]]]]))

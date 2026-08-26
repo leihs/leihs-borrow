@@ -162,4 +162,48 @@ describe "reservations" do
     expect(result[:data][:deleteReservationLines].to_set).to eq(Set[r1.id, r2.id])
     expect(result[:errors]).to be_nil
   end
+
+  context "current lending" do
+    it "excludes reservations dropped off at a pickup location" do
+      open_contract = Contract.create_with_disabled_triggers(
+        "5c2a1e0a-6e29-4c1a-8e0a-1a4c1e0a6e29",
+        user.id,
+        inventory_pool_1.id,
+        :open
+      )
+
+      still_current = FactoryBot.create(:reservation,
+        user: user,
+        inventory_pool: inventory_pool_1,
+        contract: open_contract,
+        leihs_model: model_1,
+        status: "signed",
+        start_date: Date.today - 2.days,
+        end_date: Date.tomorrow)
+
+      FactoryBot.create(:reservation,
+        user: user,
+        inventory_pool: inventory_pool_1,
+        contract: open_contract,
+        leihs_model: model_2,
+        status: "signed",
+        start_date: Date.today - 2.days,
+        end_date: Date.yesterday,
+        sent_back_to_main_location_at: DateTime.now)
+
+      q = <<-GRAPHQL
+        query($userId: UUID!) {
+          reservations(userId: $userId, metaState: CURRENT_LENDING) {
+            id
+          }
+        }
+      GRAPHQL
+
+      vars = {userId: user.id}
+      result = query(q, user.id, vars).deep_symbolize_keys
+      ids = result.dig(:data, :reservations).map { |r| r[:id] }
+
+      expect(ids).to eq [still_current.id]
+    end
+  end
 end

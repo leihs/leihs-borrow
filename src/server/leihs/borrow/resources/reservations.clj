@@ -298,7 +298,8 @@
       (cond->
        (= meta-state :CURRENT_LENDING)
         (sql/where [:or
-                    [:= :reservations.status "signed"]
+                    [:and [:= :reservations.status "signed"]
+                     [:= :reservations.sent_back_to_main_location_at nil]]
                     [:and [:= :reservations.status "approved"] [:<= [:raw "CURRENT_DATE"] :reservations.end_date]]])
 
         (or from until)

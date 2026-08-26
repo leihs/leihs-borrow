@@ -44,7 +44,8 @@ step "a customer order with title :title and the following reservations exists f
           model_id: m.try(:id),
           option_id: opt.try(:id),
           order_id: po.id,
-          contract_id: c.try(:id))
+          contract_id: c.try(:id),
+          sent_back_to_main_location_at: (h["dropped-off-at-pickup-location"] == "yes") ? DateTime.now : nil)
       end
     end
   end

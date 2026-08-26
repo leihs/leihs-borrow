@@ -59,6 +59,7 @@ fragment reservationProps on Reservation {
   startDate
   endDate
   actualEndDate
+  sentBackToMainLocationAt
   model {
     id
     name
