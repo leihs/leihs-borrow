@@ -31,7 +31,7 @@ query getModelShow(
       key
       value
     }
-    recommends(first: 12) {
+    recommends(first: 1000) {
       edges {
         node {
           id
