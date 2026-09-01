@@ -127,24 +127,20 @@
       first
       :result))
 
-(defn- ->local-date [d]
-  (cond
-    (instance? java.time.LocalDate d) d
-    (instance? java.sql.Date d) (.toLocalDate ^java.sql.Date d)
-    (instance? java.util.Date d) (-> ^java.util.Date d
-                                     .toInstant
-                                     (.atZone (jt/zone-id))
-                                     .toLocalDate)
-    :else (jt/local-date (str d))))
-
 (defn- invalid-pickup-location?
-  "Alt pickup on reservation that is no longer usable (feature off, gone, or non-transportable)."
-  [tx {:keys [pickup_location_id inventory_pool_id model_id]}]
+  "Alt pickup on reservation that is no longer usable (feature off or gone)."
+  [tx {:keys [pickup_location_id inventory_pool_id]}]
   (boolean
    (when pickup_location_id
      (or (not (pools/enable-alternative-pickup-locations? tx inventory_pool_id))
-         (not (pickup-locations/belongs-to-pool? tx pickup_location_id inventory_pool_id))
-         (not (:transportable (models.core/get-one-by-id tx model_id)))))))
+         (not (pickup-locations/belongs-to-pool? tx pickup_location_id inventory_pool_id))))))
+
+(defn- non-transportable-alt-pickup?
+  "Alt pickup on a model that cannot be transported to alternative locations."
+  [tx {:keys [pickup_location_id model_id]}]
+  (boolean
+   (when pickup_location_id
+     (not (:transportable (models.core/get-one-by-id tx model_id))))))
 
 (defn- start-before-alt-earliest-pickup?
   "Start date violates transfer buffer (alt) while possibly still OK for plain advance days."
@@ -153,7 +149,7 @@
    (when pickup_location_id
      (let [pool (pools/get-by-id tx inventory_pool_id)
            earliest (restrict/earliest-possible-pickup-date pool true)
-           start (->local-date start_date)]
+           start (jt/local-date start_date)]
        (and earliest start (jt/before? start earliest))))))
 
 (defn broken
@@ -176,6 +172,7 @@
                        (not (some #{(:inventory_pool_id r)} pool-ids)))
                      (not (complies-with-max-reservation-time? tx r))
                      (invalid-pickup-location? tx r)
+                     (non-transportable-alt-pickup? tx r)
                      (start-before-alt-earliest-pickup? tx r))
                  (conj r)))
              []
