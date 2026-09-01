@@ -99,6 +99,7 @@
  (fn-traced [{:keys [db]} [_ user-id start-date end-date]]
    (let [model-id @model-id
          pool-ids (pool-ids-with-reservable-quantity db model-id)
+         consider-alt? (boolean (get-in db [:ls ::data model-id :consider-alternative-pickup-locations?]))
          start-date-exceeds-max? (> (js/Date. start-date) max-date)
          end-or-max-date (if (> (js/Date. end-date) max-date)
                            (h/date-format-day max-date)
@@ -122,7 +123,8 @@
                     :userId user-id
                     :poolIds pool-ids
                     :startDate start-date
-                    :endDate end-or-max-date}
+                    :endDate end-or-max-date
+                    :considerAlternativePickupLocations consider-alt?}
                    [::on-fetched-availability end-date]]}))))
 
 (reg-event-fx
@@ -154,6 +156,27 @@
                    (-> range-start h/date-format-day)
                    (-> range-end h/date-format-day)]}))))
 
+(reg-event-fx
+ ::set-consider-alternative-pickup-locations
+ (fn-traced [{:keys [db]} [_ user-id consider-alt?]]
+   (let [model-id @model-id
+         consider-alt? (boolean consider-alt?)
+         current (boolean (get-in db [:ls ::data model-id :consider-alternative-pickup-locations?]))]
+     (when (not= consider-alt? current)
+       (let [now (js/Date.)
+             start (h/date-format-day (datefn/startOfMonth now))
+             end (or (get-in db [:ls ::data model-id :fetched-until-date])
+                     (get-in db [:ls ::data model-id :fetching-until-date])
+                     (h/date-format-day (availability/with-future-buffer now)))]
+         {:db (-> db
+                  (assoc-in [:ls ::data model-id :consider-alternative-pickup-locations?] consider-alt?)
+                  (update-in [:ls ::data model-id]
+                             #(merge % {:availability []
+                                        :availability-ready? false
+                                        :fetched-until-date nil
+                                        :fetching-until-date nil})))
+          :dispatch [::fetch-availability user-id start end]})))))
+
 (reg-event-db
  ::clear-availability
  (fn-traced [db _]
@@ -173,10 +196,12 @@
    [_ [_ model-id]]
    {:dispatch [::favs/unfavorite-model model-id [:ls ::data model-id :is-favorited]]}))
 
-(reg-event-db
+(reg-event-fx
  ::open-order-panel
- (fn-traced [db]
-   (assoc-in db [::data :order-panel] {:is-open? true})))
+ (fn-traced [{:keys [db]} [_ user-id filters]]
+   (let [consider-alt? (boolean (:pickup-location-id filters))]
+     {:db (assoc-in db [::data :order-panel] {:is-open? true})
+      :dispatch [::set-consider-alternative-pickup-locations user-id consider-alt?]})))
 
 (reg-event-db
  ::close-order-panel
@@ -223,23 +248,66 @@
    [(rf/subscribe [::model-data id])
     (rf/subscribe [::current-profile])])
  (fn [[model current-profile] _]
-   (letfn [(assoc-reservable-quantity [pool]
-             (assoc pool
-                    :total-reservable-quantity
-                    (->> model
-                         :total-reservable-quantities
-                         (filter #(-> % :inventory-pool :id (= (:id pool))))
-                         first
-                         :quantity)))
-           (assoc-suspension [pool]
-             (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id)) (:suspensions current-profile))]
-               (merge pool
-                      (when is-suspended? {:user-is-suspended true}))))]
-     (->> model
-          :availability
-          (map :inventory-pool)
+   (let [profile-pools-by-id (->> (:inventory-pools current-profile)
+                                  (map (juxt :id identity))
+                                  (into {}))
+         assoc-reservable-quantity
+         (fn [pool]
+           (assoc pool
+                  :total-reservable-quantity
+                  (->> model
+                       :total-reservable-quantities
+                       (filter #(-> % :inventory-pool :id (= (:id pool))))
+                       first
+                       :quantity)))
+         assoc-pickup-locations
+         (fn [pool]
+           (let [from-profile (get profile-pools-by-id (:id pool))]
+             (-> pool
+                 (assoc :pickup-locations
+                        (or (:pickup-locations from-profile)
+                            (:pickup-locations pool)))
+                 (assoc :default-pickup-location-name
+                        (or (:default-pickup-location-name from-profile)
+                            (:default-pickup-location-name pool)))
+                 (assoc :enable-alternative-pickup-locations
+                        ;; Prefer availability (just fetched); `or` would treat false as missing.
+                        (if (some? (:enable-alternative-pickup-locations pool))
+                          (:enable-alternative-pickup-locations pool)
+                          (:enable-alternative-pickup-locations from-profile))))))
+         assoc-suspension
+         (fn [pool]
+           (let [is-suspended? (some #(= (-> % :inventory-pool :id) (-> pool :id))
+                                     (:suspensions current-profile))]
+             (merge pool
+                    (when is-suspended? {:user-is-suspended true}))))
+         main-availability (get-in model [:availability-modes :main :availability]
+                                   (:availability model))
+         pools-from-quants
+         (->> model
+              :total-reservable-quantities
+              (filter #(-> % :quantity pos?))
+              (map (fn [{{pool-id :id} :inventory-pool :as quant}]
+                     (let [from-profile (get profile-pools-by-id pool-id)
+                           from-availability (->> main-availability
+                                                  (map :inventory-pool)
+                                                  (filter #(= (:id %) pool-id))
+                                                  first)]
+                       (merge from-availability
+                              from-profile
+                              {:id pool-id}
+                              (select-keys (:inventory-pool quant) [:id :name])))))
+              (remove #(nil? (:id %))))
+         pools (if (seq pools-from-quants)
+                 pools-from-quants
+                 (->> main-availability
+                      (map :inventory-pool)
+                      (remove nil?)))]
+     (->> pools
           (map assoc-reservable-quantity)
-          (map assoc-suspension)))))
+          (map assoc-pickup-locations)
+          (map assoc-suspension)
+          (filter #(pos? (or (:total-reservable-quantity %) 0)))))))
 
 (reg-event-fx
  ::model-create-reservation
@@ -343,6 +411,18 @@
               :onShowDayQuantsChange on-show-day-quants-change
               :onSubmit on-submit
               :onValidate on-validate
+              :onPickupLocationChange
+              (fn [jsargs]
+                (let [args (js->clj jsargs :keywordize-keys true)]
+                  (dispatch [::set-consider-alternative-pickup-locations
+                             user-id
+                             (boolean (:pickupLocationId args))])))
+              :onInventoryPoolChange
+              (fn [jsargs]
+                (let [args (js->clj jsargs :keywordize-keys true)]
+                  (dispatch [::set-consider-alternative-pickup-locations
+                             user-id
+                             (boolean (:pickupLocationId args))])))
               :modelData (h/camel-case-keys model)
               :locale text-locale
               :dateLocale date-locale

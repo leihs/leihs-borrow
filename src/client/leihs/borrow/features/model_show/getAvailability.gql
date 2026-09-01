@@ -5,6 +5,7 @@ query getAvailability(
   $userId: UUID
   $poolIds: [UUID!]
   $excludeReservationIds: [UUID!]
+  $considerAlternativePickupLocations: Boolean
 ) {
   model(userId: $userId, id: $modelId) {
     availability(
@@ -12,6 +13,7 @@ query getAvailability(
       endDate: $endDate
       inventoryPoolIds: $poolIds
       excludeReservationIds: $excludeReservationIds
+      considerAlternativePickupLocations: $considerAlternativePickupLocations
     ) {
       inventoryPool {
         id
@@ -20,6 +22,7 @@ query getAvailability(
         reservationAdvanceDays
         transferBufferBeforePickUp
         defaultPickupLocationName
+        enableAlternativePickupLocations
         pickupLocations {
           id
           name
@@ -32,12 +35,6 @@ query getAvailability(
         }
       }
       dates {
-        date
-        quantity
-        startDateRestrictions
-        endDateRestrictions
-      }
-      datesForAltLocations {
         date
         quantity
         startDateRestrictions

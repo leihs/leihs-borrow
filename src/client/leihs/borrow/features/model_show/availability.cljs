@@ -18,9 +18,7 @@
                                     first)]
            (cond-> old-for-pool
              (:dates new-for-pool)
-             (update :dates concat (:dates new-for-pool))
-             (:dates-for-alt-locations new-for-pool)
-             (update :dates-for-alt-locations concat (:dates-for-alt-locations new-for-pool)))
+             (update :dates concat (:dates new-for-pool)))
            old-for-pool))
        old-one))
 

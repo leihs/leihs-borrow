@@ -95,6 +95,7 @@
          model (:model edit-mode)
          exclude-reservation-ids (map :id (:res-lines edit-mode))
          pool-ids (pool-ids-with-reservable-quantity db)
+         consider-alt? (boolean (:consider-alternative-pickup-locations? edit-mode))
          start-date-exceeds-max? (> (js/Date. start-date) max-date)
          end-or-max-date (if (> (js/Date. end-date) max-date)
                            (h/date-format-day max-date)
@@ -114,7 +115,8 @@
                     :poolIds pool-ids
                     :startDate start-date
                     :endDate end-or-max-date
-                    :excludeReservationIds exclude-reservation-ids}
+                    :excludeReservationIds exclude-reservation-ids
+                    :considerAlternativePickupLocations consider-alt?}
                    [::on-fetched-availability end-date]]}))))
 
 (reg-event-fx
@@ -144,6 +146,22 @@
        {:dispatch [::fetch-availability
                    (-> range-start h/date-format-day)
                    (-> range-end h/date-format-day)]}))))
+
+(reg-event-fx
+ ::set-consider-alternative-pickup-locations
+ (fn-traced [{:keys [db]} [_ consider-alt?]]
+   (let [consider-alt? (boolean consider-alt?)
+         current (boolean (get-in db [::edit-mode :consider-alternative-pickup-locations?]))]
+     (when (and (get-in db [::edit-mode]) (not= consider-alt? current))
+       (let [now (js/Date.)
+             start (h/date-format-day (date-fns/startOfMonth now))
+             end (or (get-in db [::edit-mode :fetched-until-date])
+                     (get-in db [::edit-mode :fetching-until-date])
+                     (h/date-format-day (availability/with-future-buffer now)))]
+         {:db (-> db
+                  (assoc-in [::edit-mode :consider-alternative-pickup-locations?] consider-alt?)
+                  (update [::edit-mode] dissoc :availability :fetched-until-date :fetching-until-date))
+          :dispatch [::fetch-availability start end]})))))
 (reg-event-db
  ::open-delete-dialog
  (fn-traced [db]
@@ -214,7 +232,10 @@
                        :start-date start-date
                        :end-date end-date
                        :quantity quantity
-                       :user-id user-id})
+                       :user-id user-id
+                       :original-quantity quantity
+                       :consider-alternative-pickup-locations?
+                       (boolean (get-in res-line [:pickup-location :id]))})
         :dispatch [::fetch-total-reservable-quantities
                    (h/date-format-day start-of-current-month)
                    (h/date-format-day fetch-until-date)]}))))
@@ -472,6 +493,16 @@
                                         (:pickupLocationId args)
                                         (assoc :pickupLocationId (:pickupLocationId args)))])))
              :onValidate (fn [v] (reset! form-valid? v))
+             :onPickupLocationChange
+             (fn [jsargs]
+               (let [args (js->clj jsargs :keywordize-keys true)]
+                 (dispatch [::set-consider-alternative-pickup-locations
+                            (boolean (:pickupLocationId args))])))
+             :onInventoryPoolChange
+             (fn [jsargs]
+               (let [args (js->clj jsargs :keywordize-keys true)]
+                 (dispatch [::set-consider-alternative-pickup-locations
+                            (boolean (:pickupLocationId args))])))
              :modelData (h/camel-case-keys (merge model {:availability availability}))
              :initialShowDayQuants (or show-day-quants false)
              :onShowDayQuantsChange on-show-day-quants-change

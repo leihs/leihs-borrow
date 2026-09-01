@@ -68,10 +68,10 @@ const availabilityDates = [
   { date: '2020-06-01', endDateRestrictions: null, quantity: 5, startDateRestrictions: null }
 ]
 
-// For alternative pickup locations the transfer buffer (3 days) applies instead of
-// the default advance days (1 day), so April 8 and 9 are additionally restricted.
+// When considerAlternativePickupLocations is true, transfer buffer (3 days) applies
+// instead of advance days (1 day), so April 8 and 9 are additionally restricted.
 const ALT_LOCATION_PICKUP_RESTRICTED = new Set(['2020-04-08', '2020-04-09'])
-const availabilityDatesForAltLocations = availabilityDates.map(entry =>
+export const availabilityDatesWithAltBuffers = availabilityDates.map(entry =>
   ALT_LOCATION_PICKUP_RESTRICTED.has(entry.date)
     ? { ...entry, startDateRestrictions: ['BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE'] }
     : entry
@@ -100,24 +100,27 @@ export const modelData = {
           { day: 'SUNDAY', open: false, info: null }
         ],
         defaultPickupLocationName: 'Hauptlager',
+        // Both pools share "Empfang" (different ids) so pool-switch can match by name.
         pickupLocations: [
           { id: 'pl-alt-2', name: 'Pickup Location #2', description: 'Hintereingang' },
-          { id: 'pl-alt-1', name: 'Pickup Location #1', description: 'Empfang' }
+          { id: 'pl-empfang-pool1', name: 'Empfang', description: 'Empfang Toni' }
         ]
       },
-      dates: availabilityDates,
-      datesForAltLocations: availabilityDatesForAltLocations
+      dates: availabilityDates
     },
     {
       inventoryPool: {
         id: '53f78fc0-2b0b-4f67-a207-b08d2a3c47b2',
         name: 'Ein anderer Inventarpark',
         totalReservableQuantity: 3,
-        reservationAdvanceDays: 0,
-        // does not have alternate pickup locations:
-        transferBufferBeforePickUp: 0,
-        defaultPickupLocationName: null,
-        pickupLocations: []
+        reservationAdvanceDays: 1,
+        transferBufferBeforePickUp: 2,
+        defaultPickupLocationName: 'Hauptlager',
+        pickupLocations: [
+          { id: 'pl-pool2-site-a', name: 'Pool 2 Site A', description: 'Lager' },
+          { id: 'pl-empfang-pool2', name: 'Empfang', description: 'Empfang AVS' }
+        ],
+        holidays: []
       },
       dates: availabilityDates
     }
