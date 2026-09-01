@@ -343,9 +343,7 @@ const OrderPanel = ({
                       ))}
                     </select>
                     {initialPickupUnavailable ? (
-                      <Warning className="mt-2">
-                        {t(label, 'unavailable-initial-pickup-location', locale)}
-                      </Warning>
+                      <Warning className="mt-2">{t(label, 'unavailable-initial-pickup-location', locale)}</Warning>
                     ) : (
                       <InfoMessage className="mt-2">
                         <a
