@@ -77,7 +77,8 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
         inventory_pool_6_holiday,
         inventory_pool_7_no_workday,
         inventory_pool_8_suspended,
-        inventory_pool_alt_pickup].each do |ip|
+        inventory_pool_alt_pickup,
+        inventory_pool_gone_pickup].each do |ip|
         FactoryBot.create(:direct_access_right, inventory_pool: ip, user: u)
       end
 
@@ -545,6 +546,57 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
       end_date: 4.days.from_now,
       user: user
     )
+  end
+
+  let(:inventory_pool_gone_pickup) do
+    FactoryBot.create(
+      :inventory_pool,
+      id: "e9e9e9e9-e9e9-49e9-e9e9-e9e9e9e9e9e9",
+      name: "Pool Gone Pickup",
+      is_active: true,
+      enable_alternative_pickup_locations: true,
+      borrow_reservation_advance_days: 1,
+      transfer_buffer_before_pick_up: 3
+    )
+  end
+
+  let(:pickup_location_gone) do
+    FactoryBot.create(
+      :pickup_location,
+      id: "f0f0f0f0-f0f0-40f0-f0f0-f0f0f0f0f0f0",
+      inventory_pool: inventory_pool_gone_pickup,
+      name: "Gone Alt Site"
+    )
+  end
+
+  let(:model_gone_pickup) do
+    model = FactoryBot.create(
+      :leihs_model,
+      product: "Gone Pickup Location",
+      id: "c7a7a7a7-a7a7-47a7-a7a7-a7a7a7a7a7a7",
+      transportable: true
+    )
+    2.times do
+      model.add_item(FactoryBot.create(:item,
+        is_borrowable: true,
+        responsible: inventory_pool_gone_pickup))
+    end
+    model
+  end
+
+  let(:r9_gone_pickup_location) do
+    reservation = FactoryBot.create(
+      :reservation,
+      id: "d8b8b8b8-b8b8-48b8-b8b8-b8b8b8b8b8b8",
+      leihs_model: model_gone_pickup,
+      inventory_pool: inventory_pool_gone_pickup,
+      pickup_location_id: pickup_location_gone.id,
+      start_date: 5.days.from_now,
+      end_date: 6.days.from_now,
+      user: user
+    )
+    inventory_pool_gone_pickup.update(enable_alternative_pickup_locations: false)
+    reservation
   end
 
   #####################################################################################################

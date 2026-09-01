@@ -216,6 +216,7 @@ Feature: Invalid reservations
       | title                            |
       | 1× Transfer Buffer Before Pickup |
       | 1× Non Transportable Alt         |
+      | 1× Gone Pickup Location          |
 
     When I click on the card with title "1× Non Transportable Alt"
     Then I see the "Non Transportable Alt" dialog
@@ -234,3 +235,12 @@ Feature: Invalid reservations
       | Earliest pickup date in 3 working days from now |
     And I click on "Cancel"
     Then the "Transfer Buffer Before Pickup" dialog has closed
+
+    When I click on the card with title "1× Gone Pickup Location"
+    Then I see the "Gone Pickup Location" dialog
+    And the calendar has finished loading
+    And I see the following warnings in the "Time span" section:
+      | text                                                              |
+      | The previously selected pickup location is not available for this item. |
+    And I click on "Cancel"
+    Then the "Gone Pickup Location" dialog has closed

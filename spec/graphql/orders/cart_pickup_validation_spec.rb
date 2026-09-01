@@ -64,7 +64,7 @@ describe "cart validation for alternative pickup locations" do
       .to include(reservation.id.to_s)
   end
 
-  it "marks reservation when pickup location no longer belongs / feature disabled" do
+  it "marks reservation when alternative pickup locations are disabled" do
     model = FactoryBot.create(:leihs_model, transportable: true, product: "Gone Location")
     model.add_item(FactoryBot.create(:item, is_borrowable: true, responsible: inventory_pool))
     reservation = create_unsubmitted!(
@@ -74,6 +74,25 @@ describe "cart validation for alternative pickup locations" do
       end_date: 6.days.from_now
     )
     inventory_pool.update(enable_alternative_pickup_locations: false)
+
+    result = query(cart_query, user.id)
+    expect(result[:errors]).to be_nil
+    expect(result.dig(:data, :currentUser, :user, :unsubmittedOrder, :invalidReservationIds))
+      .to include(reservation.id.to_s)
+  end
+
+  it "marks reservation when pickup location belongs to another pool" do
+    model = FactoryBot.create(:leihs_model, transportable: true, product: "Wrong Pool Location")
+    model.add_item(FactoryBot.create(:item, is_borrowable: true, responsible: inventory_pool))
+    reservation = create_unsubmitted!(
+      model: model,
+      pickup_location_id: location.id,
+      start_date: 5.days.from_now,
+      end_date: 6.days.from_now
+    )
+    other_pool = FactoryBot.create(:inventory_pool, enable_alternative_pickup_locations: true)
+    FactoryBot.create(:direct_access_right, inventory_pool: other_pool, user: user)
+    location.update(inventory_pool: other_pool)
 
     result = query(cart_query, user.id)
     expect(result[:errors]).to be_nil

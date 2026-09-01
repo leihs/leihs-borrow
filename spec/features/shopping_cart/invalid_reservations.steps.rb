@@ -10,6 +10,7 @@ step "a user with invalid alternative pickup reservations" do
   expect(pickup_location_alt).to be
   expect(r7_non_transportable_alt).to be
   expect(r8_transfer_buffer_before_pickup).to be
+  expect(r9_gone_pickup_location).to be
 end
 
 step "the calendar has finished loading" do
