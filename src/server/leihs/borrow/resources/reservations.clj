@@ -12,6 +12,7 @@
             [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.inventory-pools :as pools]
+            [leihs.borrow.resources.inventory-pools.visits-restrictions :as restrict]
             [leihs.borrow.resources.models :as models]
             [leihs.borrow.resources.models.core :as models.core]
             [leihs.borrow.resources.pickup-locations :as pickup-locations]
@@ -21,6 +22,7 @@
             [leihs.core.db :as db]
             [leihs.borrow.database.helpers :as database]
             [leihs.core.settings :refer [settings]]
+            [java-time :as jt]
             [taoensso.timbre :refer [debug info warn error spy]]))
 
 (doseq [s [::inventory_pool_id ::start_date ::end_date]]
@@ -125,6 +127,35 @@
       first
       :result))
 
+(defn- ->local-date [d]
+  (cond
+    (instance? java.time.LocalDate d) d
+    (instance? java.sql.Date d) (.toLocalDate ^java.sql.Date d)
+    (instance? java.util.Date d) (-> ^java.util.Date d
+                                     .toInstant
+                                     (.atZone (jt/zone-id))
+                                     .toLocalDate)
+    :else (jt/local-date (str d))))
+
+(defn- invalid-pickup-location?
+  "Alt pickup on reservation that is no longer usable (feature off, gone, or non-transportable)."
+  [tx {:keys [pickup_location_id inventory_pool_id model_id]}]
+  (boolean
+   (when pickup_location_id
+     (or (not (pools/enable-alternative-pickup-locations? tx inventory_pool_id))
+         (not (pickup-locations/belongs-to-pool? tx pickup_location_id inventory_pool_id))
+         (not (:transportable (models.core/get-one-by-id tx model_id)))))))
+
+(defn- start-before-alt-earliest-pickup?
+  "Start date violates transfer buffer (alt) while possibly still OK for plain advance days."
+  [tx {:keys [pickup_location_id inventory_pool_id start_date]}]
+  (boolean
+   (when pickup_location_id
+     (let [pool (pools/get-by-id tx inventory_pool_id)
+           earliest (restrict/earliest-possible-pickup-date pool true)
+           start (->local-date start_date)]
+       (and earliest start (jt/before? start earliest))))))
+
 (defn broken
   ([tx user-id]
    (broken tx user-id (-> (unsubmitted-sqlmap tx user-id)
@@ -143,7 +174,9 @@
                                          first
                                          second)]
                        (not (some #{(:inventory_pool_id r)} pool-ids)))
-                     (not (complies-with-max-reservation-time? tx r)))
+                     (not (complies-with-max-reservation-time? tx r))
+                     (invalid-pickup-location? tx r)
+                     (start-before-alt-earliest-pickup? tx r))
                  (conj r)))
              []
              rs))))

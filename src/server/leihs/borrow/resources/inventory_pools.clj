@@ -159,17 +159,18 @@
 
 (defn get-availability
   [{{tx :tx} :request user-id ::target-user/id :as context}
-   {:keys [start-date end-date]}
+   {:keys [start-date end-date consider-alternative-pickup-locations]}
    {:keys [id]}]
   (let [start-date-jt (ch/local-date start-date)
         end-date-jt (ch/local-date end-date)
         date-range (ch/explode-date-range start-date-jt end-date-jt)
         db-pool (get-by-id tx id) #_"due to casing of the keys needed for validate-dates"
-        visits-count (get-visits-counts tx start-date end-date (:id db-pool))]
-    (as-> date-range <>
-      (map #(hash-map :date (str %)) <>)
-      (mapv merge <> visits-count)
-      (restrict/validate-dates tx <> db-pool))))
+        visits-count (get-visits-counts tx start-date end-date (:id db-pool))
+        dates-with-visits (as-> date-range <>
+                            (map #(hash-map :date (str %)) <>)
+                            (mapv merge <> visits-count))
+        consider-alt? (boolean consider-alternative-pickup-locations)]
+    (restrict/validate-dates tx dates-with-visits db-pool consider-alt?)))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)

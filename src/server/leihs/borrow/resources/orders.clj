@@ -423,18 +423,20 @@
         (->> (jdbc/execute! tx)))
     (get-one-by-id tx user-id id)))
 
-(defn get-repeated-res [r user-id delegated-user-id start-date end-date now]
-  {:inventory_pool_id (:inventory_pool_id r)
-   :user_id user-id
-   :delegated_user_id delegated-user-id
-   :type (:type r)
-   :status "unsubmitted"
-   :model_id (:model_id r)
-   :quantity (:quantity r)
-   :start_date [:cast start-date :date]
-   :end_date [:cast end-date :date]
-   :created_at now
-   :updated_at now})
+(defn get-repeated-res [tx r user-id delegated-user-id start-date end-date now]
+  (cond-> {:inventory_pool_id (:inventory_pool_id r)
+           :user_id user-id
+           :delegated_user_id delegated-user-id
+           :type (:type r)
+           :status "unsubmitted"
+           :model_id (:model_id r)
+           :quantity (:quantity r)
+           :start_date [:cast start-date :date]
+           :end_date [:cast end-date :date]
+           :created_at now
+           :updated_at now}
+    (:pickup_location_id r)
+    (assoc :pickup_location_id (:pickup_location_id r))))
 
 (defn repeat-order
   [{{tx :tx {auth-user-id :id} :authenticated-entity} :request
@@ -445,7 +447,7 @@
         delegated-user-id (when (not= auth-user-id user-id) auth-user-id)
         new-reservations (->> reservations
                               (filter #(boolean (:model_id %)))
-                              (map #(get-repeated-res % user-id delegated-user-id start-date end-date (time/now tx))))
+                              (map #(get-repeated-res tx % user-id delegated-user-id start-date end-date (time/now tx))))
         created-rs (-> (sql/insert-into :reservations)
                        (sql/values new-reservations)
                        (as-> <> (apply sql/returning <> rs/columns))
