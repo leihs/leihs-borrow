@@ -324,7 +324,7 @@
 (defn validate-cart! [{{tx :tx} :request user-id ::target-user/id :as context}]
   (rs/draft->unsubmitted tx user-id)
   (when-some [broken-rs (not-empty (rs/broken tx user-id))]
-    (->> broken-rs (map :id) (rs/unsubmitted->draft tx)))
+    (rs/demote-broken-to-draft! tx broken-rs))
   (when-some [invalid-rs (not-empty (rs/unsubmitted-with-invalid-availability context))]
     (->> invalid-rs (map :id) (rs/unsubmitted->draft tx))))
 
@@ -339,7 +339,7 @@
       {}
       {:valid-until va
        :reservations rs
-       :invalidReservationIds (->> (rs/get-drafts tx user-id) (map :id))
+       :invalidReservationIds (rs/invalid-cart-reservation-ids tx user-id)
        :user-id user-id})))
 
 (defn submit

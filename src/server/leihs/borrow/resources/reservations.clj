@@ -127,6 +127,20 @@
       first
       :result))
 
+(defn- pickup-location-in-other-pool?
+  "Pickup location exists but belongs to a different inventory pool."
+  [tx {:keys [pickup_location_id inventory_pool_id]}]
+  (boolean
+   (when pickup_location_id
+     (-> (sql/select :inventory_pool_id)
+         (sql/from :pickup_locations)
+         (sql/where [:= :id pickup_location_id])
+         sql-format
+         (->> (jdbc-query tx))
+         first
+         :inventory_pool_id
+         (#(and % (not= % inventory_pool_id)))))))
+
 (defn- invalid-pickup-location?
   "Alt pickup on reservation that is no longer usable (feature off or gone)."
   [tx {:keys [pickup_location_id inventory_pool_id]}]
@@ -257,6 +271,26 @@
       (sql/where [:in :id ids])
       sql-format
       (->> (jdbc/execute! tx))))
+
+(defn demote-broken-to-draft!
+  "Demote broken unsubmitted reservations to draft.
+  Skips reservations whose pickup location was moved to another pool: updating
+  those rows would violate DB consistency triggers while the stale pickup id
+  must be preserved for the edit dialog."
+  [tx broken-rs]
+  (when-some [ids (->> broken-rs
+                       (remove #(pickup-location-in-other-pool? tx %))
+                       (map :id)
+                       not-empty)]
+    (unsubmitted->draft tx ids)))
+
+(defn invalid-cart-reservation-ids
+  [tx user-id]
+  (->> (concat (get-drafts tx user-id)
+               (->> (unsubmitted tx user-id)
+                    (filter #(pickup-location-in-other-pool? tx %))))
+       (map :id)
+       distinct))
 
 (defn draft->unsubmitted [tx user-id]
   (-> (sql/update :reservations)
