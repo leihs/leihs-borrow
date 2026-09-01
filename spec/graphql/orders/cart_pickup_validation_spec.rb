@@ -100,6 +100,23 @@ describe "cart validation for alternative pickup locations" do
       .to include(reservation.id.to_s)
   end
 
+  it "marks plain pickup when advance days are violated" do
+    model = FactoryBot.create(:leihs_model, transportable: true, product: "Advance Too Short")
+    model.add_item(FactoryBot.create(:item, is_borrowable: true, responsible: inventory_pool))
+    # advance=1 → today invalid for Hauptlager; no alt pickup
+    reservation = create_unsubmitted!(
+      model: model,
+      pickup_location_id: nil,
+      start_date: Date.today,
+      end_date: Date.today + 3.days
+    )
+
+    result = query(cart_query, user.id)
+    expect(result[:errors]).to be_nil
+    expect(result.dig(:data, :currentUser, :user, :unsubmittedOrder, :invalidReservationIds))
+      .to include(reservation.id.to_s)
+  end
+
   it "marks alt pickup when transfer buffer is violated but advance days are not" do
     model = FactoryBot.create(:leihs_model, transportable: true, product: "Buffer Too Short")
     model.add_item(FactoryBot.create(:item, is_borrowable: true, responsible: inventory_pool))

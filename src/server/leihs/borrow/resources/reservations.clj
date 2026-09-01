@@ -16,7 +16,6 @@
             [leihs.borrow.resources.models :as models]
             [leihs.borrow.resources.models.core :as models.core]
             [leihs.borrow.resources.pickup-locations :as pickup-locations]
-            [leihs.borrow.resources.workdays :as workdays]
             [leihs.borrow.time :as time]
             [leihs.core.core :refer [raise presence]]
             [leihs.core.db :as db]
@@ -156,15 +155,15 @@
    (when pickup_location_id
      (not (:transportable (models.core/get-one-by-id tx model_id))))))
 
-(defn- start-before-alt-earliest-pickup?
-  "Start date violates transfer buffer (alt) while possibly still OK for plain advance days."
+(defn- start-before-earliest-pickup?
+  "Start date is before the pool's earliest allowed pickup date."
   [tx {:keys [pickup_location_id inventory_pool_id start_date]}]
   (boolean
-   (when pickup_location_id
-     (let [pool (pools/get-by-id tx inventory_pool_id)
-           earliest (restrict/earliest-possible-pickup-date pool true)
-           start (jt/local-date start_date)]
-       (and earliest start (jt/before? start earliest))))))
+   (let [pool (pools/get-by-id tx inventory_pool_id)
+         consider-alt? (boolean pickup_location_id)
+         earliest (restrict/earliest-possible-pickup-date pool consider-alt?)
+         start (jt/local-date start_date)]
+     (and earliest start (jt/before? start earliest)))))
 
 (defn broken
   ([tx user-id]
@@ -187,7 +186,7 @@
                      (not (complies-with-max-reservation-time? tx r))
                      (invalid-pickup-location? tx r)
                      (non-transportable-alt-pickup? tx r)
-                     (start-before-alt-earliest-pickup? tx r))
+                     (start-before-earliest-pickup? tx r))
                  (conj r)))
              []
              rs))))
@@ -216,30 +215,6 @@
                      (< available-quantity (clojure.core/count rs))
                      (into rs))))
                [])))
-
-(defn merge-where-invalid-start-date [sqlmap]
-  (sql/where
-   sqlmap
-   [:<
-    :reservations.start_date
-    [:raw
-     (str "CURRENT_DATE"
-          " + "
-          "MAKE_INTERVAL("
-          "days => COALESCE(inventory_pools.borrow_reservation_advance_days, 0)"
-          ")")]]))
-
-(defn unsubmitted-with-invalid-start-date
-  [{{tx :tx} :request user-id ::target-user/id :as context}]
-  (-> (unsubmitted-sqlmap tx user-id)
-      (sql/join :inventory_pools
-                [:=
-                 :reservations.inventory_pool_id
-                 :inventory_pools.id])
-      workdays/with-workdays-sqlmap
-      merge-where-invalid-start-date
-      sql-format
-      (query tx)))
 
 (defn unsubmitted-with-invalid-availability
   [{{tx :tx} :request user-id ::target-user/id :as context}]
@@ -284,6 +259,14 @@
                        not-empty)]
     (unsubmitted->draft tx ids)))
 
+(defn get-drafts
+  ([tx user-id] (get-drafts tx user-id nil))
+  ([tx user-id ids]
+   (-> (draft-sqlmap tx user-id)
+       (cond-> ids (sql/where [:in :id ids]))
+       sql-format
+       (query tx))))
+
 (defn invalid-cart-reservation-ids
   [tx user-id]
   (->> (concat (get-drafts tx user-id)
@@ -299,14 +282,6 @@
       (sql/where [:= :user_id user-id])
       sql-format
       (->> (jdbc/execute! tx))))
-
-(defn get-drafts
-  ([tx user-id] (get-drafts tx user-id nil))
-  ([tx user-id ids]
-   (-> (draft-sqlmap tx user-id)
-       (cond-> ids (sql/where [:in :id ids]))
-       sql-format
-       (query tx))))
 
 (defn merge-where-according-to-container
   [sqlmap container {:keys [id] :as value}]
