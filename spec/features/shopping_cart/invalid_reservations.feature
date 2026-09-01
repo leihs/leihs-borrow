@@ -208,3 +208,30 @@ Feature: Invalid reservations
 
     When I click on "Send order"
     Then I see the "Send order" dialog
+
+  Scenario: Alternative pickup location invalid cart cases
+
+    Given a user with invalid alternative pickup reservations
+    When I log in as the user
+    And I navigate to the cart
+    And I click on "Reset time limit"
+    Then I see the following lines in the "Items" section:
+      | title                            |
+      | 1× Non Transportable Alt         |
+      | 1× Transfer Buffer Before Pickup |
+
+    When I click on the card with title "1× Non Transportable Alt"
+    Then I see the "Non Transportable Alt" dialog
+    And I see the following warnings in the "Time span" section:
+      | text                                                              |
+      | The previously selected pickup location is not available for this item. |
+    And I click on "Cancel"
+    Then the "Non Transportable Alt" dialog has closed
+
+    When I click on the card with title "1× Transfer Buffer Before Pickup"
+    Then I see the "Transfer Buffer Before Pickup" dialog
+    But I see the following warnings in the "Time span" section:
+      | text                                            |
+      | Earliest pickup date in 3 working days from now |
+    And I click on "Cancel"
+    Then the "Transfer Buffer Before Pickup" dialog has closed

@@ -469,6 +469,78 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
 
   #####################################################################################################
 
+  let(:inventory_pool_alt_pickup) do
+    FactoryBot.create(
+      :inventory_pool,
+      id: "c1a1a1a1-a1a1-41a1-a1a1-a1a1a1a1a1a1",
+      name: "Pool Alt Pickup",
+      enable_alternative_pickup_locations: true,
+      borrow_reservation_advance_days: 1,
+      transfer_buffer_before_pick_up: 3
+    )
+  end
+
+  let(:pickup_location_alt) do
+    FactoryBot.create(
+      :pickup_location,
+      id: "d2b2b2b2-b2b2-42b2-b2b2-b2b2b2b2b2b2",
+      inventory_pool: inventory_pool_alt_pickup,
+      name: "Alt Site"
+    )
+  end
+
+  let(:model_non_transportable_alt) do
+    model = FactoryBot.create(
+      :leihs_model,
+      product: "Non Transportable Alt",
+      id: "e3c3c3c3-c3c3-43c3-c3c3-c3c3c3c3c3c3",
+      transportable: false
+    )
+    model.add_item(FactoryBot.create(:item, is_borrowable: true, responsible: inventory_pool_alt_pickup))
+    model
+  end
+
+  let(:model_transfer_buffer) do
+    model = FactoryBot.create(
+      :leihs_model,
+      product: "Transfer Buffer Before Pickup",
+      id: "f4d4d4d4-d4d4-44d4-d4d4-d4d4d4d4d4d4",
+      transportable: true
+    )
+    model.add_item(FactoryBot.create(:item, is_borrowable: true, responsible: inventory_pool_alt_pickup))
+    model
+  end
+
+  let(:r7_non_transportable_alt) do
+    FactoryBot.create(:direct_access_right, inventory_pool: inventory_pool_alt_pickup, user: user)
+    FactoryBot.create(
+      :reservation,
+      id: "a5e5e5e5-e5e5-45e5-e5e5-e5e5e5e5e5e5",
+      leihs_model: model_non_transportable_alt,
+      inventory_pool: inventory_pool_alt_pickup,
+      pickup_location_id: pickup_location_alt.id,
+      start_date: 5.days.from_now,
+      end_date: 6.days.from_now,
+      user: user
+    )
+  end
+
+  let(:r8_transfer_buffer_before_pickup) do
+    FactoryBot.create(:direct_access_right, inventory_pool: inventory_pool_alt_pickup, user: user)
+    FactoryBot.create(
+      :reservation,
+      id: "b6f6f6f6-f6f6-46f6-f6f6-f6f6f6f6f6f6",
+      leihs_model: model_transfer_buffer,
+      inventory_pool: inventory_pool_alt_pickup,
+      pickup_location_id: pickup_location_alt.id,
+      start_date: 1.day.from_now,
+      end_date: 4.days.from_now,
+      user: user
+    )
+  end
+
+  #####################################################################################################
+
   let(:r1c_max_visits_count_reached_at_pickup) do
     r1c_max_visits_count_reached.first
   end

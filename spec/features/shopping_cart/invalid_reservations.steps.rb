@@ -4,6 +4,11 @@ step "a user with some mostly invalid reservations" do
   expect(create_all_sample_reservations).to be
 end
 
+step "a user with invalid alternative pickup reservations" do
+  expect(r7_non_transportable_alt).to be
+  expect(r8_transfer_buffer_before_pickup).to be
+end
+
 step "I log in as the user" do
   log_in_as_user_with_email(user.email)
 end
