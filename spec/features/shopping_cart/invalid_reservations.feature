@@ -1,14 +1,12 @@
 Feature: Invalid reservations
 
-  Background:
-    Given a user with some mostly invalid reservations
-
   Scenario: Identity and fix invalid reservations
 
     Summary: When I have an invalid reservation in my cart, I must be able to identify the problem,
     also I must be able to fix it by either editing or removing the invalid reservation.
     This scenario tests through all typical constraint violations.
 
+    Given a user with some mostly invalid reservations
     When I log in as the user
     And I navigate to the cart
     And I click on "Reset time limit"
@@ -214,14 +212,14 @@ Feature: Invalid reservations
     Given a user with invalid alternative pickup reservations
     When I log in as the user
     And I navigate to the cart
-    And I click on "Reset time limit"
     Then I see the following lines in the "Items" section:
       | title                            |
-      | 1× Non Transportable Alt         |
       | 1× Transfer Buffer Before Pickup |
+      | 1× Non Transportable Alt         |
 
     When I click on the card with title "1× Non Transportable Alt"
     Then I see the "Non Transportable Alt" dialog
+    And the calendar has finished loading
     And I see the following warnings in the "Time span" section:
       | text                                                              |
       | The previously selected pickup location is not available for this item. |
@@ -230,6 +228,7 @@ Feature: Invalid reservations
 
     When I click on the card with title "1× Transfer Buffer Before Pickup"
     Then I see the "Transfer Buffer Before Pickup" dialog
+    And the calendar has finished loading
     But I see the following warnings in the "Time span" section:
       | text                                            |
       | Earliest pickup date in 3 working days from now |

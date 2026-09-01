@@ -316,13 +316,16 @@ const OrderPanel = ({
               )}
             </>
           )}
+          {initialPickupUnavailable && !showPickupLocationSelect && validationResult.poolError && (
+            <Warning className="mt-2">{t(label, 'unavailable-initial-pickup-location', locale)}</Warning>
+          )}
         </Section>
 
-        {!validationResult.poolError && (
+        {(!validationResult.poolError || (initialPickupUnavailable && !showPickupLocationSelect)) && (
           <Let title={t(label, 'timespan', locale)}>
             {({ title }) => (
               <div className="d-grid gap-4">
-                {showPickupLocationSelect && (
+                {!validationResult.poolError && showPickupLocationSelect && (
                   <Section title={t(label, 'pickup-location', locale)}>
                     <label htmlFor="pickup-location-id" className="visually-hidden">
                       {t(label, 'pickup-location', locale)}
@@ -358,61 +361,73 @@ const OrderPanel = ({
                     )}
                   </Section>
                 )}
-                {initialPickupUnavailable && !showPickupLocationSelect && (
-                  <Warning>{t(label, 'unavailable-initial-pickup-location', locale)}</Warning>
-                )}
-                <Section title={t(label, 'quantity', locale)}>
-                  <label htmlFor="quantity" className="visually-hidden">
-                    {t(label, 'quantity', locale)}
-                  </label>
-                  <MinusPlusControl name="quantity" id="quantity" value={quantity} onChange={changeQuantity} min={1} />
-                </Section>
-                <Section title={title}>
-                  <fieldset>
-                    <legend className="visually-hidden">{title}</legend>
-                    <DateRangePicker
-                      selectedRange={selectedRange}
-                      onChange={changeDateRange}
-                      onCalendarNavigate={handleCalendarNavigate}
-                      maxDateLoaded={maxDateLoaded}
-                      now={today}
-                      minDate={today}
-                      maxDate={maxDate}
-                      disabledDates={disabledDates}
-                      disabledStartDates={disabledStartDates}
-                      disabledEndDates={disabledEndDates}
-                      locale={dateLocale || defaultDateLocale}
-                      txt={{
-                        from: t(label, 'from', locale),
-                        until: t(label, 'until', locale),
-                        placeholderFrom: t(label, 'undefined', locale),
-                        placeholderUntil: t(label, 'undefined', locale)
-                      }}
-                      className={cx(validationResult.dateRangeErrors ? 'invalid-date-range' : '')}
-                      dayButtonClass={cx('opcal__day')}
-                      dayContentRenderer={renderDay}
+                {!validationResult.poolError && (
+                  <Section title={t(label, 'quantity', locale)}>
+                    <label htmlFor="quantity" className="visually-hidden">
+                      {t(label, 'quantity', locale)}
+                    </label>
+                    <MinusPlusControl
+                      name="quantity"
+                      id="quantity"
+                      value={quantity}
+                      onChange={changeQuantity}
+                      min={1}
                     />
-                  </fieldset>
-                  {validationResult.dateRangeErrors &&
-                    validationResult.dateRangeErrors.map((msg, i) => (
-                      <React.Fragment key={i}>
-                        <Warning className="mt-2">{msg}</Warning>
-                      </React.Fragment>
-                    ))}
-                  <div className="mt-3">
-                    <div className="form-check form-switch d-inline-block">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        id="show-day-quants"
-                        checked={showDayQuants}
-                        onChange={changeShowDayQuants}
-                      />
-                      <label className="form-check-label" htmlFor="show-day-quants">
-                        {t(label, 'show-day-quants', locale)}
-                      </label>
-                    </div>
-                  </div>
+                  </Section>
+                )}
+                <Section title={title}>
+                  {initialPickupUnavailable && !showPickupLocationSelect && (
+                    <Warning className="mb-2">{t(label, 'unavailable-initial-pickup-location', locale)}</Warning>
+                  )}
+                  {!validationResult.poolError && (
+                    <>
+                      <fieldset>
+                        <legend className="visually-hidden">{title}</legend>
+                        <DateRangePicker
+                          selectedRange={selectedRange}
+                          onChange={changeDateRange}
+                          onCalendarNavigate={handleCalendarNavigate}
+                          maxDateLoaded={maxDateLoaded}
+                          now={today}
+                          minDate={today}
+                          maxDate={maxDate}
+                          disabledDates={disabledDates}
+                          disabledStartDates={disabledStartDates}
+                          disabledEndDates={disabledEndDates}
+                          locale={dateLocale || defaultDateLocale}
+                          txt={{
+                            from: t(label, 'from', locale),
+                            until: t(label, 'until', locale),
+                            placeholderFrom: t(label, 'undefined', locale),
+                            placeholderUntil: t(label, 'undefined', locale)
+                          }}
+                          className={cx(validationResult.dateRangeErrors ? 'invalid-date-range' : '')}
+                          dayButtonClass={cx('opcal__day')}
+                          dayContentRenderer={renderDay}
+                        />
+                      </fieldset>
+                      {validationResult.dateRangeErrors &&
+                        validationResult.dateRangeErrors.map((msg, i) => (
+                          <React.Fragment key={i}>
+                            <Warning className="mt-2">{msg}</Warning>
+                          </React.Fragment>
+                        ))}
+                      <div className="mt-3">
+                        <div className="form-check form-switch d-inline-block">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id="show-day-quants"
+                            checked={showDayQuants}
+                            onChange={changeShowDayQuants}
+                          />
+                          <label className="form-check-label" htmlFor="show-day-quants">
+                            {t(label, 'show-day-quants', locale)}
+                          </label>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </Section>
               </div>
             )}

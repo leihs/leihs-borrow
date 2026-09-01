@@ -5,8 +5,22 @@ step "a user with some mostly invalid reservations" do
 end
 
 step "a user with invalid alternative pickup reservations" do
+  expect(user).to be
+  expect(inventory_pool_alt_pickup).to be
+  expect(pickup_location_alt).to be
   expect(r7_non_transportable_alt).to be
   expect(r8_transfer_buffer_before_pickup).to be
+end
+
+step "the calendar has finished loading" do
+  scope = @dialog || page
+  within(scope) do
+    expect(page).to have_css("#order-dialog-form", wait: 15)
+    if page.has_css?(".opcal", wait: 15)
+      next
+    end
+    find_ui_section(title: "Time span")
+  end
 end
 
 step "I log in as the user" do
@@ -20,14 +34,17 @@ step "the :title dialog did not close" do |title|
 end
 
 step "I see the following warnings in the :title section:" do |section_name, table|
-  section = find_ui_section(title: section_name)
-  expect(section).to be
-  within(section) do
-    warnings = all(".invalid-feedback")
-    expected_warnings = table.rows.flatten.map { |s|
-      custom_interpolation(s, ->(o) { o.is_a?(Time) ? Locales.format_date(o, user) : o })
-    }
-    expect(warnings.map { |w| w.text }).to eq expected_warnings
+  scope = @dialog || page
+  within(scope) do
+    section = find_ui_section(title: section_name)
+    expect(section).to be
+    within(section) do
+      warnings = all(".invalid-feedback")
+      expected_warnings = table.rows.flatten.map { |s|
+        custom_interpolation(s, ->(o) { o.is_a?(Time) ? Locales.format_date(o, user) : o })
+      }
+      expect(warnings.map { |w| w.text }).to eq expected_warnings
+    end
   end
 end
 

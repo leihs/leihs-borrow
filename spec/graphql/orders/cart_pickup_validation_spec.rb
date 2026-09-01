@@ -21,10 +21,14 @@ describe "cart validation for alternative pickup locations" do
   let(:cart_query) do
     <<-GRAPHQL
       {
-        unsubmittedOrder {
-          invalidReservationIds
-          reservations {
-            id
+        currentUser {
+          user {
+            unsubmittedOrder {
+              invalidReservationIds
+              reservations {
+                id
+              }
+            }
           }
         }
       }
@@ -56,7 +60,7 @@ describe "cart validation for alternative pickup locations" do
 
     result = query(cart_query, user.id)
     expect(result[:errors]).to be_nil
-    expect(result.dig(:data, :unsubmittedOrder, :invalidReservationIds))
+    expect(result.dig(:data, :currentUser, :user, :unsubmittedOrder, :invalidReservationIds))
       .to include(reservation.id.to_s)
   end
 
@@ -73,7 +77,7 @@ describe "cart validation for alternative pickup locations" do
 
     result = query(cart_query, user.id)
     expect(result[:errors]).to be_nil
-    expect(result.dig(:data, :unsubmittedOrder, :invalidReservationIds))
+    expect(result.dig(:data, :currentUser, :user, :unsubmittedOrder, :invalidReservationIds))
       .to include(reservation.id.to_s)
   end
 
@@ -90,7 +94,7 @@ describe "cart validation for alternative pickup locations" do
 
     result = query(cart_query, user.id)
     expect(result[:errors]).to be_nil
-    expect(result.dig(:data, :unsubmittedOrder, :invalidReservationIds))
+    expect(result.dig(:data, :currentUser, :user, :unsubmittedOrder, :invalidReservationIds))
       .to include(reservation.id.to_s)
   end
 end

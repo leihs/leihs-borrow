@@ -47,6 +47,27 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
       FactoryBot.create(:inventory_pool, id: "ee7fe76b-6182-45d0-aa4a-e8bf6a76bcbf", name: "Pool Eight with Suspension")
     end
 
+    let(:inventory_pool_alt_pickup) do
+      FactoryBot.create(
+        :inventory_pool,
+        id: "c1a1a1a1-a1a1-41a1-a1a1-a1a1a1a1a1a1",
+        name: "Pool Alt Pickup",
+        is_active: true,
+        enable_alternative_pickup_locations: true,
+        borrow_reservation_advance_days: 1,
+        transfer_buffer_before_pick_up: 3
+      )
+    end
+
+    let(:pickup_location_alt) do
+      FactoryBot.create(
+        :pickup_location,
+        id: "d2b2b2b2-b2b2-42b2-b2b2-b2b2b2b2b2b2",
+        inventory_pool: inventory_pool_alt_pickup,
+        name: "Alt Site"
+      )
+    end
+
     let(:user) do
       u = FactoryBot.create(:user, id: "8c360361-f70c-4b31-a271-b4050d4b9d26")
       [inventory_pool,
@@ -55,7 +76,8 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
         inventory_pool_4_advance_days,
         inventory_pool_6_holiday,
         inventory_pool_7_no_workday,
-        inventory_pool_8_suspended].each do |ip|
+        inventory_pool_8_suspended,
+        inventory_pool_alt_pickup].each do |ip|
         FactoryBot.create(:direct_access_right, inventory_pool: ip, user: u)
       end
 
@@ -469,26 +491,6 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
 
   #####################################################################################################
 
-  let(:inventory_pool_alt_pickup) do
-    FactoryBot.create(
-      :inventory_pool,
-      id: "c1a1a1a1-a1a1-41a1-a1a1-a1a1a1a1a1a1",
-      name: "Pool Alt Pickup",
-      enable_alternative_pickup_locations: true,
-      borrow_reservation_advance_days: 1,
-      transfer_buffer_before_pick_up: 3
-    )
-  end
-
-  let(:pickup_location_alt) do
-    FactoryBot.create(
-      :pickup_location,
-      id: "d2b2b2b2-b2b2-42b2-b2b2-b2b2b2b2b2b2",
-      inventory_pool: inventory_pool_alt_pickup,
-      name: "Alt Site"
-    )
-  end
-
   let(:model_non_transportable_alt) do
     model = FactoryBot.create(
       :leihs_model,
@@ -496,7 +498,11 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
       id: "e3c3c3c3-c3c3-43c3-c3c3-c3c3c3c3c3c3",
       transportable: false
     )
-    model.add_item(FactoryBot.create(:item, is_borrowable: true, responsible: inventory_pool_alt_pickup))
+    2.times do
+      model.add_item(FactoryBot.create(:item,
+        is_borrowable: true,
+        responsible: inventory_pool_alt_pickup))
+    end
     model
   end
 
@@ -507,12 +513,15 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
       id: "f4d4d4d4-d4d4-44d4-d4d4-d4d4d4d4d4d4",
       transportable: true
     )
-    model.add_item(FactoryBot.create(:item, is_borrowable: true, responsible: inventory_pool_alt_pickup))
+    2.times do
+      model.add_item(FactoryBot.create(:item,
+        is_borrowable: true,
+        responsible: inventory_pool_alt_pickup))
+    end
     model
   end
 
   let(:r7_non_transportable_alt) do
-    FactoryBot.create(:direct_access_right, inventory_pool: inventory_pool_alt_pickup, user: user)
     FactoryBot.create(
       :reservation,
       id: "a5e5e5e5-e5e5-45e5-e5e5-e5e5e5e5e5e5",
@@ -526,7 +535,6 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
   end
 
   let(:r8_transfer_buffer_before_pickup) do
-    FactoryBot.create(:direct_access_right, inventory_pool: inventory_pool_alt_pickup, user: user)
     FactoryBot.create(
       :reservation,
       id: "b6f6f6f6-f6f6-46f6-f6f6-f6f6f6f6f6f6",
