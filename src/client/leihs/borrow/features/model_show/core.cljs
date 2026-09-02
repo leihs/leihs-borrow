@@ -199,9 +199,20 @@
 (reg-event-fx
  ::open-order-panel
  (fn-traced [{:keys [db]} [_ user-id filters]]
-   (let [consider-alt? (boolean (:pickup-location-id filters))]
-     {:db (assoc-in db [::data :order-panel] {:is-open? true})
+   (let [pickup-location-id (:pickup-location-id filters)
+         consider-alt? (boolean pickup-location-id)]
+     {:db (assoc-in db [::data :order-panel]
+                    {:is-open? true
+                     :pool-id (:pool-id filters)
+                     :pickup-location-id pickup-location-id})
       :dispatch [::set-consider-alternative-pickup-locations user-id consider-alt?]})))
+
+(reg-event-db
+ ::set-order-panel-selection
+ (fn-traced [db [_ {:keys [pool-id pickup-location-id]}]]
+   (-> db
+       (assoc-in [::data :order-panel :pool-id] pool-id)
+       (assoc-in [::data :order-panel :pickup-location-id] pickup-location-id))))
 
 (reg-event-db
  ::close-order-panel
@@ -382,9 +393,20 @@
                                        (assoc :pickupLocationId (:pickupLocationId args)))])))
             on-validate (fn [v] (reset! form-valid? v))
             order-panel-data @(subscribe [::order-panel-data])
-            is-saving? (:is-saving? order-panel-data)]
+            is-saving? (:is-saving? order-panel-data)
+            loading? (not availability-ready?)
+            set-selection-and-consider-alt
+            (fn [jsargs]
+              (let [args (js->clj jsargs :keywordize-keys true)
+                    pickup-id (:pickupLocationId args)]
+                (dispatch [::set-order-panel-selection
+                           {:pool-id (:poolId args)
+                            :pickup-location-id pickup-id}])
+                (dispatch [::set-consider-alternative-pickup-locations
+                           user-id
+                           (boolean pickup-id)])))]
 
-        (when availability-ready?
+        (when shown?
           [:> UI/Components.Design.ModalDialog {:shown shown?
                                                 :dismissible true
                                                 :on-dismiss on-cancel
@@ -404,32 +426,25 @@
               :onDatesChange (fn [formValues]
                                (let [end-date (get (js->clj formValues) "endDate")]
                                  (dispatch [::ensure-availability-fetched-until user-id end-date])))
-              :initialInventoryPoolId (:pool-id filters)
-              :initialPickupLocationId (:pickup-location-id filters)
+              :initialInventoryPoolId (or (:pool-id order-panel-data) (:pool-id filters))
+              :initialPickupLocationId (:pickup-location-id order-panel-data)
               :inventoryPools (map h/camel-case-keys pools)
               :initialShowDayQuants (or show-day-quants false)
               :onShowDayQuantsChange on-show-day-quants-change
               :onSubmit on-submit
               :onValidate on-validate
-              :onPickupLocationChange
-              (fn [jsargs]
-                (let [args (js->clj jsargs :keywordize-keys true)]
-                  (dispatch [::set-consider-alternative-pickup-locations
-                             user-id
-                             (boolean (:pickupLocationId args))])))
-              :onInventoryPoolChange
-              (fn [jsargs]
-                (let [args (js->clj jsargs :keywordize-keys true)]
-                  (dispatch [::set-consider-alternative-pickup-locations
-                             user-id
-                             (boolean (:pickupLocationId args))])))
+              :onPickupLocationChange set-selection-and-consider-alt
+              :onInventoryPoolChange set-selection-and-consider-alt
               :modelData (h/camel-case-keys model)
               :locale text-locale
               :dateLocale date-locale
               :txt (cart/order-panel-texts)}]]
            [:> UI/Components.Design.ModalDialog.Footer
-            [:button.btn.btn-primary {:form :order-dialog-form :type :submit :disabled is-saving? :class (when (not @form-valid?) "disabled pe-auto")}
-             (when is-saving? [:> UI/Components.Design.Spinner]) " "
+            [:button.btn.btn-primary {:form :order-dialog-form
+                                      :type :submit
+                                      :disabled (or is-saving? loading?)
+                                      :class (when (or (not @form-valid?) loading?) "disabled pe-auto")}
+             (when (or is-saving? loading?) [:> UI/Components.Design.Spinner]) " "
              (t :order-dialog/add)]
             [:button.btn.btn-secondary {:on-click on-cancel} (t :order-dialog/cancel)]]])))))
 
