@@ -47,6 +47,27 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
       FactoryBot.create(:inventory_pool, id: "ee7fe76b-6182-45d0-aa4a-e8bf6a76bcbf", name: "Pool Eight with Suspension")
     end
 
+    let(:inventory_pool_alt_pickup) do
+      FactoryBot.create(
+        :inventory_pool,
+        id: "c1a1a1a1-a1a1-41a1-a1a1-a1a1a1a1a1a1",
+        name: "Pool Alt Pickup",
+        is_active: true,
+        enable_alternative_pickup_locations: true,
+        borrow_reservation_advance_days: 1,
+        transfer_buffer_before_pick_up: 3
+      )
+    end
+
+    let(:pickup_location_alt) do
+      FactoryBot.create(
+        :pickup_location,
+        id: "d2b2b2b2-b2b2-42b2-b2b2-b2b2b2b2b2b2",
+        inventory_pool: inventory_pool_alt_pickup,
+        name: "Alt Site"
+      )
+    end
+
     let(:user) do
       u = FactoryBot.create(:user, id: "8c360361-f70c-4b31-a271-b4050d4b9d26")
       [inventory_pool,
@@ -55,7 +76,9 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
         inventory_pool_4_advance_days,
         inventory_pool_6_holiday,
         inventory_pool_7_no_workday,
-        inventory_pool_8_suspended].each do |ip|
+        inventory_pool_8_suspended,
+        inventory_pool_alt_pickup,
+        inventory_pool_gone_pickup].each do |ip|
         FactoryBot.create(:direct_access_right, inventory_pool: ip, user: u)
       end
 
@@ -465,6 +488,115 @@ RSpec.shared_context "invalid reservations data setup", shared_context: :metadat
       start_date: Date.today,
       end_date: Date.tomorrow,
       user: user)
+  end
+
+  #####################################################################################################
+
+  let(:model_non_transportable_alt) do
+    model = FactoryBot.create(
+      :leihs_model,
+      product: "Non Transportable Alt",
+      id: "e3c3c3c3-c3c3-43c3-c3c3-c3c3c3c3c3c3",
+      transportable: false
+    )
+    2.times do
+      model.add_item(FactoryBot.create(:item,
+        is_borrowable: true,
+        responsible: inventory_pool_alt_pickup))
+    end
+    model
+  end
+
+  let(:model_transfer_buffer) do
+    model = FactoryBot.create(
+      :leihs_model,
+      product: "Transfer Buffer Before Pickup",
+      id: "f4d4d4d4-d4d4-44d4-d4d4-d4d4d4d4d4d4",
+      transportable: true
+    )
+    2.times do
+      model.add_item(FactoryBot.create(:item,
+        is_borrowable: true,
+        responsible: inventory_pool_alt_pickup))
+    end
+    model
+  end
+
+  let(:r7_non_transportable_alt) do
+    FactoryBot.create(
+      :reservation,
+      id: "a5e5e5e5-e5e5-45e5-e5e5-e5e5e5e5e5e5",
+      leihs_model: model_non_transportable_alt,
+      inventory_pool: inventory_pool_alt_pickup,
+      pickup_location_id: pickup_location_alt.id,
+      start_date: 5.days.from_now,
+      end_date: 6.days.from_now,
+      user: user
+    )
+  end
+
+  let(:r8_transfer_buffer_before_pickup) do
+    FactoryBot.create(
+      :reservation,
+      id: "b6f6f6f6-f6f6-46f6-f6f6-f6f6f6f6f6f6",
+      leihs_model: model_transfer_buffer,
+      inventory_pool: inventory_pool_alt_pickup,
+      pickup_location_id: pickup_location_alt.id,
+      start_date: 1.day.from_now,
+      end_date: 4.days.from_now,
+      user: user
+    )
+  end
+
+  let(:inventory_pool_gone_pickup) do
+    FactoryBot.create(
+      :inventory_pool,
+      id: "e9e9e9e9-e9e9-49e9-e9e9-e9e9e9e9e9e9",
+      name: "Pool Gone Pickup",
+      is_active: true,
+      enable_alternative_pickup_locations: true,
+      borrow_reservation_advance_days: 1,
+      transfer_buffer_before_pick_up: 3
+    )
+  end
+
+  let(:pickup_location_gone) do
+    FactoryBot.create(
+      :pickup_location,
+      id: "f0f0f0f0-f0f0-40f0-f0f0-f0f0f0f0f0f0",
+      inventory_pool: inventory_pool_gone_pickup,
+      name: "Gone Alt Site"
+    )
+  end
+
+  let(:model_gone_pickup) do
+    model = FactoryBot.create(
+      :leihs_model,
+      product: "Gone Pickup Location",
+      id: "c7a7a7a7-a7a7-47a7-a7a7-a7a7a7a7a7a7",
+      transportable: true
+    )
+    2.times do
+      model.add_item(FactoryBot.create(:item,
+        is_borrowable: true,
+        responsible: inventory_pool_gone_pickup))
+    end
+    model
+  end
+
+  let(:r9_gone_pickup_location) do
+    reservation = FactoryBot.create(
+      :reservation,
+      id: "d8b8b8b8-b8b8-48b8-b8b8-b8b8b8b8b8b8",
+      leihs_model: model_gone_pickup,
+      inventory_pool: inventory_pool_gone_pickup,
+      pickup_location_id: pickup_location_gone.id,
+      start_date: 5.days.from_now,
+      end_date: 6.days.from_now,
+      user: user
+    )
+    inventory_pool_gone_pickup.update(enable_alternative_pickup_locations: false)
+    reservation
   end
 
   #####################################################################################################

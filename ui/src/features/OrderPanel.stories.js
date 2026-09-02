@@ -118,6 +118,31 @@ orderPanel.storyName = 'OrderPanel'
 export const withPickupLocations = () => <OrderPanelStory />
 withPickupLocations.storyName = 'With pickup locations'
 
+/** Mock refetch after alt pickup: single `dates` series with transfer buffers applied. */
+function withAltConsideredDates(modelData, altDates) {
+  return {
+    ...modelData,
+    availability: modelData.availability.map(entry => ({
+      ...entry,
+      dates: altDates
+    }))
+  }
+}
+
+export const withDifferentTransferBuffers = () => {
+  const { modelData, inventoryPools, availabilityDatesWithAltBuffers } = getOrderPanelMockData()
+  const empfangPool1 = inventoryPools[0].pickupLocations.find(loc => loc.name === 'Empfang')
+  return (
+    <OrderPanelStory
+      title="Select Empfang → switch pool → Empfang matched by name (buffer 3 → 2)"
+      modelDataOverrides={withAltConsideredDates(modelData, availabilityDatesWithAltBuffers)}
+      inventoryPoolsOverride={inventoryPools}
+      initialPickupLocationId={empfangPool1.id}
+    />
+  )
+}
+withDifferentTransferBuffers.storyName = 'Pickup name match on pool switch (buffers)'
+
 export const notTransportable = () => (
   <OrderPanelStory modelDataOverrides={{ transportable: false, name: '4K-Videokamera Sony FDR-AX53' }} />
 )

@@ -84,12 +84,15 @@ const OrderPanel = ({
       isSurrogate: true
     }
     const selectablePools = poolFromList ? inventoryPools : [selectedPool, ...inventoryPools]
-    const poolPickupLocations = selectedPool.pickupLocations
+    const poolPickupLocations = selectedPool.pickupLocations || []
     const showPickupLocationSelect = anyPoolHasPickupLocations && isTransportable && poolPickupLocations.length > 0
     const resolvedPickupLocationId =
       showPickupLocationSelect && poolPickupLocations.some(loc => loc.id === selectedPickupLocationId)
         ? selectedPickupLocationId
         : null
+    const initialPickupUnavailable =
+      Boolean(initialPickupLocationId) &&
+      (!isTransportable || !poolPickupLocations.some(loc => loc.id === initialPickupLocationId))
 
     // Get availability data for selected pool
     const { availability } = modelData
@@ -98,7 +101,7 @@ const OrderPanel = ({
       if (!tmp) {
         return { inventoryPool: selectedPool, dates: [] }
       }
-      const rawDates = resolvedPickupLocationId ? tmp.datesForAltLocations : tmp.dates
+      const rawDates = tmp.dates || []
       return {
         ...tmp,
         dates: rawDates.map(x => ({
@@ -125,6 +128,7 @@ const OrderPanel = ({
       poolPickupLocations,
       showPickupLocationSelect,
       resolvedPickupLocationId,
+      initialPickupUnavailable,
       poolAvailability,
       disabledDates,
       disabledStartDates,
@@ -145,7 +149,8 @@ const OrderPanel = ({
     inventoryPools,
     locale,
     anyPoolHasPickupLocations,
-    isTransportable
+    isTransportable,
+    initialPickupLocationId
   ])
 
   // Validation
@@ -195,15 +200,13 @@ const OrderPanel = ({
   function changeInventoryPool(e) {
     const id = e.target.value
     const nextPool = inventoryPools.find(x => x.id === id)
-    const nextLocations = nextPool?.pickupLocations || []
-    const locationIdInPool = locId => locId && nextLocations.some(loc => loc.id === locId)
-    const nextPickupLocationId = isTransportable
-      ? locationIdInPool(selectedPickupLocationId)
-        ? selectedPickupLocationId
-        : locationIdInPool(initialPickupLocationId)
-          ? initialPickupLocationId
-          : null
-      : null
+    const previousPool = inventoryPools.find(x => x.id === selectedPoolId)
+    const nextPickupLocationId = resolvePickupLocationOnPoolChange({
+      isTransportable,
+      selectedPickupLocationId,
+      previousPool,
+      nextPool
+    })
     setSelectedPoolId(id)
     setSelectedPickupLocationId(nextPickupLocationId)
     onInventoryPoolChange({
@@ -250,6 +253,7 @@ const OrderPanel = ({
     poolPickupLocations,
     showPickupLocationSelect,
     resolvedPickupLocationId,
+    initialPickupUnavailable,
     disabledDates,
     disabledStartDates,
     disabledEndDates,
@@ -312,13 +316,16 @@ const OrderPanel = ({
               )}
             </>
           )}
+          {initialPickupUnavailable && !showPickupLocationSelect && validationResult.poolError && (
+            <Warning className="mt-2">{t(label, 'unavailable-initial-pickup-location', locale)}</Warning>
+          )}
         </Section>
 
-        {!validationResult.poolError && (
+        {(!validationResult.poolError || (initialPickupUnavailable && !showPickupLocationSelect)) && (
           <Let title={t(label, 'timespan', locale)}>
             {({ title }) => (
               <div className="d-grid gap-4">
-                {showPickupLocationSelect && (
+                {!validationResult.poolError && showPickupLocationSelect && (
                   <Section title={t(label, 'pickup-location', locale)}>
                     <label htmlFor="pickup-location-id" className="visually-hidden">
                       {t(label, 'pickup-location', locale)}
@@ -338,70 +345,89 @@ const OrderPanel = ({
                         </option>
                       ))}
                     </select>
-                    <InfoMessage className="mt-2">
-                      <a
-                        className="decorate-links"
-                        href={`/borrow/inventory-pools/${selectedPoolId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {t(label, 'pickup-locations-more-details', locale)}
-                      </a>
-                    </InfoMessage>
+                    {initialPickupUnavailable ? (
+                      <Warning className="mt-2">{t(label, 'unavailable-initial-pickup-location', locale)}</Warning>
+                    ) : (
+                      <InfoMessage className="mt-2">
+                        <a
+                          className="decorate-links"
+                          href={`/borrow/inventory-pools/${selectedPoolId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t(label, 'pickup-locations-more-details', locale)}
+                        </a>
+                      </InfoMessage>
+                    )}
                   </Section>
                 )}
-                <Section title={t(label, 'quantity', locale)}>
-                  <label htmlFor="quantity" className="visually-hidden">
-                    {t(label, 'quantity', locale)}
-                  </label>
-                  <MinusPlusControl name="quantity" id="quantity" value={quantity} onChange={changeQuantity} min={1} />
-                </Section>
-                <Section title={title}>
-                  <fieldset>
-                    <legend className="visually-hidden">{title}</legend>
-                    <DateRangePicker
-                      selectedRange={selectedRange}
-                      onChange={changeDateRange}
-                      onCalendarNavigate={handleCalendarNavigate}
-                      maxDateLoaded={maxDateLoaded}
-                      now={today}
-                      minDate={today}
-                      maxDate={maxDate}
-                      disabledDates={disabledDates}
-                      disabledStartDates={disabledStartDates}
-                      disabledEndDates={disabledEndDates}
-                      locale={dateLocale || defaultDateLocale}
-                      txt={{
-                        from: t(label, 'from', locale),
-                        until: t(label, 'until', locale),
-                        placeholderFrom: t(label, 'undefined', locale),
-                        placeholderUntil: t(label, 'undefined', locale)
-                      }}
-                      className={cx(validationResult.dateRangeErrors ? 'invalid-date-range' : '')}
-                      dayButtonClass={cx('opcal__day')}
-                      dayContentRenderer={renderDay}
+                {!validationResult.poolError && (
+                  <Section title={t(label, 'quantity', locale)}>
+                    <label htmlFor="quantity" className="visually-hidden">
+                      {t(label, 'quantity', locale)}
+                    </label>
+                    <MinusPlusControl
+                      name="quantity"
+                      id="quantity"
+                      value={quantity}
+                      onChange={changeQuantity}
+                      min={1}
                     />
-                  </fieldset>
-                  {validationResult.dateRangeErrors &&
-                    validationResult.dateRangeErrors.map((msg, i) => (
-                      <React.Fragment key={i}>
-                        <Warning className="mt-2">{msg}</Warning>
-                      </React.Fragment>
-                    ))}
-                  <div className="mt-3">
-                    <div className="form-check form-switch d-inline-block">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        id="show-day-quants"
-                        checked={showDayQuants}
-                        onChange={changeShowDayQuants}
-                      />
-                      <label className="form-check-label" htmlFor="show-day-quants">
-                        {t(label, 'show-day-quants', locale)}
-                      </label>
-                    </div>
-                  </div>
+                  </Section>
+                )}
+                <Section title={title}>
+                  {initialPickupUnavailable && !showPickupLocationSelect && (
+                    <Warning className="mb-2">{t(label, 'unavailable-initial-pickup-location', locale)}</Warning>
+                  )}
+                  {!validationResult.poolError && (
+                    <>
+                      <fieldset>
+                        <legend className="visually-hidden">{title}</legend>
+                        <DateRangePicker
+                          selectedRange={selectedRange}
+                          onChange={changeDateRange}
+                          onCalendarNavigate={handleCalendarNavigate}
+                          maxDateLoaded={maxDateLoaded}
+                          now={today}
+                          minDate={today}
+                          maxDate={maxDate}
+                          disabledDates={disabledDates}
+                          disabledStartDates={disabledStartDates}
+                          disabledEndDates={disabledEndDates}
+                          locale={dateLocale || defaultDateLocale}
+                          txt={{
+                            from: t(label, 'from', locale),
+                            until: t(label, 'until', locale),
+                            placeholderFrom: t(label, 'undefined', locale),
+                            placeholderUntil: t(label, 'undefined', locale)
+                          }}
+                          className={cx(validationResult.dateRangeErrors ? 'invalid-date-range' : '')}
+                          dayButtonClass={cx('opcal__day')}
+                          dayContentRenderer={renderDay}
+                        />
+                      </fieldset>
+                      {validationResult.dateRangeErrors &&
+                        validationResult.dateRangeErrors.map((msg, i) => (
+                          <React.Fragment key={i}>
+                            <Warning className="mt-2">{msg}</Warning>
+                          </React.Fragment>
+                        ))}
+                      <div className="mt-3">
+                        <div className="form-check form-switch d-inline-block">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id="show-day-quants"
+                            checked={showDayQuants}
+                            onChange={changeShowDayQuants}
+                          />
+                          <label className="form-check-label" htmlFor="show-day-quants">
+                            {t(label, 'show-day-quants', locale)}
+                          </label>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </Section>
               </div>
             )}
@@ -416,13 +442,39 @@ OrderPanel.displayName = 'OrderPanel'
 OrderPanel.propTypes = orderPanelPropTypes
 export default OrderPanel
 
+/**
+ * Resolve which pickup location to select after switching inventory pools.
+ * Location ids are pool-scoped (never shared across pools); only names can match.
+ * Priority: Hauptlager stays → same name on next pool → first alt of next pool
+ * (BE already orders by name) → Hauptlager only if the next pool has no locations.
+ */
+export function resolvePickupLocationOnPoolChange({
+  isTransportable,
+  selectedPickupLocationId,
+  previousPool,
+  nextPool
+}) {
+  if (!isTransportable) return null
+  // Hauptlager selected → stay on Hauptlager after pool switch
+  if (!selectedPickupLocationId) return null
+
+  const nextLocations = nextPool?.pickupLocations || []
+  const previousLocations = previousPool?.pickupLocations || []
+  const previousLocation = previousLocations.find(loc => loc.id === selectedPickupLocationId)
+  if (previousLocation?.name) {
+    const nameMatch = nextLocations.find(loc => loc.name === previousLocation.name)
+    if (nameMatch) return nameMatch.id
+  }
+  return nextLocations[0]?.id || null
+}
+
 function getDateRangePickerConstraints(poolAvailability, today, wantedQuantity) {
   const { dates } = poolAvailability
   const getDates = filter => [...dates.filter(filter).map(x => x.parsedDate)]
   return {
     disabledDates: getDates(x => x.quantity < wantedQuantity && x.parsedDate >= today),
     disabledStartDates: getDates(x => x.startDateRestrictions && x.startDateRestrictions.length > 0),
-    disabledEndDates: getDates(x => x.endDateRestrictions && x.startDateRestrictions.length > 0)
+    disabledEndDates: getDates(x => x.endDateRestrictions && x.endDateRestrictions.length > 0)
   }
 }
 

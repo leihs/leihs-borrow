@@ -191,13 +191,14 @@ export const orderSearchFilterProps = {
 }
 
 export function getOrderPanelMockData() {
-  const { modelData, userDelegations } = require('./calendar-mock-data')
+  const { modelData, userDelegations, availabilityDatesWithAltBuffers } = require('./calendar-mock-data')
   const inventoryPools = modelData.availability.map(x => x.inventoryPool)
   const availabilityDates = modelData.availability[0].dates
   return {
     modelData,
     profileName: userDelegations[0],
     inventoryPools,
+    availabilityDatesWithAltBuffers,
     initialInventoryPoolId: inventoryPools[0].id,
     minDateLoaded: parseISO(availabilityDates[0].date),
     maxDateLoaded: parseISO(availabilityDates[availabilityDates.length - 1].date)

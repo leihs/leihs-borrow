@@ -273,6 +273,11 @@
   environment_variables:
     FEATURE_NAME: 'Invalid reservations Identity and fix invalid reservations 01'
     FEATURE: './spec/features/shopping_cart/invalid_reservations.feature[1:1:1]'
+'./spec/features/shopping_cart/invalid_reservations.feature[1:2:1]':
+  name: 'Invalid reservations Alternative pickup location invalid cart cases 01'
+  environment_variables:
+    FEATURE_NAME: 'Invalid reservations Alternative pickup location invalid cart cases 01'
+    FEATURE: './spec/features/shopping_cart/invalid_reservations.feature[1:2:1]'
 './spec/features/shopping_cart/refresh_timeout_api_spec.rb[1:1]':
   name: 'refresh timeout 01'
   environment_variables:
