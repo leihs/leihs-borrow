@@ -81,8 +81,8 @@ describe "cart validation for alternative pickup locations" do
       .to include(reservation.id.to_s)
   end
 
-  it "marks reservation when pickup location belongs to another pool" do
-    model = FactoryBot.create(:leihs_model, transportable: true, product: "Wrong Pool Location")
+  it "marks reservation when pickup location is deactivated" do
+    model = FactoryBot.create(:leihs_model, transportable: true, product: "Deactivated Location")
     model.add_item(FactoryBot.create(:item, is_borrowable: true, responsible: inventory_pool))
     reservation = create_unsubmitted!(
       model: model,
@@ -90,9 +90,7 @@ describe "cart validation for alternative pickup locations" do
       start_date: 5.days.from_now,
       end_date: 6.days.from_now
     )
-    other_pool = FactoryBot.create(:inventory_pool, enable_alternative_pickup_locations: true)
-    FactoryBot.create(:direct_access_right, inventory_pool: other_pool, user: user)
-    location.update(inventory_pool: other_pool)
+    location.update(active: false)
 
     result = query(cart_query, user.id)
     expect(result[:errors]).to be_nil

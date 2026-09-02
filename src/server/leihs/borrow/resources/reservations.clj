@@ -16,6 +16,7 @@
             [leihs.borrow.resources.models :as models]
             [leihs.borrow.resources.models.core :as models.core]
             [leihs.borrow.resources.pickup-locations :as pickup-locations]
+            [leihs.borrow.resources.workdays :as workdays]
             [leihs.borrow.time :as time]
             [leihs.core.core :refer [raise presence]]
             [leihs.core.db :as db]
@@ -126,44 +127,15 @@
       first
       :result))
 
-(defn- pickup-location-in-other-pool?
-  "Pickup location exists but belongs to a different inventory pool."
-  [tx {:keys [pickup_location_id inventory_pool_id]}]
-  (boolean
-   (when pickup_location_id
-     (-> (sql/select :inventory_pool_id)
-         (sql/from :pickup_locations)
-         (sql/where [:= :id pickup_location_id])
-         sql-format
-         (->> (jdbc-query tx))
-         first
-         :inventory_pool_id
-         (#(and % (not= % inventory_pool_id)))))))
-
-(defn- invalid-pickup-location?
-  "Alt pickup on reservation that is no longer usable (feature off or gone)."
-  [tx {:keys [pickup_location_id inventory_pool_id]}]
-  (boolean
-   (when pickup_location_id
-     (or (not (pools/enable-alternative-pickup-locations? tx inventory_pool_id))
-         (not (pickup-locations/belongs-to-pool? tx pickup_location_id inventory_pool_id))))))
-
-(defn- non-transportable-alt-pickup?
-  "Alt pickup on a model that cannot be transported to alternative locations."
-  [tx {:keys [pickup_location_id model_id]}]
-  (boolean
-   (when pickup_location_id
-     (not (:transportable (models.core/get-one-by-id tx model_id))))))
-
 (defn- start-before-earliest-pickup?
-  "Start date is before the pool's earliest allowed pickup date."
+  "Start date is before the pool's earliest allowed pickup date (reservation
+  advance days, or transfer buffer when an alt pickup location is used)."
   [tx {:keys [pickup_location_id inventory_pool_id start_date]}]
-  (boolean
-   (let [pool (pools/get-by-id tx inventory_pool_id)
-         consider-alt? (boolean pickup_location_id)
-         earliest (restrict/earliest-possible-pickup-date pool consider-alt?)
-         start (jt/local-date start_date)]
-     (and earliest start (jt/before? start earliest)))))
+  (let [pool (pools/get-by-id tx inventory_pool_id)
+        consider-alt? (boolean pickup_location_id)
+        earliest (restrict/earliest-possible-pickup-date pool consider-alt?)
+        start (jt/local-date start_date)]
+    (and earliest start (jt/before? start earliest))))
 
 (defn broken
   ([tx user-id]
@@ -184,8 +156,11 @@
                                          second)]
                        (not (some #{(:inventory_pool_id r)} pool-ids)))
                      (not (complies-with-max-reservation-time? tx r))
-                     (invalid-pickup-location? tx r)
-                     (non-transportable-alt-pickup? tx r)
+                     (when-let [pickup-location (some-> r :pickup_location_id
+                                                        (->> (pickup-locations/get-by-id tx)))]
+                       (or (not (pools/enable-alternative-pickup-locations? tx (:inventory_pool_id r)))
+                           (not (:active pickup-location))
+                           (not (:transportable (models.core/get-one-by-id tx (:model_id r))))))
                      (start-before-earliest-pickup? tx r))
                  (conj r)))
              []
@@ -215,6 +190,30 @@
                      (< available-quantity (clojure.core/count rs))
                      (into rs))))
                [])))
+
+(defn merge-where-invalid-start-date [sqlmap]
+  (sql/where
+   sqlmap
+   [:<
+    :reservations.start_date
+    [:raw
+     (str "CURRENT_DATE"
+          " + "
+          "MAKE_INTERVAL("
+          "days => COALESCE(inventory_pools.borrow_reservation_advance_days, 0)"
+          ")")]]))
+
+(defn unsubmitted-with-invalid-start-date
+  [{{tx :tx} :request user-id ::target-user/id :as context}]
+  (-> (unsubmitted-sqlmap tx user-id)
+      (sql/join :inventory_pools
+                [:=
+                 :reservations.inventory_pool_id
+                 :inventory_pools.id])
+      workdays/with-workdays-sqlmap
+      merge-where-invalid-start-date
+      sql-format
+      (query tx)))
 
 (defn unsubmitted-with-invalid-availability
   [{{tx :tx} :request user-id ::target-user/id :as context}]
@@ -247,17 +246,13 @@
       sql-format
       (->> (jdbc/execute! tx))))
 
-(defn demote-broken-to-draft!
-  "Demote broken unsubmitted reservations to draft.
-  Skips reservations whose pickup location was moved to another pool: updating
-  those rows would violate DB consistency triggers while the stale pickup id
-  must be preserved for the edit dialog."
-  [tx broken-rs]
-  (when-some [ids (->> broken-rs
-                       (remove #(pickup-location-in-other-pool? tx %))
-                       (map :id)
-                       not-empty)]
-    (unsubmitted->draft tx ids)))
+(defn draft->unsubmitted [tx user-id]
+  (-> (sql/update :reservations)
+      (sql/set {:status "unsubmitted"})
+      (sql/where [:= :status "draft"])
+      (sql/where [:= :user_id user-id])
+      sql-format
+      (->> (jdbc/execute! tx))))
 
 (defn get-drafts
   ([tx user-id] (get-drafts tx user-id nil))
@@ -266,22 +261,6 @@
        (cond-> ids (sql/where [:in :id ids]))
        sql-format
        (query tx))))
-
-(defn invalid-cart-reservation-ids
-  [tx user-id]
-  (->> (concat (get-drafts tx user-id)
-               (->> (unsubmitted tx user-id)
-                    (filter #(pickup-location-in-other-pool? tx %))))
-       (map :id)
-       distinct))
-
-(defn draft->unsubmitted [tx user-id]
-  (-> (sql/update :reservations)
-      (sql/set {:status "unsubmitted"})
-      (sql/where [:= :status "draft"])
-      (sql/where [:= :user_id user-id])
-      sql-format
-      (->> (jdbc/execute! tx))))
 
 (defn merge-where-according-to-container
   [sqlmap container {:keys [id] :as value}]

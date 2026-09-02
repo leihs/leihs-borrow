@@ -324,7 +324,7 @@
 (defn validate-cart! [{{tx :tx} :request user-id ::target-user/id :as context}]
   (rs/draft->unsubmitted tx user-id)
   (when-some [broken-rs (not-empty (rs/broken tx user-id))]
-    (rs/demote-broken-to-draft! tx broken-rs))
+    (->> broken-rs (map :id) (rs/unsubmitted->draft tx)))
   (when-some [invalid-rs (not-empty (rs/unsubmitted-with-invalid-availability context))]
     (->> invalid-rs (map :id) (rs/unsubmitted->draft tx))))
 
@@ -339,7 +339,7 @@
       {}
       {:valid-until va
        :reservations rs
-       :invalidReservationIds (rs/invalid-cart-reservation-ids tx user-id)
+       :invalidReservationIds (->> (rs/get-drafts tx user-id) (map :id))
        :user-id user-id})))
 
 (defn submit
@@ -356,7 +356,7 @@
     (when-not (empty? (rs/with-invalid-availability context reservations))
       (throw (ex-info "Some reserved quantities are not available anymore." {})))
     (when-not (empty? (rs/broken tx user-id reservations))
-      (throw (ex-info "Some combination of start/end date and pool has become invalid." {})))
+      (throw (ex-info "Some reservations are no longer valid." {})))
     (when-not lending-terms-accepted
       (when (-> (settings tx [:lending_terms_acceptance_required_for_order])
                 :lending_terms_acceptance_required_for_order)
