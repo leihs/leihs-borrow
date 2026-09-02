@@ -57,7 +57,7 @@ const OrderPanel = ({
   txt = {}
 }) => {
   const { label } = txt
-  const isTransportable = modelData.transportable !== false
+  const isTransportable = modelData.transportable === true
   const anyPoolHasPickupLocations = inventoryPools.some(pool => pool.pickupLocations?.length > 0)
 
   const today = startOfDay(now ? now : new Date())
@@ -232,7 +232,7 @@ const OrderPanel = ({
     endDate: selectedRange.endDate,
     quantity,
     poolId: selectedPoolId,
-    pickupLocationId: dependentState?.resolvedPickupLocationId ?? selectedPickupLocationId
+    pickupLocationId: dependentState?.resolvedPickupLocationId ?? null
   })
 
   function handleCalendarNavigate(newDate) {

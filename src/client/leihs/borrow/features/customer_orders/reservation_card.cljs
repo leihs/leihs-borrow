@@ -44,10 +44,8 @@
         title (t :reservation-line.title {:itemCount quantity, :itemName name})
         inventory-code (-> reservation :item :inventory-code)
         pool (:inventory-pool reservation)
-        location-name (if (:enable-alternative-pickup-locations pool)
-                        (or (-> reservation :pickup-location :name)
-                            (:default-pickup-location-name pool))
-                        (:name pool))
+        location-name (or (-> reservation :pickup-location :name)
+                          (:name pool))
         imgSrc (or (get-in model [:cover-image :image-url])
                    (get-in model [:images 0 :image-url]))]
     [:<>

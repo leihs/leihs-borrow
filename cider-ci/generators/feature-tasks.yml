@@ -73,6 +73,21 @@
   environment_variables:
     FEATURE_NAME: 'Mobile screen Using navigation menus 01'
     FEATURE: './spec/features/mobile.feature[1:1:1]'
+'./spec/features/pickup_locations.feature[1:1:1]':
+  name: 'Booking calendar pickup locations Non-transportable model cannot select an alternative pickup location 01'
+  environment_variables:
+    FEATURE_NAME: 'Booking calendar pickup locations Non-transportable model cannot select an alternative pickup location 01'
+    FEATURE: './spec/features/pickup_locations.feature[1:1:1]'
+'./spec/features/pickup_locations.feature[1:2:1]':
+  name: 'Booking calendar pickup locations Transportable model can select an alternative pickup location 01'
+  environment_variables:
+    FEATURE_NAME: 'Booking calendar pickup locations Transportable model can select an alternative pickup location 01'
+    FEATURE: './spec/features/pickup_locations.feature[1:2:1]'
+'./spec/features/pickup_locations.feature[1:3:1]':
+  name: 'Booking calendar pickup locations Pickup location select is hidden when no location is activated 01'
+  environment_variables:
+    FEATURE_NAME: 'Booking calendar pickup locations Pickup location select is hidden when no location is activated 01'
+    FEATURE: './spec/features/pickup_locations.feature[1:3:1]'
 './spec/features/pools/pools.feature[1:1:1]':
   name: 'Pools Pools index 01'
   environment_variables:
@@ -163,6 +178,11 @@
   environment_variables:
     FEATURE_NAME: 'Rentals - Show Switching profile 01'
     FEATURE: './spec/features/rentals/rentals_show.feature[1:4:1]'
+'./spec/features/rentals/rentals_show.feature[1:5:1]':
+  name: 'Rentals - Show Pickup location labels when alternative pickup locations are enabled 01'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Show Pickup location labels when alternative pickup locations are enabled 01'
+    FEATURE: './spec/features/rentals/rentals_show.feature[1:5:1]'
 './spec/features/rentals/rentals_show_cancel_rental.feature[1:1:1]':
   name: 'Rentals - Show - Cancel rental Cancelling an unapproved order 01'
   environment_variables:
@@ -199,15 +219,25 @@
     FEATURE_NAME: 'Rentals - Show - Repeat order Repeating an order 01'
     FEATURE: './spec/features/rentals/repeat_order.feature[1:1:1]'
 './spec/features/rentals/repeat_order.feature[1:2:1]':
+  name: 'Rentals - Show - Repeat order Repeating a single-pool order validates dates with the alternative pickup transfer buffer 01'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Show - Repeat order Repeating a single-pool order validates dates with the alternative pickup transfer buffer 01'
+    FEATURE: './spec/features/rentals/repeat_order.feature[1:2:1]'
+'./spec/features/rentals/repeat_order.feature[1:3:1]':
+  name: 'Rentals - Show - Repeat order Repeating an order with a deactivated pickup location creates an invalid cart item 01'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Show - Repeat order Repeating an order with a deactivated pickup location creates an invalid cart item 01'
+    FEATURE: './spec/features/rentals/repeat_order.feature[1:3:1]'
+'./spec/features/rentals/repeat_order.feature[1:4:1]':
   name: 'Rentals - Show - Repeat order Order with options only 01'
   environment_variables:
     FEATURE_NAME: 'Rentals - Show - Repeat order Order with options only 01'
-    FEATURE: './spec/features/rentals/repeat_order.feature[1:2:1]'
-'./spec/features/rentals/repeat_order.feature[1:3:1]':
+    FEATURE: './spec/features/rentals/repeat_order.feature[1:4:1]'
+'./spec/features/rentals/repeat_order.feature[1:5:1]':
   name: 'Rentals - Show - Repeat order Order with models and an option 01'
   environment_variables:
     FEATURE_NAME: 'Rentals - Show - Repeat order Order with models and an option 01'
-    FEATURE: './spec/features/rentals/repeat_order.feature[1:3:1]'
+    FEATURE: './spec/features/rentals/repeat_order.feature[1:5:1]'
 './spec/features/request_framework.feature[1:1:1]':
   name: 'Request framework Login and retry after having been logged out 01'
   environment_variables:

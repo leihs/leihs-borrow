@@ -199,7 +199,35 @@ step "the inventory pool :name has the following details:" do |name, table|
   if data.key?("maximum reservation duration")
     updates[:borrow_maximum_reservation_duration] = data["maximum reservation duration"].to_i
   end
+  if data.key?("alternative pickup locations")
+    updates[:enable_alternative_pickup_locations] =
+      ["true", "yes", "on"].include?(data["alternative pickup locations"].to_s.downcase)
+  end
+  if data.key?("default pickup location name")
+    updates[:default_pickup_location_name] = data["default pickup location name"]
+  end
+  if data.key?("reservation advance days")
+    updates[:borrow_reservation_advance_days] = data["reservation advance days"].to_i
+  end
+  if data.key?("transfer buffer before pickup")
+    updates[:transfer_buffer_before_pick_up] = data["transfer buffer before pickup"].to_i
+  end
+  if data.key?("transfer buffer after drop off")
+    updates[:transfer_buffer_after_drop_off] = data["transfer buffer after drop off"].to_i
+  end
   InventoryPool.where(id: pool.id).update(updates)
+end
+
+step "there is a pickup location :location_name for pool :pool_name" do |location_name, pool_name|
+  pool = InventoryPool.find(name: pool_name) || fail("Pool not found: #{pool_name.inspect}")
+  FactoryBot.create(:pickup_location, inventory_pool: pool, name: location_name)
+end
+
+step "the pickup location :location_name for pool :pool_name is deactivated" do |location_name, pool_name|
+  pool = InventoryPool.find(name: pool_name) || fail("Pool not found: #{pool_name.inspect}")
+  location = PickupLocation.find(name: location_name, inventory_pool_id: pool.id) ||
+    fail("Pickup location not found: #{location_name.inspect} in pool #{pool_name.inspect}")
+  location.update(active: false)
 end
 
 step "the inventory pool :name is closed on :weekday" do |name, weekday|
@@ -218,6 +246,11 @@ end
 
 step "there is a model :name" do |name|
   FactoryBot.create(:leihs_model, product: name)
+end
+
+step "the model :name is not transportable" do |name|
+  model = LeihsModel.find(product: name) || fail("Model not found: #{name.inspect}")
+  model.update(transportable: false)
 end
 
 step "there is an option :name" do |name|
