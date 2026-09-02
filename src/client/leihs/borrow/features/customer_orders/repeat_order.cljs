@@ -37,36 +37,28 @@
          reservations (:reservations rental)
          pool-ids (->> reservations (map #(-> % :inventory-pool :id)) distinct)
          use-alt-dates? (reservations-use-alt-pickup? reservations)
-         single-pool? (= 1 (count pool-ids))
          start-date (date-fns/startOfMonth (js/Date.))
-         end-date (date-fns/addYears start-date 1)
-         dialog-loading {:loading? true :use-alt-dates? use-alt-dates?}
-         dialog-bare {:show true :use-alt-dates? use-alt-dates?}]
-     ;; Single-pool: full calendar. Multi-pool: no calendar (info message only).
-     (if single-pool?
+         end-date (date-fns/addYears start-date 1)]
+     (if (-> pool-ids count (= 1))
        {:dispatch [::re-graph/query
                    (str
                     (rc/inline "leihs/borrow/features/customer_orders/poolAvailability.gql"))
-                   {:ids pool-ids
+                   {:id (first pool-ids)
                     :startDate start-date
                     :endDate end-date
-                    :includeDates true
                     :considerAlternativePickupLocations use-alt-dates?}
-                   [::on-open-repeat-dialog order-id use-alt-dates?]]
-        :db (assoc-in db [::data :repeat-dialog] dialog-loading)}
-       {:db (assoc-in db [::data :repeat-dialog] dialog-bare)}))))
+                   [::on-open-repeat-dialog order-id]]
+        :db (-> db (assoc-in [::data :repeat-dialog] {:loading? true}))}
+       ; else
+       {:db (-> db (assoc-in [::data :repeat-dialog] {:show true}))}))))
 
 (reg-event-db
  ::on-open-repeat-dialog
- (fn-traced [db [_ _ use-alt-dates? {:keys [data errors]}]]
-   (let [pools (->> data :inventory-pools)]
-     (-> db
-         #_(cond-> errors (assoc-in [::errors order-id] errors))
-         (assoc-in [::data :repeat-dialog]
-                   (cond-> {:show true
-                            :use-alt-dates? use-alt-dates?}
-                     (= 1 (count pools))
-                     (assoc :pool (first pools))))))))
+ (fn-traced [db [_ _ {:keys [data errors]}]]
+   (-> db
+       #_(cond-> errors (assoc-in [::errors order-id] errors))
+       (assoc-in [::data :repeat-dialog] {:show true
+                                          :pool (->> data :inventory-pool)}))))
 
 (reg-event-db
  ::close-repeat-dialog
@@ -128,11 +120,8 @@
                   (cond (-> user-data :delegations seq)
                         (t :!borrow.phrases.user-or-delegation-personal-postfix))))))
 
-(defn- availability-dates [pool]
-  (-> pool :availability :dates))
-
 (defn- get-disabled-dates [pool f]
-  (->> (availability-dates pool)
+  (->> pool :availability :dates
        (filter #(-> % f seq))
        (map #(-> % :date date-fns/parseISO))))
 
@@ -141,7 +130,7 @@
    (h/camel-case-keys
     {:inventoryPool (or pool {})
      :dates (if pool
-              (->> (availability-dates pool)
+              (->> pool :availability :dates
                    (map (fn [day-data]
                           (assoc day-data :parsedDate (-> day-data :date date-fns/parseISO)))))
               [])})))
@@ -151,7 +140,8 @@
         max-date (date-fns/addYears today 1)
         selected-range (reagent/atom {:startDate today :endDate (date-fns/addDays today 1)})
         validation-result (reagent/atom {:valid? true})
-        validated-for-key (reagent/atom nil)
+        ;; Re-validate once pool availability arrives (default range may violate alt buffers).
+        validated-for-pool-id (reagent/atom nil)
         validate! (fn [start-date end-date pool use-alt-dates?]
                     (reset!
                      validation-result
@@ -188,26 +178,25 @@
       (let [dialog-data @(subscribe [::repeat-dialog-data])
             current-profile-name @(subscribe [::current-profile-name])
             is-saving? (:is-saving? dialog-data)
-            use-alt-dates? (:use-alt-dates? dialog-data)
+            use-alt-dates? (reservations-use-alt-pickup? reservations)
             rental-id (:id rental)
             options-quantity (get-quantity reservations #(-> % :option))
             models-quantity (get-quantity reservations #(-> % :option not))
             pool (-> dialog-data :pool)
-            validation-key (when pool [(:id pool) use-alt-dates?])
             _ (when-not (:show dialog-data)
-                (reset! validated-for-key nil))
-            _ (when (and validation-key
-                         (not= validation-key @validated-for-key))
-                (reset! validated-for-key validation-key)
+                (reset! validated-for-pool-id nil))
+            _ (when (and (:id pool)
+                         (not= (:id pool) @validated-for-pool-id))
+                (reset! validated-for-pool-id (:id pool))
                 (validate! (:startDate @selected-range)
                            (:endDate @selected-range)
                            pool
                            use-alt-dates?))
-            calendar-availability-props
-            (cond-> {:className (when (not (:valid? @validation-result)) "invalid-date-range")}
-              pool
-              (assoc :disabledStartDates (get-disabled-dates pool :start-date-restrictions)
-                     :disabledEndDates (get-disabled-dates pool :end-date-restrictions)))]
+            calendar-availability-props (if pool
+                                          {:disabledStartDates (get-disabled-dates pool :start-date-restrictions)
+                                           :disabledEndDates (get-disabled-dates pool :end-date-restrictions)
+                                           :className (when (not (:valid? @validation-result)) "invalid-date-range")}
+                                          {})]
         (if-not (-> dialog-data :show)
           nil
           [:> UI/Components.Design.ModalDialog
