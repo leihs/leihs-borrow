@@ -839,6 +839,98 @@ describe "models connection" do
       end
     end
 
+    it "ranks matches by product, then manufacturer, then version" do
+      product_match = FactoryBot.create(:leihs_model,
+        product: "Zeppelin",
+        version: "x",
+        manufacturer: "x")
+      manufacturer_match = FactoryBot.create(:leihs_model,
+        product: "y",
+        version: "x",
+        manufacturer: "Zeppelin")
+      version_match = FactoryBot.create(:leihs_model,
+        product: "y",
+        version: "Zeppelin",
+        manufacturer: "x")
+      [product_match, manufacturer_match, version_match].each do |model|
+        FactoryBot.create(:item,
+          leihs_model: model,
+          responsible: @inventory_pool,
+          is_borrowable: true)
+      end
+
+      q = <<-GRAPHQL
+        {
+          models(searchTerm: "zeppelin") {
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }
+      GRAPHQL
+
+      result = query(q, @user.id).deep_symbolize_keys
+      model_ids = result.dig(:data, :models, :edges).map { |n| n[:node][:id] }
+
+      expect(model_ids).to eq [product_match.id, manufacturer_match.id, version_match.id]
+    end
+
+    context "extended search (description and properties)" do
+      before :each do
+        @extended_match = FactoryBot.create(:leihs_model,
+          product: "y",
+          version: "x",
+          manufacturer: "x",
+          description: "contains zeppelin in description")
+        FactoryBot.create(:item,
+          leihs_model: @extended_match,
+          responsible: @inventory_pool,
+          is_borrowable: true)
+      end
+
+      def search(term, search_description_and_properties: nil)
+        q = <<-GRAPHQL
+          query($searchTerm: String, $searchDescriptionAndProperties: Boolean) {
+            models(searchTerm: $searchTerm, searchDescriptionAndProperties: $searchDescriptionAndProperties) {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        GRAPHQL
+        vars = {searchTerm: term, searchDescriptionAndProperties: search_description_and_properties}
+        query(q, @user.id, vars).deep_symbolize_keys
+          .dig(:data, :models, :edges).map { |n| n[:node][:id] }
+      end
+
+      it "does not match description by default" do
+        expect(search("zeppelin")).to be_empty
+      end
+
+      it "matches description when enabled" do
+        expect(search("zeppelin", search_description_and_properties: true))
+          .to eq [@extended_match.id]
+      end
+
+      it "matches a property's key or value when enabled" do
+        FactoryBot.create(:property,
+          leihs_model: @model_1,
+          key: "Zeppelin",
+          value: "irrelevant")
+        FactoryBot.create(:property,
+          leihs_model: @model_2,
+          key: "irrelevant",
+          value: "Zeppelin")
+
+        expect(search("zeppelin", search_description_and_properties: true))
+          .to contain_exactly(@model_1.id, @model_2.id, @extended_match.id)
+      end
+    end
+
     context "no match because of reservation_advance_days" do
       include_context "reservation advance days"
 
