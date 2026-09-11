@@ -275,6 +275,10 @@
                                       :en-GB "User suspended for this inventory pool"
                                       :fr-CH "Utilisateur suspendu pour ce pool d'inventaire"}
 
+             :search-description-and-properties-label {:en-GB "Also search description and properties"
+                                                       :de-CH "Auch Beschreibung und Eigenschaften durchsuchen"
+                                                       :fr-CH "Rechercher aussi dans la description et les propriétés"}
+
              :availability-button-label {:en-GB "Availability"
                                          :de-CH "Verfügbarkeit"
                                          :fr-CH "Disponibilité"}
