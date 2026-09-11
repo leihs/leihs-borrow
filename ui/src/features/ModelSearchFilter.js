@@ -18,9 +18,18 @@ export default function ModelSearchFilter({
   onTriggerAvailability,
   onClearFilter,
   onChangePool = () => {},
+  onChangeSearchDescriptionAndProperties = () => {},
   ...restProps
 }) {
-  const { term = '', selectedPool, onlyAvailable = false, quantity = 1, startDate, endDate } = currentFilters
+  const {
+    term = '',
+    selectedPool,
+    onlyAvailable = false,
+    quantity = 1,
+    startDate,
+    endDate,
+    searchDescriptionAndProperties = false
+  } = currentFilters
   const { pools: availablePools = [] } = availableFilters
 
   const [searchTerm, setSearchTerm] = useState(term || '')
@@ -55,6 +64,20 @@ export default function ModelSearchFilter({
           searchLabel={t(txt, 'search-button-label', locale)}
           searchPlaceholder={t(txt, 'search-input-placeholder', locale)}
         />
+
+        <div className="filters--item form-check form-switch">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="search-description-and-properties"
+            name="search-description-and-properties"
+            checked={searchDescriptionAndProperties}
+            onChange={e => onChangeSearchDescriptionAndProperties(e.target.checked)}
+          />
+          <label className="form-check-label" htmlFor="search-description-and-properties">
+            {t(txt, 'search-description-and-properties-label', locale)}
+          </label>
+        </div>
 
         <div className="filters">
           <label className="visually-hidden" htmlFor="pool">

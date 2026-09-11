@@ -33,10 +33,13 @@
         pool-id (:pool-id filters)
         quantity (:quantity filters)
         only-available (:only-available filters)
+        search-description-and-properties (:search-description-and-properties filters)
         dates-valid? (<= start-date end-date)] ; if somehow end is before start, ignore it instead of error
     (cond-> {:bothDatesGiven (boolean (and start-date end-date dates-valid?))}
       term
       (assoc :searchTerm term)
+      search-description-and-properties
+      (assoc :searchDescriptionAndProperties search-description-and-properties)
       quantity
       (assoc :quantity quantity)
       (when dates-valid? start-date)
@@ -48,7 +51,7 @@
       pool-id
       (assoc :poolIds [pool-id]))))
 
-(def BOOLEANS #{:only-available})
+(def BOOLEANS #{:only-available :search-description-and-properties})
 (def INTEGERS #{:quantity})
 
 (defn with-parsed-json-values [m]
