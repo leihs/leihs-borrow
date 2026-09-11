@@ -618,27 +618,28 @@ describe "models connection" do
     dates = result[:data][:models][:edges][0][:node][:availability][0][:datesForAltLocations]
     quantities = dates.map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
 
-    # today+0..+3 are fully clear. From today+4 on, each day is checked both
-    # as a prospective start (backward, own before-buffer) and a prospective
-    # end (forward, own after-buffer) for a hypothetical new alt-location
-    # booking, min'd together -- today+4's own forward check alone already
-    # reaches into today+9 (the reservation's before-buffer start), so the
-    # reduced window starts there rather than at today+9 as it would with
-    # only the backward check. today+9..+12 (before-buffer), +13/+14
-    # (the reservation itself), +15..+17 (after-buffer) and +18..+21 (a new
-    # booking's own before-buffer landing on the weekend right at +18/+19,
-    # which bridges through to the still-reduced +17 rather than leaving that
-    # weekend as a free pocket nothing is ever transferring through) round
-    # out an unbroken reduced stretch through today+21; today+22 is the
-    # first day clear both ways.
+    # today+0..+5 are fully clear: a hypothetical booking's own 3-day forward
+    # (after-buffer) or 2-day backward (before-buffer) buffer, counted only
+    # in orders-processing days, doesn't reach today+9 (the real
+    # reservation's own before-buffer start) from there -- even skipping the
+    # weekend at +4/+5, the forward count only reaches +8. From +6 on the
+    # forward buffer does reach +9 (6->7->8->9 are 3 processing days, the
+    # orders-processing holidays at +6/+8 still count), so it picks up that
+    # real reduction. today+9..+12 (before-buffer), +13/+14 (the reservation
+    # itself), +15..+17 (after-buffer) and +18..+21 (a new booking's own
+    # before-buffer landing on the weekend right at +18/+19, which correctly
+    # walks back through it to the still-reduced +17 rather than treating
+    # that weekend as a free pocket nothing is ever transferring through)
+    # round out an unbroken reduced stretch through today+21; today+22 is
+    # the first day clear both ways.
     expect(quantities).to eq(
       (today + 0.days).to_s => 2,
       (today + 1.days).to_s => 2, # holiday
       (today + 2.days).to_s => 2,
       (today + 3.days).to_s => 2, # holiday
-      (today + 4.days).to_s => 1, # weekend; own forward check reaches into the before-buffer zone
-      (today + 5.days).to_s => 1, # weekend
-      (today + 6.days).to_s => 1, # holiday
+      (today + 4.days).to_s => 2, # weekend
+      (today + 5.days).to_s => 2, # weekend
+      (today + 6.days).to_s => 1, # holiday; own forward check reaches the before-buffer zone
       (today + 7.days).to_s => 1,
       (today + 8.days).to_s => 1, # holiday
       (today + 9.days).to_s => 1, # before-buffer starts
@@ -655,6 +656,101 @@ describe "models connection" do
       (today + 20.days).to_s => 1,
       (today + 21.days).to_s => 1, # lands on the weekend, bridged back to the after-buffer tail
       (today + 22.days).to_s => 2 # first day clear both ways
+    )
+  end
+
+  it "transfer buffer before/after a pickup-location reservation walks back/forward through a weekend, not just n calendar days (issue #2263)" do
+    today = Date.today
+
+    # weekend recurs at today+20/+21 and every 7 days before/after, far
+    # enough from today that it doesn't interact with today's own weekday.
+    weekend_day1 = (today + 20.days).strftime("%A").downcase
+    weekend_day2 = (today + 21.days).strftime("%A").downcase
+
+    @inventory_pool.update(transfer_buffer_before_pick_up: 3,
+      transfer_buffer_after_drop_off: 3,
+      enable_alternative_pickup_locations: true)
+
+    Workday.find(inventory_pool_id: @inventory_pool.id)
+      .update("#{weekend_day1}": false, "#{weekend_day1}_orders_processing": false,
+        "#{weekend_day2}": false, "#{weekend_day2}_orders_processing": false)
+
+    model = FactoryBot.create(:leihs_model)
+    FactoryBot.create(:item, leihs_model: model, responsible: @inventory_pool,
+      is_borrowable: true)
+
+    pickup_location = FactoryBot.create(:pickup_location,
+      inventory_pool: @inventory_pool)
+
+    # today+24 is 2 orders-processing days (+22/+23) after the weekend at
+    # +20/+21, mirroring the issue's Wednesday pickup 2 processing days
+    # after a Sat/Sun weekend.
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      pickup_location_id: pickup_location.id,
+      start_date: today + 24.days,
+      end_date: today + 24.days,
+      status: "approved")
+
+    q = <<-GRAPHQL
+        {
+          models(ids: ["#{model.id}"]) {
+            edges {
+              node {
+                id
+                availability(
+                  startDate: "#{today + 15.days}",
+                  endDate: "#{today + 33.days}",
+                  inventoryPoolIds: ["#{@inventory_pool.id}"]
+                ) {
+                  datesForAltLocations {
+                    date
+                    quantity
+                  }
+                }
+              }
+            }
+          }
+        }
+    GRAPHQL
+
+    result = query(q, @user.id)
+    dates = result[:data][:models][:edges][0][:node][:availability][0][:datesForAltLocations]
+    quantities = dates.map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
+
+    # The reservation's own buffers block orders-processing days +19..+29
+    # (3 days back from +24 skipping the +20/+21 weekend lands on +19; 3
+    # days forward skipping the +27/+28 weekend lands on +29 -- not on the
+    # +21/+27 a naive "3 calendar days"/pre-fix off-by-one would land on).
+    # Each candidate day here is additionally checked both as a prospective
+    # start and end for its own 3-day buffer (see "booking calendar checks
+    # both directions" above), which is why the blocked stretch extends
+    # further out on each side than +19..+29 alone: +16's own forward
+    # buffer already reaches +19, and +32's own backward buffer still
+    # reaches back to +29 -- both change by the weekend counting correctly,
+    # not by 2 calendar days as the pre-fix bug would.
+    expect(quantities).to eq(
+      (today + 15.days).to_s => 1,
+      (today + 16.days).to_s => 0,
+      (today + 17.days).to_s => 0,
+      (today + 18.days).to_s => 0,
+      (today + 19.days).to_s => 0,
+      (today + 20.days).to_s => 0, # weekend
+      (today + 21.days).to_s => 0, # weekend
+      (today + 22.days).to_s => 0,
+      (today + 23.days).to_s => 0,
+      (today + 24.days).to_s => 0, # the reservation itself
+      (today + 25.days).to_s => 0,
+      (today + 26.days).to_s => 0,
+      (today + 27.days).to_s => 0, # weekend
+      (today + 28.days).to_s => 0, # weekend
+      (today + 29.days).to_s => 0,
+      (today + 30.days).to_s => 0,
+      (today + 31.days).to_s => 0,
+      (today + 32.days).to_s => 0,
+      (today + 33.days).to_s => 1
     )
   end
 
