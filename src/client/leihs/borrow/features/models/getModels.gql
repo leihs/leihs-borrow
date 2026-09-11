@@ -1,5 +1,6 @@
 query getModels(
   $searchTerm: String
+  $searchDescriptionAndProperties: Boolean
   $startDate: Date
   $endDate: Date
   $first: Int
@@ -14,6 +15,7 @@ query getModels(
 ) {
   models(
     searchTerm: $searchTerm
+    searchDescriptionAndProperties: $searchDescriptionAndProperties
     first: $first
     after: $afterCursor
     onlyAvailable: $onlyAvailable
