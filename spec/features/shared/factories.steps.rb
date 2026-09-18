@@ -199,7 +199,19 @@ step "the inventory pool :name has the following details:" do |name, table|
   if data.key?("maximum reservation duration")
     updates[:borrow_maximum_reservation_duration] = data["maximum reservation duration"].to_i
   end
+  if data.key?("alternative pickup locations")
+    updates[:enable_alternative_pickup_locations] =
+      ["true", "yes", "on"].include?(data["alternative pickup locations"].to_s.downcase)
+  end
+  if data.key?("default pickup location name")
+    updates[:default_pickup_location_name] = data["default pickup location name"]
+  end
   InventoryPool.where(id: pool.id).update(updates)
+end
+
+step "there is a pickup location :location_name for pool :pool_name" do |location_name, pool_name|
+  pool = InventoryPool.find(name: pool_name) || fail("Pool not found: #{pool_name.inspect}")
+  FactoryBot.create(:pickup_location, inventory_pool: pool, name: location_name)
 end
 
 step "the inventory pool :name is closed on :weekday" do |name, weekday|

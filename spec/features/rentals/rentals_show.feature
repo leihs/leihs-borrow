@@ -130,3 +130,26 @@ Feature: Rentals - Show
     Then the user profile button shows "UA"
     And I see the page title "Order"
     And I see "This order is not visible for the current profile"
+
+  Scenario: Pickup location labels when alternative pickup locations are enabled
+    Given the inventory pool "Pool A" has the following details:
+      | alternative pickup locations | true       |
+      | default pickup location name | Hauptlager |
+    And there is a pickup location "pic1" for pool "Pool A"
+    And the following items exist:
+      | code | model  | pool   |
+      | A2   | Tripod | Pool A |
+    And a customer order with title "Order with pickup locations" and the following reservations exists for the user:
+      | user | quantity | model       | pool   | relative-start-date | relative-end-date  | state     | pickup-location |
+      | user | 1        | DSLR Camera | Pool A | ${Date.tomorrow}    | ${2.days.from_now} | submitted |                 |
+      | user | 1        | Tripod      | Pool A | ${Date.tomorrow}    | ${2.days.from_now} | submitted | pic1            |
+
+    When I log in as the user
+    And I visit "/borrow/rentals/?tab=open-orders"
+    And I click on the card with title "Order with pickup locations"
+
+    Then I see the page title "Order with pickup locations"
+    And I see the following lines in the "Items" section:
+      | title                       | body                                                                        |
+      | 1× DSLR Camera\nIn approval | Pool A\n${format_date_range_short(Date.tomorrow, 2.days.from_now)} (2 days) |
+      | 1× Tripod\nIn approval      | pic1\n${format_date_range_short(Date.tomorrow, 2.days.from_now)} (2 days)   |

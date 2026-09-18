@@ -34,6 +34,11 @@ step "a customer order with title :title and the following reservations exists f
         created_at = (h["pickup-date"] == "today") ? Date.today : Date.parse(h["pickup-date"])
         Contract.update_created_date(c.id, created_at)
       end
+      pickup_location_id = if h["pickup-location"].presence
+        pl = PickupLocation.find(name: h["pickup-location"], inventory_pool_id: p.id)
+        pl || fail("Pickup location not found: #{h["pickup-location"].inspect} in pool #{p.name.inspect}")
+        pl.id
+      end
       h["quantity"].to_i.times do
         FactoryBot.create(:reservation,
           inventory_pool_id: p.id,
@@ -45,6 +50,7 @@ step "a customer order with title :title and the following reservations exists f
           option_id: opt.try(:id),
           order_id: po.id,
           contract_id: c.try(:id),
+          pickup_location_id: pickup_location_id,
           sent_back_to_main_location_at: (h["dropped-off-at-pickup-location"] == "yes") ? DateTime.now : nil)
       end
     end
