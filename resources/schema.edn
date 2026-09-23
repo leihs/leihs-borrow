@@ -70,7 +70,8 @@
                                     :pickupLocations {:type (list :PickupLocation)
                                                       :resolve :pickup-locations}
                                     :availability {:args {:startDate {:type (non-null :Date)}
-                                                          :endDate {:type (non-null :Date)}}
+                                                          :endDate {:type (non-null :Date)}
+                                                          :considerAlternativePickupLocations {:type Boolean}}
                                                    :type :InventoryPoolAvailability
                                                    :resolve :pool-availability}
                                     :hasTemplates {:type Boolean
@@ -209,7 +210,8 @@
                             :availability {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
                                                   :startDate {:type (non-null :Date)}
                                                   :endDate {:type (non-null :Date)}
-                                                  :excludeReservationIds {:type (list (non-null :UUID))}}
+                                                  :excludeReservationIds {:type (list (non-null :UUID))}
+                                                  :considerAlternativePickupLocations {:type Boolean}}
                                            :type (list :ModelInventoryPoolAvailability)
                                            :resolve :model-availability}
                             :availableQuantityInDateRange {:args {:inventoryPoolIds {:type (list (non-null :UUID))}
@@ -258,9 +260,7 @@
                                                 :earliestPossiblePickupDate {:type :Date}}}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                                      :dates {:type (list :DayDataWithQuantity)}
-                                                     :datesForAltLocations {:type (list :DayDataWithQuantity)}
-                                                     :earliestPossiblePickupDate {:type :Date}
-                                                     :earliestPossiblePickupDateForAltLocations {:type :Date}}}
+                                                     :earliestPossiblePickupDate {:type :Date}}}
            :TotalReservableQuantity {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                               :quantity {:type (non-null Int)}}}
            :Attachment {:fields {:id {:type (non-null :UUID)}
@@ -480,7 +480,8 @@
                            :args {:id {:type (non-null :UUID)}}
                            :type :InventoryPool}
            :inventoryPools {:resolve :inventory-pools
-                            :args {:userId {:type :UUID}
+                            :args {:ids {:type (list (non-null :UUID))}
+                                   :userId {:type :UUID}
                                    :orderBy {:type (list :InventoryPoolsOrderByInput)}}
                             :type (list :InventoryPool)}
            :languages {:resolve :languages :type (list :Language)}
