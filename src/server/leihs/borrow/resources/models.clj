@@ -202,19 +202,12 @@
    {:keys [start-date
            end-date
            inventory-pool-ids
-           exclude-reservation-ids
-           consider-alternative-pickup-locations]}
+           exclude-reservation-ids]}
    value]
-  (let [pools (pools/get-multiple context {:ids inventory-pool-ids} nil)
-        consider-alt? (boolean consider-alternative-pickup-locations)]
+  (let [pools (pools/get-multiple context {:ids inventory-pool-ids} nil)]
     (map (fn [{pool-id :id}]
            (let [pool (pools/get-by-id (-> context :request :tx)
                                        pool-id)
-                 pickup-location-id
-                 (when consider-alt?
-                   (some-> (pickup-locations/get-by-pool-id tx pool-id)
-                           first
-                           :id))
                  avail (cal/get tx
                                 start-date
                                 end-date
@@ -222,11 +215,24 @@
                                 user-id
                                 (:id value)
                                 (or exclude-reservation-ids [])
-                                pickup-location-id)
-                 validated (restrict/validate-dates tx (:dates avail) pool consider-alt?)]
+                                false)
+                 validated (restrict/validate-dates tx (:dates avail) pool false)
+                 for-pickup-locations
+                 (boolean (and (:enable-alternative-pickup-locations pool)
+                              (seq (pickup-locations/get-by-pool-id tx pool-id))))
+                 avail-alt (cal/get tx
+                                    start-date
+                                    end-date
+                                    pool-id
+                                    user-id
+                                    (:id value)
+                                    (or exclude-reservation-ids [])
+                                    for-pickup-locations)
+                 validated-alt (restrict/validate-dates tx (:dates avail-alt) pool for-pickup-locations)]
              (-> avail
                  (merge validated)
-                 (assoc :inventory-pool pool))))
+                 (assoc :inventory-pool pool
+                        :dates-for-alt-locations (:dates validated-alt)))))
          pools)))
 
 (defn from-compatibles [sqlmap value user-id pool-ids unscope-reservable]
