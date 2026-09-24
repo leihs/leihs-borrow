@@ -9,6 +9,7 @@ step "a customer order with title :title and the following reservations exists f
       p = InventoryPool.find(name: h["pool"])
       m = LeihsModel.find(product: h["model"])
       opt = Option.find(product: h["option"])
+      pl = PickupLocation.find(name: h["pickup-location"]) if h["pickup-location"].presence
       o = Order.find(title: title)
       o ||= FactoryBot.create(:order, title: title, user_id: u.id)
       po = PoolOrder.find(inventory_pool_id: p.id, customer_order_id: o.id)
@@ -45,6 +46,7 @@ step "a customer order with title :title and the following reservations exists f
           option_id: opt.try(:id),
           order_id: po.id,
           contract_id: c.try(:id),
+          pickup_location_id: pl.try(:id),
           sent_back_to_main_location_at: (h["dropped-off-at-pickup-location"] == "yes") ? DateTime.now : nil)
       end
     end
