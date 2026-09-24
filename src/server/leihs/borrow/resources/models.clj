@@ -218,8 +218,8 @@
                                 false)
                  validated (restrict/validate-dates tx (:dates avail) pool false)
                  for-pickup-locations
-                 (boolean (and (:enable-alternative-pickup-locations pool)
-                              (seq (pickup-locations/get-by-pool-id tx pool-id))))
+                 (boolean (and (:enable_alternative_pickup_locations pool)
+                               (seq (pickup-locations/get-by-pool-id tx pool-id))))
                  avail-alt (cal/get tx
                                     start-date
                                     end-date
@@ -232,7 +232,9 @@
              (-> avail
                  (merge validated)
                  (assoc :inventory-pool pool
-                        :dates-for-alt-locations (:dates validated-alt)))))
+                        :dates-for-alt-locations (:dates validated-alt)
+                        :earliest-possible-pickup-date-for-alt-locations
+                        (:earliest-possible-pickup-date validated-alt)))))
          pools)))
 
 (defn from-compatibles [sqlmap value user-id pool-ids unscope-reservable]
