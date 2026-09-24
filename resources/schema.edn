@@ -70,7 +70,8 @@
                                     :pickupLocations {:type (list :PickupLocation)
                                                       :resolve :pickup-locations}
                                     :availability {:args {:startDate {:type (non-null :Date)}
-                                                          :endDate {:type (non-null :Date)}}
+                                                          :endDate {:type (non-null :Date)}
+                                                          :considerAlternativePickupLocations {:type Boolean}}
                                                    :type :InventoryPoolAvailability
                                                    :resolve :pool-availability}
                                     :hasTemplates {:type Boolean
@@ -480,7 +481,8 @@
                            :args {:id {:type (non-null :UUID)}}
                            :type :InventoryPool}
            :inventoryPools {:resolve :inventory-pools
-                            :args {:userId {:type :UUID}
+                            :args {:ids {:type (list (non-null :UUID))}
+                                   :userId {:type :UUID}
                                    :orderBy {:type (list :InventoryPoolsOrderByInput)}}
                             :type (list :InventoryPool)}
            :languages {:resolve :languages :type (list :Language)}

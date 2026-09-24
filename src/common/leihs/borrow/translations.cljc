@@ -71,6 +71,10 @@
              :not-transportable {:en-GB "Pickup and return only possible at the main location of the inventory pool."
                                  :de-CH "Abholung und Rückgabe nur am Hauptstandort des Inventarparks möglich."
                                  :fr-CH "Retrait et retour uniquement possibles au site principal du pool d'inventaire."}
+             :unavailable-initial-pickup-location
+             {:en-GB "The previously selected pickup location is not available for this item."
+              :de-CH "Der vorher selektierte Abholort steht für diesen Gegenstand nicht zur Verfügung"
+              :fr-CH "Le lieu de retrait précédemment sélectionné n'est pas disponible pour cet article."}
              :user-delegation {:en-GB "Order for" :de-CH "Bestellung für" :fr-CH "Commande pour"}
              :timespan {:en-GB "Time span" :de-CH "Zeitraum" :fr-CH "Période"}
              :from {:en-GB "From" :de-CH "Von" :fr-CH "De"}

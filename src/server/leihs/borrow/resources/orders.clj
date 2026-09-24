@@ -356,7 +356,7 @@
     (when-not (empty? (rs/with-invalid-availability context reservations))
       (throw (ex-info "Some reserved quantities are not available anymore." {})))
     (when-not (empty? (rs/broken tx user-id reservations))
-      (throw (ex-info "Some combination of start/end date and pool has become invalid." {})))
+      (throw (ex-info "Some reservations are no longer valid." {})))
     (when-not lending-terms-accepted
       (when (-> (settings tx [:lending_terms_acceptance_required_for_order])
                 :lending_terms_acceptance_required_for_order)
@@ -424,17 +424,19 @@
     (get-one-by-id tx user-id id)))
 
 (defn get-repeated-res [r user-id delegated-user-id start-date end-date now]
-  {:inventory_pool_id (:inventory_pool_id r)
-   :user_id user-id
-   :delegated_user_id delegated-user-id
-   :type (:type r)
-   :status "unsubmitted"
-   :model_id (:model_id r)
-   :quantity (:quantity r)
-   :start_date [:cast start-date :date]
-   :end_date [:cast end-date :date]
-   :created_at now
-   :updated_at now})
+  (cond-> {:inventory_pool_id (:inventory_pool_id r)
+           :user_id user-id
+           :delegated_user_id delegated-user-id
+           :type (:type r)
+           :status "unsubmitted"
+           :model_id (:model_id r)
+           :quantity (:quantity r)
+           :start_date [:cast start-date :date]
+           :end_date [:cast end-date :date]
+           :created_at now
+           :updated_at now}
+    (:pickup_location_id r)
+    (assoc :pickup_location_id (:pickup_location_id r))))
 
 (defn repeat-order
   [{{tx :tx {auth-user-id :id} :authenticated-entity} :request
