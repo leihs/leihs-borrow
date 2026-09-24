@@ -215,31 +215,26 @@
                                 user-id
                                 (:id value)
                                 (or exclude-reservation-ids [])
-                                nil)
-                 validated (restrict/validate-dates tx (:dates avail) pool)
-                 alt-enabled? (:enable_alternative_pickup_locations pool)
-                 first-alt-location-id (when alt-enabled?
-                                         (some-> (pickup-locations/get-by-pool-id
-                                                  tx pool-id)
-                                                 first
-                                                 :id))
-                 alt-validated (when first-alt-location-id
-                                 (let [alt-avail (cal/get tx
-                                                          start-date
-                                                          end-date
-                                                          pool-id
-                                                          user-id
-                                                          (:id value)
-                                                          (or exclude-reservation-ids [])
-                                                          first-alt-location-id)]
-                                   (restrict/validate-dates tx (:dates alt-avail) pool true)))]
+                                false)
+                 validated (restrict/validate-dates tx (:dates avail) pool false)
+                 for-pickup-locations
+                 (boolean (and (:enable_alternative_pickup_locations pool)
+                               (seq (pickup-locations/get-by-pool-id tx pool-id))))
+                 avail-alt (cal/get tx
+                                    start-date
+                                    end-date
+                                    pool-id
+                                    user-id
+                                    (:id value)
+                                    (or exclude-reservation-ids [])
+                                    for-pickup-locations)
+                 validated-alt (restrict/validate-dates tx (:dates avail-alt) pool for-pickup-locations)]
              (-> avail
                  (merge validated)
-                 (assoc :inventory-pool pool)
-                 (cond-> alt-validated
-                   (assoc :dates-for-alt-locations (:dates alt-validated)
-                          :earliest-possible-pickup-date-for-alt-locations
-                          (:earliest-possible-pickup-date alt-validated))))))
+                 (assoc :inventory-pool pool
+                        :dates-for-alt-locations (:dates validated-alt)
+                        :earliest-possible-pickup-date-for-alt-locations
+                        (:earliest-possible-pickup-date validated-alt)))))
          pools)))
 
 (defn from-compatibles [sqlmap value user-id pool-ids unscope-reservable]
