@@ -12,6 +12,7 @@
             [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.inventory-pools :as pools]
+            [leihs.borrow.resources.inventory-pools.visits-restrictions :as restrict]
             [leihs.borrow.resources.models :as models]
             [leihs.borrow.resources.models.core :as models.core]
             [leihs.borrow.resources.pickup-locations :as pickup-locations]
@@ -21,6 +22,7 @@
             [leihs.core.db :as db]
             [leihs.borrow.database.helpers :as database]
             [leihs.core.settings :refer [settings]]
+            [java-time :as jt]
             [taoensso.timbre :refer [debug info warn error spy]]))
 
 (doseq [s [::inventory_pool_id ::start_date ::end_date]]
@@ -125,6 +127,16 @@
       first
       :result))
 
+(defn- start-before-earliest-pickup?
+  "Start date is before the pool's earliest allowed pickup date (reservation
+  advance days, or transfer buffer when an alt pickup location is used)."
+  [tx {:keys [pickup_location_id inventory_pool_id start_date]}]
+  (let [pool (pools/get-by-id tx inventory_pool_id)
+        consider-alt? (boolean pickup_location_id)
+        earliest (restrict/earliest-possible-pickup-date pool consider-alt?)
+        start (jt/local-date start_date)]
+    (and earliest start (jt/before? start earliest))))
+
 (defn broken
   ([tx user-id]
    (broken tx user-id (-> (unsubmitted-sqlmap tx user-id)
@@ -143,7 +155,13 @@
                                          first
                                          second)]
                        (not (some #{(:inventory_pool_id r)} pool-ids)))
-                     (not (complies-with-max-reservation-time? tx r)))
+                     (not (complies-with-max-reservation-time? tx r))
+                     (when-let [pickup-location (some-> r :pickup_location_id
+                                                        (->> (pickup-locations/get-by-id tx)))]
+                       (or (not (pools/enable-alternative-pickup-locations? tx (:inventory_pool_id r)))
+                           (not (:active pickup-location))
+                           (not (:transportable (models.core/get-one-by-id tx (:model_id r))))))
+                     (start-before-earliest-pickup? tx r))
                  (conj r)))
              []
              rs))))

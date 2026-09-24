@@ -24,23 +24,23 @@
        booking-calendar-visits-sqlvec
        (jdbc-query tx)))
 
-(defn get [tx start-date end-date pool-id user-id model-id exclude-res-ids pickup-location-id]
+(defn get [tx start-date end-date pool-id user-id model-id exclude-res-ids for-pickup-locations]
   (let [today (ch/local-date)
         start-date-jt (ch/local-date start-date)
         start-date-jt* (if (t/before? start-date-jt today) today start-date-jt)
         end-date-jt (ch/local-date end-date)
         ;; fetched once, reused below instead of refetching per segment/day
         context (c/fetch-context tx model-id user-id pool-id exclude-res-ids
-                                 pickup-location-id)
+                                 for-pickup-locations)
         changes (:changes context)
         changes-dates (sort (map first changes))
         changes-dates-between-start-and-end-date (filter #(and (t/before? start-date-jt* %)
                                                                (t/before? % end-date-jt))
                                                          changes-dates)
-        ;; pickup-location-id widens each day backward only (as a
+        ;; for-pickup-locations widens each day backward only (as a
         ;; prospective start), so quantity can vary day-to-day with no
         ;; underlying change-point -- segments can't be reused then
-        dates-pairs (if pickup-location-id
+        dates-pairs (if for-pickup-locations
                       (->> (ch/explode-date-range start-date-jt* end-date-jt)
                            (map (fn [d] [d d])))
                       (as-> changes-dates-between-start-and-end-date <> ; [3 5]
@@ -56,7 +56,7 @@
                              <>))) ; [[1 2] [3 4] [5 6]]
         result-1 (->> dates-pairs
                       (map (fn [[from-date to-date]]
-                             (let [quantity (if pickup-location-id
+                             (let [quantity (if for-pickup-locations
                                               (c/available-quantity-for-prospective-day
                                                context from-date)
                                               (c/available-quantity-in-range
