@@ -21,3 +21,27 @@ end
 step "the :title button is disabled" do |title|
   expect(find("button", text: title)).to be_disabled
 end
+
+step "I press the tab key" do
+  send_keys :tab
+end
+
+step "I see the following warnings in the :title section:" do |section_name, table|
+  section = find_ui_section(title: section_name)
+  expect(section).to be
+  within(section) do
+    warnings = all(".invalid-feedback")
+    expected_warnings = table.rows.flatten.map { |s|
+      custom_interpolation(s, ->(o) { o.is_a?(Time) ? Locales.format_date(o, @user) : o })
+    }
+    expect(warnings.map { |w| w.text }).to eq expected_warnings
+  end
+end
+
+step "I see no warnings in the :title section" do |section_name|
+  section = find_ui_section(title: section_name)
+  expect(section).to be
+  within(section) do
+    expect(page).to have_no_css(".invalid-feedback")
+  end
+end

@@ -122,3 +122,16 @@ export const notTransportable = () => (
   <OrderPanelStory modelDataOverrides={{ transportable: false, name: '4K-Videokamera Sony FDR-AX53' }} />
 )
 notTransportable.storyName = 'Not transportable'
+
+// `pl-gone` is not among the pickup locations of any pool in the mock data, i.e. it stands
+// for a location that was deactivated or moved away since the reservation was made.
+export const unavailableInitialPickupLocation = () => <OrderPanelStory initialPickupLocationId="pl-gone" />
+unavailableInitialPickupLocation.storyName = 'Unavailable initial pickup location'
+
+export const notTransportableWithInitialPickupLocation = () => (
+  <OrderPanelStory
+    modelDataOverrides={{ transportable: false, name: '4K-Videokamera Sony FDR-AX53' }}
+    initialPickupLocationId="pl-alt-1"
+  />
+)
+notTransportableWithInitialPickupLocation.storyName = 'Not transportable, with initial pickup location'

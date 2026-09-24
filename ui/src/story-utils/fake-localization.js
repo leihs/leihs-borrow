@@ -15,6 +15,9 @@ export const orderPanelTexts = {
     'not-transportable': {
       'de-CH': 'Abholung und Rückgabe nur am Hauptstandort des Inventarparks möglich.'
     },
+    'unavailable-initial-pickup-location': {
+      'de-CH': 'Der vorher selektierte Abholort steht für diesen Gegenstand nicht zur Verfügung'
+    },
     'user-delegation': { 'de-CH': 'Delegation' },
     timespan: { 'de-CH': 'Zeitraum' },
     from: { 'de-CH': 'Von' },

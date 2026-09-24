@@ -208,6 +208,11 @@
   environment_variables:
     FEATURE_NAME: 'Rentals - Show - Repeat order Order with models and an option 01'
     FEATURE: './spec/features/rentals/repeat_order.feature[1:3:1]'
+'./spec/features/rentals/repeat_order.feature[1:4:1]':
+  name: 'Rentals - Show - Repeat order Repeating an order with an alternative pickup location 01'
+  environment_variables:
+    FEATURE_NAME: 'Rentals - Show - Repeat order Repeating an order with an alternative pickup location 01'
+    FEATURE: './spec/features/rentals/repeat_order.feature[1:4:1]'
 './spec/features/request_framework.feature[1:1:1]':
   name: 'Request framework Login and retry after having been logged out 01'
   environment_variables:
@@ -268,6 +273,26 @@
   environment_variables:
     FEATURE_NAME: 'Shopping Cart - Editing Reservations Deleting a reservation 01'
     FEATURE: './spec/features/shopping_cart/edit_reservations.feature[1:2:1]'
+'./spec/features/shopping_cart/edit_reservations_pickup_location.feature[1:1:1]':
+  name: 'Shopping Cart - Editing Reservations with an alternative pickup location The preselected pickup location is still available 01'
+  environment_variables:
+    FEATURE_NAME: 'Shopping Cart - Editing Reservations with an alternative pickup location The preselected pickup location is still available 01'
+    FEATURE: './spec/features/shopping_cart/edit_reservations_pickup_location.feature[1:1:1]'
+'./spec/features/shopping_cart/edit_reservations_pickup_location.feature[1:2:1]':
+  name: 'Shopping Cart - Editing Reservations with an alternative pickup location The pickup location is still enabled, but the model is not transportable 01'
+  environment_variables:
+    FEATURE_NAME: 'Shopping Cart - Editing Reservations with an alternative pickup location The pickup location is still enabled, but the model is not transportable 01'
+    FEATURE: './spec/features/shopping_cart/edit_reservations_pickup_location.feature[1:2:1]'
+'./spec/features/shopping_cart/edit_reservations_pickup_location.feature[1:3:1]':
+  name: 'Shopping Cart - Editing Reservations with an alternative pickup location The selected pickup location has been deactivated 01'
+  environment_variables:
+    FEATURE_NAME: 'Shopping Cart - Editing Reservations with an alternative pickup location The selected pickup location has been deactivated 01'
+    FEATURE: './spec/features/shopping_cart/edit_reservations_pickup_location.feature[1:3:1]'
+'./spec/features/shopping_cart/edit_reservations_pickup_location.feature[1:4:1]':
+  name: 'Shopping Cart - Editing Reservations with an alternative pickup location Alternative pickup locations have been disabled for the pool 01'
+  environment_variables:
+    FEATURE_NAME: 'Shopping Cart - Editing Reservations with an alternative pickup location Alternative pickup locations have been disabled for the pool 01'
+    FEATURE: './spec/features/shopping_cart/edit_reservations_pickup_location.feature[1:4:1]'
 './spec/features/shopping_cart/invalid_reservations.feature[1:1:1]':
   name: 'Invalid reservations Identity and fix invalid reservations 01'
   environment_variables:

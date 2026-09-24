@@ -199,7 +199,26 @@ step "the inventory pool :name has the following details:" do |name, table|
   if data.key?("maximum reservation duration")
     updates[:borrow_maximum_reservation_duration] = data["maximum reservation duration"].to_i
   end
+  if data.key?("reservation advance days")
+    updates[:borrow_reservation_advance_days] = data["reservation advance days"].to_i
+  end
+  if data.key?("transfer buffer before pick up")
+    updates[:transfer_buffer_before_pick_up] = data["transfer buffer before pick up"].to_i
+  end
+  if data.key?("alternative pickup locations")
+    updates[:enable_alternative_pickup_locations] = (data["alternative pickup locations"] == "enabled")
+  end
   InventoryPool.where(id: pool.id).update(updates)
+end
+
+step "the inventory pool :name has a pickup location :location_name" do |name, location_name|
+  pool = InventoryPool.find(name: name) || fail("Pool not found: #{name.inspect}")
+  FactoryBot.create(:pickup_location, inventory_pool: pool, name: location_name)
+end
+
+step "the pickup location :location_name is deactivated" do |location_name|
+  location = PickupLocation.find(name: location_name) || fail("Pickup location not found: #{location_name.inspect}")
+  PickupLocation.where(id: location.id).update(active: false)
 end
 
 step "the inventory pool :name is closed on :weekday" do |name, weekday|
@@ -218,6 +237,11 @@ end
 
 step "there is a model :name" do |name|
   FactoryBot.create(:leihs_model, product: name)
+end
+
+step "the model :name is not transportable" do |name|
+  model = LeihsModel.find(product: name) || fail("Model not found: #{name.inspect}")
+  LeihsModel.where(id: model.id).update(transportable: false)
 end
 
 step "there is an option :name" do |name|

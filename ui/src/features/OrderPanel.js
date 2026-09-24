@@ -72,6 +72,10 @@ const OrderPanel = ({
     startDate: initialStartDate ? startOfDay(initialStartDate) : today,
     endDate: initialEndDate ? startOfDay(initialEndDate) : addDays(today, 1)
   })
+  // The notice about a dropped `initialPickupLocationId` is a one-shot message about the
+  // state the panel was opened with. As soon as the user picks a pool or a pickup location
+  // themselves, it is obsolete.
+  const [initialPickupLocationNoticeDismissed, setInitialPickupLocationNoticeDismissed] = useState(false)
 
   // State depending on the input states (e.g. validation result)
   const [dependentState, setDependentState] = useState()
@@ -84,12 +88,22 @@ const OrderPanel = ({
       isSurrogate: true
     }
     const selectablePools = poolFromList ? inventoryPools : [selectedPool, ...inventoryPools]
-    const poolPickupLocations = selectedPool.pickupLocations
+    const poolPickupLocations = selectedPool.pickupLocations || []
     const showPickupLocationSelect = anyPoolHasPickupLocations && isTransportable && poolPickupLocations.length > 0
     const resolvedPickupLocationId =
       showPickupLocationSelect && poolPickupLocations.some(loc => loc.id === selectedPickupLocationId)
         ? selectedPickupLocationId
         : null
+
+    // Tell the user when the pickup location the panel was opened with was dropped (because
+    // the model is not transportable, or the pool does not offer that location). Only judge
+    // this once the pool's locations are actually known - while the cart's edit dialog is
+    // still fetching availability, the pools carry no `pickupLocations` key at all.
+    const initialPickupLocationUnavailable =
+      !initialPickupLocationNoticeDismissed &&
+      Boolean(initialPickupLocationId) &&
+      Array.isArray(selectedPool.pickupLocations) &&
+      (!isTransportable || !poolPickupLocations.some(loc => loc.id === initialPickupLocationId))
 
     // Get availability data for selected pool
     const { availability } = modelData
@@ -117,7 +131,14 @@ const OrderPanel = ({
     const maxQuantityByDay = getMaxQuantityByDay(poolAvailability)
 
     // Validation
-    const validationResult = validate(selectedPool, poolAvailability, resolvedPickupLocationId)
+    const validationResult = validate(
+      selectedPool,
+      poolAvailability,
+      resolvedPickupLocationId,
+      // Block submitting only while the user can actually pick a replacement. If the select
+      // is not shown there is nothing to choose and the main warehouse is the only outcome.
+      initialPickupLocationUnavailable && showPickupLocationSelect
+    )
 
     setDependentState({
       selectablePools,
@@ -125,6 +146,7 @@ const OrderPanel = ({
       poolPickupLocations,
       showPickupLocationSelect,
       resolvedPickupLocationId,
+      initialPickupLocationUnavailable,
       poolAvailability,
       disabledDates,
       disabledStartDates,
@@ -145,11 +167,13 @@ const OrderPanel = ({
     inventoryPools,
     locale,
     anyPoolHasPickupLocations,
-    isTransportable
+    isTransportable,
+    initialPickupLocationId,
+    initialPickupLocationNoticeDismissed
   ])
 
   // Validation
-  function validate(selectedPool, poolAvailability, pickupLocationId) {
+  function validate(selectedPool, poolAvailability, pickupLocationId, pickupLocationBlocks) {
     const poolError = validatePool(selectedPool, locale, txt.validate)
     if (poolError) {
       return { poolError }
@@ -165,8 +189,15 @@ const OrderPanel = ({
       txt.validate,
       Boolean(pickupLocationId)
     )
+    const result = {}
+    if (pickupLocationBlocks) {
+      result.pickupLocationBlocks = true
+    }
     if (dateRangeErrors && dateRangeErrors.length > 0) {
-      return { dateRangeErrors: [...dateRangeErrors] }
+      result.dateRangeErrors = [...dateRangeErrors]
+    }
+    if (Object.keys(result).length > 0) {
+      return result
     }
     return { isValid: true }
   }
@@ -180,7 +211,8 @@ const OrderPanel = ({
     const validationResult = validate(
       dependentState.selectedPool,
       dependentState.poolAvailability,
-      dependentState.resolvedPickupLocationId
+      dependentState.resolvedPickupLocationId,
+      dependentState.initialPickupLocationUnavailable && dependentState.showPickupLocationSelect
     )
     if (validationResult.isValid) {
       onSubmit(stateForCallbacks())
@@ -206,6 +238,7 @@ const OrderPanel = ({
       : null
     setSelectedPoolId(id)
     setSelectedPickupLocationId(nextPickupLocationId)
+    setInitialPickupLocationNoticeDismissed(true)
     onInventoryPoolChange({
       ...stateForCallbacks(),
       poolId: id,
@@ -216,6 +249,7 @@ const OrderPanel = ({
   function changePickupLocation(e) {
     const id = e.target.value || null
     setSelectedPickupLocationId(id)
+    setInitialPickupLocationNoticeDismissed(true)
     onPickupLocationChange({ ...stateForCallbacks(), pickupLocationId: id })
   }
 
@@ -229,7 +263,9 @@ const OrderPanel = ({
     endDate: selectedRange.endDate,
     quantity,
     poolId: selectedPoolId,
-    pickupLocationId: dependentState?.resolvedPickupLocationId ?? selectedPickupLocationId
+    // `??` would be wrong here: a resolved id of `null` is a result, not a missing value -
+    // reporting the raw selection instead would submit a pickup location that was dropped.
+    pickupLocationId: dependentState ? dependentState.resolvedPickupLocationId : selectedPickupLocationId
   })
 
   function handleCalendarNavigate(newDate) {
@@ -250,6 +286,7 @@ const OrderPanel = ({
     poolPickupLocations,
     showPickupLocationSelect,
     resolvedPickupLocationId,
+    initialPickupLocationUnavailable,
     disabledDates,
     disabledStartDates,
     disabledEndDates,
@@ -318,36 +355,45 @@ const OrderPanel = ({
           <Let title={t(label, 'timespan', locale)}>
             {({ title }) => (
               <div className="d-grid gap-4">
-                {showPickupLocationSelect && (
+                {(showPickupLocationSelect || initialPickupLocationUnavailable) && (
                   <Section title={t(label, 'pickup-location', locale)}>
-                    <label htmlFor="pickup-location-id" className="visually-hidden">
-                      {t(label, 'pickup-location', locale)}
-                    </label>
-                    <select
-                      key={selectedPoolId}
-                      name="pickup-location-id"
-                      id="pickup-location-id"
-                      value={resolvedPickupLocationId || ''}
-                      onChange={changePickupLocation}
-                      className="form-select"
-                    >
-                      <option value="">{mainWarehouseLabel}</option>
-                      {poolPickupLocations.map(({ id, name }) => (
-                        <option key={id} value={id}>
-                          {name}
-                        </option>
-                      ))}
-                    </select>
-                    <InfoMessage className="mt-2">
-                      <a
-                        className="decorate-links"
-                        href={`/borrow/inventory-pools/${selectedPoolId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {t(label, 'pickup-locations-more-details', locale)}
-                      </a>
-                    </InfoMessage>
+                    {showPickupLocationSelect && (
+                      <>
+                        <label htmlFor="pickup-location-id" className="visually-hidden">
+                          {t(label, 'pickup-location', locale)}
+                        </label>
+                        <select
+                          key={selectedPoolId}
+                          name="pickup-location-id"
+                          id="pickup-location-id"
+                          value={resolvedPickupLocationId || ''}
+                          onChange={changePickupLocation}
+                          className="form-select"
+                        >
+                          <option value="">{mainWarehouseLabel}</option>
+                          {poolPickupLocations.map(({ id, name }) => (
+                            <option key={id} value={id}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                      </>
+                    )}
+                    {initialPickupLocationUnavailable && (
+                      <Warning className="mt-2">{t(label, 'unavailable-initial-pickup-location', locale)}</Warning>
+                    )}
+                    {showPickupLocationSelect && (
+                      <InfoMessage className="mt-2">
+                        <a
+                          className="decorate-links"
+                          href={`/borrow/inventory-pools/${selectedPoolId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t(label, 'pickup-locations-more-details', locale)}
+                        </a>
+                      </InfoMessage>
+                    )}
                   </Section>
                 )}
                 <Section title={t(label, 'quantity', locale)}>
