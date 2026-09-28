@@ -31,20 +31,18 @@
         end-date-jt (ch/local-date end-date)
         changes (ch/main tx model-id pool-id exclude-res-ids)
         changes-dates (sort (map first changes))
-        changes-dates-between-start-and-end-date (filter #(and (t/before? start-date-jt* %)
-                                                               (t/before? % end-date-jt))
-                                                         changes-dates)
-        dates-pairs (as-> changes-dates-between-start-and-end-date <> ; [3 5]
-                      (cons start-date-jt* <>) ; [1 3 5]
-                      (vec <>)
-                      (conj <> end-date-jt) ; [1 3 5 7]
-                      (mapv #(vector %1 %2) <> (drop 1 (cycle <>))) ; [[1 3] [3 5] [5 7] [7 1]]
-                      (butlast <>) ; [[1 3] [3 5] [5 7]]
-                      (map (fn [[d1 d2]]
-                             [d1 (if (= end-date-jt d2)
-                                   d2
-                                   (t/minus d2 (t/days 1)))])
-                           <>)) ; [[1 2] [3 4] [5 6]]
+        ;; e.g. start 1, end 7, changes on 3, 5 and 7
+        dates-pairs (->> changes-dates ; [... 3 5 7 ...]
+                         ;; changes after start, up to and including end:
+                         ;; a change on end-date itself must start its own segment
+                         (filter #(and (t/after? % start-date-jt*)
+                                       (not (t/after? % end-date-jt)))) ; [3 5 7]
+                         (cons start-date-jt*) ; [1 3 5 7]
+                         (partition-all 2 1) ; [[1 3] [3 5] [5 7] [7]]
+                         ;; each segment ends the day before the next one
+                         ;; starts, the last one ends on end-date
+                         (map (fn [[d1 d2]]
+                                [d1 (if d2 (t/minus d2 (t/days 1)) end-date-jt)]))) ; [[1 2] [3 4] [5 6] [7 7]]
         result-1 (->> dates-pairs
                       (map (fn [[from-date to-date]]
                              (let [quantity (c/maximum-available-in-pool-and-period-summed-for-groups

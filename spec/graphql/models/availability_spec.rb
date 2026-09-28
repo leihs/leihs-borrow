@@ -85,6 +85,69 @@ describe "models connection" do
     })
   end
 
+  it "booking calendar is correct when an availability change falls on the end date" do
+    today = Date.today
+
+    model = FactoryBot.create(:leihs_model)
+    2.times do
+      FactoryBot.create(:item, leihs_model: model, responsible: @inventory_pool,
+        is_borrowable: true)
+    end
+
+    FactoryBot.create(:reservation,
+      leihs_model: model,
+      user: @user2,
+      inventory_pool: @inventory_pool,
+      start_date: today + 3.days,
+      end_date: today + 5.days,
+      status: "approved")
+
+    quantities = ->(end_date) {
+      q = <<-GRAPHQL
+          {
+            models(ids: ["#{model.id}"]) {
+              edges {
+                node {
+                  availability(
+                    startDate: "#{today}",
+                    endDate: "#{end_date}",
+                    inventoryPoolIds: ["#{@inventory_pool.id}"]
+                  ) {
+                    dates {
+                      date
+                      quantity
+                    }
+                  }
+                }
+              }
+            }
+          }
+      GRAPHQL
+      result = query(q, @user.id)
+      result[:data][:models][:edges][0][:node][:availability][0][:dates]
+        .map { |d| [d[:date][0, 10], d[:quantity]] }.to_h
+    }
+
+    # the reservation starts on the end date: only that day is reduced
+    expect(quantities.call(today + 3.days)).to eq(
+      today.to_s => 2,
+      (today + 1.day).to_s => 2,
+      (today + 2.days).to_s => 2,
+      (today + 3.days).to_s => 1
+    )
+
+    # the reservation's return shows up on the end date
+    expect(quantities.call(today + 6.days)).to eq(
+      today.to_s => 2,
+      (today + 1.day).to_s => 2,
+      (today + 2.days).to_s => 2,
+      (today + 3.days).to_s => 1,
+      (today + 4.days).to_s => 1,
+      (today + 5.days).to_s => 1,
+      (today + 6.days).to_s => 2
+    )
+  end
+
   context "start/end date restrictions" do
     let(:q) do
       @start ||= Date.today
