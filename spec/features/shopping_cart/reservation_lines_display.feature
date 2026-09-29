@@ -102,3 +102,41 @@ Feature: Shopping Cart - Display of Reservation Lines
       | title          | body                                 |
       | 1× DSLR Camera | Pool A\n13.02.2101 (1 Tag)           |
       | 1× Tripod      | Pool B\n13.02. – 14.02.2101 (2 Tage) |
+
+
+  Scenario: Reservations differing only in pickup location
+
+    Reservation lines are grouped by model, dates and pool - the pickup location is not part
+    of that key. Two reservations that differ only in where they are picked up therefore end
+    up in one line, which names both locations.
+
+    Given the inventory pool "Pool A" has the following details:
+      | alternative pickup locations   | enabled |
+      | transfer buffer before pick up | 0       |
+    And the inventory pool "Pool A" has a pickup location "Media Lab"
+    And the inventory pool "Pool A" has a pickup location "Studio Basement"
+    And the following reservations exist for the user:
+      | quantity | model       | pool   | pickup-location | relative-start-date | relative-end-date |
+      | 1        | DSLR Camera | Pool A | Media Lab       | ${Date.today}       | ${Date.tomorrow}  |
+      | 1        | DSLR Camera | Pool A | Studio Basement | ${Date.today}       | ${Date.tomorrow}  |
+    When I log in as the user
+    And I navigate to the cart
+    And I sleep "0.5"
+    Then I see the following lines in the "Items" section:
+      | title          | body                                                                                      |
+      | 2× DSLR Camera | Media Lab, Studio Basement\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+
+    # The consequence: the line can only be edited as a whole. The dialog opens with the
+    # location of the first reservation, and confirming applies it to both of them.
+    When I click on the card with title "2× DSLR Camera"
+    And I see the "DSLR Camera" dialog
+    And I see a form inside the dialog
+    And I see the "Pickup location" section
+    Then the "Pickup location" select shows "Media Lab"
+
+    When I click on "Confirm"
+    Then the "DSLR Camera" dialog has closed
+    And I sleep "0.5"
+    Then I see the following lines in the "Items" section:
+      | title          | body                                                                      |
+      | 2× DSLR Camera | Media Lab\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |

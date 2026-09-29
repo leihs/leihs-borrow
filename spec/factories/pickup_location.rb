@@ -6,5 +6,6 @@ FactoryBot.define do
   factory :pickup_location do
     inventory_pool
     name { Faker::Lorem.word }
+    active { true }
   end
 end

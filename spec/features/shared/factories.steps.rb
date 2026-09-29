@@ -5,10 +5,21 @@ step "there is a user" do
 end
 
 step "there is a user :full_name" do |full_name|
+  @user = find_or_create_user(full_name)
+end
+
+# Like "there is a user :full_name", but does not make them the scenario's @user.
+# For people who only exist to occupy items for somebody else.
+step "there is another user :full_name" do |full_name|
+  find_or_create_user(full_name)
+end
+
+def find_or_create_user(full_name)
   first, last = full_name.split
   login = user_login_from_full_name(full_name)
   email = Faker::Internet.email(name: full_name)
-  @user = User.find(login: login) || FactoryBot.create(:user, firstname: first, lastname: last, login: login, email: email)
+  User.find(login: login) ||
+    FactoryBot.create(:user, firstname: first, lastname: last, login: login, email: email)
 end
 
 step "there is a delegation :name" do |name|
@@ -205,6 +216,12 @@ step "the inventory pool :name has the following details:" do |name, table|
   if data.key?("transfer buffer before pick up")
     updates[:transfer_buffer_before_pick_up] = data["transfer buffer before pick up"].to_i
   end
+  if data.key?("transfer buffer after drop off")
+    updates[:transfer_buffer_after_drop_off] = data["transfer buffer after drop off"].to_i
+  end
+  if data.key?("default pickup location name")
+    updates[:default_pickup_location_name] = data["default pickup location name"]
+  end
   if data.key?("alternative pickup locations")
     updates[:enable_alternative_pickup_locations] = (data["alternative pickup locations"] == "enabled")
   end
@@ -216,8 +233,19 @@ step "the inventory pool :name has a pickup location :location_name" do |name, l
   FactoryBot.create(:pickup_location, inventory_pool: pool, name: location_name)
 end
 
-step "the pickup location :location_name is deactivated" do |location_name|
-  location = PickupLocation.find(name: location_name) || fail("Pickup location not found: #{location_name.inspect}")
+step "the inventory pool :name has a pickup location :location_name with description :description" do |name, location_name, description|
+  pool = InventoryPool.find(name: name) || fail("Pool not found: #{name.inspect}")
+  FactoryBot.create(:pickup_location,
+    inventory_pool: pool,
+    name: location_name,
+    description: description)
+end
+
+# Scoped by pool: the same location name can exist in several pools.
+step "the pickup location :location_name of pool :pool_name is deactivated" do |location_name, pool_name|
+  pool = InventoryPool.find(name: pool_name) || fail("Pool not found: #{pool_name.inspect}")
+  location = PickupLocation.find(name: location_name, inventory_pool_id: pool.id) ||
+    fail("Pickup location not found in pool #{pool_name.inspect}: #{location_name.inspect}")
   PickupLocation.where(id: location.id).update(active: false)
 end
 

@@ -23,7 +23,10 @@ def create_reservations_from_table_for_user(user, table)
       end_date: end_date,
       leihs_model: model,
       inventory_pool: pool,
-      pickup_location_id: pickup_location.try(:id)
+      pickup_location_id: pickup_location.try(:id),
+      # Anything but "unsubmitted" makes the reservation block availability for
+      # everybody else instead of sitting in this user's cart.
+      status: r["status"].presence || "unsubmitted"
     )
   end
 end

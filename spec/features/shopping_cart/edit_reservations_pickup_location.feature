@@ -92,7 +92,7 @@ Feature: Shopping Cart - Editing Reservations with an alternative pickup locatio
     Summary: The pool still offers other pickup locations, so the user has to pick one
     (or the main warehouse) before the dialog can be confirmed.
 
-    Given the pickup location "Studio Basement" is deactivated
+    Given the pickup location "Studio Basement" of pool "Pool A" is deactivated
     When I log in as the user
     And I navigate to the cart
     And I sleep "0.5"
@@ -159,3 +159,97 @@ Feature: Shopping Cart - Editing Reservations with an alternative pickup locatio
     And I see the following lines in the "Items" section:
       | title          | body                                                                     |
       | 1× DSLR Camera | Pool A\n${format_date_range_short(Date.today, 2.days.from_now)} (3 days) |
+
+  Scenario: The start date no longer satisfies the transfer buffer
+
+    Summary: Transferring an item to another location costs the pool working days, so a
+    reservation that was fine when it was made becomes invalid when the buffer grows. The
+    cart refuses to be sent until the dates are moved.
+
+    Given the inventory pool "Pool A" has the following details:
+      | transfer buffer before pick up | 3 |
+    When I log in as the user
+    And I navigate to the cart
+    And I sleep "0.5"
+    Then I see "1 invalid item"
+    And the "Send order" button is disabled
+
+    When I click on the card with title "1× DSLR Camera"
+    And I see the "DSLR Camera" dialog
+    And I see a form inside the dialog
+    And I see the "Pickup location" section
+    Then I see the following warnings in the "Time span" section:
+      | text                                            |
+      | Earliest pickup date in 3 working days from now |
+    When I click on "Confirm"
+    Then the "DSLR Camera" dialog did not close
+
+    When I enter the date "${3.days.from_now}" in the "From" field
+    And I enter the date "${5.days.from_now}" in the "Until" field
+    And I press the tab key
+    Then I see no warnings in the "Time span" section
+    When I click on "Confirm"
+    Then the "DSLR Camera" dialog has closed
+
+    And I sleep "0.5"
+    Then I don't see "1 invalid item"
+    And the "Send order" button is not disabled
+
+  Scenario: A deactivated pickup location blocks sending the order
+
+    Summary: The edit dialog is not the only place that notices - the cart itself counts
+    the reservation as invalid and refuses to submit until it has been fixed.
+
+    Given the pickup location "Studio Basement" of pool "Pool A" is deactivated
+    When I log in as the user
+    And I navigate to the cart
+    And I sleep "0.5"
+    Then I see "1 invalid item"
+    And the "Send order" button is disabled
+
+    When I click on the card with title "1× DSLR Camera"
+    And I see the "DSLR Camera" dialog
+    And I see the "Pickup location" section
+    And I select "Media Lab" from "Pickup location"
+    And I click on "Confirm"
+    Then the "DSLR Camera" dialog has closed
+
+    And I sleep "0.5"
+    Then I don't see "1 invalid item"
+    And the "Send order" button is not disabled
+
+  Scenario: Switching the pool away and back restores the original pickup location
+
+    Summary: The dialog remembers the location the reservation was opened with. Another
+    pool cannot offer it, but coming back does.
+
+    Given there is an inventory pool "Pool B"
+    And the user is customer of pool "Pool B"
+    And the inventory pool "Pool B" has the following details:
+      | alternative pickup locations   | enabled |
+      | transfer buffer before pick up | 0       |
+    And the inventory pool "Pool B" has a pickup location "Annex"
+    And the following items exist:
+      | code | model       | pool   |
+      | B11  | DSLR Camera | Pool B |
+
+    When I log in as the user
+    And I navigate to the cart
+    And I sleep "0.5"
+    And I click on the card with title "1× DSLR Camera"
+    And I see the "DSLR Camera" dialog
+    And I see a form inside the dialog
+    And I see the "Pickup location" section
+    Then the "Pickup location" select shows "Studio Basement"
+
+    When I select "Pool B (max. 1)" from "Inventory pool"
+    And I see the "Pickup location" section
+    Then the "Pickup location" select offers these options:
+      | option     |
+      | Hauptlager |
+      | Annex      |
+    And the "Pickup location" select shows "Hauptlager"
+
+    When I select "Pool A (max. 2)" from "Inventory pool"
+    And I see the "Pickup location" section
+    Then the "Pickup location" select shows "Studio Basement"
