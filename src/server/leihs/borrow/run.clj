@@ -16,11 +16,11 @@
    [logbug.catcher :as catcher]
    [logbug.debug :as debug]
    [logbug.thrown :as thrown]
-   [taoensso.timbre :refer [debug info warn error]]))
+   [taoensso.timbre :refer [debug info warn]]))
 
 (defn run [options]
   (catcher/snatch
-   {:return-fn (fn [e] (System/exit -1))}
+   {:return-fn (shutdown/run-return-fn options)}
    (info "Invoking run with options: " options)
    (shutdown/init options)
    (graphql/init options)

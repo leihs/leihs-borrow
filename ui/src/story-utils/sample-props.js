@@ -132,6 +132,10 @@ export const modelSearchFilterProps = {
     'availability-unrestricted': {
       'de-CH': 'Verfügbarkeit von/bis',
       'en-GB': 'Availability from/until'
+    },
+    'search-description-and-properties-label': {
+      'de-CH': 'Auch Beschreibung und Eigenschaften durchsuchen',
+      'en-GB': 'Also search description and properties'
     }
   }
 }

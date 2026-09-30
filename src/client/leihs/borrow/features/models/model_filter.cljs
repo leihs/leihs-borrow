@@ -25,7 +25,9 @@
 (reg-sub ::options
          (fn [db _]
            ; NOTE: maybe this list should be somewhere in constants?
-           (let [known-filter-keys [:term :pool-id :pickup-location-id :only-available :start-date :end-date :quantity]]
+           (let [known-filter-keys [:term :pool-id :pickup-location-id :only-available
+                                    :start-date :end-date :quantity
+                                    :search-description-and-properties]]
              (->> db
                   :routing/routing :bidi-match :query-params
                   ((fn [h] (update-vals (select-keys h known-filter-keys) #(or % ""))))))))
@@ -98,6 +100,7 @@
               current-filters (-> saved-filters
                                   (assoc :selected-pool selected-pool)
                                   (assoc :term current-search-term)
+                                  (update :search-description-and-properties #(= % "true"))
                                   h/camel-case-keys
                                   clj->js)
 
@@ -118,6 +121,10 @@
                                   (-> saved-filters
                                       (dissoc :pool-id)
                                       (dissoc :pickup-location-id)))))
+              on-change-search-description-and-properties
+              #(dispatch-fn (if %
+                              (assoc saved-filters :search-description-and-properties true)
+                              (dissoc saved-filters :search-description-and-properties)))
               on-apply-availability #(dispatch-fn (remove-blanks (merge saved-filters %)))
               on-clear-filter (fn [filter-to-clear]
                                 (dispatch-fn
@@ -145,6 +152,7 @@
              :onClearFilter on-clear-filter
              :onSubmitTerm on-submit-term
              :onChangePool on-change-pool
+             :onChangeSearchDescriptionAndProperties on-change-search-description-and-properties
              :locale text-locale
              :txt (model-search-filter-texts)}]
            (when is-unselectable-pool

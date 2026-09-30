@@ -106,19 +106,49 @@
       nil?
       not))
 
-(defn merge-search-conditions [sqlmap search-term]
+(defn- ilike [field term]
+  [(keyword "~~*") field term])
+
+(defn- term-in-properties? [term]
+  [:exists
+   (-> (sql/select true)
+       (sql/from :properties)
+       (sql/where [:= :properties.model_id :models.id]
+                  [:or
+                   (ilike :properties.key term)
+                   (ilike :properties.value term)]))])
+
+(defn- term-where-clause [term search-description-and-properties]
+  (cond-> [:or
+           (ilike :models.product term)
+           (ilike :models.version term)
+           (ilike :models.manufacturer term)]
+    search-description-and-properties
+    (conj (ilike :models.description term)
+          (term-in-properties? term))))
+
+(defn- any-term-matches? [field terms]
+  (cons :or (map #(ilike field %) terms)))
+
+(defn merge-search-conditions
+  [sqlmap search-term search-description-and-properties]
   (let [terms (-> search-term
                   (string/split #"\s+")
                   (->> (map presence)
                        (filter identity)
                        (map #(str "%" % "%"))))
-        field [:concat_ws
-               " "
-               :models.product
-               :models.version
-               :models.manufacturer]
-        where-clauses (map #(vector (keyword "~~*") field %) terms)]
-    (sql/where sqlmap (cons :and where-clauses))))
+        where-clauses (map #(term-where-clause % search-description-and-properties)
+                           terms)
+        rank-expr [:case
+                   (any-term-matches? :models.product terms) 1
+                   (any-term-matches? :models.manufacturer terms) 2
+                   (any-term-matches? :models.version terms) 3
+                   :else 4]]
+    (-> sqlmap
+        (sql/where (cons :and where-clauses))
+        (sql/select-distinct [rank-expr :search_rank])
+        (dissoc :order-by)
+        (sql/order-by [:search_rank :asc] [:models.name :asc]))))
 
 (defn merge-category-ids-conditions [sqlmap category-ids]
   (-> sqlmap
@@ -258,6 +288,7 @@
            direct-only
            order-by
            search-term
+           search-description-and-properties
            unscope-reservable
            pool-ids
            is-favorited
@@ -273,7 +304,7 @@
       (cond-> (seq ids)
         (sql/where [:in :models.id ids]))
       (cond-> search-term
-        (merge-search-conditions search-term))
+        (merge-search-conditions search-term search-description-and-properties))
       (cond-> transportable-only
         (sql/where [:= :models.transportable true]))
       (cond-> (not (nil? is-favorited))
@@ -284,7 +315,7 @@
             (sql/where [(if is-favorited :!= :=)
                         :favorite_models.model_id
                         nil])))
-      (cond-> (seq order-by)
+      (cond-> (and (seq order-by) (not search-term))
         (-> (dissoc :order-by)
             (as-> sqlmap
                   (apply sql/order-by

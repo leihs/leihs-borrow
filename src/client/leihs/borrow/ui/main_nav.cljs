@@ -275,12 +275,17 @@
         current-profile @(subscribe [::current-profile])
         changing-to-profile-id @(subscribe [::profile-switch/changing-to-id])
         languages @(subscribe [::languages/data])
-        locale-to-use @(subscribe [::current-user/locale-to-use])]
+        locale-to-use @(subscribe [::current-user/locale-to-use])
+        user-nav @(subscribe [::user-nav])
+        documentation-url (:documentation-url user-nav)]
     [:> UI/Components.Design.Menu {:id "user-menu"}
 
      [:> UI/Components.Design.Menu.Group {:title (:name user)}
       [menu-link (routing/path-for ::routes/current-user-show) (t :user/current-user)
        (some #{handler} [::routes/current-user-show])]
+      (when documentation-url
+        [:> UI/Components.Design.Menu.Link {:href documentation-url :target "_blank"}
+         (t :documentation)])
       [:> UI/Components.Design.Menu.Button {:type "submit" :form "sign-out-form"} (t :user/logout)]
       [:form.visually-hidden {:id "sign-out-form" :action "/sign-out" :method "POST"} [csrf/token-field]]]
 
