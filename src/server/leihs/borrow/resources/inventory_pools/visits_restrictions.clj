@@ -43,17 +43,6 @@
                        (inc in-advance))
                 :else date))))))
 
-(defn visits-capacity-reached? [date visits-count pool]
-  (let [index (-> date
-                  jt/local-date
-                  .getDayOfWeek
-                  .getValue
-                  (#(if (= % 7) 0 %)) ; convert from 1-based mon-sun to 0-based sun-sat
-                  str
-                  keyword)
-        max_visits (some-> pool :max_visits index Integer.)]
-    (and max_visits (>= visits-count max_visits))))
-
 (defn start-date-restrictions [date-with-avail pool]
   (cond-> nil
     (-> date-with-avail :date jt/local-date
@@ -68,9 +57,9 @@
       (jt/before? (jt/local-date (:date date-with-avail)) eppd))
     (conj :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE)
 
-    (visits-capacity-reached? (:date date-with-avail)
-                              (:visits_count date-with-avail)
-                              pool)
+    (pool/visits-capacity-reached? (:date date-with-avail)
+                                   (:visits_count date-with-avail)
+                                   pool)
     (conj :VISITS_CAPACITY_REACHED)))
 
 (defn end-date-restrictions [date-with-avail pool]
@@ -83,9 +72,9 @@
     (-> date-with-avail :date jt/local-date (pool/get-holiday pool))
     (conj :HOLIDAY)
 
-    (visits-capacity-reached? (:date date-with-avail)
-                              (:visits_count date-with-avail)
-                              pool)
+    (pool/visits-capacity-reached? (:date date-with-avail)
+                                   (:visits_count date-with-avail)
+                                   pool)
     (conj :VISITS_CAPACITY_REACHED)))
 
 (defn validate-single-date [date-with-avail pool]

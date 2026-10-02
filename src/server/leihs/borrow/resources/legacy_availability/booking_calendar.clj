@@ -8,6 +8,7 @@
             [leihs.core.settings :refer [settings]]
             [leihs.core.availability.changes :as ch]
             [leihs.core.availability.core :as c]
+            [leihs.core.availability.queries :as q]
             [java-time :as t]))
 
 (hugsql/def-sqlvec-fns "sql/booking_calendar_visits.sql")
@@ -25,45 +26,18 @@
        (jdbc-query tx)))
 
 (defn get [tx start-date end-date pool-id user-id model-id exclude-res-ids]
-  (let [today (ch/local-date)
-        start-date-jt (ch/local-date start-date)
-        start-date-jt* (if (t/before? start-date-jt today) today start-date-jt)
-        end-date-jt (ch/local-date end-date)
-        changes (ch/main tx model-id pool-id exclude-res-ids)
-        changes-dates (sort (map first changes))
-        ;; e.g. start 1, end 7, changes on 3, 5 and 7
-        dates-pairs (->> changes-dates ; [... 3 5 7 ...]
-                         ;; changes after start, up to and including end:
-                         ;; a change on end-date itself must start its own segment
-                         (filter #(and (t/after? % start-date-jt*)
-                                       (not (t/after? % end-date-jt)))) ; [3 5 7]
-                         (cons start-date-jt*) ; [1 3 5 7]
-                         (partition-all 2 1) ; [[1 3] [3 5] [5 7] [7]]
-                         ;; each segment ends the day before the next one
-                         ;; starts, the last one ends on end-date
-                         (map (fn [[d1 d2]]
-                                [d1 (if d2 (t/minus d2 (t/days 1)) end-date-jt)]))) ; [[1 2] [3 4] [5 6] [7 7]]
-        result-1 (->> dates-pairs
-                      (map (fn [[from-date to-date]]
-                             (let [quantity (c/maximum-available-in-pool-and-period-summed-for-groups
-                                             tx
-                                             model-id
-                                             user-id
-                                             from-date
-                                             to-date
-                                             pool-id
-                                             exclude-res-ids)]
-                               (->> (ch/explode-date-range from-date to-date)
-                                    (map #(hash-map :date (str %) :quantity quantity :visits_count 0))))))
-                      flatten)
-        result-2 (if (not= start-date-jt start-date-jt*)
-                   (concat (->> (ch/explode-date-range start-date-jt (t/minus today (t/days 1)))
-                                (map #(hash-map :date (str %) :quantity 0 :visits_count 0)))
-                           result-1)
-                   result-1)
-        visits-count (get-visits-counts tx start-date end-date pool-id)
-        result-3 (mapv merge result-2 visits-count)]
-    {:dates result-3}))
+  (let [changes (ch/main tx model-id pool-id exclude-res-ids)
+        group-ids (cons :general (q/get-user-group-ids tx user-id))
+        quantities (->> (c/booking-calendar changes
+                                            group-ids
+                                            (ch/local-date start-date)
+                                            (ch/local-date end-date))
+                        (map (fn [{:keys [date quantity]}]
+                               {:date (str date)
+                                :quantity (max 0 quantity)
+                                :visits_count 0})))
+        visits-count (get-visits-counts tx start-date end-date pool-id)]
+    {:dates (mapv merge quantities visits-count)}))
 
 (comment
   (= (ch/local-date "2023-05-10") (ch/local-date "2023-05-10"))
