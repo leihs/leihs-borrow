@@ -18,6 +18,8 @@ RSpec.configure do |config|
     srand 1
     db_clean
     db_restore_data seeds_sql
+    # align clj today with Date.today (UTC on CI)
+    database[:settings].update(time_zone: "UTC")
   end
 end
 
