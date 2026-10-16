@@ -148,6 +148,50 @@ describe "models connection" do
     )
   end
 
+  context "entitled quantity higher than borrowable items" do
+    # 2 items, group entitled for 5 => general group = 2 - 5 = -3
+    before :each do
+      @model = FactoryBot.create(:leihs_model)
+      2.times do
+        FactoryBot.create(:item, leihs_model: @model, responsible: @inventory_pool,
+          is_borrowable: true)
+      end
+      @group = FactoryBot.create(:entitlement_group, inventory_pool: @inventory_pool)
+      FactoryBot.create(:entitlement, entitlement_group: @group, leihs_model: @model,
+        quantity: 5)
+    end
+
+    let(:q) do
+      <<-GRAPHQL
+        {
+          models(ids: ["#{@model.id}"]) {
+            edges {
+              node {
+                availableQuantityInDateRange(
+                  startDate: "#{Date.today}",
+                  endDate: "#{Date.tomorrow}"
+                )
+              }
+            }
+          }
+        }
+      GRAPHQL
+    end
+
+    def edges(user)
+      query(q, user.id)[:data][:models][:edges]
+    end
+
+    it "member of the group gets all items" do
+      @group.add_user(@user)
+      expect(edges(@user)).to eq [{node: {availableQuantityInDateRange: 2}}]
+    end
+
+    it "non-member does not see the model" do
+      expect(edges(@user)).to eq []
+    end
+  end
+
   context "start/end date restrictions" do
     let(:q) do
       @start ||= Date.today
