@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Scan all dependency lockfiles (Gemfile.lock, package-lock.json, ...) against
+# the OSV vulnerability database. Clojure deps are covered by bin/clj-osv-scan.
+#
+# The database and shared-clj submodules are excluded, they are scanned in
+# their own repositories.
+#
+# Prerequisite: osv-scanner must be installed.
+#   macOS:  brew install osv-scanner
+#   other:  https://google.github.io/osv-scanner/installation/
+
+PROJECT_DIR="$(cd -- "$(dirname "${BASH_SOURCE}")" ; cd .. > /dev/null 2>&1 && pwd -P)"
+
+cd "${PROJECT_DIR}"
+
+# Exits non-zero when vulnerabilities are found.
+# Pass extra flags to override defaults, e.g.: bin/osv-scan --format vertical
+osv-scanner scan source -r \
+  --format markdown \
+  --config "${PROJECT_DIR}/.osv-scanner-config.toml" \
+  --experimental-exclude database \
+  --experimental-exclude shared-clj \
+  "$@" \
+  .
+
+# vi: ft=sh
