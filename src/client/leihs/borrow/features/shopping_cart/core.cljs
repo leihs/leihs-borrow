@@ -636,14 +636,15 @@
               [:> UI/Components.Design.Section
                {:title (t :confirm-dialog/lending-terms)}
                [:div.form-check
-                [:input.form-check-input
-                 {:type :checkbox
-                  :name "lending-terms-accepted"
-                  :id "lending-terms-accepted"
-                  :checked (:value @lending-terms-accepted)
-                  :required true
-                  :on-change (fn [_] (swap! lending-terms-accepted (fn [x] {:value (-> x :value not) :was-validated true})))}]
-                [:label.form-check-label {:html-for "lending-terms-accepted"} (t :confirm-dialog/i-accept)
+                [:label.form-check-label {:for "lending-terms-accepted"}
+                 [:input.form-check-input
+                  {:type :checkbox
+                   :name "lending-terms-accepted"
+                   :id "lending-terms-accepted"
+                   :checked (:value @lending-terms-accepted)
+                   :required true
+                   :on-change (fn [_] (swap! lending-terms-accepted (fn [x] {:value (-> x :value not) :was-validated true})))}]
+                 (t :confirm-dialog/i-accept)
                  (when (:lending-terms-url dialog-data) ":")]
                 (when-let [url (:lending-terms-url dialog-data)]
                   [:div.mt-2 [:a.decorate-links {:href url :target "_blank"} url]])]])]]]

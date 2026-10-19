@@ -19,34 +19,47 @@ ${PROJECT_DIR}/bin/env/java-setup
 ${PROJECT_DIR}/bin/env/clojure-setup
 
 DEPS_JSON=$(mktemp /tmp/clj-osv-scan-temp.json)
+DEPS_LIST=$(mktemp)
+DEPS_ERR=$(mktemp)
 
 cleanup() {
-  rm -f "${DEPS_JSON}"
+  rm -f "${DEPS_JSON}" "${DEPS_LIST}" "${DEPS_ERR}"
 }
 trap cleanup EXIT
 
 cd "${PROJECT_DIR}"
 
-# Resolve all deps (direct + transitive) including the :cljs alias, then
-# convert `group/artifact version` lines to osv-scanner's JSON lockfile format.
+# Resolve all deps (direct + transitive) including the :cljs alias.
+# stderr is only shown on failure (it's noisy with download messages).
+if ! clojure -X:deps list :aliases '[:cljs]' > "${DEPS_LIST}" 2> "${DEPS_ERR}"; then
+  cat "${DEPS_ERR}" >&2
+  echo "ERROR: 'clojure -X:deps list' failed, check deps.edn (wrong package name or inexistent version?)" >&2
+  exit 1
+fi
+
+if [[ ! -s "${DEPS_LIST}" ]]; then
+  echo "ERROR: 'clojure -X:deps list' returned no dependencies" >&2
+  exit 1
+fi
+
+# Convert `group/artifact version` lines to osv-scanner's JSON lockfile format.
 # Git-sha based deps are skipped (not in the Maven ecosystem).
-clojure -X:deps list :aliases '[:cljs]' 2>/dev/null | \
-  awk '
-    BEGIN { printf "{\"results\":[{\"packages\":["; first=1 }
-    NF < 2 { next }
-    length($2) == 40 && $2 ~ /^[0-9a-fA-F]+$/ { next }
-    {
-      gsub("/", ":", $1)
-      if (!first) printf ","
-      printf "{\"package\":{\"name\":\"%s\",\"version\":\"%s\",\"ecosystem\":\"Maven\"}}", $1, $2
-      first = 0
-    }
-    END { printf "]}]}\n" }
-  ' > "${DEPS_JSON}"
+awk '
+  BEGIN { printf "{\"results\":[{\"packages\":["; first=1 }
+  NF < 2 { next }
+  length($2) == 40 && $2 ~ /^[0-9a-fA-F]+$/ { next }
+  {
+    gsub("/", ":", $1)
+    if (!first) printf ","
+    printf "{\"package\":{\"name\":\"%s\",\"version\":\"%s\",\"ecosystem\":\"Maven\"}}", $1, $2
+    first = 0
+  }
+  END { printf "]}]}\n" }
+' "${DEPS_LIST}" > "${DEPS_JSON}"
 
 # Scan against the OSV database.
 # Exits non-zero when vulnerabilities are found.
-# Pass extra flags to override defaults, e.g.: bin/osv-check --format vertical
+# Pass extra flags to override defaults, e.g.: bin/clj-osv-scan --format vertical
 osv-scanner scan source \
   --format markdown \
   --config "${PROJECT_DIR}/.osv-scanner-config.toml" \

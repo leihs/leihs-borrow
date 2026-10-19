@@ -7,7 +7,9 @@
     "@radix-ui/react-dropdown-menu: pinned at ^2.0.x — v2.1+ requires react 18 at runtime",
     "react: pinned at v17 — cljs reagent is incompatible with react 18. Unblock by upgrading reagent first.",
     "storybook: pinned at ^8.x — v9 officially dropped react 17. Unblock by upgrading react/reagent first.",
-    "postcss: pinned at 8.5.23, see docs/issues/20260810-postcss-bom-issue.md"
+    "postcss: pinned at 8.5.23, see docs/issues/20260810-postcss-bom-issue.md",
+    "sockjs, @storybook/addon-actions > uuid: overridden to 11 (GHSA-w5hq-g745-h8pq); uuid 12+ is ESM-only and breaks their require. Remove once webpack-dev-server drops sockjs (v6) and storybook is upgraded.",
+    "@storybook/builder-webpack5 > webpack-dev-middleware: overridden to 7.4.6 (GHSA-g84c-rxfj-3j2c); storybook 8 pins ^6, which has no fix. Remove once storybook is upgraded."
   ],
   "scripts": {
     "storybook": "storybook dev -p 6006 --no-open",
@@ -27,7 +29,7 @@
     "@babel/preset-env": "^7.22.9",
     "@babel/preset-react": "^7.22.5",
     "@fontsource/source-sans-pro": "^5.0.5",
-    "@leihs/calendar": "github:leihs/leihs-calendar#3.3.1",
+    "@leihs/calendar": "github:leihs/leihs-calendar#3.3.2",
     "@radix-ui/react-dropdown-menu": "~2.0.6",
     "@storybook/addon-essentials": "^8.6.18",
     "@storybook/addon-interactions": "^8.6.18",
@@ -73,7 +75,16 @@
     "tar": ">=7.5.8",
     "@babel/runtime": ">=7.26.10",
     "esbuild": ">=0.28.1",
-    "postcss": "8.5.23"
+    "postcss": "8.5.23",
+    "sockjs": {
+      "uuid": "^11.1.1"
+    },
+    "@storybook/addon-actions": {
+      "uuid": "^11.1.1"
+    },
+    "@storybook/builder-webpack5": {
+      "webpack-dev-middleware": "^7.4.6"
+    }
   },
   "browserslist": {
     "production": [
