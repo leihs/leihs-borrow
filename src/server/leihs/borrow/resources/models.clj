@@ -13,7 +13,7 @@
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.core.availability.core :as av]
-            [leihs.borrow.resources.categories.descendents :as descendents]
+            [leihs.core.resources.categories.descendents :as descendents]
             [leihs.borrow.resources.entitlements :as entitlements]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.inventory-pools :as pools]
@@ -149,23 +149,6 @@
         (dissoc :order-by)
         (sql/order-by [:search_rank :asc] [:models.name :asc]))))
 
-(defn merge-category-ids-conditions [sqlmap category-ids]
-  (-> sqlmap
-      (sql/join :model_links
-                [:=
-                 :models.id
-                 :model_links.model_id])
-      (sql/where [:in
-                  :model_links.model_group_id
-                  category-ids])))
-
-(defn get-category-ids [tx category-id direct-only]
-  (if direct-only
-    [category-id]
-    (as-> category-id <>
-      (descendents/descendent-ids tx <>)
-      (conj <> category-id))))
-
 (defn available-quantity-in-date-range
   "If the available quantity was already computed through the enclosing
   resolver, then just return it. Otherwise fetch from legacy and compute."
@@ -250,14 +233,20 @@
                                      (sql/from :models_compatibles)
                                      (sql/where [:= :model_id (:id value)]))])))
 
-(defn merge-categories-conditions [sqlmap tx category-id direct-only]
-  (let [category-ids (get-category-ids tx category-id direct-only)]
-    (cond-> sqlmap
-      (seq category-ids)
-      (merge-category-ids-conditions category-ids))))
+(defn merge-categories-conditions [sqlmap category-id direct-only]
+  (-> sqlmap
+      (sql/join :model_links
+                [:=
+                 :models.id
+                 :model_links.model_id])
+      (sql/where (cond-> [:or [:= :model_links.model_group_id category-id]]
+                   (not direct-only)
+                   (conj [:in
+                          :model_links.model_group_id
+                          (descendents/descendent-ids-sqlmap category-id)])))))
 
 (defn get-multiple-sqlmap
-  [{{tx :tx} :request user-id ::target-user/id :as context}
+  [{user-id ::target-user/id :as context}
    {:keys [ids
            category-id
            limit
@@ -274,7 +263,7 @@
       (cond-> (= (::lacinia/container-type-name context) :Model)
         (from-compatibles value user-id pool-ids unscope-reservable))
       (cond-> (or category-id (= (::lacinia/container-type-name context) :Category))
-        (merge-categories-conditions tx (or category-id (:id value)) direct-only))
+        (merge-categories-conditions (or category-id (:id value)) direct-only))
       (cond-> (not unscope-reservable)
         (merge-reservable-conditions user-id pool-ids))
       (cond-> (seq ids)
