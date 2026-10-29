@@ -23,6 +23,7 @@ query templateShow(
           startDateRestrictions
           endDateRestrictions
         }
+        earliestPossiblePickupDate
       }
     }
     lines {

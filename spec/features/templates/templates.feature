@@ -124,6 +124,10 @@ Feature: Templates
     And I click on "Order items"
 
     Then I see the "Add items" dialog
+    And I see the following warnings in the "Time span" section:
+      | text                                       |
+      | Earliest pickup date is ${2.days.from_now} |
+    And the submit button is disabled
 
     When I enter the date "${Date.yesterday}" in the "From" field
     And I press the tab key
@@ -135,15 +139,15 @@ Feature: Templates
     When I enter the date "${Date.today}" in the "From" field
     And I press the tab key
     Then I see the following warnings in the "Time span" section:
-      | text                                                                                    |
-      | Pickup not possible on ${0.days.from_now} (closed on ${0.days.from_now.strftime("%A")}) |
+      | text                                       |
+      | Earliest pickup date is ${2.days.from_now} |
     And the submit button is disabled
 
     When I enter the date "${Date.tomorrow}" in the "From" field
     And I press the tab key
     Then I see the following warnings in the "Time span" section:
-      | text                                            |
-      | Earliest pickup date in 2 working days from now |
+      | text                                       |
+      | Earliest pickup date is ${2.days.from_now} |
     And the submit button is disabled
 
     When I enter the date "${6.days.from_now}" in the "From" field

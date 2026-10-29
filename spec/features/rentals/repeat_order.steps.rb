@@ -32,7 +32,7 @@ step "I see the following warnings in the :title section:" do |section_name, tab
   within(section) do
     warnings = all(".invalid-feedback")
     expected_warnings = table.rows.flatten.map { |s|
-      custom_interpolation(s, ->(o) { o.is_a?(Time) ? Locales.format_date(o, @user) : o })
+      custom_interpolation(s, ->(o) { o.is_a?(Time) ? Locales.format_date_with_weekday(o, @user) : o })
     }
     expect(warnings.map { |w| w.text }).to eq expected_warnings
   end

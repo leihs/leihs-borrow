@@ -193,8 +193,8 @@ Feature: Shopping Cart - Adding a reservation with an alternative pickup locatio
 
     When I select "Media Lab" from "Pickup location"
     Then I see the following warnings in the "Time span" section:
-      | text                                            |
-      | Earliest pickup date in 3 working days from now |
+      | text                                       |
+      | Earliest pickup date is ${3.days.from_now} |
     And the "Add" button of the dialog is disabled
 
     When I select "Hauptlager" from "Pickup location"

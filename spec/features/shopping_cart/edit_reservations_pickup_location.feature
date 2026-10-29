@@ -179,8 +179,8 @@ Feature: Shopping Cart - Editing Reservations with an alternative pickup locatio
     And I see a form inside the dialog
     And I see the "Pickup location" section
     Then I see the following warnings in the "Time span" section:
-      | text                                            |
-      | Earliest pickup date in 3 working days from now |
+      | text                                       |
+      | Earliest pickup date is ${3.days.from_now} |
     When I click on "Confirm"
     Then the "DSLR Camera" dialog did not close
 

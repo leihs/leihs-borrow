@@ -106,7 +106,9 @@ export const modelData = {
         ]
       },
       dates: availabilityDates,
-      datesForAltLocations: availabilityDatesForAltLocations
+      datesForAltLocations: availabilityDatesForAltLocations,
+      earliestPossiblePickupDate: '2020-04-08',
+      earliestPossiblePickupDateForAltLocations: '2020-04-13'
     },
     {
       inventoryPool: {
@@ -119,7 +121,8 @@ export const modelData = {
         defaultPickupLocationName: null,
         pickupLocations: []
       },
-      dates: availabilityDates
+      dates: availabilityDates,
+      earliestPossiblePickupDate: '2020-04-08'
     }
   ]
 }

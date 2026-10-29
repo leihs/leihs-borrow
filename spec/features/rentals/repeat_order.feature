@@ -161,6 +161,10 @@ Feature: Rentals - Show - Repeat order
 
     Then I see the "Add items" dialog
     And I see "One item will be added to the cart."
+    And I see the following warnings in the "Time span" section:
+      | text                                       |
+      | Earliest pickup date is ${3.days.from_now} |
+    And the "Add" button is disabled
 
     # Because the original reservation has an alternative pickup location, the
     # transfer buffer (3 days) applies instead of the reservation advance days (1 day).
@@ -168,8 +172,8 @@ Feature: Rentals - Show - Repeat order
     And I enter the date "${4.days.from_now}" in the "Until" field
     And I press the tab key
     Then I see the following warnings in the "Time span" section:
-      | text                                            |
-      | Earliest pickup date in 3 working days from now |
+      | text                                       |
+      | Earliest pickup date is ${3.days.from_now} |
     And the "Add" button is disabled
 
     When I enter the date "${3.days.from_now}" in the "From" field

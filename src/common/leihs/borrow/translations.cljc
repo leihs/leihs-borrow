@@ -99,42 +99,42 @@
                  :en-GB "End date must be after start date"
                  :fr-CH "La date de fin doit être postérieure à la date de début"}
                 :end-date-too-late
-                {:de-CH "Datum darf nicht nach {maxDate, date, small} sein"
-                 :en-GB "Date must not be after {maxDate, date, small}"
-                 :fr-CH "La date ne doit pas dépasser {maxDate, date, small}"}
+                {:de-CH "Datum darf nicht nach {maxDate, date, ::EEEddMMyyyy} sein"
+                 :en-GB "Date must not be after {maxDate, date, ::EEEddMMyyyy}"
+                 :fr-CH "La date ne doit pas dépasser {maxDate, date, ::EEEddMMyyyy}"}
 
                 :start-date-in-past
                 {:de-CH "Abholdatum liegt in der Vergangenheit"
                  :en-GB "Pickup date is in the past"
                  :fr-CH "La date de retrait se situe dans le passé"}
                 :start-date-not-before
-                {:de-CH "{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens heute in # Arbeitstagen}}"
-                 :en-GB "{days, plural, =1 {Earliest pickup date is tomorrow} other {Earliest pickup date in # working days from now}}"
+                {:de-CH "{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens am {earliestDate, date, ::EEEddMMyyyy}}}"
+                 :en-GB "{days, plural, =1 {Earliest pickup date is tomorrow} other {Earliest pickup date is {earliestDate, date, ::EEEddMMyyyy}}}"
                  :fr-CH "{days, plural,
                           =1 {Retrait possible au plus tôt demain}
-                          other {Retrait possible dans # jours ouvrables}}"}
+                          other {Retrait possible au plus tôt le {earliestDate, date, ::EEEddMMyyyy}}}"}
                 :quantity-to-large-at-day
                 {:de-CH
-                 "Gegenstand ist am {startDate, date, small} nicht in der gewünschten Menge verfügbar"
-                 :en-GB "Item is not available in the requested quantity on {startDate, date, small}."
-                 :fr-CH "L'article n'est pas disponible dans la quantité demandée le {startDate, date, small}."}
+                 "Gegenstand ist am {startDate, date, ::EEEddMMyyyy} nicht in der gewünschten Menge verfügbar"
+                 :en-GB "Item is not available in the requested quantity on {startDate, date, ::EEEddMMyyyy}."
+                 :fr-CH "L'article n'est pas disponible dans la quantité demandée le {startDate, date, ::EEEddMMyyyy}."}
                 :quantity-to-large-in-range
                 {:de-CH "Gegenstand ist in diesem Zeitraum nicht in der gewünschten Menge verfügbar"
                  :en-GB "Item is not available in the desired quantity during this period"
                  :fr-CH "L'article n'est pas disponible dans la quantité souhaitée durant cette période"}
 
                 :pool-closed-at-start-date
-                {:de-CH "Abholung am {startDate, date, small} nicht möglich"
-                 :en-GB "Pickup not possible on {startDate, date, small}"
-                 :fr-CH "Retrait non possible le {startDate, date, small}"}
+                {:de-CH "Abholung am {startDate, date, ::EEEddMMyyyy} nicht möglich"
+                 :en-GB "Pickup not possible on {startDate, date, ::EEEddMMyyyy}"
+                 :fr-CH "Retrait non possible le {startDate, date, ::EEEddMMyyyy}"}
                 :pool-closed-at-end-date
-                {:de-CH "Rückgabe am {endDate, date, small} nicht möglich"
-                 :en-GB "Return not possible on {endDate, date, small}"
-                 :fr-CH "Retour non possible le {endDate, date, small}"}
+                {:de-CH "Rückgabe am {endDate, date, ::EEEddMMyyyy} nicht möglich"
+                 :en-GB "Return not possible on {endDate, date, ::EEEddMMyyyy}"
+                 :fr-CH "Retour non possible le {endDate, date, ::EEEddMMyyyy}"}
                 :pool-closed-at-start-and-end-date
-                {:de-CH "Abholung/Rückgabe am {startDate, date, small} nicht möglich"
-                 :en-GB "Pickup/return not possible on {startDate, date, small}"
-                 :fr-CH "Retrait/retour non possible le {startDate, date, small}"}
+                {:de-CH "Abholung/Rückgabe am {startDate, date, ::EEEddMMyyyy} nicht möglich"
+                 :en-GB "Pickup/return not possible on {startDate, date, ::EEEddMMyyyy}"
+                 :fr-CH "Retrait/retour non possible le {startDate, date, ::EEEddMMyyyy}"}
                 :pool-closed-max-visits
                 {:de-CH " (maximale Besucherzahl erreicht)"
                  :en-GB " (maximum visitor capacity reached)"

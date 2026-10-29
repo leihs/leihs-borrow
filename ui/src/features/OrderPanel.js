@@ -9,7 +9,8 @@ import {
   addDays,
   isSameDay,
   format,
-  formatISO
+  formatISO,
+  differenceInCalendarDays
 } from 'date-fns'
 import { enGB as defaultDateLocale } from 'date-fns/locale'
 import { translate as t } from '../lib/translate'
@@ -115,6 +116,9 @@ const OrderPanel = ({
       const rawDates = resolvedPickupLocationId ? tmp.datesForAltLocations : tmp.dates
       return {
         ...tmp,
+        earliestPossiblePickupDate: resolvedPickupLocationId
+          ? tmp.earliestPossiblePickupDateForAltLocations
+          : tmp.earliestPossiblePickupDate,
         dates: rawDates.map(x => ({
           ...x,
           parsedDate: parseISO(x.date)
@@ -134,7 +138,6 @@ const OrderPanel = ({
     const validationResult = validate(
       selectedPool,
       poolAvailability,
-      resolvedPickupLocationId,
       // Block submitting only while the user can actually pick a replacement. If the select
       // is not shown there is nothing to choose and the main warehouse is the only outcome.
       initialPickupLocationUnavailable && showPickupLocationSelect
@@ -173,7 +176,7 @@ const OrderPanel = ({
   ])
 
   // Validation
-  function validate(selectedPool, poolAvailability, pickupLocationId, pickupLocationBlocks) {
+  function validate(selectedPool, poolAvailability, pickupLocationBlocks) {
     const poolError = validatePool(selectedPool, locale, txt.validate)
     if (poolError) {
       return { poolError }
@@ -186,8 +189,7 @@ const OrderPanel = ({
       quantity,
       locale,
       dateLocale,
-      txt.validate,
-      Boolean(pickupLocationId)
+      txt.validate
     )
     const result = {}
     if (pickupLocationBlocks) {
@@ -211,7 +213,6 @@ const OrderPanel = ({
     const validationResult = validate(
       dependentState.selectedPool,
       dependentState.poolAvailability,
-      dependentState.resolvedPickupLocationId,
       dependentState.initialPickupLocationUnavailable && dependentState.showPickupLocationSelect
     )
     if (validationResult.isValid) {
@@ -505,20 +506,11 @@ export const validateDateRange = (
   wantedQuantity,
   locale,
   dateLocale,
-  txt,
-  alternativePickupLocationSelected = false
+  txt
 ) => {
   const { startDate, endDate } = selectedRange
-  const { dates, inventoryPool } = poolAvailability
-  const {
-    reservationAdvanceDays,
-    transferBufferBeforePickUp,
-    maximumReservationDuration,
-    holidays = []
-  } = inventoryPool
-  const earliestPickupDays = alternativePickupLocationSelected
-    ? Math.max(reservationAdvanceDays || 0, transferBufferBeforePickUp || 0)
-    : reservationAdvanceDays || 0
+  const { dates, inventoryPool, earliestPossiblePickupDate } = poolAvailability
+  const { maximumReservationDuration, holidays = [] } = inventoryPool
 
   const basicValidityMessage = (() => {
     // Ensure that a valid quantity is given (the quantity field also has its own validator, so this is an exceptional case)
@@ -557,7 +549,13 @@ export const validateDateRange = (
     const startDateInfo = getByDay(dates, startDate)
     if (startDateInfo) {
       const isRestrictedBy = r => startDateInfo.startDateRestrictions && startDateInfo.startDateRestrictions.includes(r)
-      if (isRestrictedBy('HOLIDAY')) {
+      if (isRestrictedBy('BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE')) {
+        const earliestDate = parseISO(earliestPossiblePickupDate)
+        return t(txt, 'start-date-not-before', locale, {
+          days: differenceInCalendarDays(earliestDate, today),
+          earliestDate
+        })
+      } else if (isRestrictedBy('HOLIDAY')) {
         const holidayName = holidays.find(
           holiday =>
             startDate >= startOfDay(parseISO(holiday.startDate)) && startDate <= startOfDay(parseISO(holiday.endDate))
@@ -571,9 +569,6 @@ export const validateDateRange = (
         )
       } else if (isRestrictedBy('VISITS_CAPACITY_REACHED')) {
         return t(txt, txtPoolClosed, locale, { startDate }) + t(txt, 'pool-closed-max-visits', locale)
-      } else if (isRestrictedBy('BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE')) {
-        // (This case should have been prevented by the future-only rule above)
-        return t(txt, 'start-date-not-before', locale, { days: earliestPickupDays })
       }
     }
   })()

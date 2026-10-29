@@ -56,8 +56,8 @@ Feature: Invalid reservations
     When I click on the card with title "1× Reservation Advance Days"
     Then I see the "Reservation Advance Days" dialog
     But I see the following warnings in the "Time span" section:
-      | text                                            |
-      | Earliest pickup date in 3 working days from now |
+      | text                                       |
+      | Earliest pickup date is ${3.days.from_now} |
     And I click on "Confirm"
     But the "Reservation Advance Days" dialog did not close
 

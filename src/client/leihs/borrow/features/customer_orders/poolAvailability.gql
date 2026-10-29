@@ -16,6 +16,7 @@ query poolAvailability($id: UUID!, $startDate: Date, $endDate: Date, $considerAl
         startDateRestrictions
         endDateRestrictions
       }
+      earliestPossiblePickupDate
     }
   }
 }

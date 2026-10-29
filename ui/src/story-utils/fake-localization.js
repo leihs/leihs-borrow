@@ -31,23 +31,26 @@ export const orderPanelTexts = {
     'invalid-start-date': { 'de-CH': 'Ungültiges Beginndatum' },
     'invalid-end-date': { 'de-CH': 'Ungültiges Enddatum' },
     'start-after-end': { 'de-CH': 'Enddatum muss nach Beginndatum sein' },
-    'end-date-too-late': { 'de-CH': 'Datum darf nicht nach {maxDate, date, small} sein' },
+    'end-date-too-late': { 'de-CH': 'Datum darf nicht nach {maxDate, date, ::EEEddMMyyyy} sein' },
 
     'start-date-in-past': { 'de-CH': 'Abholdatum liegt in der Vergangenheit' },
     'start-date-not-before': {
-      'de-CH': '{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens heute in # Arbeitstagen}}'
+      'de-CH':
+        '{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens am {earliestDate, date, ::EEEddMMyyyy}}}'
     },
 
     'quantity-to-large-at-day': {
-      'de-CH': 'Gegenstand ist am {startDate, date, small} nicht in der gewünschten Menge verfügbar'
+      'de-CH': 'Gegenstand ist am {startDate, date, ::EEEddMMyyyy} nicht in der gewünschten Menge verfügbar'
     },
     'quantity-to-large-in-range': {
       'de-CH': 'Gegenstand ist in diesem Zeitraum nicht in der gewünschten Menge verfügbar'
     },
 
-    'pool-closed-at-start-date': { 'de-CH': 'Abholung am {startDate, date, small} nicht möglich' },
-    'pool-closed-at-end-date': { 'de-CH': 'Rückgabe am {endDate, date, small} nicht möglich' },
-    'pool-closed-at-start-and-end-date': { 'de-CH': 'Abholung/Rückgabe am {startDate, date, small} nicht möglich' },
+    'pool-closed-at-start-date': { 'de-CH': 'Abholung am {startDate, date, ::EEEddMMyyyy} nicht möglich' },
+    'pool-closed-at-end-date': { 'de-CH': 'Rückgabe am {endDate, date, ::EEEddMMyyyy} nicht möglich' },
+    'pool-closed-at-start-and-end-date': {
+      'de-CH': 'Abholung/Rückgabe am {startDate, date, ::EEEddMMyyyy} nicht möglich'
+    },
     'pool-closed-max-visits': { 'de-CH': ' (maximale Besucherzahl erreicht)' },
     'closed-on-day-of-week': { 'de-CH': '{dayName} geschlossen' },
 
