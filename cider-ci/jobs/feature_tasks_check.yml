@@ -7,7 +7,7 @@ task_defaults:
       submodule: [database]
     - cider-ci/task-components/ruby-bundle.yml
   traits:
-    asdf: true
+    mise: true
   environment_variables:
     LEIHS_BORROW_DIR: '{{CIDER_CI_WORKING_DIR}}'
     LEIHS_DATABASE_DIR: '{{LEIHS_BORROW_DIR}}/database'

@@ -19,7 +19,7 @@ task_defaults:
     LEIHS_BORROW_HTTP_BASE_URL: http://localhost:{{LEIHS_BORROW_HTTP_PORT}}
     RAILS_ENV: test
   traits:
-    asdf: true
+    mise: true
   git_options:
     submodules:
       include_match: ^.*$
