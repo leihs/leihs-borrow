@@ -15,7 +15,7 @@ task_defaults:
     RAILS_ENV: test
 tasks:
   check-feature-tasks:
-    traits: [asdf]
+    traits: [mise]
     scripts:
       test:
         start_when:
