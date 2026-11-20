@@ -1,3 +1,10 @@
 # osv-scanner config file
 # Suppress false positives or accepted risks here.
 # https://google.github.io/osv-scanner/configuration/
+
+# NPM must-update threshold is CVSS > 7.0 (leihs policy).
+
+[[IgnoredVulns]]
+id = "GHSA-gcqx-w48m-w2h4"
+ignoreUntil = 2027-01-15
+reason = "deepmerge 4.3.1 (dev): CVSS 5.3 below threshold; no upstream npm patch; vendoring rejected"
