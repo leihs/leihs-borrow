@@ -1,3 +1,5 @@
 # osv-scanner config file
 # Suppress false positives or accepted risks here.
 # https://google.github.io/osv-scanner/configuration/
+
+# NPM must-update threshold is CVSS > 7.0 (leihs policy).

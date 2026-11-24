@@ -52,6 +52,12 @@ step "I accept the :title dialog with the text:" do |title, text|
   end
 end
 
+def card_data_matches_table?(card_data, table)
+  actual_data = card_data.map { |l| l.slice(*table.headers.map(&:to_sym)) }
+  expected_lines = table.hashes.map { |h| h.transform_values { |v| custom_interpolation(v) } }
+  actual_data == symbolize_hash_keys(expected_lines)
+end
+
 def expect_equal_card_data(card_data, table)
   # ignore keys that are not present in the expectations table by removing them:
   actual_data = card_data.map { |l| l.slice(*table.headers.map(&:to_sym)) }
@@ -62,16 +68,30 @@ def expect_equal_card_data(card_data, table)
   expect(actual_data).to eq symbolize_hash_keys(expected_lines)
 end
 
+def wait_for_card_data_matching
+  wait_until do
+    yield
+  rescue Capybara::ElementNotFound, Selenium::WebDriver::Error::StaleElementReferenceError
+    false
+  end
+end
+
 step "I see the following lines in the :name section:" do |section_name, table|
+  wait_for_card_data_matching do
+    items_section = find_ui_section(title: section_name)
+    card_data_matches_table?(get_ui_list_cards(items_section), table)
+  end
   items_section = find_ui_section(title: section_name)
-  card_data = get_ui_list_cards(items_section)
-  expect_equal_card_data(card_data, table)
+  expect_equal_card_data(get_ui_list_cards(items_section), table)
 end
 
 step "I see the following lines in the page content:" do |table|
-  content = find_ui_page_content
-  card_data = get_ui_list_cards(content)
-  expect_equal_card_data(card_data, table)
+  # Wait until list cards match — needed after profile switch reload / GraphQL refetch
+  # where a single snapshot can still see the previous profile or an empty loading state.
+  wait_for_card_data_matching do
+    card_data_matches_table?(get_ui_list_cards(find_ui_page_content), table)
+  end
+  expect_equal_card_data(get_ui_list_cards(find_ui_page_content), table)
 end
 
 step "I click on the card with title :title" do |title|
