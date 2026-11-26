@@ -8,10 +8,10 @@
 (defn fulfillment [{{tx :tx} :request :as context}
                    _
                    {:keys [reservation-ids]}
-                   fulfilled-states]
+                   fulfilled-pred]
   (let [rs (reservations/get-by-ids tx reservation-ids)
         fulfilled-quantity (->> rs
-                                (filter #(->> % :status (contains? fulfilled-states)))
+                                (filter fulfilled-pred)
                                 (map :quantity)
                                 (apply +))
         to-fulfill-quantity (->> rs
@@ -23,10 +23,11 @@
        :to-fulfill-quantity to-fulfill-quantity})))
 
 (def approve-fulfillment
-  #(fulfillment %1 %2 %3 #{"approved" "signed" "closed"}))
+  #(fulfillment %1 %2 %3 (fn [r] (contains? #{"approved" "signed" "closed"} (:status r)))))
 
 (def pickup-fulfillment
-  #(fulfillment %1 %2 %3 #{"signed" "closed"}))
+  #(fulfillment %1 %2 %3 (fn [r] (contains? #{"signed" "closed"} (:status r)))))
 
 (def return-fulfillment
-  #(fulfillment %1 %2 %3 #{"closed"}))
+  #(fulfillment %1 %2 %3 (fn [r] (or (= "closed" (:status r))
+                                     (some? (:sent_back_to_main_location_at r))))))

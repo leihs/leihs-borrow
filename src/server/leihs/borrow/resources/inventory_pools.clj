@@ -37,7 +37,11 @@
     :reservation_advance_days]
    :inventory_pools.borrow_maximum_reservation_duration
    [:inventory_pools.borrow_maximum_reservation_duration
-    :maximum_reservation_duration]])
+    :maximum_reservation_duration]
+   :inventory_pools.transfer_buffer_before_pick_up
+   :inventory_pools.transfer_buffer_after_drop_off
+   :inventory_pools.default_pickup_location_name
+   :inventory_pools.enable_alternative_pickup_locations])
 
 (def base-sqlmap
   (-> (apply sql/select select-fields)
@@ -61,6 +65,16 @@
       (accessible-to-user-condition user-id)
       sql-format
       (->> (jdbc-query tx))))
+
+(defn enable-alternative-pickup-locations? [tx pool-id]
+  (-> (sql/select :enable_alternative_pickup_locations)
+      (sql/from :inventory_pools)
+      (sql/where [:= :id pool-id])
+      sql-format
+      (->> (jdbc-query tx))
+      first
+      :enable_alternative_pickup_locations
+      boolean))
 
 (defn to-reserve-from [tx user-id start-date end-date]
   (->> {:user-id user-id, :start-date start-date, :end-date end-date}
@@ -145,18 +159,18 @@
 
 (defn get-availability
   [{{tx :tx} :request user-id ::target-user/id :as context}
-   {:keys [start-date end-date]}
+   {:keys [start-date end-date consider-alternative-pickup-locations]}
    {:keys [id]}]
   (let [start-date-jt (ch/local-date start-date)
         end-date-jt (ch/local-date end-date)
         date-range (ch/explode-date-range start-date-jt end-date-jt)
         db-pool (get-by-id tx id) #_"due to casing of the keys needed for validate-dates"
-        visits-count (get-visits-counts tx start-date end-date (:id db-pool))]
-    (as-> date-range <>
-      (map #(hash-map :date (str %)) <>)
-      (mapv merge <> visits-count)
-      (restrict/validate-dates tx <> db-pool)
-      (hash-map :dates <>))))
+        visits-count (get-visits-counts tx start-date end-date (:id db-pool))
+        dates-with-visits (as-> date-range <>
+                            (map #(hash-map :date (str %)) <>)
+                            (mapv merge <> visits-count))
+        consider-alt? (boolean consider-alternative-pickup-locations)]
+    (restrict/validate-dates tx dates-with-visits db-pool consider-alt?)))
 
 ;#### debug ###################################################################
 ; (debug/debug-ns 'cider-ci.utils.shutdown)

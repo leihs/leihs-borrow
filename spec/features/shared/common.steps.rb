@@ -153,3 +153,11 @@ end
 step "the :title button is disabled" do |title|
   expect(find("button", text: title)).to be_disabled
 end
+
+step "the :title button is not disabled" do |title|
+  expect(find("button", text: title)).not_to be_disabled
+end
+
+step "I press the tab key" do
+  send_keys :tab
+end

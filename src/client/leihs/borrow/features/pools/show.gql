@@ -18,5 +18,10 @@ query getPool($id: UUID!) {
       open
       info
     }
+    pickupLocations {
+      id
+      name
+      description
+    }
   }
 }

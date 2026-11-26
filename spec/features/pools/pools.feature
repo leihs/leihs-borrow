@@ -40,6 +40,9 @@ Feature: Pools
       | contact                      | Call us at the front desk |
       | description                  | The best camera pool       |
       | maximum reservation duration | 14                         |
+      | alternative pickup locations | enabled                   |
+    And the inventory pool "Pool A" has a pickup location "Media Lab" with description "Ground floor, next to the workshop"
+    And the inventory pool "Pool A" has a pickup location "Studio Basement" with description "Ring the bell"
     And the inventory pool "Pool A" is closed on "Sunday"
     And the inventory pool "Pool A" has a holiday "Christmas" from "2026-12-24" to "2026-12-26"
     And the user is customer of pool "Pool A"
@@ -62,8 +65,28 @@ Feature: Pools
     And I see the "Holidays" section
     And I see "Christmas"
 
+    And I see the "Alternative pickup locations" section
+    And I see "Media Lab"
+    And I see "Ground floor, next to the workshop"
+    And I see "Studio Basement"
+    And I see "Ring the bell"
+
     And I see the "Description" section
     And I see "The best camera pool"
+
+  Scenario: Pool detail page without alternative pickup locations
+
+    Summary: The section is only there when the pool actually offers the feature.
+
+    Given the inventory pool "Pool A" has a pickup location "Media Lab"
+    And the user is customer of pool "Pool A"
+
+    When I log in as the user
+    And I visit "/borrow/inventory-pools"
+    And I click on the card with title "Pool A"
+    Then I see the page title "Pool A"
+    And I don't see "Alternative pickup locations"
+    And I don't see "Media Lab"
 
   Scenario: User has no pools
     When I log in as the user

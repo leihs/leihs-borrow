@@ -130,3 +130,34 @@ Feature: Rentals - Show
     Then the user profile button shows "UA"
     And I see the page title "Order"
     And I see "This order is not visible for the current profile"
+
+
+  Scenario: Pickup location on the reservation lines
+
+    Summary: Where a pool offers alternative pickup locations, a line names the location the
+    item will be picked up at - the pool's main warehouse when the reservation carries none.
+    A pool without the feature keeps naming the pool itself.
+
+    Given the inventory pool "Pool A" has the following details:
+      | alternative pickup locations | enabled |
+    And the inventory pool "Pool A" has a pickup location "Media Lab"
+    And the following items exist:
+      | code | model     | pool   |
+      | A2   | Xylophone | Pool A |
+    And a customer order with title "Order 1" and the following reservations exists for the user:
+      | user | quantity | model       | pool   | pickup-location | relative-start-date | relative-end-date | state    |
+      | user | 1        | DSLR Camera | Pool A | Media Lab       | ${Date.today}       | ${Date.tomorrow}  | approved |
+      | user | 1        | Xylophone   | Pool A |                 | ${Date.today}       | ${Date.tomorrow}  | approved |
+      | user | 1        | Tripod      | Pool B |                 | ${Date.today}       | ${Date.tomorrow}  | approved |
+
+    When I log in as the user
+    And I visit "/borrow/rentals/?tab=open-orders"
+    And I click on the card with title "Order 1"
+    And I sleep 1
+
+    Then I see the page title "Order 1"
+    And I see the following lines in the "Items" section:
+      | title                         | body                                                                       |
+      | 1× DSLR Camera\nPick up today | Media Lab\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)  |
+      | 1× Xylophone\nPick up today   | Hauptlager\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+      | 1× Tripod\nPick up today      | Pool B\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days)     |

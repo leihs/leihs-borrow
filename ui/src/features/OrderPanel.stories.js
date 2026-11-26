@@ -18,15 +18,18 @@ export default {
   }
 }
 
-export const orderPanel = () => {
+function OrderPanelStory({ modelDataOverrides = {}, inventoryPoolsOverride, initialPickupLocationId, title }) {
   const now = new Date(FAKE_STYLEGUIDE_TIME)
   const {
-    modelData,
-    inventoryPools,
+    modelData: baseModelData,
+    inventoryPools: basePools,
     initialInventoryPoolId,
-    maxDateLoaded: initialMaxDateLoaded,
-    spec
+    maxDateLoaded: initialMaxDateLoaded
   } = getOrderPanelMockData()
+
+  const modelData = { ...baseModelData, ...modelDataOverrides }
+  const inventoryPools = inventoryPoolsOverride || basePools
+  const dialogTitle = title || modelData.name
 
   const [isValid, setIsValid] = useState()
   const [maxDateLoaded, setMaxDateLoaded] = useState(initialMaxDateLoaded)
@@ -46,7 +49,7 @@ export const orderPanel = () => {
   }
 
   return (
-    <ModalDialog title="Gegenstand hinzufügen" className="ui-booking-calendar" shown>
+    <ModalDialog title={dialogTitle} className="ui-booking-calendar" shown>
       <ModalDialog.Body>
         <OrderPanel
           modelData={modelData}
@@ -66,6 +69,8 @@ export const orderPanel = () => {
           inventoryPools={inventoryPools}
           initialInventoryPoolId={initialInventoryPoolId}
           onInventoryPoolChange={action('pool-change')}
+          initialPickupLocationId={initialPickupLocationId}
+          onPickupLocationChange={action('pickup-location-change')}
           //
           onSubmit={action('submit')}
           onValidate={setIsValid}
@@ -83,10 +88,6 @@ export const orderPanel = () => {
             <summary className="text-monospace">mock data used</summary>
             <pre>{JSON.stringify(modelData, 0, 2)}</pre>
           </details>
-          <details>
-            <summary className="text-monospace">mock data from spec</summary>
-            <pre>{JSON.stringify(spec, 0, 2)}</pre>
-          </details>
         </div>
       </ModalDialog.Body>
       <ModalDialog.Footer>
@@ -101,4 +102,36 @@ export const orderPanel = () => {
   )
 }
 
+function withoutPickupLocations(pools) {
+  return pools.map(pool => ({
+    ...pool,
+    pickupLocations: []
+  }))
+}
+
+export const orderPanel = () => {
+  const { inventoryPools } = getOrderPanelMockData()
+  return <OrderPanelStory inventoryPoolsOverride={withoutPickupLocations(inventoryPools)} />
+}
 orderPanel.storyName = 'OrderPanel'
+
+export const withPickupLocations = () => <OrderPanelStory />
+withPickupLocations.storyName = 'With pickup locations'
+
+export const notTransportable = () => (
+  <OrderPanelStory modelDataOverrides={{ transportable: false, name: '4K-Videokamera Sony FDR-AX53' }} />
+)
+notTransportable.storyName = 'Not transportable'
+
+// `pl-gone` is not among the pickup locations of any pool in the mock data, i.e. it stands
+// for a location that was deactivated or moved away since the reservation was made.
+export const unavailableInitialPickupLocation = () => <OrderPanelStory initialPickupLocationId="pl-gone" />
+unavailableInitialPickupLocation.storyName = 'Unavailable initial pickup location'
+
+export const notTransportableWithInitialPickupLocation = () => (
+  <OrderPanelStory
+    modelDataOverrides={{ transportable: false, name: '4K-Videokamera Sony FDR-AX53' }}
+    initialPickupLocationId="pl-alt-1"
+  />
+)
+notTransportableWithInitialPickupLocation.storyName = 'Not transportable, with initial pickup location'

@@ -411,11 +411,22 @@
                                              (and selected-pool (not-any? #(= (:id %) (:id selected-pool)) pools))
                                               [(merge selected-pool {:user-has-no-access true})])))
 
+            availability-pools-by-id (->> availability
+                                          (map :inventory-pool)
+                                          (reduce #(assoc %1 (:id %2) %2) {}))
+            assoc-pickup-locations (fn [pool]
+                                     (if-let [avail-pool (get availability-pools-by-id (:id pool))]
+                                       (merge pool (select-keys avail-pool [:pickup-locations
+                                                                            :default-pickup-location-name
+                                                                            :enable-alternative-pickup-locations]))
+                                       pool))
+
             pool-id-and-name (:inventory-pool edit-mode-data)
             pools (->> model :total-reservable-quantities
                        (map flatten-pool)
                        (filter #(has-items-or-is-selected (:id pool-id-and-name) %))
                        (map #(-> % (assoc-suspension suspensions)))
+                       (map assoc-pickup-locations)
                        (add-inaccessible-pool pool-id-and-name))
 
             fetched-until-date (-> edit-mode-data
@@ -429,7 +440,7 @@
         [:> UI/Components.Design.ModalDialog {:shown true
                                               :dismissible true
                                               :on-dismiss #(dispatch [::cancel-edit])
-                                              :title (t :edit-dialog/dialog-title)
+                                              :title (:name model)
                                               :class "ui-booking-calendar"}
          [:> UI/Components.Design.ModalDialog.Body
           [:div.d-grid.gap-4
@@ -438,6 +449,7 @@
              :initialStartDate start-date
              :initialEndDate end-date
              :initialInventoryPoolId (:id pool-id-and-name)
+             :initialPickupLocationId (get-in (first res-lines) [:pickup-location :id])
              :inventoryPools (map h/camel-case-keys pools)
              :maxDateLoaded fetched-until-date
              :maxDateTotal max-date
@@ -450,13 +462,15 @@
              :onSubmit (fn [jsargs]
                          (let [args (js->clj jsargs :keywordize-keys true)]
                            (dispatch [::update-reservations
-                                      {:ids (map :id res-lines)
-                                       :modelId (:id model)
-                                       :startDate (h/date-format-day (:startDate args))
-                                       :endDate (h/date-format-day (:endDate args))
-                                       :quantity (int (:quantity args))
-                                       :poolIds [(:poolId args)]
-                                       :userId user-id}])))
+                                      (cond-> {:ids (map :id res-lines)
+                                               :modelId (:id model)
+                                               :startDate (h/date-format-day (:startDate args))
+                                               :endDate (h/date-format-day (:endDate args))
+                                               :quantity (int (:quantity args))
+                                               :poolIds [(:poolId args)]
+                                               :userId user-id}
+                                        (:pickupLocationId args)
+                                        (assoc :pickupLocationId (:pickupLocationId args)))])))
              :onValidate (fn [v] (reset! form-valid? v))
              :modelData (h/camel-case-keys (merge model {:availability availability}))
              :initialShowDayQuants (or show-day-quants false)
@@ -482,7 +496,8 @@
         model (:model exemplar)
         quantity (count res-lines)
         pool-names (->> res-lines
-                        (map (comp :name :inventory-pool))
+                        (map #(or (get-in % [:pickup-location :name])
+                                  (get-in % [:inventory-pool :name])))
                         distinct
                         (clojure.string/join ", "))
         invalid? (every? invalid-res-ids (map :id res-lines))

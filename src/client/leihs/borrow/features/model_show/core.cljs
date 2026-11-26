@@ -304,12 +304,14 @@
             on-submit (fn [jsargs]
                         (let [args (js->clj jsargs :keywordize-keys true)]
                           (dispatch [::model-create-reservation
-                                     {:modelId (:id model)
-                                      :startDate (h/date-format-day (:startDate args))
-                                      :endDate (h/date-format-day (:endDate args))
-                                      :quantity (int (:quantity args))
-                                      :poolIds [(:poolId args)]
-                                      :userId user-id}])))
+                                     (cond-> {:modelId (:id model)
+                                              :startDate (h/date-format-day (:startDate args))
+                                              :endDate (h/date-format-day (:endDate args))
+                                              :quantity (int (:quantity args))
+                                              :poolIds [(:poolId args)]
+                                              :userId user-id}
+                                       (:pickupLocationId args)
+                                       (assoc :pickupLocationId (:pickupLocationId args)))])))
             on-validate (fn [v] (reset! form-valid? v))
             order-panel-data @(subscribe [::order-panel-data])
             is-saving? (:is-saving? order-panel-data)]
@@ -318,7 +320,7 @@
           [:> UI/Components.Design.ModalDialog {:shown shown?
                                                 :dismissible true
                                                 :on-dismiss on-cancel
-                                                :title (t :order-dialog/title)
+                                                :title (:name model)
                                                 :class "ui-booking-calendar"}
            [:> UI/Components.Design.ModalDialog.Body
             [:> UI/Components.OrderPanel
@@ -335,6 +337,7 @@
                                (let [end-date (get (js->clj formValues) "endDate")]
                                  (dispatch [::ensure-availability-fetched-until user-id end-date])))
               :initialInventoryPoolId (:pool-id filters)
+              :initialPickupLocationId (:pickup-location-id filters)
               :inventoryPools (map h/camel-case-keys pools)
               :initialShowDayQuants (or show-day-quants false)
               :onShowDayQuantsChange on-show-day-quants-change

@@ -22,6 +22,7 @@
              restrict]
             [leihs.borrow.resources.legacy-availability.booking-calendar :as cal]
             [leihs.borrow.resources.models.core :refer [base-sqlmap]]
+            [leihs.borrow.resources.pickup-locations :as pickup-locations]
             [leihs.core.core :refer [presence]]
             [wharf.core :refer [transform-keys]])
   (:import java.time.format.DateTimeFormatter))
@@ -189,7 +190,7 @@
 (defn merge-available-quantities
   [models
    {{tx :tx} :request user-id ::target-user/id :as context}
-   {:keys [start-date end-date inventory-pool-ids] :as args}
+   {:keys [start-date end-date inventory-pool-ids pickup-location-id] :as args}
    value]
   (let [pool-ids (relevant-pool-ids tx user-id start-date end-date inventory-pool-ids)]
     (map #(assoc %
@@ -204,12 +205,17 @@
                                                                      user-id
                                                                      start-date
                                                                      end-date
-                                                                     pool-ids)))
+                                                                     pool-ids
+                                                                     nil
+                                                                     pickup-location-id)))
          models)))
 
 (defn get-availability
   [{{tx :tx} :request user-id ::target-user/id :as context}
-   {:keys [start-date end-date inventory-pool-ids exclude-reservation-ids]}
+   {:keys [start-date
+           end-date
+           inventory-pool-ids
+           exclude-reservation-ids]}
    value]
   (let [pools (pools/get-multiple context {:ids inventory-pool-ids} nil)]
     (map (fn [{pool-id :id}]
@@ -221,10 +227,27 @@
                                 pool-id
                                 user-id
                                 (:id value)
-                                (or exclude-reservation-ids []))]
+                                (or exclude-reservation-ids [])
+                                false)
+                 validated (restrict/validate-dates tx (:dates avail) pool false)
+                 for-pickup-locations
+                 (boolean (and (:enable_alternative_pickup_locations pool)
+                               (seq (pickup-locations/get-by-pool-id tx pool-id))))
+                 avail-alt (cal/get tx
+                                    start-date
+                                    end-date
+                                    pool-id
+                                    user-id
+                                    (:id value)
+                                    (or exclude-reservation-ids [])
+                                    for-pickup-locations)
+                 validated-alt (restrict/validate-dates tx (:dates avail-alt) pool for-pickup-locations)]
              (-> avail
-                 (update :dates #(restrict/validate-dates tx % pool))
-                 (assoc :inventory-pool pool))))
+                 (merge validated)
+                 (assoc :inventory-pool pool
+                        :dates-for-alt-locations (:dates validated-alt)
+                        :earliest-possible-pickup-date-for-alt-locations
+                        (:earliest-possible-pickup-date validated-alt)))))
          pools)))
 
 (defn from-compatibles [sqlmap value user-id pool-ids unscope-reservable]
@@ -257,7 +280,8 @@
            search-description-and-properties
            unscope-reservable
            pool-ids
-           is-favorited]}
+           is-favorited
+           transportable-only]}
    value]
   (-> base-sqlmap
       (cond-> (= (::lacinia/container-type-name context) :Model)
@@ -270,6 +294,8 @@
         (sql/where [:in :models.id ids]))
       (cond-> search-term
         (merge-search-conditions search-term search-description-and-properties))
+      (cond-> transportable-only
+        (sql/where [:= :models.transportable true]))
       (cond-> (not (nil? is-favorited))
         (-> (sql/left-join :favorite_models
                            [:and

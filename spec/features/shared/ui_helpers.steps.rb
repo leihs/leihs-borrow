@@ -87,3 +87,24 @@ end
 step "I click on the burger menu" do
   find("nav .ui-menu-icon").click
 end
+
+step "I see no warnings in the :title section" do |section_name|
+  section = find_ui_section(title: section_name)
+  expect(section).to be
+  within(section) { expect(page).to have_no_css ".invalid-feedback" }
+end
+
+# Selects are labelled through a visually hidden <label for=...>, so the label text
+# is the stable handle while the id is what Capybara needs.
+def select_for_label(label)
+  find("select[id='#{find("label", text: label, match: :first)[:for]}']")
+end
+
+step "the :label select offers these options:" do |label, table|
+  expect(select_for_label(label).all("option").map(&:text)).to eq table.rows.flatten
+end
+
+step "the :label select shows :option" do |label, option|
+  select_box = select_for_label(label)
+  expect(select_box.find("option[value='#{select_box.value}']").text).to eq option
+end

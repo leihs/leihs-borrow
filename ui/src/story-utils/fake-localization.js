@@ -7,6 +7,17 @@ export const orderPanelTexts = {
     pool: { 'de-CH': 'Inventarpark' },
     'pool-max-amount': { 'de-CH': '{pool} (max. {amount, number})' },
     'pool-max-amount-info': { 'de-CH': 'Maximal verfügbarer Bestand: {amount, number}' },
+    'pickup-location': { 'de-CH': 'Pickup location' },
+    'pickup-locations-more-details': {
+      'de-CH': 'More details about the alternative pickup locations'
+    },
+    'main-warehouse': { 'de-CH': 'Hauptstandort' },
+    'not-transportable': {
+      'de-CH': 'Abholung und Rückgabe nur am Hauptstandort des Inventarparks möglich.'
+    },
+    'unavailable-initial-pickup-location': {
+      'de-CH': 'Der vorher selektierte Abholort steht für diesen Gegenstand nicht zur Verfügung'
+    },
     'user-delegation': { 'de-CH': 'Delegation' },
     timespan: { 'de-CH': 'Zeitraum' },
     from: { 'de-CH': 'Von' },
@@ -20,23 +31,26 @@ export const orderPanelTexts = {
     'invalid-start-date': { 'de-CH': 'Ungültiges Beginndatum' },
     'invalid-end-date': { 'de-CH': 'Ungültiges Enddatum' },
     'start-after-end': { 'de-CH': 'Enddatum muss nach Beginndatum sein' },
-    'end-date-too-late': { 'de-CH': 'Datum darf nicht nach {maxDate, date, small} sein' },
+    'end-date-too-late': { 'de-CH': 'Datum darf nicht nach {maxDate, date, ::EEEddMMyyyy} sein' },
 
     'start-date-in-past': { 'de-CH': 'Abholdatum liegt in der Vergangenheit' },
     'start-date-not-before': {
-      'de-CH': '{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens heute in # Arbeitstagen}}'
+      'de-CH':
+        '{days, plural, =1 {Abholung frühestens morgen} other {Abholung frühestens am {earliestDate, date, ::EEEddMMyyyy}}}'
     },
 
     'quantity-to-large-at-day': {
-      'de-CH': 'Gegenstand ist am {startDate, date, small} nicht in der gewünschten Menge verfügbar'
+      'de-CH': 'Gegenstand ist am {startDate, date, ::EEEddMMyyyy} nicht in der gewünschten Menge verfügbar'
     },
     'quantity-to-large-in-range': {
       'de-CH': 'Gegenstand ist in diesem Zeitraum nicht in der gewünschten Menge verfügbar'
     },
 
-    'pool-closed-at-start-date': { 'de-CH': 'Abholung am {startDate, date, small} nicht möglich' },
-    'pool-closed-at-end-date': { 'de-CH': 'Rückgabe am {endDate, date, small} nicht möglich' },
-    'pool-closed-at-start-and-end-date': { 'de-CH': 'Abholung/Rückgabe am {startDate, date, small} nicht möglich' },
+    'pool-closed-at-start-date': { 'de-CH': 'Abholung am {startDate, date, ::EEEddMMyyyy} nicht möglich' },
+    'pool-closed-at-end-date': { 'de-CH': 'Rückgabe am {endDate, date, ::EEEddMMyyyy} nicht möglich' },
+    'pool-closed-at-start-and-end-date': {
+      'de-CH': 'Abholung/Rückgabe am {startDate, date, ::EEEddMMyyyy} nicht möglich'
+    },
     'pool-closed-max-visits': { 'de-CH': ' (maximale Besucherzahl erreicht)' },
     'closed-on-day-of-week': { 'de-CH': '{dayName} geschlossen' },
 

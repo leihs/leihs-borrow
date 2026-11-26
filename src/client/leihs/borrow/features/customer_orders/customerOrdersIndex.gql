@@ -98,6 +98,7 @@ fragment reservationProps on Reservation {
   startDate
   endDate
   actualEndDate
+  sentBackToMainLocationAt
   model {
     id
     name
@@ -116,6 +117,11 @@ fragment reservationProps on Reservation {
   }
   quantity
   inventoryPool {
+    id
+    name
+    defaultPickupLocationName
+  }
+  pickupLocation {
     id
     name
   }

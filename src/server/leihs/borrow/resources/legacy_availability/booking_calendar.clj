@@ -8,7 +8,7 @@
             [leihs.core.settings :refer [settings]]
             [leihs.core.availability.changes :as ch]
             [leihs.core.availability.core :as c]
-            [leihs.core.availability.queries :as q]
+            [leihs.core.time-zone :as tz]
             [java-time :as t]))
 
 (hugsql/def-sqlvec-fns "sql/booking_calendar_visits.sql")
@@ -25,13 +25,29 @@
        booking-calendar-visits-sqlvec
        (jdbc-query tx)))
 
-(defn get [tx start-date end-date pool-id user-id model-id exclude-res-ids]
-  (let [changes (ch/main tx model-id pool-id exclude-res-ids)
-        group-ids (cons :general (q/get-user-group-ids tx user-id))
-        quantities (->> (c/booking-calendar changes
-                                            group-ids
-                                            (ch/local-date start-date)
-                                            (ch/local-date end-date))
+(defn- prospective-days
+  "Per-date quantity of each date as a prospective pickup-location booking
+  day. Dates before today get 0."
+  [tx context start end]
+  (let [today (tz/today tx)]
+    (->> (ch/explode-date-range start end)
+         (map (fn [date]
+                {:date date
+                 :quantity (if (t/before? date today)
+                             0
+                             (c/available-quantity-for-prospective-day
+                              context date))})))))
+
+(defn get [tx start-date end-date pool-id user-id model-id exclude-res-ids
+           for-pickup-locations]
+  (let [start (ch/local-date start-date)
+        end (ch/local-date end-date)
+        {:keys [changes group-ids] :as context}
+        (c/fetch-context tx model-id user-id pool-id exclude-res-ids
+                         for-pickup-locations)
+        quantities (->> (if for-pickup-locations
+                          (prospective-days tx context start end)
+                          (c/booking-calendar changes group-ids start end))
                         (map (fn [{:keys [date quantity]}]
                                {:date (str date)
                                 :quantity (max 0 quantity)
@@ -52,4 +68,4 @@
         start-date (str (ch/local-date))
         end-date (str (t/plus (ch/local-date) (t/days 30)))]
    ; (get-visits-counts tx start-date end-date pool-id)
-    (get tx start-date end-date pool-id user-id model-id nil)))
+    (get tx start-date end-date pool-id user-id model-id nil nil)))

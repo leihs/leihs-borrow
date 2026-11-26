@@ -18,6 +18,13 @@ query getAvailability(
         name
         maximumReservationDuration
         reservationAdvanceDays
+        transferBufferBeforePickUp
+        defaultPickupLocationName
+        pickupLocations {
+          id
+          name
+          description
+        }
         holidays {
           startDate
           endDate
@@ -30,6 +37,14 @@ query getAvailability(
         startDateRestrictions
         endDateRestrictions
       }
+      datesForAltLocations {
+        date
+        quantity
+        startDateRestrictions
+        endDateRestrictions
+      }
+      earliestPossiblePickupDate
+      earliestPossiblePickupDateForAltLocations
     }
   }
 }

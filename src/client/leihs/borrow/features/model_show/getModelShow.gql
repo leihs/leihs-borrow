@@ -10,6 +10,7 @@ query getModelShow(
     name
     manufacturer
     description
+    transportable
     isFavorited
     images {
       id
@@ -48,6 +49,7 @@ query getModelShow(
     totalReservableQuantities {
       inventoryPool {
         id
+        name
       }
       quantity
     }

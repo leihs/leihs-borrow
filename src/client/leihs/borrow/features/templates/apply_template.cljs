@@ -93,9 +93,10 @@
     {:inventoryPool pool
      :dates (->> pool :availability :dates
                  (map (fn [day-data]
-                        (assoc day-data :parsedDate (-> day-data :date date-fns/parseISO)))))})))
+                        (assoc day-data :parsedDate (-> day-data :date date-fns/parseISO)))))
+     :earliestPossiblePickupDate (-> pool :availability :earliest-possible-pickup-date)})))
 
-(defn dialog [template models user-id date-locale text-locale]
+(defn- dialog-content [template models user-id date-locale text-locale]
   (let [today (date-fns/startOfToday)
         max-date (date-fns/addYears today 1)
         selected-range (reagent/atom {:startDate today :endDate  (date-fns/addDays today 1)})
@@ -129,6 +130,7 @@
                                   (validate! start-date end-date pool)))
         get-quantity (fn [reservations filter-pred]
                        (->> reservations (filter filter-pred) (map :quantity) (reduce +)))]
+    (validate! (:startDate @selected-range) (:endDate @selected-range) (:inventory-pool template))
     (fn [template models user-id date-locale]
       (let [dialog-data @(subscribe [::dialog-data])
             current-profile-name @(subscribe [::current-profile-name])
@@ -197,6 +199,10 @@
              (when is-saving? [:> UI/Components.Design.Spinner]) " "
              (t :dialog.submit)]
             [:button.btn.btn-secondary {:on-click #(dispatch [::close-dialog])} (t :dialog.cancel)]]])))))
+
+(defn dialog [template models user-id date-locale text-locale]
+  (when @(subscribe [::dialog-data])
+    [dialog-content template models user-id date-locale text-locale]))
 
 (defn success-notification []
   (fn []

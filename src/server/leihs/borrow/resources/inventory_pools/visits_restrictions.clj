@@ -6,42 +6,31 @@
    [leihs.core.availability.pool :as pool]
    [taoensso.timbre :as timbre :refer [debug spy]]))
 
-(defn orders-processing-day? [date pool]
-  (let [orders-processing-day (-> date
-                                  .getDayOfWeek
-                                  .toString
-                                  .toLowerCase
-                                  (str "_orders_processing")
-                                  keyword)]
-    (orders-processing-day pool)))
-
-(defn orders-processing? [date pool]
-  (let [date* (jt/local-date date)]
-    (and (orders-processing-day? date* pool)
-         (if-let [holiday (pool/get-holiday date* pool)]
-           (:orders_processing holiday)
-           true))))
-
-(defn earliest-possible-pickup-date [pool]
-  (let [start-date (jt/local-date)
-        reservation-advance-days (or (:reservation_advance_days pool) 0)
-        #_#_limit (jt/plus start-date (jt/years 1))]
-    (if (and (-> pool :holidays empty?)
-             (-> pool workdays/closed-days empty?)
-             (zero? reservation-advance-days))
-      start-date
-      (when (-> pool workdays/open-days empty? not)
-        (loop [date start-date, in-advance 0]
-          (cond (pool/close-time? date pool)
-                (recur (jt/plus date (jt/days 1))
-                       (cond-> in-advance
-                         (orders-processing? date pool)
-                         inc))
-                (and (not (zero? reservation-advance-days))
-                     (< in-advance reservation-advance-days))
-                (recur (jt/plus date (jt/days 1))
-                       (inc in-advance))
-                :else date))))))
+(defn earliest-possible-pickup-date
+  ([pool] (earliest-possible-pickup-date pool false))
+  ([pool alternative-pickup-location?]
+   (let [start-date (jt/local-date)
+         transfer-buffer (:transfer_buffer_before_pick_up pool)
+         before-pick-up-days (if alternative-pickup-location?
+                               (or transfer-buffer 0)
+                               0)
+         reservation-advance-days (max (or (:reservation_advance_days pool) 0)
+                                       before-pick-up-days)
+         #_#_limit (jt/plus start-date (jt/years 1))]
+     (if (and (-> pool :holidays empty?)
+              (-> pool workdays/closed-days empty?)
+              (zero? reservation-advance-days))
+       start-date
+       (when (-> pool workdays/open-days empty? not)
+         (loop [date start-date, in-advance 0]
+           (if (or (and (not (zero? reservation-advance-days))
+                        (< in-advance reservation-advance-days))
+                   (pool/close-time? date pool))
+             (recur (jt/plus date (jt/days 1))
+                    (cond-> in-advance
+                      (pool/orders-processing? date pool)
+                      inc))
+             date)))))))
 
 (defn start-date-restrictions [date-with-avail pool]
   (cond-> nil
@@ -84,13 +73,16 @@
          :end-date-restrictions
          (end-date-restrictions date-with-avail pool)))
 
-(defn validate-dates [tx dates-with-avail pool]
-  (let [pool* (as-> pool <>
-                (assoc <>
-                       :holidays
-                       (holidays/get-by-pool-id tx (:id <>)))
-                (assoc <>
-                       :earliest-possible-pickup-date
-                       (earliest-possible-pickup-date <>)))]
-    (map #(validate-single-date % pool*)
-         dates-with-avail)))
+(defn validate-dates
+  ([tx dates-with-avail pool] (validate-dates tx dates-with-avail pool false))
+  ([tx dates-with-avail pool alternative-pickup-location?]
+   (let [pool* (as-> pool <>
+                 (assoc <>
+                        :holidays
+                        (holidays/get-by-pool-id tx (:id <>)))
+                 (assoc <>
+                        :earliest-possible-pickup-date
+                        (earliest-possible-pickup-date
+                         <> alternative-pickup-location?)))]
+     {:dates (map #(validate-single-date % pool*) dates-with-avail)
+      :earliest-possible-pickup-date (:earliest-possible-pickup-date pool*)})))

@@ -72,9 +72,9 @@ Feature: Rentals - Show - Repeat order
       """
 
     And I click on the card with title "1× Elefant"
-    And I see the "Edit reservation" dialog
+    And I see the "Elefant" dialog
     And I click on "Remove reservation"
-    And the "Edit reservation" dialog has closed
+    And the "Elefant" dialog has closed
     And I sleep "0.5"
     And I click on "Send order"
     And I enter "Order 1 (again)" in the "Title" field
@@ -142,3 +142,54 @@ Feature: Rentals - Show - Repeat order
       | title          | body                                                                   |
       | 1× DSLR Camera | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
       | 1× Tripod      | Pool A\n${format_date_range_short(Date.today, Date.tomorrow)} (2 days) |
+
+  Scenario: Repeating an order with an alternative pickup location
+    Given the inventory pool "Pool A" has the following details:
+      | reservation advance days       | 1       |
+      | transfer buffer before pick up | 3       |
+      | alternative pickup locations   | enabled |
+    And the inventory pool "Pool A" has a pickup location "Alt Site"
+    And a customer order with title "Order 1" and the following reservations exists for the user:
+      | user | quantity | model       | pool   | pickup-location | start-date | end-date   | state  |
+      | user | 1        | DSLR Camera | Pool A | Alt Site        | 2020-02-01 | 2020-02-10 | closed |
+
+    When I log in as the user
+    And I visit "/borrow/rentals/?tab=closed-orders"
+    And I click on the card with title "Order 1"
+    And I see the page title "Order 1"
+    And I click on "Repeat order"
+
+    Then I see the "Add items" dialog
+    And I see "One item will be added to the cart."
+    And I see the following warnings in the "Time span" section:
+      | text                                       |
+      | Earliest pickup date is ${3.days.from_now} |
+    And the "Add" button is disabled
+
+    # Because the original reservation has an alternative pickup location, the
+    # transfer buffer (3 days) applies instead of the reservation advance days (1 day).
+    When I enter the date "${Date.tomorrow}" in the "From" field
+    And I enter the date "${4.days.from_now}" in the "Until" field
+    And I press the tab key
+    Then I see the following warnings in the "Time span" section:
+      | text                                       |
+      | Earliest pickup date is ${3.days.from_now} |
+    And the "Add" button is disabled
+
+    When I enter the date "${3.days.from_now}" in the "From" field
+    And I press the tab key
+    Then I see no warnings in the "Time span" section
+
+    When I accept the "Add items" dialog
+    Then the "Add items" dialog has closed
+    And I see the "Items added" dialog with the text:
+      """
+      1 item was added to the cart and can be reviewed/edited there.
+      """
+
+    When I click on "Go to cart"
+    Then the "Items added" dialog has closed
+    And I see the page title "Cart"
+    And I see the following lines in the "Items" section:
+      | title          | body                                                                          |
+      | 1× DSLR Camera | Alt Site\n${format_date_range_short(3.days.from_now, 4.days.from_now)} (2 days) |

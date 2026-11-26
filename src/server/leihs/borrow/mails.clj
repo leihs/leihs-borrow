@@ -33,9 +33,12 @@
                                      (email-vars/merge-workdays tx lang-locale)
                                      (email-vars/merge-holidays tx lang-locale))
                            reservations (-> (sql/select :r.quantity, :r.start_date, :r.end_date
-                                                        [[:concat_ws " " :m.product :m.version] :model_name])
+                                                        [[:concat_ws " " :m.product :m.version] :model_name]
+                                                        [[:coalesce :pl.name (:default_pickup_location_name pool)]
+                                                         :pickup_location_name])
                                             (sql/from [:reservations :r])
                                             (sql/join [:models :m] [:= :r.model_id :m.id])
+                                            (sql/left-join [:pickup_locations :pl] [:= :r.pickup_location_id :pl.id])
                                             (sql/where [:= :r.order_id (:id order)])
                                             sql-format
                                             (->> (jdbc-query tx)))
@@ -85,9 +88,12 @@
           (not tmpl) (warn (format "No 'submitted' mail template found for pool '%s'." (:id inventory-pool)))
           :else (let [email-signature (:email_signature settings)
                       reservations (-> (sql/select :r.quantity, :r.start_date, :r.end_date
-                                                   [[:concat_ws " " :m.product :m.version] :model_name])
+                                                   [[:concat_ws " " :m.product :m.version] :model_name]
+                                                   [[:coalesce :pl.name (:default_pickup_location_name inventory-pool)]
+                                                    :pickup_location_name])
                                        (sql/from [:reservations :r])
                                        (sql/join [:models :m] [:= :r.model_id :m.id])
+                                       (sql/left-join [:pickup_locations :pl] [:= :r.pickup_location_id :pl.id])
                                        (sql/where [:= :r.order_id (:id order)])
                                        sql-format
                                        (->> (jdbc-query tx)))

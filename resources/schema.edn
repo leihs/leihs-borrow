@@ -20,7 +20,10 @@
          :ReservationMetaStateEnum {:values [:CURRENT_LENDING]}
          :ReservationStateEnum {:values [:DRAFT :UNSUBMITTED :SUBMITTED :APPROVED :REJECTED :SIGNED :CLOSED :CANCELED]}
          :WorkdayEnum {:values [:MONDAY :TUESDAY :WEDNESDAY :THURSDAY :FRIDAY :SATURDAY :SUNDAY]}
-         :startDateRestrictionEnum {:values [:NON_WORKDAY :HOLIDAY :VISITS_CAPACITY_REACHED :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
+         :startDateRestrictionEnum {:values [:NON_WORKDAY
+                                             :HOLIDAY
+                                             :VISITS_CAPACITY_REACHED
+                                             :BEFORE_EARLIEST_POSSIBLE_PICK_UP_DATE]}
          :endDateRestrictionEnum {:values [:NON_WORKDAY :HOLIDAY :VISITS_CAPACITY_REACHED]}}
 
  :interfaces {:Fulfillment {:fields {:fulfilledQuantity {:type (non-null Int)}
@@ -60,8 +63,15 @@
                                                          :resolve :has-reservable-items}
                                     :maximumReservationDuration {:type Int}
                                     :reservationAdvanceDays {:type Int}
+                                    :transferBufferBeforePickUp {:type Int}
+                                    :transferBufferAfterDropOff {:type Int}
+                                    :defaultPickupLocationName {:type String}
+                                    :enableAlternativePickupLocations {:type (non-null Boolean)}
+                                    :pickupLocations {:type (list :PickupLocation)
+                                                      :resolve :pickup-locations}
                                     :availability {:args {:startDate {:type (non-null :Date)}
-                                                          :endDate {:type (non-null :Date)}}
+                                                          :endDate {:type (non-null :Date)}
+                                                          :considerAlternativePickupLocations {:type Boolean}}
                                                    :type :InventoryPoolAvailability
                                                    :resolve :pool-availability}
                                     :hasTemplates {:type Boolean
@@ -70,6 +80,10 @@
                                                :resolve :holidays}
                                     :workdays {:type (list :Workday)
                                                :resolve :workdays}}}
+           :PickupLocation {:fields {:id {:type (non-null :UUID)}
+                                     :name {:type (non-null String)}
+                                     :description {:type String}
+                                     :active {:type (non-null Boolean)}}}
            :Holiday {:fields {:startDate {:type :Date}
                               :endDate {:type :Date}
                               :name {:type (non-null String)}}}
@@ -188,6 +202,8 @@
                                    :description "A name consists of product name and its version."}
                             :manufacturer {:type String}
                             :description {:type String}
+                            :transportable {:type (non-null Boolean)
+                                            :description "Whether items of this model can be transferred to an alternative pickup location."}
                             :isReservable {:type (non-null Boolean)
                                            :resolve :is-reservable-model}
                             :isFavorited {:type (non-null Boolean)
@@ -202,7 +218,8 @@
                                                                   :startDate {:type (non-null :Date)}
                                                                   :endDate {:type (non-null :Date)}
                                                                   :userId {:type :UUID}
-                                                                  :excludeReservationIds {:type (list (non-null :UUID))}}
+                                                                  :excludeReservationIds {:type (list (non-null :UUID))}
+                                                                  :pickupLocationId {:type :UUID}}
                                                            :type (non-null Int)
                                                            :resolve :available-quantity-in-date-range}
                             :totalReservableQuantities {:type (list :TotalReservableQuantity)
@@ -239,9 +256,13 @@
            :Property {:fields {:id {:type (non-null :UUID)}
                                :key {:type (non-null String)}
                                :value {:type (non-null String)}}}
-           :InventoryPoolAvailability {:fields {:dates {:type (list :DayData)}}}
+           :InventoryPoolAvailability {:fields {:dates {:type (list :DayData)}
+                                                :earliestPossiblePickupDate {:type :Date}}}
            :ModelInventoryPoolAvailability {:fields {:inventoryPool {:type (non-null :InventoryPool)}
-                                                     :dates {:type (list :DayDataWithQuantity)}}}
+                                                     :dates {:type (list :DayDataWithQuantity)}
+                                                     :datesForAltLocations {:type (list :DayDataWithQuantity)}
+                                                     :earliestPossiblePickupDate {:type :Date}
+                                                     :earliestPossiblePickupDateForAltLocations {:type :Date}}}
            :TotalReservableQuantity {:fields {:inventoryPool {:type (non-null :InventoryPool)}
                                               :quantity {:type (non-null Int)}}}
            :Attachment {:fields {:id {:type (non-null :UUID)}
@@ -286,6 +307,8 @@
                                   :option {:type :Option :resolve :option}
                                   :inventoryPool {:type (non-null :InventoryPool)
                                                   :resolve :inventory-pool}
+                                  :pickupLocation {:type :PickupLocation
+                                                   :resolve :pickup-location}
                                   :startDate {:type (non-null :Date)}
                                   :status {:type (non-null :ReservationStateEnum)}
                                   :user {:type (non-null :User)
@@ -295,6 +318,7 @@
                                   :endDate {:type (non-null :Date)}
                                   :returnedDate {:type :Date}
                                   :actualEndDate {:type (non-null :Date)}
+                                  :sentBackToMainLocationAt {:type :DateTime}
                                   :createdAt {:type (non-null :DateTime)}
                                   :updatedAt {:type (non-null :DateTime)}}}
            :PoolOrder {:fields {:id {:type (non-null :UUID)}
@@ -452,14 +476,16 @@
                            :onlyAvailable {:type Boolean}
                            :quantity {:type :Int}
                            :userId {:type :UUID}
-                           :poolIds {:type (list (non-null :UUID))}}
+                           :poolIds {:type (list (non-null :UUID))}
+                           :transportableOnly {:type Boolean}}
                     :type :ModelsConnection
                     :resolve :models-connection}
            :inventoryPool {:resolve :inventory-pool
                            :args {:id {:type (non-null :UUID)}}
                            :type :InventoryPool}
            :inventoryPools {:resolve :inventory-pools
-                            :args {:userId {:type :UUID}
+                            :args {:ids {:type (list (non-null :UUID))}
+                                   :userId {:type :UUID}
                                    :orderBy {:type (list :InventoryPoolsOrderByInput)}}
                             :type (list :InventoryPool)}
            :languages {:resolve :languages :type (list :Language)}
@@ -490,6 +516,8 @@
                                         :userId {:type :UUID}
                                         :inventoryPoolIds {:type (list (non-null :UUID))
                                                            :description "If it is not used, then the individual reservations are distributed among all inventory pools, where the user has access to and the available quantity within the pool is greater than zero."}
+                                        :pickupLocationId {:type :UUID
+                                                           :description "Alternative pickup location. Null or omitted means the main warehouse of the inventory pool."}
                                         :quantity {:type (non-null Int)}
                                         :excludeReservationIds {:type (list (non-null :UUID))}}
                                  :resolve :create-reservation

@@ -10,17 +10,17 @@
 
 (defn merge-availability [old-one new-one]
   (map (fn [{{pool-id :id} :inventory-pool :as old-for-pool}]
-         (if-let [new-dates-for-pool (->> new-one
-                                          (filter #(-> %
-                                                       :inventory-pool
-                                                       :id
-                                                       (= pool-id)))
-                                          first
-                                          :dates)]
-           (update-in old-for-pool
-                      [:dates]
-                      concat
-                      new-dates-for-pool)
+         (if-let [new-for-pool (->> new-one
+                                    (filter #(-> %
+                                                 :inventory-pool
+                                                 :id
+                                                 (= pool-id)))
+                                    first)]
+           (cond-> old-for-pool
+             (:dates new-for-pool)
+             (update :dates concat (:dates new-for-pool))
+             (:dates-for-alt-locations new-for-pool)
+             (update :dates-for-alt-locations concat (:dates-for-alt-locations new-for-pool)))
            old-for-pool))
        old-one))
 

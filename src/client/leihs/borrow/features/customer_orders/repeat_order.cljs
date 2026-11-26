@@ -27,6 +27,9 @@
  (fn-traced [{:keys [db]} [_ rental]]
    (let [order-id (-> rental :id)
          pool-ids (->> rental :reservations (map #(-> % :inventory-pool :id)) distinct)
+         consider-alt-pickup-locations? (->> rental :reservations
+                                             (some #(-> % :pickup-location :id))
+                                             boolean)
          start-date (date-fns/startOfMonth (js/Date.))
          end-date (date-fns/addYears start-date 1)]
      (if (-> pool-ids count (= 1))
@@ -35,7 +38,8 @@
                     (rc/inline "leihs/borrow/features/customer_orders/poolAvailability.gql"))
                    {:id (first pool-ids)
                     :startDate start-date
-                    :endDate end-date}
+                    :endDate end-date
+                    :considerAlternativePickupLocations consider-alt-pickup-locations?}
                    [::on-open-repeat-dialog order-id]]
         :db (-> db (assoc-in [::data :repeat-dialog] {:loading? true}))}
        ; else
@@ -122,9 +126,10 @@
               (->> pool :availability :dates
                    (map (fn [day-data]
                           (assoc day-data :parsedDate (-> day-data :date date-fns/parseISO)))))
-              [])})))
+              [])
+     :earliestPossiblePickupDate (-> pool :availability :earliest-possible-pickup-date)})))
 
-(defn repeat-dialog [rental reservations user-id date-locale text-locale]
+(defn- repeat-dialog-content [rental reservations user-id date-locale text-locale]
   (let [today (date-fns/startOfToday)
         max-date (date-fns/addYears today 1)
         selected-range (reagent/atom {:startDate today :endDate  (date-fns/addDays today 1)})
@@ -158,6 +163,7 @@
                                   (validate! start-date end-date pool)))
         get-quantity (fn [reservations filter-pred]
                        (->> reservations (filter filter-pred) (map :quantity) (reduce +)))]
+    (validate! (:startDate @selected-range) (:endDate @selected-range) (:pool @(subscribe [::repeat-dialog-data])))
     (fn [rental reservations user-id date-locale]
       (let [dialog-data @(subscribe [::repeat-dialog-data])
             current-profile-name @(subscribe [::current-profile-name])
@@ -232,6 +238,10 @@
              (when is-saving? [:> UI/Components.Design.Spinner]) " "
              (t :dialog.submit)]
             [:button.btn.btn-secondary {:on-click #(dispatch [::close-repeat-dialog])} (t :dialog.cancel)]]])))))
+
+(defn repeat-dialog [rental reservations user-id date-locale text-locale]
+  (when (:show @(subscribe [::repeat-dialog-data]))
+    [repeat-dialog-content rental reservations user-id date-locale text-locale]))
 
 (defn repeat-success-notification []
   (fn []

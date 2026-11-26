@@ -12,13 +12,17 @@
             [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.inventory-pools :as pools]
+            [leihs.borrow.resources.inventory-pools.visits-restrictions :as restrict]
             [leihs.borrow.resources.models :as models]
+            [leihs.borrow.resources.models.core :as models.core]
+            [leihs.borrow.resources.pickup-locations :as pickup-locations]
             [leihs.borrow.resources.workdays :as workdays]
             [leihs.borrow.time :as time]
             [leihs.core.core :refer [raise presence]]
             [leihs.core.db :as db]
             [leihs.borrow.database.helpers :as database]
             [leihs.core.settings :refer [settings]]
+            [java-time :as jt]
             [taoensso.timbre :refer [debug info warn error spy]]))
 
 (doseq [s [::inventory_pool_id ::start_date ::end_date]]
@@ -123,6 +127,16 @@
       first
       :result))
 
+(defn- start-before-earliest-pickup?
+  "Start date is before the pool's earliest allowed pickup date (reservation
+  advance days, or transfer buffer when an alt pickup location is used)."
+  [tx {:keys [pickup_location_id inventory_pool_id start_date]}]
+  (let [pool (pools/get-by-id tx inventory_pool_id)
+        consider-alt? (boolean pickup_location_id)
+        earliest (restrict/earliest-possible-pickup-date pool consider-alt?)
+        start (jt/local-date start_date)]
+    (and earliest start (jt/before? start earliest))))
+
 (defn broken
   ([tx user-id]
    (broken tx user-id (-> (unsubmitted-sqlmap tx user-id)
@@ -141,7 +155,13 @@
                                          first
                                          second)]
                        (not (some #{(:inventory_pool_id r)} pool-ids)))
-                     (not (complies-with-max-reservation-time? tx r)))
+                     (not (complies-with-max-reservation-time? tx r))
+                     (when-let [pickup-location (some-> r :pickup_location_id
+                                                        (->> (pickup-locations/get-by-id tx)))]
+                       (or (not (pools/enable-alternative-pickup-locations? tx (:inventory_pool_id r)))
+                           (not (:active pickup-location))
+                           (not (:transportable (models.core/get-one-by-id tx (:model_id r))))))
+                     (start-before-earliest-pickup? tx r))
                  (conj r)))
              []
              rs))))
@@ -296,7 +316,8 @@
       (cond->
        (= meta-state :CURRENT_LENDING)
         (sql/where [:or
-                    [:= :reservations.status "signed"]
+                    [:and [:= :reservations.status "signed"]
+                     [:= :reservations.sent_back_to_main_location_at nil]]
                     [:and [:= :reservations.status "approved"] [:<= [:raw "CURRENT_DATE"] :reservations.end_date]]])
 
         (or from until)
@@ -390,7 +411,7 @@
   [{{tx :tx {auth-user-id :id} :authenticated-entity} :request
     user-id ::target-user/id
     :as context}
-   {:keys [model-id start-date end-date quantity]
+   {:keys [model-id start-date end-date quantity pickup-location-id]
     [pool-id] :inventory-pool-ids
     exclude-reservation-ids :exclude-reservation-ids
     :or {exclude-reservation-ids []}
@@ -402,6 +423,14 @@
                  (map :id)
                  (some #{pool-id}))
     (raise "Not allowed to create reservation in this pool."))
+  (when pickup-location-id
+    (when-not (pools/enable-alternative-pickup-locations? tx pool-id)
+      (raise (str "Alternative pickup locations are not enabled"
+                  " for the selected inventory pool.")))
+    (when-not (pickup-locations/belongs-to-pool? tx pickup-location-id pool-id)
+      (raise "Pickup location does not belong to the selected inventory pool."))
+    (when-not (:transportable (models.core/get-one-by-id tx model-id))
+      (raise "Model is not transportable to an alternative pickup location.")))
   (let [available-quantity (models/available-quantity-in-date-range
                             context
                             {:inventory-pool-ids [pool-id]
@@ -419,7 +448,9 @@
                        :delegated_user_id (when (not= auth-user-id user-id) auth-user-id)
                        :status "unsubmitted"
                        :created_at (time/now tx)
-                       :updated_at (time/now tx)))
+                       :updated_at (time/now tx))
+                (cond-> pickup-location-id
+                  (assoc :pickup_location_id pickup-location-id)))
         created-rs (-> (sql/insert-into :reservations)
                        (sql/values (->> row repeat (take quantity)))
                        (as-> <> (apply sql/returning <> columns))
