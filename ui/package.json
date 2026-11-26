@@ -84,7 +84,8 @@
     },
     "@storybook/builder-webpack5": {
       "webpack-dev-middleware": "^7.4.6"
-    }
+    },
+    "follow-redirects": "^1.16.2"
   },
   "browserslist": {
     "production": [
