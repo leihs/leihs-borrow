@@ -11,7 +11,27 @@ step "there is an empty database" do
 end
 
 step "I select :option from :label" do |option, label|
-  select(option, from: label)
+  if label == "Switch Profile"
+    # Profile switch eventually calls window.location.reload (after GraphQL + 50ms).
+    # Waiting only for a stale profile button is too early: re-frame
+    # re-renders (changing-to spinner) remount the button before reload. Mark the
+    # document and wait until the marker disappears after a full reload.
+    #
+    # Selecting the already-active option does not fire onChange (no reload) — e.g.
+    # "User A (personal)" right after login — so skip the marker wait in that case.
+    field = find_field(label)
+    already_selected = field.find(:option, option).selected?
+    unless already_selected
+      page.execute_script("window.__leihsProfileSwitchMarker = true")
+      select(option, from: label)
+      wait_until do
+        page.evaluate_script("window.__leihsProfileSwitchMarker") != true
+      end
+    end
+    expect(page).to have_css("nav .ui-user-profile-button", visible: :visible)
+  else
+    select(option, from: label)
+  end
 end
 
 step "I click on :txt" do |txt|

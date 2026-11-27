@@ -30,6 +30,15 @@ step "the model :model_name belongs to the :cat_name category" do |model_name, c
 end
 
 step "I see :n (different) :model model(s)" do |n, model_name|
+  # Soft-wait for filter/pagination/cache refresh; keep master expect for mismatch clarity.
+  begin
+    wait_until do
+      page.has_no_selector?(".ui-spinner", wait: 0) &&
+        all(".ui-models-list-item", text: /#{model_name}/).count == n.to_i
+    end
+  rescue Timeout::Error
+    # Fall through to explicit count expect below.
+  end
   find(".ui-models-list-item", match: :first)
   model_items = all(".ui-models-list-item", text: /#{model_name}/)
   expect(model_items.count).to eq n.to_i
@@ -46,7 +55,7 @@ end
 step "I click :n times on :txt" do |n, txt|
   n.to_i.times do
     click_on(txt)
-    sleep(1)
+    wait_until { page.has_no_selector?(".ui-spinner", wait: 0) }
   end
 end
 
@@ -55,6 +64,7 @@ step "there is :txt button" do |txt|
 end
 
 step "there is no :txt button" do |txt|
+  wait_until { page.has_no_selector?(".ui-spinner", wait: 0) }
   expect(page).not_to have_content txt
 end
 
@@ -85,6 +95,11 @@ step "I select all pools" do
 end
 
 step "there are no results" do
+  # Avoid matching the loading state (also has no .square-container).
+  wait_until do
+    page.has_no_selector?(".ui-spinner", wait: 0) &&
+      page.has_text?("No items found", wait: 0)
+  end
   expect(page).not_to have_selector ".square-container"
 end
 
