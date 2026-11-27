@@ -1,14 +1,8 @@
 (ns leihs.borrow.resources.favorites
-  (:require [clojure.spec.alpha :as spec]
-            [clojure.tools.logging :as log]
-            [honey.sql :refer [format] :rename {format sql-format}]
+  (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [next.jdbc :as jdbc :refer [execute!] :rename {execute! jdbc-execute!}]
-            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
-            [com.walmartlabs.lacinia :as lacinia]
-            [com.walmartlabs.lacinia.executor :as executor]
             [leihs.borrow.graphql.target-user :as target-user]
-            [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.models.core :as models]))
 
 (defn create

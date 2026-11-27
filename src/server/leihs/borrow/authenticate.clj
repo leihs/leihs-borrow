@@ -1,7 +1,6 @@
 (ns leihs.borrow.authenticate
-  (:require [clojure.tools.logging :as log]
+  (:require clojure.set
             [leihs.core.core :refer [presence]]
-            [leihs.core.graphql.helpers :as helpers]
             [leihs.core.sign-in.external-authentication.back :as ext-auth]
             [leihs.borrow.paths :refer [path]]
             [ring.util.response :as response]))

@@ -5,8 +5,7 @@
    [leihs.borrow.resources.workdays :as workdays]
    [leihs.borrow.translate :refer [t]]
    [leihs.borrow.translate-base :refer [fallbacks]]
-   [java-time.api :as jt]
-   [taoensso.timbre :as timbre :refer [debug spy]]))
+   [java-time.api :as jt]))
 
 (def dict-path :borrow.terms.weekdays)
 
@@ -17,7 +16,7 @@
               :fr-CH {:default "dd.MM.yyyy"
                       :short "dd.MM"}})
 
-(defn fallbacked [tx locale]
+(defn fallbacked [_ locale]
   (if (contains? formats locale)
     locale
     (get fallbacks locale)))
@@ -58,11 +57,3 @@
                   (str name ": " span))))
          (string/join "\n")
          (assoc pool :holidays))))
-
-(comment
-  (require '[leihs.core.db :as db])
-  (jt/format "dd/MM" (jt/local-date "2019-12-25"))
-  (let [tx (db/get-ds)
-        locale :en-US]
-    #_(merge-workdays tx locale {:id #uuid "8bd16d45-056d-5590-bc7f-12849f034351"})
-    (merge-holidays tx locale {:id #uuid "8bd16d45-056d-5590-bc7f-12849f034351"})))

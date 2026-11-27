@@ -1,10 +1,6 @@
 (ns leihs.borrow.html
   (:require [leihs.core.http-cache-buster2 :as cache-buster]
-            #_[leihs.core.json :refer [to-json]]
-            #_[leihs.core.url.core :as url]
-            #_[clojure.tools.logging :as log]
-            [hiccup.page :refer [html5 #_include-js]]
-            #_[ring.util.response :refer [resource-response content-type status]]))
+            [hiccup.page :refer [html5]]))
 
 (defn head []
   [:head
@@ -42,7 +38,3 @@
 
           (hiccup.page/include-js
            (cache-buster/cache-busted-path "/borrow/js/main.js")))})
-
-;#### debug ###################################################################
-;(debug/debug-ns 'cider-ci.utils.shutdown)
-;(debug/debug-ns *ns*)

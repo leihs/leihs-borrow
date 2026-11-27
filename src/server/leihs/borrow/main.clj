@@ -1,18 +1,17 @@
 (ns leihs.borrow.main
   (:require
+   clojure.string
    [clj-reload.core]
    [clj-yaml.core :as yaml]
    [clojure.pprint :refer [pprint]]
-   [clojure.tools.cli :as cli :refer [parse-opts]]
+   [clojure.tools.cli :as cli]
    [environ.core :refer [env]]
    [leihs.borrow.run :as run]
    [leihs.core.logging]
    [leihs.core.reload :as reload]
    [leihs.core.repl :as repl]
-   [logbug.catcher :as catcher]
-   [logbug.debug :as debug]
    [logbug.thrown :as thrown]
-   [taoensso.timbre :refer [debug info warn error]])
+   [taoensso.timbre :refer [info]])
   (:gen-class))
 
 (thrown/reset-ns-filter-regex #"^(leihs|cider)\..*")
@@ -46,8 +45,8 @@
 (defn main [args]
   (leihs.core.logging/init)
   (let [{:keys [options arguments
-                errors summary]} (cli/parse-opts
-                                  args cli-options :in-order true)
+                summary]} (cli/parse-opts
+                           args cli-options :in-order true)
         cmd (some-> arguments first keyword)
         options (into (sorted-map) options)
         print-summary #(println (main-usage summary {:args args :options options}))]
@@ -64,5 +63,3 @@
 
 ; dynamic restart on require
 (when @reload/args* (main @reload/args*))
-
-;(main)

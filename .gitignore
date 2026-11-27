@@ -1,8 +1,9 @@
 !/.env.local-example
 .calva
 .cider-ci_private/
-.clj-kondo
-.clj-kondo/rewrite-clj/
+!.clj-kondo/
+.clj-kondo/*
+!.clj-kondo/config.edn
 .cpcache
 .lsp
 .nrepl-history

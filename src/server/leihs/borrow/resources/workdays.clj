@@ -1,11 +1,8 @@
 (ns leihs.borrow.resources.workdays
-  (:refer-clojure :exclude [get])
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
-            [clojure.string :as string]
-            [clojure.tools.logging :as log]))
+            [clojure.string :as string]))
 
 (def DAYS [:MONDAY :TUESDAY :WEDNESDAY :THURSDAY :FRIDAY :SATURDAY :SUNDAY])
 
@@ -75,10 +72,3 @@
       (->> (jdbc-query tx))
       first
       transform))
-
-(comment
-  (require '[leihs.core.db :as db])
-  (let [pool-id #uuid "8bd16d45-056d-5590-bc7f-12849f034351"
-        tx (db/get-ds)]
-    (closed-days (get-by-pool-id tx pool-id))
-    #_(get-multiple {:tx tx} nil {:id pool-id})))

@@ -1,22 +1,17 @@
 (ns leihs.borrow.run
-  (:refer-clojure :exclude [str keyword])
-  (:require [leihs.core.core :refer [keyword str presence]])
   (:require
-   ;[leihs.borrow.paths]
+   clojure.string
    [clojure.pprint :refer [pprint]]
-   [clojure.tools.cli :as cli :refer [parse-opts]]
+   [clojure.tools.cli :as cli]
    [leihs.borrow.graphql :as graphql]
    [leihs.borrow.routes :as routes]
    [leihs.core.db :as db]
    [leihs.core.http-server :as http-server]
    [leihs.core.shutdown :as shutdown]
-   [leihs.core.ssr-engine :as ssr-engine]
    [leihs.core.status :as status]
    [leihs.core.url.jdbc]
    [logbug.catcher :as catcher]
-   [logbug.debug :as debug]
-   [logbug.thrown :as thrown]
-   [taoensso.timbre :refer [debug info warn]]))
+   [taoensso.timbre :refer [info]]))
 
 (defn run [options]
   (catcher/snatch
@@ -54,10 +49,8 @@
        flatten (clojure.string/join \newline)))
 
 (defn main [gopts args]
-  (let [{:keys [options arguments errors summary]}
+  (let [{:keys [options summary]}
         (cli/parse-opts args cli-options :in-order true)
-        pass-on-args (->> [options (rest arguments)]
-                          flatten (into []))
         options (merge gopts options)]
     (cond
       (:help options) (println (main-usage summary {:args args :options options}))

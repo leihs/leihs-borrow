@@ -1,22 +1,12 @@
 (ns leihs.borrow.graphql.connections
   (:refer-clojure :exclude [first])
-  (:require [clojure.tools.logging :as log]
-            [honey.sql :refer [format] :rename {format sql-format}]
+  (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [next.jdbc :as jdbc]
-            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
-            [taoensso.timbre :refer [debug info warn error spy]]))
+            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]))
 
 (def PER-PAGE
   "Standard per-page limit for fetching and displaying results."
   20)
-
-(def intervene-per-page-default
-  "The internal per-page limit used by the intervene function."
-  (atom nil))
-
-(defn init [{pp :special-per-page-default}]
-  (reset! intervene-per-page-default pp))
 
 (defn row-cursor [column]
   (as-> column <>
@@ -121,8 +111,6 @@
   the connection function (`conn-fn`) and adjusts the edges repeatedly (via
   `intervene-fn`) until the per-page `limit` is reached (or no further page is
   available). The internal per-page limit is controlled via `batch-size`."
-  ([conn-fn intervene-fn limit]
-   (intervene conn-fn intervene-fn @intervene-per-page-default limit))
   ([conn-fn intervene-fn batch-size limit]
    (let [limit (or limit PER-PAGE)]
      (loop [{:keys [page-info edges] :as conn} (conn-fn {:first batch-size})

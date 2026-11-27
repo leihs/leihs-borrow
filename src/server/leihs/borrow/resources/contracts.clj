@@ -1,7 +1,6 @@
 (ns leihs.borrow.resources.contracts
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
 
             [clojure.string :refer [lower-case]]
@@ -9,10 +8,9 @@
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.helpers :as helpers]
-            [leihs.borrow.database.helpers :as database]
             [leihs.core.settings :refer [settings]]))
 
-(defn base-sqlmap [tx user-id]
+(defn base-sqlmap [_ user-id]
   (-> (sql/select-distinct :contracts.*)
       (sql/from :contracts)
       (sql/where [:= :contracts.user_id user-id])))
@@ -75,8 +73,3 @@
                     context
                     args
                     value))
-
-;#### debug ###################################################################
-; (debug/debug-ns 'cider-ci.utils.shutdown)
-; (debug/debug-ns *ns*)
-; (debug/undebug-ns *ns*)

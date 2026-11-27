@@ -1,11 +1,7 @@
 (ns leihs.borrow.resources.images
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
-            [clojure.tools.logging :as log]
-            [compojure.core :as cpj]
-            [taoensso.timbre :as timbre :refer [debug info spy]]
             [leihs.borrow.paths :refer [path]])
   (:import java.util.Base64))
 
@@ -70,8 +66,3 @@
                           "Content-Transfer-Encoding" "binary"}})
         (set-cache-control-header request))
     {:status 404}))
-
-;#### debug ###################################################################
-; (debug/debug-ns 'cider-ci.utils.shutdown)
-; (debug/debug-ns *ns*)
-; (debug/undebug-ns *ns*)

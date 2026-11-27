@@ -5,17 +5,15 @@
    [honey.sql :refer [format] :rename {format sql-format}]
    [honey.sql.helpers :as sql]
 
-   [leihs.core.db :as db]
    [leihs.core.languages :as lang]
    [leihs.core.mails :refer [get-tmpl log-mail-failure]]
-   [leihs.core.settings :refer [settings]]
    [wet.core :as wet]
    [leihs.borrow.resources.delegations :refer [delegation?]]
    [leihs.borrow.resources.inventory-pools :as pools]
    [leihs.borrow.resources.inventory-pools.email-variables :as email-vars]
    [leihs.borrow.resources.orders.shared :as orders]
    [leihs.borrow.resources.users.shared :as users]
-   [taoensso.timbre :refer [debug info warn error spy]]))
+   [taoensso.timbre :refer [warn]]))
 
 (defn send-received [tx order settings]
   (let [inventory-pool (->> order
@@ -122,13 +120,3 @@
                       (->> (jdbc-execute! tx))))))
       (catch Exception e
         (log-mail-failure (:id user) e)))))
-
-(comment (let [tx (db/get-ds)
-               order (-> (sql/select :*)
-                         (sql/from :orders)
-                         (sql/where [:= :id #uuid "63b4e83e-e2c3-4924-ae89-3596824b1c95"])
-                         sql-format
-                         (->> (jdbc-query tx))
-                         first)]
-           ; order
-           (send-received tx (settings tx) order)))

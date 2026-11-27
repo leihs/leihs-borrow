@@ -1,15 +1,13 @@
 (ns leihs.borrow.resources.models
-  (:require [taoensso.timbre :as timbre :refer [debug info spy]]
-            [camel-snake-kebab.core :as csk]
+  (:require [camel-snake-kebab.core :as csk]
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [clojure.set :as s]
             [clojure.string :as string]
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.executor :as executor]
-            [java-time :as jt :refer [before? local-date]]
+            [java-time.api :as jt :refer [before? local-date]]
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.core.availability.core :as av]
@@ -94,7 +92,7 @@
        (sql/where [:= :items.parent_id nil]))))
 
 (defn reservable?
-  [{{tx :tx} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id}
    _
    value]
   (-> base-sqlmap
@@ -153,11 +151,11 @@
 (defn available-quantity-in-date-range
   "If the available quantity was already computed through the enclosing
   resolver, then just return it. Otherwise fetch from legacy and compute."
-  [{{tx :tx} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request user-id ::target-user/id}
    {:keys [inventory-pool-ids
            start-date
            end-date
-           exclude-reservation-ids] :as args}
+           exclude-reservation-ids]}
    value]
   (or (:available-quantity-in-date-range value)
       (let [pool-ids (or (not-empty inventory-pool-ids)
@@ -189,9 +187,9 @@
 
 (defn merge-available-quantities
   [models
-   {{tx :tx} :request user-id ::target-user/id :as context}
-   {:keys [start-date end-date inventory-pool-ids pickup-location-id] :as args}
-   value]
+   {{tx :tx} :request user-id ::target-user/id}
+   {:keys [start-date end-date inventory-pool-ids pickup-location-id]}
+   _]
   (let [pool-ids (relevant-pool-ids tx user-id start-date end-date inventory-pool-ids)]
     (map #(assoc %
                  :available-quantity-in-date-range
@@ -250,7 +248,7 @@
                         (:earliest-possible-pickup-date validated-alt)))))
          pools)))
 
-(defn from-compatibles [sqlmap value user-id pool-ids unscope-reservable]
+(defn from-compatibles [sqlmap value _ _ _]
   (-> sqlmap
       (sql/where [:in :models.id (-> (sql/select :compatible_id)
                                      (sql/from :models_compatibles)
@@ -361,7 +359,7 @@
   (merge-availability-if-selects-fields models context args value))
 
 (defn get-connection
-  [{{tx :tx} :request user-id ::target-user/id :as context}
+  [context
    {:keys [only-available quantity] limit :first :or {quantity 1} :as args}
    value]
   (let [conn-fn (fn [ext-args]
@@ -394,8 +392,3 @@
       sql-format
       (->> (jdbc-query tx))
       first))
-
-;#### debug ###################################################################
-; (debug/debug-ns 'cider-ci.utils.shutdown)
-; (debug/debug-ns *ns*)
-; (debug/undebug-ns *ns*)

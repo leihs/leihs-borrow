@@ -50,6 +50,9 @@
 
            :cljc-paths ["src/server" "src/common" "shared-clj/src"]
 
+           :clj-kondo {:replace-deps {clj-kondo/clj-kondo {:mvn/version "2025.10.23"}}
+                       :main-opts ["-m" "clj-kondo.main"]}
+
            :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.5.1109"}}
                       :main-opts ["-m" "antq.core"]}
 

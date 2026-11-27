@@ -1,10 +1,9 @@
 (ns leihs.borrow.resources.inventory-pools.visits-restrictions
   (:require
-   [java-time :as jt]
+   [java-time.api :as jt]
    [leihs.borrow.resources.holidays :as holidays]
    [leihs.borrow.resources.workdays :as workdays]
-   [leihs.core.availability.pool :as pool]
-   [taoensso.timbre :as timbre :refer [debug spy]]))
+   [leihs.core.availability.pool :as pool]))
 
 (defn earliest-possible-pickup-date
   ([pool] (earliest-possible-pickup-date pool false))
@@ -15,13 +14,12 @@
                                (or transfer-buffer 0)
                                0)
          reservation-advance-days (max (or (:reservation_advance_days pool) 0)
-                                       before-pick-up-days)
-         #_#_limit (jt/plus start-date (jt/years 1))]
+                                       before-pick-up-days)]
      (if (and (-> pool :holidays empty?)
               (-> pool workdays/closed-days empty?)
               (zero? reservation-advance-days))
        start-date
-       (when (-> pool workdays/open-days empty? not)
+       (when (-> pool workdays/open-days seq)
          (loop [date start-date, in-advance 0]
            (if (or (and (not (zero? reservation-advance-days))
                         (< in-advance reservation-advance-days))

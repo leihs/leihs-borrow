@@ -79,6 +79,13 @@ jobs:
                 #!/usr/bin/env bash
                 set -euo pipefail
                 ./bin/cljfmt check
+        clj-kondo-lint:
+          scripts:
+            test:
+              body: |
+                #!/usr/bin/env bash
+                set -euo pipefail
+                ./bin/lint-clojure
         ruby-lint:
           scripts:
             test:

@@ -1,6 +1,6 @@
 (ns leihs.borrow.after-tx
   (:require
-   [taoensso.timbre :refer [debug info warn error]]))
+   [taoensso.timbre :refer [warn error]]))
 
 (defn wrap [handler]
   (fn [request]

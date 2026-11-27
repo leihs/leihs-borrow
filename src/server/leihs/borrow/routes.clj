@@ -1,5 +1,4 @@
 (ns leihs.borrow.routes
-  (:refer-clojure :exclude [keyword replace])
   (:require
    [leihs.borrow.after-tx :as after-tx]
    [leihs.borrow.authenticate :as authenticate]
@@ -21,8 +20,6 @@
    [leihs.core.routing.back :as core-routing]
    [leihs.core.settings :as settings]
    [leihs.core.status :as status]
-   [logbug.debug :as debug :refer [I>]]
-   [logbug.ring :refer [wrap-handler-with-logging]]
    [ring-graphql-ui.core :refer [wrap-graphiql]]
    [ring.middleware.content-type :refer [wrap-content-type]]
    [ring.middleware.cookies :refer [wrap-cookies]]
@@ -73,7 +70,6 @@
 (defn init []
   (core-routing/init paths resolve-table)
   (->
-  ; (I> wrap-handler-with-logging
    dispatch-to-handler
    ring-audits/wrap
    anti-csrf/wrap
@@ -105,7 +101,3 @@
    (core-routing/wrap-resolve-handler html/html-handler)
    wrap-accept
    ring-exception/wrap))
-
-;#### debug ###################################################################
-; (debug/debug-ns 'cider-ci.utils.shutdown)
-; (debug/debug-ns *ns*)

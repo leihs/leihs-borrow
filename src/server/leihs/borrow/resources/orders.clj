@@ -1,23 +1,18 @@
 (ns leihs.borrow.resources.orders
-  (:refer-clojure :exclude [resolve])
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [clojure.set :as set]
             [clojure.string :refer [upper-case]]
+            [java-time.api :as java-time]
             [leihs.borrow.graphql.connections :as connections]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.mails :as mails]
-            [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.resources.helpers :as helpers]
             [leihs.borrow.resources.reservations :as rs]
             [leihs.borrow.time :as time :refer [past-date?]]
-            [leihs.borrow.database.helpers :as database]
-            [leihs.core.db :as db]
-            [leihs.core.settings :refer [settings]]
-            [logbug.debug :as debug]
-            [taoensso.timbre :refer [debug info warn error spy]])
+            [leihs.core.db :as db])
   (:import java.time.format.DateTimeFormatter))
 
 (def refined-rental-state->reservation-status
@@ -146,7 +141,7 @@
   (update row :state upper-case))
 
 (defn get-one-by-pool
-  [{{tx :tx} :request user-id ::target-user/id}
+  [{{tx :tx} :request}
    _
    {pool-order-id :id}]
   (-> (sql/select :orders.id
@@ -210,10 +205,10 @@
                   (sql/where [:= :reservations.sent_back_to_main_location_at nil]))])))
 
 (defn get-connection-sql-map
-  [{{tx :tx} :request user-id ::target-user/id}
+  [{user-id ::target-user/id}
    {:keys [order-by states rental-state from until pool-ids
            search-term with-pickups with-returns refined-rental-state]}
-   value]
+   _]
   (-> (multiple-base-sqlmap user-id)
       (cond->
        states
@@ -263,7 +258,7 @@
                     value
                     #(map (partial row-fn tx) %)))
 
-(defn pool-orders-sqlmap [tx customer-order-id]
+(defn pool-orders-sqlmap [_ customer-order-id]
   (-> (sql/select :*)
       (sql/from :orders)
       (sql/where [:= :customer_order_id customer-order-id])))
@@ -299,7 +294,7 @@
   (when (= origin-table "customer_orders")
     (pool-orders-for-state-count tx id "submitted")))
 
-(defn get-multiple-by-pool [{{tx :tx} :request :as context}
+(defn get-multiple-by-pool [{{tx :tx} :request}
                             {:keys [order-by]}
                             value]
   (-> (pool-orders-sqlmap tx (:id value))

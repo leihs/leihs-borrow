@@ -1,7 +1,5 @@
 (ns leihs.borrow.graphql.resolvers
-  (:refer-clojure :exclude [resolve])
-  (:require [clojure.tools.logging :as log]
-            [com.walmartlabs.lacinia :as lacinia]
+  (:require [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.resolve :as resolve]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.graphql.mutations :as mutations]
@@ -11,7 +9,7 @@
                                                 wrap-resolver-with-kebab-case
                                                 wrap-resolver-with-camelCase]]
             [leihs.borrow.resources.delegations :as delegations]
-            [java-time :refer [local-date before?]])
+            [java-time.api :refer [local-date before?]])
   (:import (java.time.format DateTimeFormatter)))
 
 (defn wrap-resolver-with-dates-validation [resolver]
@@ -26,8 +24,7 @@
 
 (defn wrap-resolver-with-target-user-id [resolver]
   (fn [{{tx :tx
-         {auth-user-id :id} :authenticated-entity
-         :as request} :request
+         {auth-user-id :id} :authenticated-entity} :request
         container ::lacinia/container-type-name
         target-user-id ::target-user/id
         :as context}
@@ -55,10 +52,6 @@
                   value)
         {::target-user/id target-user-id*}))))
 
-(defn wrap-debug [resolver]
-  (fn [context args value]
-    (resolver context args value)))
-
 (def resolvers
   (-> queries/resolvers
       (merge mutations/resolvers)
@@ -67,7 +60,3 @@
                                  wrap-resolver-with-camelCase
                                  wrap-resolver-with-kebab-case
                                  wrap-resolver-with-dates-validation))))
-
-;#### debug ###################################################################
-; (debug/debug-ns *ns*)
-; (debug/undebug-ns *ns*)

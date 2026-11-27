@@ -1,8 +1,6 @@
 (ns leihs.borrow.resources.inventory-pools
-  (:require [clojure.tools.logging :as log]
-            [honey.sql :refer [format] :rename {format sql-format}]
+  (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
             [com.walmartlabs.lacinia :as lacinia]
             [hugsql.core :as hugsql]
@@ -11,9 +9,7 @@
             [leihs.borrow.resources.inventory-pools.visits-restrictions :as restrict]
             [leihs.core.availability.changes :as ch]
             [leihs.borrow.resources.legacy-availability.booking-calendar :refer [get-visits-counts]]
-            [leihs.borrow.resources.workdays :as workdays]
-            [leihs.core.db :as db]
-            [taoensso.timbre :refer [debug info warn error spy]]))
+            [leihs.borrow.resources.workdays :as workdays]))
 
 (hugsql/def-sqlvec-fns "sql/pools_to_reserve_from.sql")
 
@@ -48,10 +44,6 @@
       (sql/from :inventory_pools)
       (sql/where [:= :inventory_pools.is_active true])))
 
-(comment
-  (sql-format (apply sql/select select-fields))
-  (sql-format base-sqlmap))
-
 (defn accessible-to-user-condition [sqlmap user-id]
   (-> sqlmap
       (sql/join :access_rights
@@ -80,14 +72,6 @@
   (->> {:user-id user-id, :start-date start-date, :end-date end-date}
        to-reserve-from-sqlvec
        (jdbc-query tx)))
-
-(comment
-  (->> (to-reserve-from (db/get-ds)
-                        #uuid "c0777d74-668b-5e01-abb5-f8277baa0ea8"
-                        "2025-02-21"
-                        "2025-02-26")
-       (map :name)
-       sort))
 
 (defn get-multiple
   [{{tx :tx} :request user-id ::target-user/id}
@@ -139,10 +123,6 @@
       first
       :exists))
 
-(comment (has-reservable-items? {:request {:tx (db/get-ds)}}
-                                nil
-                                {:id #uuid "8bd16d45-056d-5590-bc7f-12849f034351"}))
-
 (defn has-templates? [{{tx :tx} :request} _ {:keys [id]}]
   (-> (sql/select :*)
       (sql/from :model_groups)
@@ -158,21 +138,16 @@
       (> 0)))
 
 (defn get-availability
-  [{{tx :tx} :request user-id ::target-user/id :as context}
+  [{{tx :tx} :request}
    {:keys [start-date end-date consider-alternative-pickup-locations]}
    {:keys [id]}]
   (let [start-date-jt (ch/local-date start-date)
         end-date-jt (ch/local-date end-date)
         date-range (ch/explode-date-range start-date-jt end-date-jt)
-        db-pool (get-by-id tx id) #_"due to casing of the keys needed for validate-dates"
+        db-pool (get-by-id tx id) ; due to casing of the keys needed for validate-dates
         visits-count (get-visits-counts tx start-date end-date (:id db-pool))
         dates-with-visits (as-> date-range <>
                             (map #(hash-map :date (str %)) <>)
                             (mapv merge <> visits-count))
         consider-alt? (boolean consider-alternative-pickup-locations)]
     (restrict/validate-dates tx dates-with-visits db-pool consider-alt?)))
-
-;#### debug ###################################################################
-; (debug/debug-ns 'cider-ci.utils.shutdown)
-; (debug/debug-ns *ns*)
-; (debug/undebug-ns *ns*)

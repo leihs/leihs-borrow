@@ -1,9 +1,5 @@
 (ns leihs.borrow.resources.helpers
-  (:require [clojure.string :as string]
-            [honey.sql :refer [format] :rename {format sql-format}]
-            [honey.sql.helpers :as sql]
-            [next.jdbc :as jdbc]
-            [next.jdbc.sql :refer [query] :rename {query jdbc-query}]))
+  (:require [clojure.string :as string]))
 
 (defn treat-order-arg
   ([order-specs] (treat-order-arg order-specs nil))

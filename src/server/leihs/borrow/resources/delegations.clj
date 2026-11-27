@@ -1,14 +1,9 @@
 (ns leihs.borrow.resources.delegations
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
 
-            [clojure.tools.logging :as log]
-            [leihs.borrow.graphql.target-user :as target-user]
-            [leihs.borrow.resources.helpers :as helpers]
-            [leihs.core.core :refer [raise]]
-            [taoensso.timbre :refer [debug info warn error spy]]))
+            [leihs.borrow.graphql.target-user :as target-user]))
 
 (defn delegation? [user]
   (:delegator_user_id user))
@@ -72,8 +67,3 @@
 (defn get-multiple
   [{{tx :tx} :request user-id ::target-user/id} _ _]
   (get-multiple-by-user-id tx user-id))
-
-;#### debug ###################################################################
-; (debug/debug-ns 'cider-ci.utils.shutdown)
-; (debug/debug-ns *ns*)
-; (debug/undebug-ns *ns*)

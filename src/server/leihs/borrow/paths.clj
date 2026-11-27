@@ -1,6 +1,5 @@
 (ns leihs.borrow.paths
-  (:require [bidi.bidi :refer [path-for]]
-            [bidi.verbose :refer [branch leaf param]]
+  (:require [bidi.verbose :refer [branch leaf param]]
             [leihs.borrow.client.routes :as client-routes]
             leihs.core.paths))
 

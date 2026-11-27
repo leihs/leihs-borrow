@@ -4,17 +4,13 @@
 
             [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
 
-            [clojure.spec.alpha :as spec]
             [leihs.borrow.db :refer [query]]
-            [leihs.borrow.resources.delegations :as delegations]
             [leihs.borrow.graphql.target-user :as target-user]
             [leihs.borrow.resources.inventory-pools :as pools]
             [leihs.borrow.resources.models :as models]
             [leihs.borrow.resources.reservations :as reservations]
-            [taoensso.timbre :refer [error warn info debug spy]]
             [wharf.core :refer [transform-keys]]))
 
 (def base-sqlmap
@@ -91,14 +87,3 @@
                     (reservations/create-optimistic context <> nil)))))
          (remove nil?)
          flatten)))
-
-(comment
-  (-> base-sqlmap
-      sql-format
-      (->> (jdbc-query scratch/tx))
-      first))
-
-;#### debug ###################################################################
-; (debug/debug-ns 'cider-ci.utils.shutdown)
-; (debug/debug-ns *ns*)
-; (debug/undebug-ns *ns*)

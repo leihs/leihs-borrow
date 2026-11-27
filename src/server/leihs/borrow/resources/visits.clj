@@ -1,11 +1,9 @@
 (ns leihs.borrow.resources.visits
-  (:require [clojure.tools.logging :as log]
-            [leihs.borrow.resources.reservations :as reservations]
-            [taoensso.timbre :as timbre :refer [debug info]]))
+  (:require [leihs.borrow.resources.reservations :as reservations]))
 
 (def RELEVANT-STATES #{"submitted" "approved" "rejected" "signed" "closed"})
 
-(defn fulfillment [{{tx :tx} :request :as context}
+(defn fulfillment [{{tx :tx} :request}
                    _
                    {:keys [reservation-ids]}
                    fulfilled-pred]

@@ -1,10 +1,7 @@
 (ns leihs.borrow.resources.attachments
   (:require [honey.sql :refer [format] :rename {format sql-format}]
             [honey.sql.helpers :as sql]
-            [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [query] :rename {query jdbc-query}]
-            [clojure.tools.logging :as log]
-            [compojure.core :as cpj]
             [leihs.borrow.paths :refer [path]])
   (:import java.util.Base64))
 
@@ -19,7 +16,7 @@
       (->> (jdbc-query tx))
       first))
 
-(defn merge-attachment-url [{:keys [filename] :as attachment}]
+(defn merge-attachment-url [attachment]
   (as-> attachment <>
     (:id <>)
     (hash-map :attachment-id <>)
@@ -44,8 +41,3 @@
          (merge {:headers {"Content-Type" (:content_type attachment),
                            "Content-Transfer-Encoding" "binary"}}))
     {:status 404}))
-
-;#### debug ###################################################################
-; (debug/debug-ns 'cider-ci.utils.shutdown)
-; (debug/debug-ns *ns*)
-; (debug/undebug-ns *ns*)
