@@ -96,6 +96,7 @@ jobs:
 
   all-ok:
     name: 'All Tests OK'
+    priority: 999
     depends_on: &ALLOK_DEPS
       backend-specs was successful:
         type: job
@@ -132,7 +133,7 @@ jobs:
 
   good-to-merge:
     name: '⚑ Good To Merge'
-    priority: 99 # no tasks here anyways
+    priority: 999
     description: |
       This job depends on all other tests and checks
       and it will pass if and only if all dependencies have passed.
