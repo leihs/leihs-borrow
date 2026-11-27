@@ -138,6 +138,71 @@ describe "reservations" do
         end
       end
     end
+
+    context "max visits" do
+      let(:vars) do
+        {modelId: model_1.id,
+         startDate: Date.tomorrow.strftime,
+         endDate: Date.tomorrow.strftime,
+         quantity: 1,
+         inventoryPoolIds: [inventory_pool_1.id],
+         userId: user.id}
+      end
+
+      before(:example) do
+        3.times do
+          model_1.add_item(
+            FactoryBot.create(:item,
+              is_borrowable: true,
+              responsible: inventory_pool_1)
+          )
+        end
+        Workday.find(inventory_pool_id: inventory_pool_1.id)
+          .update(max_visits: (0..6).to_h { |d| [d.to_s, "2"] })
+
+        customer_order = FactoryBot.create(:order, user: user)
+        pool_order = FactoryBot.create(:pool_order,
+          user: user,
+          inventory_pool: inventory_pool_1,
+          state: :submitted,
+          order: customer_order)
+        FactoryBot.create(:reservation,
+          status: :submitted,
+          order: pool_order,
+          leihs_model: model_1,
+          inventory_pool: inventory_pool_1,
+          start_date: Date.tomorrow,
+          end_date: Date.tomorrow,
+          user: user)
+      end
+
+      def create_approved_reservation(for_user)
+        FactoryBot.create(:reservation,
+          status: :approved,
+          leihs_model: model_1,
+          inventory_pool: inventory_pool_1,
+          start_date: Date.tomorrow,
+          end_date: Date.tomorrow,
+          user: for_user)
+      end
+
+      it "counts submitted and approved of same user as one visit" do
+        create_approved_reservation(user)
+
+        result = query(q, user.id, vars).deep_symbolize_keys
+        expect(result[:errors]).to be_nil
+        expect(result.dig(:data, :createReservation).count).to eq 1
+      end
+
+      it "throws error if capacity reached by other users" do
+        create_approved_reservation(FactoryBot.create(:user))
+
+        result = query(q, user.id, vars).deep_symbolize_keys
+        expect(result[:data][:createReservation]).to be_nil
+        expect(result[:errors].first[:message]).to eq \
+          "Not allowed to create reservation in this pool."
+      end
+    end
   end
 
   it "delete" do

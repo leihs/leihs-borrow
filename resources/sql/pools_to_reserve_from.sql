@@ -102,9 +102,9 @@ AND (array[accessible_pools.monday,
            accessible_pools.saturday,
            accessible_pools.sunday])[to_char(CAST(:end-date AS date), 'ID')::int]
 
--- max amount of visits is not exceeded yet for the start date and pool
+-- max amount of visits (one per user and type) is not exceeded yet for the start date and pool
 AND
-    (SELECT count(*)
+    (SELECT count(DISTINCT (visits.user_id, visits.type))
      FROM visits
      WHERE visits.inventory_pool_id = accessible_pools.id
        AND visits.date = CAST(:start-date AS date) )
@@ -114,9 +114,9 @@ AND
       2147483647
     )
 
--- max amount of visits is not exceeded yet for the end-date and pool
+-- max amount of visits (one per user and type) is not exceeded yet for the end-date and pool
 AND
-    (SELECT count(*)
+    (SELECT count(DISTINCT (visits.user_id, visits.type))
      FROM visits
      WHERE visits.inventory_pool_id = accessible_pools.id
        AND visits.date = CAST(:end-date AS date) )
